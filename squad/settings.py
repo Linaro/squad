@@ -80,6 +80,10 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+database_config = os.getenv('DATABASE')
+if database_config:
+    db_from_env = dict(x.split('=') for x in database_config.split(';'))
+    DATABASES['default'].update(db_from_env)
 
 
 # Password validation
