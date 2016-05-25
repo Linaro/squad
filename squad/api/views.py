@@ -31,6 +31,12 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
         for chunk in f.chunks():
             data = data + chunk
         test_run.benchmarks_file = data
+    if 'log' in request.FILES:
+        data = bytes()
+        f = request.FILES['log']
+        for chunk in f.chunks():
+            data = data + chunk
+        test_run.log_file = data
 
     test_run.save()
 

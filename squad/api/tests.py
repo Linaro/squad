@@ -11,6 +11,7 @@ from squad.core import models
 
 tests_file = os.path.join(os.path.dirname(__file__), 'tests.csv')
 benchmarks_file = os.path.join(os.path.dirname(__file__), 'benchmarks.csv')
+log_file = os.path.join(os.path.dirname(__file__), 'test_run.log')
 
 
 class ApiTest(TestCase):
@@ -48,3 +49,9 @@ class ApiTest(TestCase):
                 {'benchmarks': f}
             )
         self.assertTrue(models.TestRun.objects.last().benchmarks_file is not None)
+
+    def test_receives_log_file(self):
+        with open(log_file) as f:
+            self.client.post('/api/mygroup/myproject/1.0.0/myenvironment',
+                             {'log': f})
+        self.assertTrue(models.TestRun.objects.last().log_file is not None)

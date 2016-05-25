@@ -39,6 +39,7 @@ class TestRun(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     tests_file = models.TextField(null=True)
     benchmarks_file = models.TextField(null=True)
+    log_file = models.TextField(null=True)
 
 
 class Suite(models.Model):
