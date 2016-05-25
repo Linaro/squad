@@ -37,6 +37,8 @@ class TestRun(models.Model):
     build = models.ForeignKey(Build, related_name='test_runs')
     environment = models.ForeignKey(Environment, related_name='test_runs')
     created_at = models.DateTimeField(auto_now_add=True)
+    tests_file = models.TextField(null=True)
+    benchmarks_file = models.TextField(null=True)
 
 
 class Suite(models.Model):
