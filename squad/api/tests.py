@@ -26,17 +26,17 @@ class ApiTest(TestCase):
 
         group = models.Group.objects.get(slug='mygroup')
         project = group.projects.get(slug='myproject')
-        build = project.builds.get(version='1.0.0')
-        environment = project.environments.get(slug='myenvironment')
+        project.builds.get(version='1.0.0')
+        project.environments.get(slug='myenvironment')
 
     def test_create_test_run(self):
         test_runs = models.TestRun.objects.count()
-        response = self.client.post('/api/mygroup/myproject/1.0.0/myenvironment')
+        self.client.post('/api/mygroup/myproject/1.0.0/myenvironment')
         self.assertEqual(test_runs + 1, models.TestRun.objects.count())
 
     def test_receives_tests_file(self):
         with open(tests_file) as f:
-            response = self.client.post(
+            self.client.post(
                 '/api/mygroup/myproject/1.0.0/myenvironment',
                 {'tests': f}
             )
@@ -44,7 +44,7 @@ class ApiTest(TestCase):
 
     def test_receives_benchmarks_file(self):
         with open(benchmarks_file) as f:
-            response = self.client.post(
+            self.client.post(
                 '/api/mygroup/myproject/1.0.0/myenvironment',
                 {'benchmarks': f}
             )
