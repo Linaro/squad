@@ -1,3 +1,13 @@
 from django.shortcuts import render
 
-# Create your views here.
+
+def home(request):
+    pass
+
+
+def group(request, group_slug):
+    pass
+
+
+def project(request, group_slug, project_slug):
+    pass
