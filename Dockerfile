@@ -7,4 +7,4 @@ WORKDIR /app
 COPY . ./
 
 USER www-data
-CMD sh -c "./manage.py migrate && gunicorn3 squad.wsgi --bind 0.0.0.0.:${PORT:-8000} --log-file -"
+CMD sh -c "./manage.py migrate && gunicorn3 squad.wsgi --bind 0.0.0.0:${PORT:-8000} --log-file -"
