@@ -7,11 +7,17 @@ class Group(models.Model):
     name = models.CharField(max_length=100, null=True)
     user_groups = models.ManyToManyField(UserGroup)
 
+    def __str__(self):
+        return self.name
+
 
 class Project(models.Model):
     group = models.ForeignKey(Group, related_name='projects')
     slug = models.CharField(max_length=100)
     name = models.CharField(max_length=100, null=True)
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         unique_together = ('group', 'slug',)
