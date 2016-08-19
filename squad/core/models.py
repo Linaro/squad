@@ -1,9 +1,11 @@
 from django.db import models
+from django.contrib.auth.models import Group as UserGroup
 
 
 class Group(models.Model):
     slug = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=100, null=True)
+    user_groups = models.ManyToManyField(UserGroup)
 
 
 class Project(models.Model):
