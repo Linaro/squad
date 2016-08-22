@@ -3,7 +3,6 @@ RUN apt-get update && \
   apt-get install -qy auto-apt-proxy && \
   apt-get install -qy \
     python3-django \
-    python3-django-extensions \
     gunicorn3
 
 WORKDIR /app

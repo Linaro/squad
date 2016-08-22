@@ -42,18 +42,28 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = [
+try:
+    import imp
+    imp.find_module('django_extensions')
+    django_extensions = 'django_extensions'
+except ImportError:
+    django_extensions = None
+
+
+__apps__ = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_extensions',
+    django_extensions,  # OPTIONAL
     'squad.core',
     'squad.api',
     'squad.frontend',
 ]
+
+INSTALLED_APPS = [app for app in __apps__ if app]
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
