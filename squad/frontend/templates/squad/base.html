@@ -1,0 +1,65 @@
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SQUAD - {% block page_title %}{% endblock %}</title>
+
+    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap-theme.css">
+    <link rel="stylesheet" href="/static/font-awesome/css/font-awesome.css">
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-default">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">
+            <span class="fa fa-line-chart" aria-hidden="true"></span>
+            SQUAD
+          </a>
+        </div>
+
+        <ul class="nav navbar-nav">
+          <li><a href="/explore/">Explore</a></li>
+          <li><a href="/doc/">Documentation</a></li>
+        </ul>
+
+        <div class="pull-right">
+          {% if user.is_authenticated %}
+          <button
+            onclick='toggle_drop_down("user-menu-button","user-menu")'
+            class="btn btn-default navbar-btn dropdown-toggle"
+            type="button"
+            id="user-menu-button"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="true">
+            {{ user.username }}
+            <span class="caret"></span>
+          </button>
+          <ul id='user-menu' class="dropdown-menu" aria-labelledby="user-menu-button">
+            <li><a href="#">Profile</a></li>
+            <li><a href="/admin/">Administration</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="/logout">Log out</a></li>
+          </ul>
+          {% else %}
+          <a class="btn btn-default navbar-btn dropdown-toggle" href="/login/">
+            Log in
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+
+    <script type="text/javascript" src="/static/main.js"></script>
+  </body>
+</html>
+

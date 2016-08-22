@@ -1,0 +1,14 @@
+{% extends "squad/base.html" %}
+
+
+{% block content %}
+<ul>
+{% for project in projects %}
+  <li>
+		<a href="/{{project.group.slug}}/{{project.slug}}">
+		{{project.group.name}} / {{project.name}}
+		</a>
+	</li>
+{% endfor %}
+</ul>
+{% endblock %}

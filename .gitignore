@@ -1,2 +1,5 @@
 db.sqlite3
 secret.txt
+/squad/frontend/static/angularjs
+/squad/frontend/static/bootstrap
+/squad/frontend/static/font-awesome

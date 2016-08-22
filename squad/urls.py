@@ -16,8 +16,12 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
+import django.contrib.auth.views as auth
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include('squad.api.urls')),
+    url(r'^login/', auth.login, {'template_name': 'squad/login.html'}),
+    url(r'^logout/', auth.logout, {'next_page': '/'}),
     url(r'', include('squad.frontend.urls'))
 ]
