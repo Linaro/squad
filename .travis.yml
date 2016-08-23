@@ -4,8 +4,8 @@ cache: pip
 addons:
   postgresql: "9.3"
 env:
-  global:
-    - "DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432"
+  - DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432
+  - DATABASE=
 
 before_install:
   - psql -d template1 -c 'create extension hstore;' -U postgres
