@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -exu
+
+./manage.py migrate
+./manage.py createsuperuser
+./manage.py runserver &
+sleep 3
+./scripts/gen-test-data team1 project1
+./scripts/gen-test-data team1 project2
+./scripts/gen-test-data team2 project1
+pkill -f runserver
