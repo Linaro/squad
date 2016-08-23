@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import Group as UserGroup
 
+from squad.core.utils import random_token
+
 
 class Group(models.Model):
     slug = models.CharField(max_length=100, unique=True)
@@ -21,6 +23,20 @@ class Project(models.Model):
 
     class Meta:
         unique_together = ('group', 'slug',)
+
+
+class Token(models.Model):
+    project = models.ForeignKey(Project, related_name='tokens')
+    key = models.CharField(max_length=64, unique=True)
+    description = models.CharField(max_length=100)
+
+    def save(self, **kwargs):
+        if not self.key:
+            self.key = random_token(64)
+        super(Token, self).save(**kwargs)
+
+    def __str__(self):
+        return self.description
 
 
 class Build(models.Model):

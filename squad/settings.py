@@ -25,12 +25,9 @@ if secret_key_file is None:
     secret_key_file = os.path.join(BASE_DIR, 'secret.txt')
 
 if not os.path.exists(secret_key_file):
-    import random
-    import string
-    chars = string.printable
-    r = ''.join(random.SystemRandom().choice(chars) for _ in range(64))
+    from squad.core.utils import random_key
     with open(secret_key_file, 'w') as f:
-        f.write(r)
+        f.write(random_key(64))
 
 SECRET_KEY = open(secret_key_file).read()
 
