@@ -1,0 +1,74 @@
+#!/bin/sh
+
+set -eu
+
+if [ $# -ne 2 ]; then
+  echo "usage: $0 TEAM PROJECT"
+  exit 1
+fi
+
+TEAM="$1"
+PROJECT="$2"
+
+checkdep() {
+  if ! which "$1" > /dev/null; then
+    echo "E: $1 not found; please install"
+    exit 1
+  fi
+}
+
+# dependencies
+checkdep curl
+checkdep jq
+checkdep openssl
+
+rand() {
+  local max="$1"
+  echo $((0x$(openssl rand -hex 1) % ${max} + 1))
+}
+
+rand_pass_fail() {
+  if [ "$(rand 1)" -eq 1 ]; then
+    echo "pass"
+  else
+    echo "fail"
+  fi
+}
+
+hit_api() {
+  local endpoint="$1"
+  shift
+  curl --fail \
+    "http://localhost:8000${endpoint}" "$@"
+}
+
+benchmarks=$(mktemp)
+cat > "${benchmarks}" <<BENCHMARKS
+{
+  "ungroupedmetric1": [$(rand 3),$(rand 3),$(rand 3)],
+  "ungroupedmetric2": [$(rand 3),$(rand 3),$(rand 3)],
+  "bgroup1/metric1": [$(rand 3),$(rand 3),$(rand 3)],
+  "bgroup1/metric2": [$(rand 4),$(rand 4),$(rand 4)],
+  "bgroup2/metric3": [$(rand 4),$(rand 4),$(rand 4)]
+}
+BENCHMARKS
+
+tests=$(mktemp)
+cat > "${tests}" <<TESTS
+{
+  "tgroup1/test1": "$(rand_pass_fail)",
+  "tgroup1/test2": "$(rand_pass_fail)",
+  "tgroup1/test3": "$(rand_pass_fail)",
+  "tgroup1/test4": "$(rand_pass_fail)",
+  "tgroup1/test5": "$(rand_pass_fail)"
+}
+TESTS
+
+trap "rm -rf $benchmarks $tests" INT TERM EXIT
+
+build=$(date '+%Y.%m.%d')
+
+hit_api "/api/$TEAM/$PROJECT/$build/testenv" \
+  --silent --output /dev/null \
+  --form benchmarks=@${benchmarks} \
+  --form tests=@${tests} \

@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -eu
+
+if [ $# -ne 1 -a $# -ne 2 ]; then
+  echo "usage: [DAYS=n] $0 PROJECT TEAM"
+  exit 1
+fi
+
+PROJECT="$1"
+TEAM="$2"
+days=${DAYS:-10}
+
+if ! which faketime >/dev/null; then
+  echo "E: please install faketime first"
+  exit 1
+fi
+
+for i in $(seq ${days} -1 0); do
+  faketime "$i days ago" $(dirname $0)/submit-test-data "$TEAM" "$PROJECT"
+  echo "submitted data for $i days ago"
+done
