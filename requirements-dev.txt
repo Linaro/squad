@@ -2,3 +2,4 @@
 ipython
 pickleshare
 django_extensions
+flake8
