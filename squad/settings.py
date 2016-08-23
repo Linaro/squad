@@ -153,4 +153,5 @@ STATIC_URL = '/static/'
 # Always use IPython for shell_plus
 SHELL_PLUS = "ipython"
 
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
