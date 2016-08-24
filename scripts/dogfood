@@ -29,4 +29,5 @@ curl \
   --header "Auth-Token: $SQUAD_TOKEN" \
   --form benchmarks=@$metrics \
   --form tests=@$tests \
+  --form log=@.tests \
   "$apiurl"/$project/$build/metrics
