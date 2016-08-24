@@ -16,7 +16,7 @@ install:
 
 script:
   - ./manage.py test --noinput -v 2 2>&1 | tee .tests
-  - 'if [ -z "$DATABASE" ]; then ./scripts/dogfood http://squad.puzzle.analizo.org/api linaro-qa/squad; fi'
+  - 'if [ -z "$DATABASE" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then ./scripts/dogfood http://squad.puzzle.analizo.org/api linaro-qa/squad; fi'
   - "! grep '^test_.*\(ERROR\|FAIL\)' .tests"
 
 notifications:
