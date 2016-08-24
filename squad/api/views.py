@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseForbidden
@@ -19,8 +20,8 @@ def valid_token(token, project):
 @csrf_exempt
 @require_http_methods(["POST"])
 def add_test_run(request, group_slug, project_slug, version, environment_slug):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    group = get_object_or_404(Group, slug=group_slug)
+    project = get_object_or_404(group.projects, slug=project_slug)
 
     # authenticate token X project
     token = request.META.get('HTTP_AUTH_TOKEN', None)

@@ -83,3 +83,11 @@ class ApiTest(TestCase):
         response = self.client.post('/api/mygroup/myproject/1.0.0/myenv')
         self.assertEqual(response.status_code, 403)
         self.assertEqual(models.TestRun.objects.count(), 0)
+
+    def test_404_on_non_existing_group(self):
+        response = self.client.post('/api/mygrouppp/myproject/1.0.0/myenv')
+        self.assertEqual(404, response.status_code)
+
+    def test_404_on_non_existing_project(self):
+        response = self.client.post('/api/mygroup/myprojectttt/1.0.0/myenv')
+        self.assertEqual(404, response.status_code)
