@@ -14,20 +14,36 @@ benchmarks_file = os.path.join(os.path.dirname(__file__), 'benchmarks.csv')
 log_file = os.path.join(os.path.dirname(__file__), 'test_run.log')
 
 
+class APIClient(Client):
+
+    def __init__(self, token):
+        self.token = token
+        return super(APIClient, self).__init__(token)
+
+    def post(self, *args, **kwargs):
+        if not kwargs.get('AUTH_TOKEN'):
+            kwargs = kwargs.copy()
+            kwargs.update({'AUTH_TOKEN': self.token})
+        return super(APIClient, self).post(*args, **kwargs)
+
+
 class ApiTest(TestCase):
 
     def setUp(self):
         setup_test_environment()
-        self.client = Client()
+
+        self.group = models.Group.objects.create(slug='mygroup')
+        self.project = self.group.projects.create(slug='myproject')
+        self.project.tokens.create(key='thekey')
+
+        self.client = APIClient('thekey')
 
     def test_create_object_hierarchy(self):
         response = self.client.post('/api/mygroup/myproject/1.0.0/myenvironment')
         self.assertEqual(response.status_code, 201)
 
-        group = models.Group.objects.get(slug='mygroup')
-        project = group.projects.get(slug='myproject')
-        project.builds.get(version='1.0.0')
-        project.environments.get(slug='myenvironment')
+        self.project.builds.get(version='1.0.0')
+        self.project.environments.get(slug='myenvironment')
 
     def test_create_test_run(self):
         test_runs = models.TestRun.objects.count()
@@ -55,3 +71,15 @@ class ApiTest(TestCase):
             self.client.post('/api/mygroup/myproject/1.0.0/myenvironment',
                              {'log': f})
         self.assertTrue(models.TestRun.objects.last().log_file is not None)
+
+    def test_unauthorized(self):
+        client = Client()  # regular client without auth support
+        response = client.post('/api/mygroup/myproject/1.0.0/myenvironment')
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(models.TestRun.objects.count(), 0)
+
+    def test_forbidden(self):
+        self.client.token = 'wrongtoken'
+        response = self.client.post('/api/mygroup/myproject/1.0.0/myenv')
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(models.TestRun.objects.count(), 0)
