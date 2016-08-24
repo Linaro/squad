@@ -1,0 +1,29 @@
+#!/bin/sh
+
+set -eu
+
+if [ $# -ne 2 ]; then
+  echo "usage: $0 APIURL GROUP/PROJECT"
+  exit 1
+fi
+
+apiurl="$1"
+project="$2"
+
+if [ -z "${SQUAD_TOKEN:-}" ]; then
+  echo 'SQUAD_TOKEN not defined, skipping metrics submission'
+  exit 0
+fi
+
+metrics=$(mktemp -t XXXXXXXXXX.json)
+trap "rm -rf $metrics" INT TERM EXIT
+
+$(dirname $0)/get-metrics > $metrics
+
+build=$(date +%Y.%m.%d.%H.%M)
+
+curl \
+  --fail \
+  --header "Auth-Token: $SQUAD_TOKEN" \
+  --form benchmarks=@$metrics \
+  "$apiurl"/$project/$build/metrics

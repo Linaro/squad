@@ -1,0 +1,28 @@
+#!/bin/sh
+
+set -eu
+
+python_lines=$(find -name '*.py' | xargs grep '\S' | wc -l)
+python_comments=$(find -name '*.py' | xargs grep '^\s*#' | wc -l)
+python_tests=$(grep -r 'def\s*test' test/ | wc -l)
+python_runtime_dependencies=$(grep ^[^-#] requirements.txt | wc -l)
+python_development_dependencies=$(grep ^[^-#] requirements-dev.txt | wc -l)
+python_files=$(find -name '*.py' -and -not -name __init__.py | wc -l)
+
+
+git_commits=$(git log --oneline | wc -l)
+git_authors=$(git log --format=%aN | sort -u | wc -l)
+
+cat <<METRICS
+{
+  "python/lines": $python_lines,
+  "python/comments": $python_comments,
+  "python/tests": $python_tests,
+  "python/runtime_dependencies": $python_runtime_dependencies,
+  "python/development_dependencies": $python_development_dependencies,
+  "python/files": $python_files,
+
+  "git/commits": $git_commits,
+  "git/authors": $git_authors
+}
+METRICS
