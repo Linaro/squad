@@ -23,7 +23,7 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
     project = group.projects.get(slug=project_slug)
 
     # authenticate token X project
-    token = request.META.get('AUTH_TOKEN', None)
+    token = request.META.get('HTTP_AUTH_TOKEN', None)
     if token:
         if valid_token(token, project):
             pass

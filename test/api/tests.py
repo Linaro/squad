@@ -21,9 +21,9 @@ class APIClient(Client):
         return super(APIClient, self).__init__(token)
 
     def post(self, *args, **kwargs):
-        if not kwargs.get('AUTH_TOKEN'):
+        if not kwargs.get('HTTP_AUTH_TOKEN'):
             kwargs = kwargs.copy()
-            kwargs.update({'AUTH_TOKEN': self.token})
+            kwargs.update({'HTTP_AUTH_TOKEN': self.token})
         return super(APIClient, self).post(*args, **kwargs)
 
 
