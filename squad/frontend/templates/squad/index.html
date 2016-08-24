@@ -6,7 +6,7 @@
 {% for project in projects %}
   <li>
 		<a href="/{{project.group.slug}}/{{project.slug}}">
-		{{project.group.name}} / {{project.name}}
+		{{project.group.slug}}/{{project.slug}}
 		</a>
 	</li>
 {% endfor %}
