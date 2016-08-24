@@ -15,7 +15,7 @@ install:
   - pip install -r requirements-dev.txt
 
 script:
-  - env
+  - 'if [ -z "$DATABASE" ]; then ./scripts/dogfood http://squad.puzzle.analizo.org/api linaro-qa/squad; fi'
   - python manage.py test --noinput -v 2
 
 notifications:
