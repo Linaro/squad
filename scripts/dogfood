@@ -16,9 +16,11 @@ if [ -z "${SQUAD_TOKEN:-}" ]; then
 fi
 
 metrics=$(mktemp -t XXXXXXXXXX.json)
-trap "rm -rf $metrics" INT TERM EXIT
+tests=$(mktemp -t XXXXXXXXXX.json)
+trap "rm -rf $metrics $tests" INT TERM EXIT
 
 $(dirname $0)/get-metrics > $metrics
+$(dirname $0)/get-tests > $tests
 
 build=$(date +%Y.%m.%d.%H.%M)
 
@@ -26,4 +28,5 @@ curl \
   --fail \
   --header "Auth-Token: $SQUAD_TOKEN" \
   --form benchmarks=@$metrics \
+  --form tests=@$tests \
   "$apiurl"/$project/$build/metrics

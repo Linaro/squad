@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -eu
+
+tests_file=${1:-.tests}
+if [ ! -f "$tests_file" ]; then
+   echo "E: $tests_file does not exist" >&2
+   exit 1
+fi
+
+(
+  echo "{"
+  awk 'BEGIN { s = "" }/^test_/ { gsub("[()]", "", $2); r = "pass"; if ($4 != "ok") { r = "fail" }; print(s "\"" $2 "." $1 "\"" ": \"" r "\"" ); s = ","  }' "$tests_file"
+  echo "}"
+) | jq ''
