@@ -59,6 +59,9 @@ class Environment(models.Model):
     class Meta:
         unique_together = ('project', 'slug',)
 
+    def __str__(self):
+        return self.name or self.slug
+
 
 class TestRun(models.Model):
     build = models.ForeignKey(Build, related_name='test_runs')
@@ -77,19 +80,34 @@ class Suite(models.Model):
     class Meta:
         unique_together = ('project', 'slug',)
 
+    def __str__(self):
+        return self.name or self.slug
+
 
 class Test(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='tests')
     suite = models.ForeignKey(Suite)
+    name = models.CharField(max_length=100)
     result = models.BooleanField()
+
+    def __str__(self):
+        return "%s: %s" % (self.name, self.status)
+
+    @property
+    def status(self):
+        return self.result and 'pass' or 'fail'
 
 
 class Metric(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='metrics')
     suite = models.ForeignKey(Suite)
+    name = models.CharField(max_length=100)
     result = models.FloatField()
     measurements = models.TextField()  # comma-separated float numbers
 
     @property
     def measurement_list(self):
         [float(n) for n in self.measurements.split(',')]
+
+    def __str__(self):
+        return '%s: %f' % (self.name, self.result)
