@@ -47,6 +47,9 @@ class Build(models.Model):
     class Meta:
         unique_together = ('project', 'version',)
 
+    def __str__(self):
+        return '%s (%s)' % (self.version, self.created_at)
+
 
 class Environment(models.Model):
     project = models.ForeignKey(Project, related_name='environments')
