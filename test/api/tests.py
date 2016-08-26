@@ -56,7 +56,7 @@ class ApiTest(TestCase):
                 '/api/mygroup/myproject/1.0.0/myenvironment',
                 {'tests': f}
             )
-        self.assertTrue(models.TestRun.objects.last().tests_file is not None)
+        self.assertIsNotNone(models.TestRun.objects.last().tests_file)
 
     def test_receives_benchmarks_file(self):
         with open(benchmarks_file) as f:
@@ -64,13 +64,13 @@ class ApiTest(TestCase):
                 '/api/mygroup/myproject/1.0.0/myenvironment',
                 {'benchmarks': f}
             )
-        self.assertTrue(models.TestRun.objects.last().benchmarks_file is not None)
+        self.assertIsNotNone(models.TestRun.objects.last().benchmarks_file)
 
     def test_receives_log_file(self):
         with open(log_file) as f:
             self.client.post('/api/mygroup/myproject/1.0.0/myenvironment',
                              {'log': f})
-        self.assertTrue(models.TestRun.objects.last().log_file is not None)
+        self.assertIsNotNone(models.TestRun.objects.last().log_file)
 
     def test_unauthorized(self):
         client = Client()  # regular client without auth support
