@@ -44,12 +44,12 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
         for chunk in f.chunks():
             data = data + chunk
         test_run.tests_file = data
-    if 'benchmarks' in request.FILES:
+    if 'metrics' in request.FILES:
         data = bytes()
-        f = request.FILES['benchmarks']
+        f = request.FILES['metrics']
         for chunk in f.chunks():
             data = data + chunk
-        test_run.benchmarks_file = data
+        test_run.metrics_file = data
     if 'log' in request.FILES:
         data = bytes()
         f = request.FILES['log']

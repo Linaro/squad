@@ -27,7 +27,7 @@ build=$(date +%Y.%m.%d.%H.%M)
 curl \
   --fail \
   --header "Auth-Token: $SQUAD_TOKEN" \
-  --form benchmarks=@$metrics \
+  --form metrics=@$metrics \
   --form tests=@$tests \
   --form log=@.tests \
   "$apiurl"/$project/$build/metrics

@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Benchmark',
+            name='Metric',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('result', models.FloatField()),
@@ -97,14 +97,14 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='builds', to='core.Project'),
         ),
         migrations.AddField(
-            model_name='benchmark',
+            model_name='metric',
             name='suite',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.Suite'),
         ),
         migrations.AddField(
-            model_name='benchmark',
+            model_name='metric',
             name='test_run',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='benchmarks', to='core.TestRun'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='metrics', to='core.TestRun'),
         ),
         migrations.AlterUniqueTogether(
             name='suite',

@@ -7,9 +7,9 @@
 |Team|--->|Project|--->|Build|--->|TestRun|--->|Test|------>|Suite|
 +----+    +-------+    +-----+    +-------+    +----+       +-----+
                                     | *   |                    ^ 1
-                                    |     |  * +---------+ *   |
-                                    |     +--->|Benchmark|-----+
-                                    |          +---------+
+                                    |     |  * +------+ *      |
+                                    |     +--->|Metric|--------+
+                                    |          +------+
                                     v 1
                                   +-----------+
                                   |Environment|
@@ -19,8 +19,8 @@
 SQUAD is multi-team and multi-project. Each team can have multiple projects.
 For each project, you can have multiple builds, and for each build, multiple
 test runs. Each test run can include multiple test results, which can be either
-pass/fail results, or benchmark results, containing one or more measurement
-values. Test and benchmark results can belong to a Suite, which is a basically
+pass/fail results, or metrics, containing one or more measurement
+values. Test and metric results can belong to a Suite, which is a basically
 used to group and analyze results together. Every test suite must be associated
 with exactly one Environment, which describes the environment in which the
 tests were executed, such as hardware platform, hardware configuration, OS,
@@ -49,7 +49,7 @@ request, with the following names:
 * `buildinfo`: extra information on the build.
 * `metadata`: arbitrary metadata about the execution environment.
 * `tests`: test results data
-* `benchmarks`: benchmark results data
+* `metrics`: metrics data
 
 See [Input file formats](#input-file-formats) below for details on the file
 formats that are accepted.
@@ -62,7 +62,7 @@ $ curl \
     --form buildinfo=@/path/to/buildinfo.json \
     --form metadata=@/path/to/metadata.json \
     --form tests=@/path/to/test-rsults.json \
-    --form benchmarks=@/path/to/benchmark-results.json \
+    --form metrics=@/path/to/metrics.json \
     https://squad.example.com/api/my-team/my-project/20160630/my-ci-env
 ```
 
@@ -77,7 +77,7 @@ prepares all the data in a consistent way, and submits it to dashboard.
 
 _TBD_
 
-### Benchmark results
+### Metrics
 
 _TBD_
 

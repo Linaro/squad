@@ -62,7 +62,7 @@ class TestRun(models.Model):
     environment = models.ForeignKey(Environment, related_name='test_runs')
     created_at = models.DateTimeField(auto_now_add=True)
     tests_file = models.TextField(null=True)
-    benchmarks_file = models.TextField(null=True)
+    metrics_file = models.TextField(null=True)
     log_file = models.TextField(null=True)
 
 
@@ -81,8 +81,8 @@ class Test(models.Model):
     result = models.BooleanField()
 
 
-class Benchmark(models.Model):
-    test_run = models.ForeignKey(TestRun, related_name='benchmarks')
+class Metric(models.Model):
+    test_run = models.ForeignKey(TestRun, related_name='metrics')
     suite = models.ForeignKey(Suite)
     result = models.FloatField()
     measurements = models.TextField()  # comma-separated float numbers

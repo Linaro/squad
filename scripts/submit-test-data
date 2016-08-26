@@ -42,8 +42,8 @@ hit_api() {
     "http://localhost:8000${endpoint}" "$@"
 }
 
-benchmarks=$(mktemp)
-cat > "${benchmarks}" <<BENCHMARKS
+metrics=$(mktemp)
+cat > "${metrics}" <<METRICS
 {
   "ungroupedmetric1": [$(rand 3),$(rand 3),$(rand 3)],
   "ungroupedmetric2": [$(rand 3),$(rand 3),$(rand 3)],
@@ -51,7 +51,7 @@ cat > "${benchmarks}" <<BENCHMARKS
   "bgroup1/metric2": [$(rand 4),$(rand 4),$(rand 4)],
   "bgroup2/metric3": [$(rand 4),$(rand 4),$(rand 4)]
 }
-BENCHMARKS
+METRICS
 
 tests=$(mktemp)
 cat > "${tests}" <<TESTS
@@ -64,11 +64,11 @@ cat > "${tests}" <<TESTS
 }
 TESTS
 
-trap "rm -rf $benchmarks $tests" INT TERM EXIT
+trap "rm -rf $metrics $tests" INT TERM EXIT
 
 build=$(date '+%Y.%m.%d')
 
 hit_api "/api/$TEAM/$PROJECT/$build/testenv" \
   --silent --output /dev/null \
-  --form benchmarks=@${benchmarks} \
+  --form metrics=@${metrics} \
   --form tests=@${tests} \

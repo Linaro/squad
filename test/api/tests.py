@@ -10,7 +10,7 @@ from squad.core import models
 
 
 tests_file = os.path.join(os.path.dirname(__file__), 'tests.csv')
-benchmarks_file = os.path.join(os.path.dirname(__file__), 'benchmarks.csv')
+metrics_file = os.path.join(os.path.dirname(__file__), 'benchmarks.csv')
 log_file = os.path.join(os.path.dirname(__file__), 'test_run.log')
 
 
@@ -58,13 +58,13 @@ class ApiTest(TestCase):
             )
         self.assertIsNotNone(models.TestRun.objects.last().tests_file)
 
-    def test_receives_benchmarks_file(self):
-        with open(benchmarks_file) as f:
+    def test_receives_metrics_file(self):
+        with open(metrics_file) as f:
             self.client.post(
                 '/api/mygroup/myproject/1.0.0/myenvironment',
-                {'benchmarks': f}
+                {'metrics': f}
             )
-        self.assertIsNotNone(models.TestRun.objects.last().benchmarks_file)
+        self.assertIsNotNone(models.TestRun.objects.last().metrics_file)
 
     def test_receives_log_file(self):
         with open(log_file) as f:
@@ -96,7 +96,7 @@ class ApiTest(TestCase):
         response = self.client.post('/api/mygroup/myprojectttt/1.0.0/myenv')
         self.assertEqual(404, response.status_code)
 
-    def test_invalid_benchmarks_json(self):
+    def test_invalid_metrics_json(self):
         # FIXME not implemented
         pass
 

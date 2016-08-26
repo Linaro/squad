@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='testrun',
-            name='benchmarks_file',
+            name='metrics_file',
             field=models.TextField(null=True),
         ),
         migrations.AddField(
