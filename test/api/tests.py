@@ -72,6 +72,10 @@ class ApiTest(TestCase):
                              {'log': f})
         self.assertIsNotNone(models.TestRun.objects.last().log_file)
 
+    def test_receives_metadata_file(self):
+        # FIXME not implemented
+        pass
+
     def test_unauthorized(self):
         client = Client()  # regular client without auth support
         response = client.post('/api/mygroup/myproject/1.0.0/myenvironment')
@@ -91,3 +95,15 @@ class ApiTest(TestCase):
     def test_404_on_non_existing_project(self):
         response = self.client.post('/api/mygroup/myprojectttt/1.0.0/myenv')
         self.assertEqual(404, response.status_code)
+
+    def test_invalid_benchmarks_json(self):
+        # FIXME not implemented
+        pass
+
+    def test_invalid_tests_json(self):
+        # FIXME not implemented
+        pass
+
+    def test_invalid_metadata_json(self):
+        # FIXME not implemented
+        pass
