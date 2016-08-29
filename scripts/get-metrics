@@ -7,7 +7,7 @@ python_comments=$(find -name '*.py' | xargs grep '^\s*#' | wc -l)
 python_tests=$(grep -r 'def\s*test' test/ | wc -l)
 python_runtime_dependencies=$(grep ^[^-#] requirements.txt | wc -l)
 python_development_dependencies=$(grep ^[^-#] requirements-dev.txt | wc -l)
-python_files=$(find -name '*.py' -and -not -name __init__.py | wc -l)
+python_files=$(find -name '*.py' | wc -l)
 
 
 git_commits=$(git log --oneline | wc -l)
