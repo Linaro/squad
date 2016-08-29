@@ -1,4 +1,4 @@
-from unittest import TestCase\
+from unittest import TestCase
 
 from squad.core.data import JSONTestDataParser
 
