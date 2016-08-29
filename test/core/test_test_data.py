@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from squad.core.data import JSONTestDataParser
 
+
 TEST_DATA = """
 {
     "ungrouped_pass": "pass",
@@ -13,7 +14,9 @@ TEST_DATA = """
 }
 """
 
+
 json_parser = JSONTestDataParser()
+
 
 class JSONTestDataParserTest(TestCase):
 
@@ -42,4 +45,3 @@ class JSONTestDataParserTest(TestCase):
             if t['group_name'] == 'group1' and t['test_name'] == "pass"
         ][0]
         self.assertTrue(test['pass'])
-
