@@ -13,16 +13,15 @@ python_files=$(find -name '*.py' | wc -l)
 git_commits=$(git log --oneline | wc -l)
 git_authors=$(git log --format=%aN | sort -u | wc -l)
 
-cat <<METRICS
+echo "
 {
-  "python/lines": $python_lines,
-  "python/comments": $python_comments,
-  "python/tests": $python_tests,
-  "python/runtime_dependencies": $python_runtime_dependencies,
-  "python/development_dependencies": $python_development_dependencies,
-  "python/files": $python_files,
+  \"python/lines\": $python_lines,
+  \"python/comments\": $python_comments,
+  \"python/tests\": $python_tests,
+  \"python/runtime_dependencies\": $python_runtime_dependencies,
+  \"python/development_dependencies\": $python_development_dependencies,
+  \"python/files\": $python_files,
 
-  "git/commits": $git_commits,
-  "git/authors": $git_authors
-}
-METRICS
+  \"git/commits\": $git_commits,
+  \"git/authors\": $git_authors
+}" | jq ''
