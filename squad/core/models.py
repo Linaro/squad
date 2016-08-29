@@ -71,6 +71,8 @@ class TestRun(models.Model):
     metrics_file = models.TextField(null=True)
     log_file = models.TextField(null=True)
 
+    data_processed = models.BooleanField(default=False)
+
     @property
     def project(self):
         return self.build.project
