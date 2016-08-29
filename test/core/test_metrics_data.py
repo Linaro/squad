@@ -16,6 +16,11 @@ parser = JSONMetricDataParser()
 
 class JSONMetricDataParserTest(TestCase):
 
+    def test_empty(self):
+        self.assertEqual([], parser(None))
+        self.assertEqual([], parser(''))
+        self.assertEqual([], parser('{}'))
+
     def test_basics(self):
         data = parser(TEST_DATA)
         self.assertEqual(5, len(data))

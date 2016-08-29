@@ -21,8 +21,9 @@ json_parser = JSONTestDataParser()
 class JSONTestDataParserTest(TestCase):
 
     def test_empty(self):
-        data = json_parser("{}")
-        self.assertEqual(0, len(data))
+        self.assertEqual([], json_parser(None))
+        self.assertEqual([], json_parser(''))
+        self.assertEqual([], json_parser('{}'))
 
     def test_basic(self):
         data = json_parser(TEST_DATA)
