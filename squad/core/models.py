@@ -71,6 +71,10 @@ class TestRun(models.Model):
     metrics_file = models.TextField(null=True)
     log_file = models.TextField(null=True)
 
+    @property
+    def project(self):
+        return self.build.project
+
 
 class Suite(models.Model):
     project = models.ForeignKey(Project, related_name='suites')
