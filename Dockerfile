@@ -12,6 +12,7 @@ WORKDIR /app
 COPY . ./
 
 # debug
+RUN find
 RUN env
 
 # creates symlinks to packaged static assets

@@ -1,1 +1,11 @@
-.gitignore
+# KEEP THIS IN SYNC WITH .gitignore
+db.sqlite3
+.git
+.pzc
+secret.txt
+squad/frontend/static/angularjs
+squad/frontend/static/bootstrap
+squad/frontend/static/font-awesome
+.tests
+**/__pycache__
+**/*.pyc
