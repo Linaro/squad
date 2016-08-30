@@ -1,3 +1,4 @@
+{% load static %}
 <html lang="en">
 
   <head>
@@ -6,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SQUAD - {% block page_title %}{% endblock %}</title>
 
-    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css">
-    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap-theme.css">
-    <link rel="stylesheet" href="/static/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.css" %}">
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap-theme.css" %}">
+    <link rel="stylesheet" href="{% static "font-awesome/css/font-awesome.css" %}">
   </head>
 
   <body>
@@ -59,7 +60,7 @@
       {% block content %}{% endblock %}
     </div>
 
-    <script type="text/javascript" src="/static/main.js"></script>
+    <script type="text/javascript" src="{% static "main.js" %}"></script>
   </body>
 </html>
 
