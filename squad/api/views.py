@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -19,6 +20,7 @@ def valid_token(token, project):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@transaction.atomic
 def add_test_run(request, group_slug, project_slug, version, environment_slug):
     group = get_object_or_404(Group, slug=group_slug)
     project = get_object_or_404(group.projects, slug=project_slug)
