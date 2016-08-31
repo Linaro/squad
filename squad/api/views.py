@@ -1,4 +1,3 @@
-from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -20,7 +19,6 @@ def valid_token(token, project):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@transaction.atomic
 def add_test_run(request, group_slug, project_slug, version, environment_slug):
     group = get_object_or_404(Group, slug=group_slug)
     project = get_object_or_404(group.projects, slug=project_slug)
@@ -38,27 +36,29 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
     build, _ = project.builds.get_or_create(version=version)
     environment, _ = project.environments.get_or_create(slug=environment_slug)
 
-    test_run = build.test_runs.create(environment=environment)
+    test_run_data = {
+        'environment': environment,
+    }
 
     if 'tests' in request.FILES:
         data = bytes()
         f = request.FILES['tests']
         for chunk in f.chunks():
             data = data + chunk
-        test_run.tests_file = data
+        test_run_data['tests_file'] = data
     if 'metrics' in request.FILES:
         data = bytes()
         f = request.FILES['metrics']
         for chunk in f.chunks():
             data = data + chunk
-        test_run.metrics_file = data
+        test_run_data['metrics_file'] = data
     if 'log' in request.FILES:
         data = bytes()
         f = request.FILES['log']
         for chunk in f.chunks():
             data = data + chunk
-        test_run.log_file = data
+        test_run_data['log_file'] = data
 
-    test_run.save()
+    build.test_runs.create(**test_run_data)
 
     return HttpResponse('', status=201)
