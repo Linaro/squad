@@ -9,9 +9,11 @@ python_runtime_dependencies=$(grep ^[^-#] requirements.txt | wc -l)
 python_development_dependencies=$(grep ^[^-#] requirements-dev.txt | wc -l)
 python_files=$(find -name '*.py' | wc -l)
 
-
 git_commits=$(git log --oneline | wc -l)
 git_authors=$(git log --format=%aN | sort -u | wc -l)
+
+doc_files=$(find -name '*.md' | wc -l)
+doc_lines=$(find -name '*.md' | xargs grep '\S'  | wc -l)
 
 echo "
 {
@@ -21,6 +23,9 @@ echo "
   \"python/runtime_dependencies\": $python_runtime_dependencies,
   \"python/development_dependencies\": $python_development_dependencies,
   \"python/files\": $python_files,
+
+  \"doc/files\": $doc_files,
+  \"doc/lines\": $doc_lines,
 
   \"git/commits\": $git_commits,
   \"git/authors\": $git_authors
