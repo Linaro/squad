@@ -43,27 +43,23 @@ The API is the following
 * `:environment` is the environmenr identitifer. It will be created
   automatically if does not exist before.
 
-The actual test data must be submitted as file attachments in the `POST`
-request, with the following names:
+The test data must be submitted as file attachments in the `POST` request. The
+following files are supported:
 
-* `buildinfo`: extra information on the build.
-* `metadata`: arbitrary metadata about the execution environment.
 * `tests`: test results data
 * `metrics`: metrics data
 
-See [Input file formats](#input-file-formats) below for details on the file
-formats that are accepted.
+See [Input file formats](#input-file-formats) below for details on the format
+of these data files.
 
 Example:
 
 ```
 $ curl \
-    --header "Token: 4971b4afe1470316a6463a9eb1f39742" \
-    --form buildinfo=@/path/to/buildinfo.json \
-    --form metadata=@/path/to/metadata.json \
+    --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
     --form tests=@/path/to/test-rsults.json \
     --form metrics=@/path/to/metrics.json \
-    https://squad.example.com/api/my-team/my-project/20160630/my-ci-env
+    https://squad.example.com/api/my-team/my-project/x.y.z/my-ci-env
 ```
 
 Since test results should always come from automation systems, the API is the
@@ -75,11 +71,54 @@ prepares all the data in a consistent way, and submits it to dashboard.
 
 ### Test results
 
-_TBD_
+Test results must be posted as JSON. The JSON data must be a hash (an object,
+strictly speaking). Test names go in the keys, and values must be either
+`"pass"` or `"fail"`.
+
+Tests can be grouped in suites. For that, the test name must be prefixed with
+the group name and a slash (`/`). Therefore, slashes are reserved characters in
+this context, and cannot be used in test names. Group names can have embedded
+slashes in them; so "foo/bar" means group "foo", test "bar"; and "foo/bar/baz"
+means group "foo/bar" test "baz".
+
+Example:
+
+
+```json
+{
+  "test1": "pass",
+  "test2": "pass",
+  "group1/test1": "pass",
+  "group1/test2": "fail",
+  "group1/subgroup/test1": "pass",
+  "group1/subgroup/test2": "pass"
+}
+```
 
 ### Metrics
 
-_TBD_
+Metrics must be posted as JSON. The JSON data must be a hash (an object,
+strictly speaking). Metric names go in the keys, and values must be either a
+single number, or an array of numbers. In the case of an array of numbers, then
+their mean will be used as the metric result; the whole set of results will be
+used where applicable, e.g. to display ranges.
+
+As with test results, metrics can be grouped in suites. For that, the test name
+must be prefixed with the group name and a slash (`/`). Therefore, slashes are
+reserved characters in this context, and cannot be used in test names. Group
+names can have embedded slashes in them; so "foo/bar" means group "foo", test
+"bar"; and "foo/bar/baz" means group "foo/bar" test "baz".
+
+Example:
+
+```json
+{
+  "v1": 1,
+  "v2": 2.5,
+  "group1/v1": [1.2, 2.1, 3.03],
+  "group1/subgroup/v1": [1, 2, 3, 2, 3, 1]
+}
+```
 
 ## How to support multiple use cases
 
