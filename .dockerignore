@@ -9,3 +9,4 @@ squad/frontend/static/font-awesome
 .tests
 **/__pycache__
 **/*.pyc
+tmp
