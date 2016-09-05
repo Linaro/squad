@@ -3,6 +3,7 @@ RUN apt-get update && \
   apt-get install -qy auto-apt-proxy && \
   apt-get install -qy \
     python3-django \
+    python3-whitenoise \
     fonts-font-awesome \
     libjs-angularjs \
     libjs-bootstrap \
@@ -17,6 +18,7 @@ RUN env
 
 # creates symlinks to packaged static assets
 RUN python3 -m squad.frontend
+RUN ./manage.py collectstatic --noinput
 
 
 USER www-data

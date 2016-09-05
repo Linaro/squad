@@ -6,6 +6,7 @@ secret.txt
 squad/frontend/static/angularjs
 squad/frontend/static/bootstrap
 squad/frontend/static/font-awesome
+static
 .tests
 **/__pycache__
 **/*.pyc
