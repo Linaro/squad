@@ -33,6 +33,9 @@ def parse_name(input_name):
         group_name = '/'.join(parts[0:-1])
         name = parts[-1]
 
+    if group_name == '' or group_name is None:
+        group_name = '/'
+
     return (group_name, name)
 
 

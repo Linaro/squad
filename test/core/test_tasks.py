@@ -15,19 +15,19 @@ class ParseTestRunDataTest(TestCase):
         self.testrun = TestRun.objects.create(
             build=build,
             environment=env,
-            tests_file='{"foobar/test1": "pass"}',
-            metrics_file='{"foobar/metric1": 10}',
+            tests_file='{"test0": "fail", "foobar/test1": "pass"}',
+            metrics_file='{"metric0": 0, "foobar/metric1": 10}',
         )
 
     def test_basics(self):
         ParseTestRunData()(self.testrun)
 
-        self.assertEqual(1, self.testrun.tests.count())
-        self.assertEqual(1, self.testrun.metrics.count())
+        self.assertEqual(2, self.testrun.tests.count())
+        self.assertEqual(2, self.testrun.metrics.count())
 
     def test_does_not_process_twice(self):
         ParseTestRunData()(self.testrun)
         ParseTestRunData()(self.testrun)
 
-        self.assertEqual(1, self.testrun.tests.count())
-        self.assertEqual(1, self.testrun.metrics.count())
+        self.assertEqual(2, self.testrun.tests.count())
+        self.assertEqual(2, self.testrun.metrics.count())

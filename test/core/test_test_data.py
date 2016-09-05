@@ -46,3 +46,14 @@ class JSONTestDataParserTest(TestCase):
             if t['group_name'] == 'group1' and t['test_name'] == "pass"
         ][0]
         self.assertTrue(test['pass'])
+
+    def test_group_name_defaults_to_slash(self):
+        data = json_parser('{"/mytest0": "pass", "mytest1": "fail"}')
+        test0 = [t for t in data if t['test_name'] == 'mytest0'][0]
+
+        self.assertEqual('/', test0['group_name'])
+        self.assertEqual("mytest0", test0['test_name'])
+
+        test1 = [t for t in data if t['test_name'] == 'mytest1'][0]
+        self.assertEqual('/', test1['group_name'])
+        self.assertEqual("mytest1", test1['test_name'])
