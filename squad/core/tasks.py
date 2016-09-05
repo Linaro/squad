@@ -1,12 +1,16 @@
+import logging
+
+
 from django.db import transaction
 
 
-from squad.core.models import Suite, Test, Metric
+from squad.core.models import TestRun, Suite, Test, Metric
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
 
 
 test_parser = JSONTestDataParser
 metric_parser = JSONMetricDataParser
+logger = logging.getLogger(__name__)
 
 
 class ParseTestRunData(object):
@@ -48,3 +52,13 @@ class ParseTestRunData(object):
 
         test_run.data_processed = True
         test_run.save()
+
+
+class ParseAllTestRuns(object):
+
+    @staticmethod
+    def __call__():
+        for testrun in TestRun.objects.filter(data_processed=False).all():
+            logger.info("Parsing data for TestRun %d" % testrun.id)
+            parser = ParseTestRunData()
+            parser(testrun)

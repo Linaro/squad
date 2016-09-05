@@ -3,9 +3,10 @@ from django.test import TestCase
 
 from squad.core.models import Group, TestRun
 from squad.core.tasks import ParseTestRunData
+from squad.core.tasks import ParseAllTestRuns
 
 
-class ParseTestRunDataTest(TestCase):
+class CommonTestCase(TestCase):
 
     def setUp(self):
         group = Group.objects.create(slug='mygroup')
@@ -19,6 +20,8 @@ class ParseTestRunDataTest(TestCase):
             metrics_file='{"metric0": 0, "foobar/metric1": 10}',
         )
 
+
+class ParseTestRunDataTest(CommonTestCase):
     def test_basics(self):
         ParseTestRunData()(self.testrun)
 
@@ -31,3 +34,10 @@ class ParseTestRunDataTest(TestCase):
 
         self.assertEqual(2, self.testrun.tests.count())
         self.assertEqual(2, self.testrun.metrics.count())
+
+
+class ParseAllTestRunsTest(CommonTestCase):
+
+    def test_processes_all(self):
+        ParseAllTestRuns()()
+        self.assertEqual(2, self.testrun.tests.count())
