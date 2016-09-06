@@ -69,6 +69,7 @@ trap "rm -rf $metrics $tests" INT TERM EXIT
 build=$(date '+%Y.%m.%d')
 
 hit_api "/api/$TEAM/$PROJECT/$build/testenv" \
+  --header "Auth-Token: $AUTH_TOKEN" \
   --silent --output /dev/null \
   --form metrics=@${metrics} \
   --form tests=@${tests} \

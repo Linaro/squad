@@ -3,10 +3,11 @@
 set -exu
 
 ./manage.py migrate
-./manage.py createsuperuser
+./manage.py shell --no-color --plain  -c "exec(open('$(dirname $0)/setup.py').read())"
+
 ./manage.py runserver &
+trap 'pkill -f runserver' INT TERM EXIT
+
 sleep 3
-./scripts/gen-test-data team1 project1
-./scripts/gen-test-data team1 project2
-./scripts/gen-test-data team2 project1
-pkill -f runserver
+AUTH_TOKEN=key1 ./scripts/testdata/gen-test-data team1 project1
+AUTH_TOKEN=key2 ./scripts/testdata/gen-test-data team2 project2
