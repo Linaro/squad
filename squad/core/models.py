@@ -113,7 +113,10 @@ class Metric(models.Model):
 
     @property
     def measurement_list(self):
-        [float(n) for n in self.measurements.split(',')]
+        if self.measurements:
+            return [float(n) for n in self.measurements.split(',')]
+        else:
+            return []
 
     def __str__(self):
         return '%s: %f' % (self.name, self.result)
