@@ -71,9 +71,9 @@ prepares all the data in a consistent way, and submits it to dashboard.
 
 ### Test results
 
-Test results must be posted as JSON. The JSON data must be a hash (an object,
-strictly speaking). Test names go in the keys, and values must be either
-`"pass"` or `"fail"`.
+Test results must be posted as JSON, encoded in UTF-8. The JSON data must be a
+hash (an object, strictly speaking). Test names go in the keys, and values must
+be either `"pass"` or `"fail"`.
 
 Tests can be grouped in suites. For that, the test name must be prefixed with
 the group name and a slash (`/`). Therefore, slashes are reserved characters in
@@ -97,11 +97,11 @@ Example:
 
 ### Metrics
 
-Metrics must be posted as JSON. The JSON data must be a hash (an object,
-strictly speaking). Metric names go in the keys, and values must be either a
-single number, or an array of numbers. In the case of an array of numbers, then
-their mean will be used as the metric result; the whole set of results will be
-used where applicable, e.g. to display ranges.
+Metrics must be posted as JSON, encoded in UTF-8. The JSON data must be a hash
+(an object, strictly speaking). Metric names go in the keys, and values must be
+either a single number, or an array of numbers. In the case of an array of
+numbers, then their mean will be used as the metric result; the whole set of
+results will be used where applicable, e.g. to display ranges.
 
 As with test results, metrics can be grouped in suites. For that, the test name
 must be prefixed with the group name and a slash (`/`). Therefore, slashes are

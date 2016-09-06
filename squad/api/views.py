@@ -13,6 +13,9 @@ from squad.core.models import TestRun
 from squad.core.models import Token
 
 
+from squad.core.tasks import ParseTestRunData
+
+
 def valid_token(token, project):
     return project.tokens.filter(key=token).exists()
 
@@ -45,20 +48,23 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
         f = request.FILES['tests']
         for chunk in f.chunks():
             data = data + chunk
-        test_run_data['tests_file'] = data
+        test_run_data['tests_file'] = data.decode('utf-8')
     if 'metrics' in request.FILES:
         data = bytes()
         f = request.FILES['metrics']
         for chunk in f.chunks():
             data = data + chunk
-        test_run_data['metrics_file'] = data
+        test_run_data['metrics_file'] = data.decode('utf-8')
     if 'log' in request.FILES:
         data = bytes()
         f = request.FILES['log']
         for chunk in f.chunks():
             data = data + chunk
-        test_run_data['log_file'] = data
+        test_run_data['log_file'] = data.decode('utf-8')
 
-    build.test_runs.create(**test_run_data)
+    testrun = build.test_runs.create(**test_run_data)
+
+    parser = ParseTestRunData()
+    parser(testrun)
 
     return HttpResponse('', status=201)

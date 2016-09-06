@@ -9,8 +9,8 @@ from django.test.utils import setup_test_environment
 from squad.core import models
 
 
-tests_file = os.path.join(os.path.dirname(__file__), 'tests.csv')
-metrics_file = os.path.join(os.path.dirname(__file__), 'benchmarks.csv')
+tests_file = os.path.join(os.path.dirname(__file__), 'tests.json')
+metrics_file = os.path.join(os.path.dirname(__file__), 'benchmarks.json')
 log_file = os.path.join(os.path.dirname(__file__), 'test_run.log')
 
 
@@ -57,6 +57,7 @@ class ApiTest(TestCase):
                 {'tests': f}
             )
         self.assertIsNotNone(models.TestRun.objects.last().tests_file)
+        self.assertNotEqual(0, models.Test.objects.count())
 
     def test_receives_metrics_file(self):
         with open(metrics_file) as f:
@@ -65,6 +66,7 @@ class ApiTest(TestCase):
                 {'metrics': f}
             )
         self.assertIsNotNone(models.TestRun.objects.last().metrics_file)
+        self.assertNotEqual(0, models.Metric.objects.count())
 
     def test_receives_log_file(self):
         with open(log_file) as f:
