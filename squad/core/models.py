@@ -72,6 +72,7 @@ class TestRun(models.Model):
     log_file = models.TextField(null=True)
 
     data_processed = models.BooleanField(default=False)
+    status_recorded = models.BooleanField(default=False)
 
     @property
     def project(self):
@@ -120,3 +121,22 @@ class Metric(models.Model):
 
     def __str__(self):
         return '%s: %f' % (self.name, self.result)
+
+
+class Status(models.Model):
+    test_run = models.ForeignKey(TestRun, related_name='status')
+    suite = models.ForeignKey(Suite, null=True)
+
+    tests_pass = models.IntegerField(default=0)
+    tests_fail = models.IntegerField(default=0)
+    metrics_summary = models.FloatField(default=0.0)
+
+    class Meta:
+        unique_together = ('test_run', 'suite',)
+
+    @property
+    def pass_percentage(self):
+        if self.tests_pass > 0:
+            return 100 * (self.tests_pass / (self.tests_pass + self.fail))
+        else:
+            return 0
