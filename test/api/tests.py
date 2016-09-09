@@ -74,6 +74,18 @@ class ApiTest(TestCase):
                              {'log': f})
         self.assertIsNotNone(models.TestRun.objects.last().log_file)
 
+    def test_process_data_on_submission(self):
+        self.client.post(
+            '/api/mygroup/myproject/1.0.0/myenvironment',
+            {
+                'tests': open(tests_file),
+                'metrics': open(metrics_file),
+            }
+        )
+        self.assertNotEqual(0, models.Test.objects.count())
+        self.assertNotEqual(0, models.Metric.objects.count())
+        self.assertNotEqual(0, models.Status.objects.count())
+
     def test_receives_metadata_file(self):
         # FIXME not implemented
         pass

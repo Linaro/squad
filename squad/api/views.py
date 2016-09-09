@@ -13,7 +13,7 @@ from squad.core.models import TestRun
 from squad.core.models import Token
 
 
-from squad.core.tasks import ParseTestRunData
+from squad.core.tasks import ProcessTestRun
 
 
 def valid_token(token, project):
@@ -64,7 +64,7 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
 
     testrun = build.test_runs.create(**test_run_data)
 
-    parser = ParseTestRunData()
-    parser(testrun)
+    processor = ProcessTestRun()
+    processor(testrun)
 
     return HttpResponse('', status=201)
