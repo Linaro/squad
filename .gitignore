@@ -1,7 +1,7 @@
 # KEEP THIS IN SYNC WITH .dockerignore
 /db.sqlite3
 /.git
-/.pzc
+/.puzzle
 /secret.txt
 /squad/frontend/static/angularjs
 /squad/frontend/static/bootstrap
