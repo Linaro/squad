@@ -1,14 +1,39 @@
 {% extends "squad/base.html" %}
+{% load humanize %}
 
 
 {% block content %}
-<ul>
-{% for project in projects %}
-  <li>
-		<a href="/{{project.group.slug}}/{{project.slug}}">
-		{{project.group.slug}}/{{project.slug}}
-		</a>
-	</li>
-{% endfor %}
-</ul>
+<table class='table table-bordered'>
+    <tr>
+        <th>Project</th>
+        <th>Last update</th>
+        <th>Tests</th>
+        <th>Metrics</th>
+    </tr>
+    {% for project in projects %}
+    <tr>
+        <td>
+            <a href="/{{project.group.slug}}/{{project.slug}}">
+                {{project.group.slug}}/{{project.slug}}
+            </a>
+        </td>
+        <td>
+            {{project.status.test_run.created_at}}
+            <em>{{project.status.test_run.created_at|naturaltime}}</em>
+        </td>
+        <td>
+            <div class="progress">
+                <div class="progress-bar progress-bar-success" style="width: {{project.status.pass_percentage}}%">
+                    <span class="sr-only">Pass: {{project.status.pass_percentage}}% </span>
+                </div>
+                <div class="progress-bar progress-bar-danger" style="width: {{project.status.fail_percentage}}%">
+                    <span class="sr-only">{{project.status.fail_percentage}}</span>
+                </div>
+            </div>
+        </td>
+        <td>
+            {{project.status.metrics_summary}}
+        </td>
+        {% endfor %}
+</table>
 {% endblock %}

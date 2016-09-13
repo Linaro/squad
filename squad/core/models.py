@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from django.db import models
 from django.contrib.auth.models import Group as UserGroup
 
@@ -17,6 +19,11 @@ class Project(models.Model):
     group = models.ForeignKey(Group, related_name='projects')
     slug = models.CharField(max_length=100)
     name = models.CharField(max_length=100, null=True)
+
+    @property
+    @lru_cache(maxsize=128)
+    def status(self):
+        return Status.objects.filter(test_run__build__project=self, suite=None).latest('id')
 
     def __str__(self):
         return self.name or self.slug
@@ -135,8 +142,16 @@ class Status(models.Model):
         unique_together = ('test_run', 'suite',)
 
     @property
+    def total_tests(self):
+        return self.tests_pass + self.tests_fail
+
+    @property
     def pass_percentage(self):
         if self.tests_pass > 0:
-            return 100 * (self.tests_pass / (self.tests_pass + self.fail))
+            return 100 * (float(self.tests_pass) / float(self.total_tests))
         else:
             return 0
+
+    @property
+    def fail_percentage(self):
+        return 100 - self.pass_percentage
