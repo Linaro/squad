@@ -1,5 +1,3 @@
-from functools import lru_cache
-
 from django.db import models
 from django.contrib.auth.models import Group as UserGroup
 
@@ -20,10 +18,17 @@ class Project(models.Model):
     slug = models.CharField(max_length=100)
     name = models.CharField(max_length=100, null=True)
 
+    def __init__(self, *args, **kwargs):
+        super(Project, self).__init__(*args, **kwargs)
+        self.__status__ = None
+
     @property
-    @lru_cache(maxsize=128)
     def status(self):
-        return Status.objects.filter(test_run__build__project=self, suite=None).latest('id')
+        if not self.__status__:
+            self.__status__ = Status.objects.filter(
+                test_run__build__project=self, suite=None
+            ).latest('id')
+        return self.__status__
 
     def __str__(self):
         return self.name or self.slug
