@@ -29,7 +29,7 @@ class Project(models.Model):
         if not self.__status__:
             self.__status__ = Status.objects.filter(
                 test_run__build__project=self, suite=None
-            ).latest('id')
+            ).latest('test_run__datetime')
         return self.__status__
 
     def __str__(self):
