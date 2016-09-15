@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import Group as UserGroup
+from django.utils import timezone
+
 
 from squad.core.utils import random_token
 
@@ -79,12 +81,18 @@ class TestRun(models.Model):
     build = models.ForeignKey(Build, related_name='test_runs')
     environment = models.ForeignKey(Environment, related_name='test_runs')
     created_at = models.DateTimeField(auto_now_add=True)
+    datetime = models.DateTimeField(null=False)
     tests_file = models.TextField(null=True)
     metrics_file = models.TextField(null=True)
     log_file = models.TextField(null=True)
 
     data_processed = models.BooleanField(default=False)
     status_recorded = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if not self.datetime:
+            self.datetime = timezone.now()
+        super(TestRun, self).save(*args, **kwargs)
 
     @property
     def project(self):
