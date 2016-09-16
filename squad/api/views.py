@@ -13,7 +13,7 @@ from squad.core.models import TestRun
 from squad.core.models import Token
 
 
-from squad.core.tasks import ProcessTestRun
+from squad.core.tasks import ReceiveTestRun
 
 
 def valid_token(token, project):
@@ -36,12 +36,12 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
     else:
         return HttpResponse('Authentication needed', status=401)
 
-    build, _ = project.builds.get_or_create(version=version)
-    environment, _ = project.environments.get_or_create(slug=environment_slug)
-
     test_run_data = {
-        'environment': environment,
+        'version': version,
+        'environment_slug': environment_slug,
     }
+
+    # TODO accept metadata
 
     if 'tests' in request.FILES:
         data = bytes()
@@ -62,9 +62,7 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
             data = data + chunk
         test_run_data['log_file'] = data.decode('utf-8')
 
-    testrun = build.test_runs.create(**test_run_data)
-
-    processor = ProcessTestRun()
-    processor(testrun)
+    receive = ReceiveTestRun(project)
+    receive(**test_run_data)
 
     return HttpResponse('', status=201)

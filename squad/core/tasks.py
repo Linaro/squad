@@ -15,6 +15,30 @@ metric_parser = JSONMetricDataParser
 logger = logging.getLogger(__name__)
 
 
+class ReceiveTestRun(object):
+
+    def __init__(self, project):
+        self.project = project
+
+    def __call__(self, version, environment_slug, metadata=None, metrics_file=None, tests_file=None, log_file=None):
+        build, _ = self.project.builds.get_or_create(version=version)
+        environment, _ = self.project.environments.get_or_create(slug=environment_slug)
+
+        # TODO handle metadata
+        fields_from_metadata = {}
+
+        testrun = build.test_runs.create(
+            environment=environment,
+            tests_file=tests_file,
+            metrics_file=metrics_file,
+            log_file=log_file,
+            **fields_from_metadata,
+        )
+
+        processor = ProcessTestRun()
+        processor(testrun)
+
+
 class ParseTestRunData(object):
 
     @staticmethod
