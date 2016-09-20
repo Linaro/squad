@@ -43,24 +43,18 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
 
     # TODO accept metadata
 
-    if 'tests' in request.FILES:
-        data = bytes()
-        f = request.FILES['tests']
-        for chunk in f.chunks():
-            data = data + chunk
-        test_run_data['tests_file'] = data.decode('utf-8')
-    if 'metrics' in request.FILES:
-        data = bytes()
-        f = request.FILES['metrics']
-        for chunk in f.chunks():
-            data = data + chunk
-        test_run_data['metrics_file'] = data.decode('utf-8')
-    if 'log' in request.FILES:
-        data = bytes()
-        f = request.FILES['log']
-        for chunk in f.chunks():
-            data = data + chunk
-        test_run_data['log_file'] = data.decode('utf-8')
+    uploads = {
+        'tests_file': 'tests',
+        'metrics_file': 'metrics',
+        'log_file': 'log',
+    }
+    for key, field in uploads.items():
+        if field in request.FILES:
+            data = bytes()
+            f = request.FILES[field]
+            for chunk in f.chunks():
+                data = data + chunk
+            test_run_data[key] = data.decode('utf-8')
 
     receive = ReceiveTestRun(project)
     receive(**test_run_data)
