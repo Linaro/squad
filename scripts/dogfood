@@ -24,10 +24,16 @@ $(dirname $0)/get-tests > $tests
 
 build=$(date +%Y.%m.%d.%H.%M)
 
+metadata=''
+if [ -f .metadata.json ]; then
+  metadata='--form metadata=@.metadata.json'
+fi
+
 curl \
   --fail \
   --header "Auth-Token: $SQUAD_TOKEN" \
   --form metrics=@$metrics \
   --form tests=@$tests \
   --form log=@.tests \
+  $metadata \
   "$apiurl"/$project/$build/metrics

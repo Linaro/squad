@@ -16,6 +16,7 @@ install:
 
 script:
   - './manage.py test --noinput -v 2 2>&1 | tee .tests'
+  - './scripts/travis-metadata > .metadata.json'
   - 'if [ -z "$DATABASE" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then ./scripts/dogfood http://squad.puzzle.analizo.org/api linaro-qa/squad; fi'
   - "! grep '^test_.*\\(ERROR\\|FAIL\\)' .tests"
 
