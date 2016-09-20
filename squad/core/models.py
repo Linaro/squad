@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import Group as UserGroup
+from django.utils import timezone
+
 
 from squad.core.utils import random_token
 
@@ -27,7 +29,7 @@ class Project(models.Model):
         if not self.__status__:
             self.__status__ = Status.objects.filter(
                 test_run__build__project=self, suite=None
-            ).latest('id')
+            ).latest('test_run__datetime')
         return self.__status__
 
     def __str__(self):
@@ -83,8 +85,20 @@ class TestRun(models.Model):
     metrics_file = models.TextField(null=True)
     log_file = models.TextField(null=True)
 
+    # fields that should be provided in a submitted metadata JSON
+    datetime = models.DateTimeField(null=False)
+    build_url = models.CharField(null=True, max_length=2048)
+    job_id = models.CharField(null=True, max_length=128)
+    job_status = models.CharField(null=True, max_length=128)
+    job_url = models.CharField(null=True, max_length=2048)
+
     data_processed = models.BooleanField(default=False)
     status_recorded = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if not self.datetime:
+            self.datetime = timezone.now()
+        super(TestRun, self).save(*args, **kwargs)
 
     @property
     def project(self):

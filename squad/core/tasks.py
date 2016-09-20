@@ -1,4 +1,5 @@
 from collections import defaultdict
+import json
 import logging
 
 
@@ -13,6 +14,40 @@ from squad.core.statistics import geomean
 test_parser = JSONTestDataParser
 metric_parser = JSONMetricDataParser
 logger = logging.getLogger(__name__)
+
+
+class ReceiveTestRun(object):
+
+    def __init__(self, project):
+        self.project = project
+
+    def __call__(self, version, environment_slug, metadata=None, metrics_file=None, tests_file=None, log_file=None):
+        build, _ = self.project.builds.get_or_create(version=version)
+        environment, _ = self.project.environments.get_or_create(slug=environment_slug)
+
+        if metadata:
+            data = json.loads(metadata)
+            fields = (
+                "build_url",
+                "datetime",
+                "job_id",
+                "job_status",
+                "job_url",
+            )
+            metadata_fields = {k: data[k] for k in fields if data.get(k)}
+        else:
+            metadata_fields = {}
+
+        testrun = build.test_runs.create(
+            environment=environment,
+            tests_file=tests_file,
+            metrics_file=metrics_file,
+            log_file=log_file,
+            **metadata_fields,
+        )
+
+        processor = ProcessTestRun()
+        processor(testrun)
 
 
 class ParseTestRunData(object):

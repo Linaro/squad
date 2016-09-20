@@ -1,4 +1,8 @@
+import json
+
+
 from django.test import TestCase
+from django.utils import timezone
 
 
 from squad.core.models import Group, TestRun, Status
@@ -6,6 +10,7 @@ from squad.core.tasks import ParseTestRunData
 from squad.core.tasks import RecordTestRunStatus
 from squad.core.tasks import ProcessTestRun
 from squad.core.tasks import ProcessAllTestRuns
+from squad.core.tasks import ReceiveTestRun
 
 
 class CommonTestCase(TestCase):
@@ -75,3 +80,30 @@ class ProcessTestRunTest(CommonTestCase):
         ProcessTestRun()(self.testrun)
         self.assertEqual(2, self.testrun.tests.count())
         self.assertEqual(3, self.testrun.status.count())
+
+
+class ReceiveTestRunTest(TestCase):
+
+    def test_metadata(self):
+        group = Group.objects.create(slug='mygroup')
+        project = group.projects.create(slug='mygroup')
+        receive = ReceiveTestRun(project)
+
+        today = timezone.now()
+
+        metadata = {
+            "datetime": today.isoformat(),
+            "job_id": '999',
+            "job_status": 'pass',
+            "job_url": 'https://example.com/jobs/999',
+            "build_url": 'https://example/com/builds/777',
+        }
+
+        receive('199', 'myenv', metadata=json.dumps(metadata))
+        testrun = TestRun.objects.last()
+
+        self.assertEqual(today, testrun.datetime)
+        self.assertEqual(metadata['job_id'], testrun.job_id)
+        self.assertEqual(metadata['job_status'], testrun.job_status)
+        self.assertEqual(metadata['job_url'], testrun.job_url)
+        self.assertEqual(metadata['build_url'], testrun.build_url)

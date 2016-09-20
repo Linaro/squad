@@ -15,8 +15,10 @@ def geomean(values):
 
     Zeros are excluded from the calculation. Since for us numbers are usually
     measurements (time, counts, etc), we interpret 0 as "does not exist".
+    Negative numbers are also excluded on the basis that they most probably
+    represent anomalies in the data.
     """
-    values = [v for v in values if v != 0]
+    values = [v for v in values if v > 0]
 
     n = len(values)
     log_sum = 0.0
