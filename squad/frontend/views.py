@@ -14,10 +14,7 @@ def login_required_on_private_site(func):
     if PUBLIC_SITE:
         return func
     else:
-        @login_required
-        def wrapper(request, *args, **kwargs):
-            return func(request, *args, **kwargs)
-        return wrapper
+        return login_required(func)
 
 
 @login_required_on_private_site
