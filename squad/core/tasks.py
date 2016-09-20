@@ -1,4 +1,5 @@
 from collections import defaultdict
+import json
 import logging
 
 
@@ -24,15 +25,25 @@ class ReceiveTestRun(object):
         build, _ = self.project.builds.get_or_create(version=version)
         environment, _ = self.project.environments.get_or_create(slug=environment_slug)
 
-        # TODO handle metadata
-        fields_from_metadata = {}
+        if metadata:
+            data = json.loads(metadata)
+            fields = (
+                "build_url",
+                "datetime",
+                "job_id",
+                "job_status",
+                "job_url",
+            )
+            metadata_fields = {k: data[k] for k in fields if data.get(k)}
+        else:
+            metadata_fields = {}
 
         testrun = build.test_runs.create(
             environment=environment,
             tests_file=tests_file,
             metrics_file=metrics_file,
             log_file=log_file,
-            **fields_from_metadata,
+            **metadata_fields,
         )
 
         processor = ProcessTestRun()

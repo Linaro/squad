@@ -81,10 +81,16 @@ class TestRun(models.Model):
     build = models.ForeignKey(Build, related_name='test_runs')
     environment = models.ForeignKey(Environment, related_name='test_runs')
     created_at = models.DateTimeField(auto_now_add=True)
-    datetime = models.DateTimeField(null=False)
     tests_file = models.TextField(null=True)
     metrics_file = models.TextField(null=True)
     log_file = models.TextField(null=True)
+
+    # fields that should be provided in a submitted metadata JSON
+    datetime = models.DateTimeField(null=False)
+    build_url = models.CharField(null=True, max_length=2048)
+    job_id = models.CharField(null=True, max_length=128)
+    job_status = models.CharField(null=True, max_length=128)
+    job_url = models.CharField(null=True, max_length=2048)
 
     data_processed = models.BooleanField(default=False)
     status_recorded = models.BooleanField(default=False)
