@@ -52,7 +52,7 @@ class Command(BaseCommand):
             self.import_testrun(build_id, environment_slug, testrundir)
 
     def import_testrun(self, build_id, environment_slug, directory):
-        metadata = json.load(open(os.path.join(directory, 'metadata.json')))
+        metadata = open(os.path.join(directory, 'metadata.json')).read()
         metrics = open(os.path.join(directory, 'metrics.json')).read()
 
         self.receive_test_run(

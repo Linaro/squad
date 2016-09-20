@@ -27,4 +27,8 @@ class ImportTest(TestCase):
         self.assertEqual(1, project.builds.all()[0].test_runs.count())
         self.assertEqual(1, project.builds.all()[1].test_runs.count())
 
+        dates = [t.datetime for t in TestRun.objects.all()]
+        self.assertIsNotNone(dates[0])
+        self.assertEqual(dates[0], dates[1])
+
         self.assertEqual(2, Metric.objects.count())
