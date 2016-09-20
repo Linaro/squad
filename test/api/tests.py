@@ -12,6 +12,7 @@ from squad.core import models
 tests_file = os.path.join(os.path.dirname(__file__), 'tests.json')
 metrics_file = os.path.join(os.path.dirname(__file__), 'benchmarks.json')
 log_file = os.path.join(os.path.dirname(__file__), 'test_run.log')
+metadata_file = os.path.join(os.path.dirname(__file__), 'metadata.json')
 
 
 class APIClient(Client):
@@ -87,8 +88,14 @@ class ApiTest(TestCase):
         self.assertNotEqual(0, models.Status.objects.count())
 
     def test_receives_metadata_file(self):
-        # FIXME not implemented
-        pass
+        self.client.post(
+            '/api/mygroup/myproject/1.0.0/myenvironment',
+            {
+                'metadata': open(metadata_file),
+            }
+        )
+        t = models.TestRun.objects.last()
+        self.assertEqual("2016-09-01T00:00:00+00:00", t.datetime.isoformat())
 
     def test_unauthorized(self):
         client = Client()  # regular client without auth support

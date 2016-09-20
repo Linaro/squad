@@ -41,12 +41,11 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
         'environment_slug': environment_slug,
     }
 
-    # TODO accept metadata
-
     uploads = {
         'tests_file': 'tests',
         'metrics_file': 'metrics',
         'log_file': 'log',
+        'metadata': 'metadata',
     }
     for key, field in uploads.items():
         if field in request.FILES:
