@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from squad.core.models import Project
+from squad.core.models import Group, Project
 
 
 PUBLIC_SITE = bool(os.getenv('SQUAD_PUBLIC_SITE'))
@@ -32,4 +32,9 @@ def group(request, group_slug):
 
 @login_required_on_private_site
 def project(request, group_slug, project_slug):
-    pass
+    group = Group.objects.get(slug=group_slug)
+    project = group.projects.get(slug=project_slug)
+    context = {
+        'project': project,
+    }
+    return render(request, 'squad/project.html', context)
