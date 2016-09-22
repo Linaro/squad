@@ -44,7 +44,7 @@ def project(request, group_slug, project_slug):
 def builds(request, group_slug, project_slug):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    builds = project.builds.prefetch_related('test_runs').order_by('-created_at').all()
+    builds = project.builds.prefetch_related('test_runs').order_by('-datetime').all()
     context = {
         'project': project,
         'builds': builds,
