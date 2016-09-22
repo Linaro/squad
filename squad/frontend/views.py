@@ -38,3 +38,15 @@ def project(request, group_slug, project_slug):
         'project': project,
     }
     return render(request, 'squad/project.html', context)
+
+
+@login_required_on_private_site
+def builds(request, group_slug, project_slug):
+    group = Group.objects.get(slug=group_slug)
+    project = group.projects.get(slug=project_slug)
+    builds = project.builds.prefetch_related('test_runs').order_by('-created_at').all()
+    context = {
+        'project': project,
+        'builds': builds,
+    }
+    return render(request, 'squad/project/builds.html', context)

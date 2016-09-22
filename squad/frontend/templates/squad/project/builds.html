@@ -1,0 +1,25 @@
+{% extends "squad/base.html" %}
+{% load humanize %}
+
+{% block content %}
+  {% include "squad/project-nav.html" %}
+
+  <table class='table table-striped'>
+    <tr>
+      <th>Build</th>
+      <th>Date</th>
+      <th># of Testjobs</th>
+    </tr>
+    {% for build in builds %}
+      <tr>
+        <td>{{build.version}}</td>
+        <td>
+          {{build.created_at}}
+          <em>{{build.created_at|naturaltime}}</em>
+        </td>
+        <td>{{build.test_runs.count}}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+{% endblock %}
