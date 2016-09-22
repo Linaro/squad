@@ -57,9 +57,15 @@ class Build(models.Model):
     project = models.ForeignKey(Project, related_name='builds')
     version = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
+    datetime = models.DateTimeField()
 
     class Meta:
         unique_together = ('project', 'version',)
+
+    def save(self, *args, **kwargs):
+        if not self.datetime:
+            self.datetime = timezone.now()
+        super(Build, self).save(*args, **kwargs)
 
     def __str__(self):
         return '%s (%s)' % (self.version, self.created_at)

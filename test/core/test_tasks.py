@@ -1,11 +1,12 @@
 import json
 
 
+from dateutil.relativedelta import relativedelta
 from django.test import TestCase
 from django.utils import timezone
 
 
-from squad.core.models import Group, TestRun, Status
+from squad.core.models import Group, TestRun, Status, Build
 from squad.core.tasks import ParseTestRunData
 from squad.core.tasks import RecordTestRunStatus
 from squad.core.tasks import ProcessTestRun
@@ -107,3 +108,23 @@ class ReceiveTestRunTest(TestCase):
         self.assertEqual(metadata['job_status'], testrun.job_status)
         self.assertEqual(metadata['job_url'], testrun.job_url)
         self.assertEqual(metadata['build_url'], testrun.build_url)
+
+    def test_build_datetime(self):
+        group = Group.objects.create(slug='mygroup')
+        project = group.projects.create(slug='mygroup')
+        receive = ReceiveTestRun(project)
+
+        yesterday = timezone.now() - relativedelta(days=7)
+
+        metadata = {
+            "datetime": yesterday.isoformat(),
+            "job_id": '999',
+            "job_status": 'pass',
+            "job_url": 'https://example.com/jobs/999',
+            "build_url": 'https://example/com/builds/777',
+        }
+
+        receive('199', 'myenv', metadata=json.dumps(metadata))
+        build = Build.objects.get(version='199')
+
+        self.assertEqual(yesterday, build.datetime)

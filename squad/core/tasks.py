@@ -46,6 +46,12 @@ class ReceiveTestRun(object):
             **metadata_fields,
         )
 
+        testrun.refresh_from_db()
+
+        if not build.datetime or testrun.datetime < build.datetime:
+            build.datetime = testrun.datetime
+            build.save()
+
         processor = ProcessTestRun()
         processor(testrun)
 
