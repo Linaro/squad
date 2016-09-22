@@ -8,7 +8,6 @@ function toggle_drop_down(button_id, menu_id) {
         var buttonRect = document.getElementById(button_id).getBoundingClientRect();
         var offset = bodyRect.right - buttonRect.right;
 
-        console.log(offset);
         dropdown.style.right = offset;
         dropdown.style.display = 'block';
     } else {
