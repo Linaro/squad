@@ -1,14 +1,15 @@
-<h1>{{project.group.slug}} / <a href="{% url 'project' project.group.slug project.slug %}">{{project.slug}}</a></h1>
+{% load squad %}
+<h1>{{project.group.slug}} / <a href="{% project_url project %}">{{project.slug}}</a></h1>
 <ul class="nav nav-tabs">
 
   <li role="presentation" {% if request.resolver_match.url_name == "project" %}class="active"{% endif %}>
-    <a href="{% url 'project' project.group.slug project.slug %}">
+    <a href="{% project_url project %}">
       Summary
     </a>
   </li>
 
   <li role="presentation" {% if request.resolver_match.url_name == "builds" %}class="active"{% endif %}>
-    <a href="{% url 'builds' project.group.slug project.slug %}">
+    <a href="{% project_section_url project 'builds' %}">
       Builds
     </a>
   </li>
