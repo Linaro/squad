@@ -13,20 +13,21 @@
 	</h2>
 
 	<table class='table table-hover table-condensed'>
-		{% regroup test_run.metrics.all by suite as suite_list %}
-		{% for suite in suite_list %}
+		{% for suite, metrics in metrics_by_suite %}
 		<tr class='warning'>
 			<td colspan='2'>
-				<h3>{{suite.grouper.slug}}</h3>
+				<h3>{{suite}}</h3>
 			</td>
 		</tr>
-
-		{% for metric in suite.list %}
-		<tr>
-			<td>{{metric.name}}</td>
-			<td>{{metric.result}}</td>
-		</tr>
-		{% endfor %}
+			{% for metric in metrics %}
+			<tr>
+				<td>{{metric.name}}</td>
+				<td>{{metric.result}}</td>
+			</tr>
+			{% endfor %}
+			<tr>
+				<td colspan='2'>&nbsp;</td>
+			</tr>
 
 		{% endfor %}
 	</table>

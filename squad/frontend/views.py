@@ -1,4 +1,4 @@
-from itertools import groupby
+from collections import defaultdict
 import os
 
 from django.contrib.auth.decorators import login_required
@@ -70,9 +70,15 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
     project = group.projects.get(slug=project_slug)
     build = project.builds.get(version=build_version)
     test_run = build.test_runs.get(job_id=job_id)
+
+    metrics_by_suite = defaultdict(list)
+    for metric in test_run.metrics.all():
+        metrics_by_suite[metric.suite.slug].append(metric)
+
     context = {
         'project': project,
         'build': build,
         'test_run': test_run,
+        'metrics_by_suite': metrics_by_suite.items(),
     }
     return render(request, 'squad/project/test_run.html', context)
