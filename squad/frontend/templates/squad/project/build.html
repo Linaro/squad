@@ -1,0 +1,40 @@
+{% extends "squad/base.html" %}
+{% load squad %}
+
+{% block content %}
+  {% include "squad/project-nav.html" %}
+  <h2>Build <u>{{build.version}}</u></h2>
+
+  <table class='table table-hover table-condensed'>
+    {% for test_run in build.test_runs.all %}
+    <tr class='warning'>
+      <th colspan='2'>
+        <h3>
+          <a href="{% project_url test_run %}">{{test_run.job_id}}</a>
+          <em><small>{{test_run.environment.slug}}</small></em>
+        </h3>
+      </th>
+    </tr>
+    {% for status in test_run.status.by_suite.all %}
+    {% if status %}
+    <tr>
+      <td>{{status.suite.slug}}</td>
+      <td>{{status.metrics_summary}}</td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+    {% if test_run.status.by_suite.count > 1 %}
+    {% with overall_status=test_run.status.overall.first %}
+    <tr>
+      <th>Summary</th>
+      <th>{{overall_status.metrics_summary}}</th>
+    </tr>
+    {% endwith %}
+    {% endif %}
+    <tr>
+      <td colspan='2'>&nbsp;</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+{% endblock %}

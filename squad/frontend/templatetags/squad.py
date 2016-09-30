@@ -6,7 +6,13 @@ register = template.Library()
 
 
 url_attributes = {
-    'build': 'version',
+    'build': (
+        lambda build: build.version,
+    ),
+    'testrun': (
+        lambda testrun: testrun.build.version,
+        lambda testrun: testrun.job_id,
+    )
 }
 
 
@@ -19,9 +25,11 @@ def project_url(the_object):
     else:
         project = the_object.project
         group = project.group
-        attribute = url_attributes.get(name)
-        obj_id = the_object.__getattribute__(attribute)
-        args = (group.slug, project.slug, obj_id)
+
+        attrs = url_attributes.get(name)
+        params = tuple([f(the_object) for f in attrs])
+
+        args = (group.slug, project.slug) + params
 
     return reverse(name, args=args)
 

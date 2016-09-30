@@ -1,0 +1,34 @@
+{% extends "squad/base.html" %}
+{% load squad %}
+
+{% block content %}
+  {% include "squad/project-nav.html" %}
+
+	<h2>
+		<a href="{% project_url build %}">
+			Build {{build.version}}
+		</a>
+		»
+		Test run <u>{{test_run.job_id}}</u>
+	</h2>
+
+	<table class='table table-hover table-condensed'>
+		{% regroup test_run.metrics.all by suite as suite_list %}
+		{% for suite in suite_list %}
+		<tr class='warning'>
+			<td colspan='2'>
+				<h3>{{suite.grouper.slug}}</h3>
+			</td>
+		</tr>
+
+		{% for metric in suite.list %}
+		<tr>
+			<td>{{metric.name}}</td>
+			<td>{{metric.result}}</td>
+		</tr>
+		{% endfor %}
+
+		{% endfor %}
+	</table>
+
+{% endblock %}

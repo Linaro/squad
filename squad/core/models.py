@@ -155,6 +155,15 @@ class Metric(models.Model):
         return '%s: %f' % (self.name, self.result)
 
 
+class StatusManager(models.Manager):
+
+    def by_suite(self):
+        return self.exclude(suite=None)
+
+    def overall(self):
+        return self.filter(suite=None)
+
+
 class Status(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='status')
     suite = models.ForeignKey(Suite, null=True)
@@ -162,6 +171,8 @@ class Status(models.Model):
     tests_pass = models.IntegerField(default=0)
     tests_fail = models.IntegerField(default=0)
     metrics_summary = models.FloatField(default=0.0)
+
+    objects = StatusManager()
 
     class Meta:
         unique_together = ('test_run', 'suite',)
@@ -180,3 +191,14 @@ class Status(models.Model):
     @property
     def fail_percentage(self):
         return 100 - self.pass_percentage
+
+    @property
+    def environment(self):
+        return self.test_run.environment
+
+    def __str__(self):
+        if self.suite:
+            name = self.suite.slug + ' on ' + self.environment.slug
+        else:
+            name = self.environment.slug
+        return '%s: %f, %d%% pass' % (name, self.metrics_summary, self.pass_percentage)

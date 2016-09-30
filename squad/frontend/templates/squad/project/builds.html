@@ -1,5 +1,6 @@
 {% extends "squad/base.html" %}
 {% load humanize %}
+{% load squad %}
 
 {% block content %}
   {% include "squad/project-nav.html" %}
@@ -12,9 +13,9 @@
     </tr>
     {% for build in builds %}
       <tr>
-        <td>{{build.version}}</td>
+        <td><a href="{% project_url build %}">{{build.version}}</a></td>
         <td>
-          {{build.datetime}}
+          <a href="{% project_url build %}">{{build.datetime}}</a>
           <em>{{build.datetime|naturaltime}}</em>
         </td>
         <td>{{build.test_runs.count}}</td>
