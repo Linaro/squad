@@ -28,7 +28,12 @@ def home(request):
 
 @login_required_on_private_site
 def group(request, group_slug):
-    pass
+    group = Group.objects.get(slug=group_slug)
+    context = {
+        'group': group,
+        'projects': group.projects.all(),
+    }
+    return render(request, 'squad/group.html', context)
 
 
 @login_required_on_private_site
