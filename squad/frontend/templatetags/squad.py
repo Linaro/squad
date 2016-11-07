@@ -17,6 +17,11 @@ url_attributes = {
 
 
 @register.simple_tag
+def group_url(group):
+    return reverse('group', args=[group.slug])
+
+
+@register.simple_tag
 def project_url(the_object):
     name = type(the_object).__name__.lower()
     if name == 'project':
