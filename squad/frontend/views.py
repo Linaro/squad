@@ -53,7 +53,7 @@ def builds(request, group_slug, project_slug):
         'project': project,
         'builds': builds,
     }
-    return render(request, 'squad/project/builds.html', context)
+    return render(request, 'squad/builds.html', context)
 
 
 @login_required_on_private_site
@@ -65,7 +65,7 @@ def build(request, group_slug, project_slug, version):
         'project': project,
         'build': build,
     }
-    return render(request, 'squad/project/build.html', context)
+    return render(request, 'squad/build.html', context)
 
 
 def test_run(request, group_slug, project_slug, build_version, job_id):
@@ -84,4 +84,4 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
         'test_run': test_run,
         'metrics_by_suite': metrics_by_suite.items(),
     }
-    return render(request, 'squad/project/test_run.html', context)
+    return render(request, 'squad/test_run.html', context)
