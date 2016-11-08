@@ -8,5 +8,5 @@ slug_pattern = '[a-z0-9_.-]+'
 
 
 urlpatterns = [
-    url(r'^(%s)/(%s)/(%s)/(%s)' % ((slug_pattern,) * 4), views.add_test_run),
+    url(r'^submit/(%s)/(%s)/(%s)/(%s)' % ((slug_pattern,) * 4), views.add_test_run),
 ]

@@ -36,4 +36,4 @@ curl \
   --form tests=@$tests \
   --form log=@.tests \
   $metadata \
-  "$apiurl"/$project/$build/metrics
+  "$apiurl"/submit/$project/$build/metrics

@@ -31,7 +31,7 @@ are always organized by environments, so we can compare apples to apples.
 
 The API is the following
 
-**POST** /api/:team/:project/:build/:environment
+**POST** /api/submit/:team/:project/:build/:environment
 
 * `:team` is the team identifier. It must exist previously
 * `:project` is the project identifier. It will be craeted a automatically if
@@ -59,7 +59,7 @@ $ curl \
     --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
     --form tests=@/path/to/test-rsults.json \
     --form metrics=@/path/to/metrics.json \
-    https://squad.example.com/api/my-team/my-project/x.y.z/my-ci-env
+    https://squad.example.com/api/submit/my-team/my-project/x.y.z/my-ci-env
 ```
 
 Since test results should always come from automation systems, the API is the

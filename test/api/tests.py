@@ -40,7 +40,7 @@ class ApiTest(TestCase):
         self.client = APIClient('thekey')
 
     def test_create_object_hierarchy(self):
-        response = self.client.post('/api/mygroup/myproject/1.0.0/myenvironment')
+        response = self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
         self.assertEqual(response.status_code, 201)
 
         self.project.builds.get(version='1.0.0')
@@ -48,13 +48,13 @@ class ApiTest(TestCase):
 
     def test_create_test_run(self):
         test_runs = models.TestRun.objects.count()
-        self.client.post('/api/mygroup/myproject/1.0.0/myenvironment')
+        self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
         self.assertEqual(test_runs + 1, models.TestRun.objects.count())
 
     def test_receives_tests_file(self):
         with open(tests_file) as f:
             self.client.post(
-                '/api/mygroup/myproject/1.0.0/myenvironment',
+                '/api/submit/mygroup/myproject/1.0.0/myenvironment',
                 {'tests': f}
             )
         self.assertIsNotNone(models.TestRun.objects.last().tests_file)
@@ -63,7 +63,7 @@ class ApiTest(TestCase):
     def test_receives_metrics_file(self):
         with open(metrics_file) as f:
             self.client.post(
-                '/api/mygroup/myproject/1.0.0/myenvironment',
+                '/api/submit/mygroup/myproject/1.0.0/myenvironment',
                 {'metrics': f}
             )
         self.assertIsNotNone(models.TestRun.objects.last().metrics_file)
@@ -71,13 +71,13 @@ class ApiTest(TestCase):
 
     def test_receives_log_file(self):
         with open(log_file) as f:
-            self.client.post('/api/mygroup/myproject/1.0.0/myenvironment',
+            self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment',
                              {'log': f})
         self.assertIsNotNone(models.TestRun.objects.last().log_file)
 
     def test_process_data_on_submission(self):
         self.client.post(
-            '/api/mygroup/myproject/1.0.0/myenvironment',
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
             {
                 'tests': open(tests_file),
                 'metrics': open(metrics_file),
@@ -89,7 +89,7 @@ class ApiTest(TestCase):
 
     def test_receives_metadata_file(self):
         self.client.post(
-            '/api/mygroup/myproject/1.0.0/myenvironment',
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
             {
                 'metadata': open(metadata_file),
             }
@@ -99,22 +99,22 @@ class ApiTest(TestCase):
 
     def test_unauthorized(self):
         client = Client()  # regular client without auth support
-        response = client.post('/api/mygroup/myproject/1.0.0/myenvironment')
+        response = client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
         self.assertEqual(response.status_code, 401)
         self.assertEqual(models.TestRun.objects.count(), 0)
 
     def test_forbidden(self):
         self.client.token = 'wrongtoken'
-        response = self.client.post('/api/mygroup/myproject/1.0.0/myenv')
+        response = self.client.post('/api/submit/mygroup/myproject/1.0.0/myenv')
         self.assertEqual(response.status_code, 403)
         self.assertEqual(models.TestRun.objects.count(), 0)
 
     def test_404_on_non_existing_group(self):
-        response = self.client.post('/api/mygrouppp/myproject/1.0.0/myenv')
+        response = self.client.post('/api/submit/mygrouppp/myproject/1.0.0/myenv')
         self.assertEqual(404, response.status_code)
 
     def test_404_on_non_existing_project(self):
-        response = self.client.post('/api/mygroup/myprojectttt/1.0.0/myenv')
+        response = self.client.post('/api/submit/mygroup/myprojectttt/1.0.0/myenv')
         self.assertEqual(404, response.status_code)
 
     def test_invalid_metrics_json(self):
