@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+import sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -32,6 +33,8 @@ if not os.path.exists(secret_key_file):
 SECRET_KEY = open(secret_key_file).read()
 
 DEBUG = os.getenv('ENV') != 'production'
+
+TESTING = sys.argv[1:2] == ['test']
 
 ALLOWED_HOSTS = ['*']
 
@@ -148,7 +151,8 @@ USE_TZ = True
 # http://whitenoise.evans.io/en/stable/django.html
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if not TESTING:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Always use IPython for shell_plus
 SHELL_PLUS = "ipython"
