@@ -159,3 +159,5 @@ SHELL_PLUS = "ipython"
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
+
+PUBLIC_SITE = bool(os.getenv('SQUAD_PUBLIC_SITE'))

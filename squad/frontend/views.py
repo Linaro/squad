@@ -5,10 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
 
+from squad.settings import PUBLIC_SITE
 from squad.core.models import Group, Project
-
-
-PUBLIC_SITE = bool(os.getenv('SQUAD_PUBLIC_SITE'))
 
 
 def login_required_on_private_site(func):
