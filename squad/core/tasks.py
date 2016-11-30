@@ -33,6 +33,7 @@ class ReceiveTestRun(object):
                 "job_id",
                 "job_status",
                 "job_url",
+                "resubmit_url",
             )
             metadata_fields = {k: data[k] for k in fields if data.get(k)}
         else:

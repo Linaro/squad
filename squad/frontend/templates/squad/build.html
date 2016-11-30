@@ -10,8 +10,24 @@
     <tr class='warning'>
       <th colspan='2'>
         <h3>
-          <a href="{% project_url test_run %}">{{test_run.job_id}}</a>
-          <em><small>{{test_run.environment.slug}}</small></em>
+          <a href="{% project_url test_run %}">Test run #{{test_run.job_id}}</a>
+          <small>
+            Environment: <em>{{test_run.environment.slug}}</em>
+
+            {% if test_run.job_status %}
+            Status: {{test_run.job_status}}
+            {% endif %}
+
+            <div class='pull-right'>
+              {% if test_run.resubmit_url %}
+              <a href="{{test_run.resubmit_url}}" class='btn btn-info '><span class='fa fa-recycle'></span> resubmit</a>
+              {% endif %}
+              {% if test_run.job_url %}
+              <a href="{{test_run.job_url}}" class='btn btn-info '><span class='fa fa-info-circle'></span> origin</a>
+              {% endif %}
+            </div>
+
+          </small>
         </h3>
       </th>
     </tr>

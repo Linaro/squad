@@ -42,6 +42,8 @@ hit_api() {
     "http://localhost:8000${endpoint}" "$@"
 }
 
+build=$(date '+%Y.%m.%d')
+
 metrics=$(mktemp)
 cat > "${metrics}" <<METRICS
 {
@@ -64,12 +66,23 @@ cat > "${tests}" <<TESTS
 }
 TESTS
 
-trap "rm -rf $metrics $tests" INT TERM EXIT
+metadata=$(mktemp)
+cat > "${metadata}" <<METADATA
+{
+  "datetime": "$(date --iso-8601=seconds)",
+  "job_id": "1",
+  "job_url": "http://example.com/$build/1",
+  "resubmit_url": "http://example.com/$build/1/resubmit"
+}
+METADATA
 
-build=$(date '+%Y.%m.%d')
+trap "rm -rf $metrics $tests $metadata" INT TERM EXIT
+
 
 hit_api "/api/submit/$TEAM/$PROJECT/$build/testenv" \
+  --fail \
   --header "Auth-Token: $AUTH_TOKEN" \
   --silent --output /dev/null \
+  --form metadata=@${metadata} \
   --form metrics=@${metrics} \
   --form tests=@${tests} \
