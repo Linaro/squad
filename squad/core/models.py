@@ -97,6 +97,7 @@ class TestRun(models.Model):
     job_id = models.CharField(null=True, max_length=128)
     job_status = models.CharField(null=True, max_length=128)
     job_url = models.CharField(null=True, max_length=2048)
+    resubmit_url = models.CharField(null=True, max_length=2048)
 
     data_processed = models.BooleanField(default=False)
     status_recorded = models.BooleanField(default=False)
