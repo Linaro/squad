@@ -97,6 +97,7 @@ class ReceiveTestRunTest(TestCase):
             "job_id": '999',
             "job_status": 'pass',
             "job_url": 'https://example.com/jobs/999',
+            "resubmit_url": 'https://example.com/jobs/999',
             "build_url": 'https://example/com/builds/777',
         }
 
@@ -107,6 +108,7 @@ class ReceiveTestRunTest(TestCase):
         self.assertEqual(metadata['job_id'], testrun.job_id)
         self.assertEqual(metadata['job_status'], testrun.job_status)
         self.assertEqual(metadata['job_url'], testrun.job_url)
+        self.assertEqual(metadata['resubmit_url'], testrun.resubmit_url)
         self.assertEqual(metadata['build_url'], testrun.build_url)
 
     def test_build_datetime(self):
