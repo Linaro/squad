@@ -64,12 +64,20 @@ cat > "${tests}" <<TESTS
 }
 TESTS
 
-trap "rm -rf $metrics $tests" INT TERM EXIT
+metadata=$(mktemp)
+cat > "${metadata}" <<METADATA
+{
+  "resubmit_url": "http://example.com/"
+}
+METADATA
+
+trap "rm -rf $metrics $tests $metadata" INT TERM EXIT
 
 build=$(date '+%Y.%m.%d')
 
 hit_api "/api/submit/$TEAM/$PROJECT/$build/testenv" \
   --header "Auth-Token: $AUTH_TOKEN" \
   --silent --output /dev/null \
+  --form metadata=@${metadata} \
   --form metrics=@${metrics} \
   --form tests=@${tests} \
