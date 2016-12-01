@@ -12,7 +12,7 @@ class Group(models.Model):
     user_groups = models.ManyToManyField(UserGroup)
 
     def __str__(self):
-        return self.name or self.slug
+        return self.slug
 
 
 class Project(models.Model):
@@ -33,7 +33,7 @@ class Project(models.Model):
         return self.__status__
 
     def __str__(self):
-        return self.name or self.slug
+        return str(self.group) + '/' + self.slug
 
     class Meta:
         unique_together = ('group', 'slug',)
