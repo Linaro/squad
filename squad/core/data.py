@@ -1,4 +1,5 @@
 import json
+import math
 from statistics import mean
 
 
@@ -62,11 +63,12 @@ class JSONMetricDataParser(object):
         for key, value in input_data.items():
             group_name, name = parse_name(key)
             result, measurements = parse_metric(value)
-            data.append({
-                "name": name,
-                "group_name": group_name,
-                "result": result,
-                "measurements": measurements,
-            })
+            if result and not (math.isnan(result) or math.isinf(result)):
+                data.append({
+                    "name": name,
+                    "group_name": group_name,
+                    "result": result,
+                    "measurements": measurements,
+                })
 
         return data

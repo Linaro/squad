@@ -4,6 +4,10 @@ from squad.core.data import JSONMetricDataParser
 
 TEST_DATA = """
 {
+    "invalid/metric1": NaN,
+    "invalid/metric2": Infinity,
+    "invalid/metric3": [NaN],
+    "invalid/metric4": [Infinity],
     "ungrouped_int": 10,
     "ungrouped_float": 20.5,
     "ungrouped_multiple": [10,11,10,11],
