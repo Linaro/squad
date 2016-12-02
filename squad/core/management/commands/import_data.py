@@ -27,6 +27,8 @@ class Command(BaseCommand):
             help='Input directory with the files to import',
         )
 
+    silent = False
+
     def handle(self, *args, **options):
         self.options = options
 
@@ -35,9 +37,15 @@ class Command(BaseCommand):
         self.project, _ = self.group.projects.get_or_create(slug=project_id)
         self.receive_test_run = ReceiveTestRun(self.project)
 
+        if not self.silent:
+            print()
+            msg = "Importing project: %s" % options["DIRECTORY"]
+            print(msg)
+            print('-' * len(msg))
+            print()
+
         for directory in glob(os.path.join(options['DIRECTORY'], '*')):
             self.import_build(directory)
-        self.step('\n')
 
     def import_build(self, directory):
         build_id = os.path.basename(directory)
@@ -55,18 +63,11 @@ class Command(BaseCommand):
         metadata = open(os.path.join(directory, 'metadata.json')).read()
         metrics = open(os.path.join(directory, 'metrics.json')).read()
 
+        if not self.silent:
+            print("Importing test run: %s" % directory)
         self.receive_test_run(
             version=build_id,
             environment_slug=environment_slug,
             metadata=metadata,
             metrics_file=metrics,
         )
-
-        self.step('.')
-
-    silent = False
-
-    def step(self, s):
-        if not self.silent:
-            sys.stdout.write(s)
-            sys.stdout.flush()
