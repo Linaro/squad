@@ -20,6 +20,9 @@ def geomean(values):
     """
     values = [v for v in values if v > 0]
 
+    if len(values) == 0:
+        return 0
+
     n = len(values)
     log_sum = 0.0
     for v in values:

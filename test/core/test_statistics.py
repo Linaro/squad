@@ -14,3 +14,9 @@ class GeomeanTest(TestCase):
 
     def test_exclude_negative_numbers(self):
         self.assertAlmostEqual(4, geomean([4, -1, 4]))
+
+    def test_empty_set(self):
+        self.assertAlmostEqual(0, geomean([]))
+
+    def test_set_with_only_invalid_values(self):
+        self.assertAlmostEqual(0, geomean([0]))
