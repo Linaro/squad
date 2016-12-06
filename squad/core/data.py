@@ -3,6 +3,9 @@ import math
 from statistics import mean
 
 
+from squad.core.utils import parse_name
+
+
 class JSONTestDataParser(object):
     """
     Parser for test data as JSON string
@@ -23,21 +26,6 @@ class JSONTestDataParser(object):
                 "pass": value == 'pass',
             })
         return data
-
-
-def parse_name(input_name):
-    group_name = None
-    name = input_name
-
-    parts = input_name.split('/')
-    if len(parts) > 1:
-        group_name = '/'.join(parts[0:-1])
-        name = parts[-1]
-
-    if group_name == '' or group_name is None:
-        group_name = '/'
-
-    return (group_name, name)
 
 
 def parse_metric(value):

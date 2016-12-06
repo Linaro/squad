@@ -3,7 +3,7 @@ from django.contrib.auth.models import Group as UserGroup
 from django.utils import timezone
 
 
-from squad.core.utils import random_token
+from squad.core.utils import random_token, parse_name, join_name
 
 
 class Group(models.Model):
@@ -138,6 +138,13 @@ class Test(models.Model):
         return self.result and 'pass' or 'fail'
 
 
+class MetricManager(models.Manager):
+
+    def by_full_name(self, name):
+        (suite, metric) = parse_name(name)
+        return self.filter(suite__slug=suite, name=metric)
+
+
 class Metric(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='metrics')
     suite = models.ForeignKey(Suite)
@@ -145,12 +152,18 @@ class Metric(models.Model):
     result = models.FloatField()
     measurements = models.TextField()  # comma-separated float numbers
 
+    objects = MetricManager()
+
     @property
     def measurement_list(self):
         if self.measurements:
             return [float(n) for n in self.measurements.split(',')]
         else:
             return []
+
+    @property
+    def full_name(self):
+        return join_name(self.suite.slug, self.name)
 
     def __str__(self):
         return '%s: %f' % (self.name, self.result)

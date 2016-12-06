@@ -6,7 +6,9 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 from squad.settings import PUBLIC_SITE
-from squad.core.models import Group, Project
+from squad.core.models import Group, Project, Metric
+from squad.core.queries import get_metric_data
+from squad.core.utils import join_name
 
 
 def login_required_on_private_site(func):
@@ -68,6 +70,7 @@ def build(request, group_slug, project_slug, version):
     return render(request, 'squad/build.html', context)
 
 
+@login_required_on_private_site
 def test_run(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
@@ -85,3 +88,30 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
         'metrics_by_suite': metrics_by_suite.items(),
     }
     return render(request, 'squad/test_run.html', context)
+
+
+@login_required_on_private_site
+def charts(request, group_slug, project_slug):
+    group = Group.objects.get(slug=group_slug)
+    project = group.projects.get(slug=project_slug)
+
+    environments = [{"name": e.slug} for e in project.environments.order_by('id').all()]
+
+    metric_set = Metric.objects.filter(
+        test_run__environment__project=project
+    ).values('suite__slug', 'name').order_by('suite__slug', 'name').distinct()
+    metrics = [{"name": join_name(m['suite__slug'], m['name'])} for m in metric_set]
+
+    data = get_metric_data(
+        project,
+        request.GET.getlist('metric'),
+        request.GET.getlist('environment')
+    )
+
+    context = {
+        "project": project,
+        "environments": environments,
+        "metrics": metrics,
+        "data": data,
+    }
+    return render(request, 'squad/charts.html', context)
