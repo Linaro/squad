@@ -7,6 +7,7 @@ RUN apt-get update && \
     fonts-font-awesome \
     libjs-angularjs \
     libjs-bootstrap \
+    libjs-lodash \
     gunicorn3
 
 WORKDIR /app
