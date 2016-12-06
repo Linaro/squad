@@ -3,6 +3,7 @@ import os
 
 from django.test import TestCase
 from django.test import Client
+from test.api import APIClient
 from django.test.utils import setup_test_environment
 
 
@@ -13,19 +14,6 @@ tests_file = os.path.join(os.path.dirname(__file__), 'tests.json')
 metrics_file = os.path.join(os.path.dirname(__file__), 'benchmarks.json')
 log_file = os.path.join(os.path.dirname(__file__), 'test_run.log')
 metadata_file = os.path.join(os.path.dirname(__file__), 'metadata.json')
-
-
-class APIClient(Client):
-
-    def __init__(self, token):
-        self.token = token
-        return super(APIClient, self).__init__(token)
-
-    def post(self, *args, **kwargs):
-        if not kwargs.get('HTTP_AUTH_TOKEN'):
-            kwargs = kwargs.copy()
-            kwargs.update({'HTTP_AUTH_TOKEN': self.token})
-        return super(APIClient, self).post(*args, **kwargs)
 
 
 class ApiTest(TestCase):
