@@ -161,3 +161,5 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 
 PUBLIC_SITE = bool(os.getenv('SQUAD_PUBLIC_SITE'))
+
+exec(open(os.getenv('SQUAD_EXTRA_SETTINGS', '/dev/null')).read())
