@@ -15,6 +15,12 @@
     </a>
   </li>
 
+  <li role="presentation" {% if url_name == 'charts' %}class="active"{% endif %}>
+    <a href="{% project_section_url project 'charts' %}">
+      Charts
+    </a>
+  </li>
+
   {% endwith %}
 </ul>
 <p></p>

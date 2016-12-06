@@ -62,7 +62,14 @@
       {% block content %}{% endblock %}
     </div>
 
+    <script type="text/javascript" src="{% static "angularjs/angular.js" %}"></script>
+
+    <script type="text/javascript" src="{% static "lodash.js" %}"></script>
+
+    <script type="text/javascript" src="{% static "chartjs/Chart.bundle.js" %}"></script>
+
     <script type="text/javascript" src="{% static "main.js" %}"></script>
+    {% block javascript %}{% endblock %}
   </body>
 </html>
 

@@ -6,6 +6,7 @@ links = [
     ('angularjs', 'libjs-angularjs', '/usr/share/javascript/angular.js'),
     ('bootstrap', 'libjs-bootstrap', '/usr/share/javascript/bootstrap'),
     ('font-awesome', 'fonts-font-awesome', '/usr/share/fonts-font-awesome'),
+    ('lodash.js', 'libjs-lodash', '/usr/share/javascript/lodash.js'),
 ]
 
 failed = False
