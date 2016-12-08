@@ -12,6 +12,7 @@ from squad.core.tasks import RecordTestRunStatus
 from squad.core.tasks import ProcessTestRun
 from squad.core.tasks import ProcessAllTestRuns
 from squad.core.tasks import ReceiveTestRun
+from squad.core.tasks import exceptions
 
 
 class CommonTestCase(TestCase):
@@ -85,10 +86,12 @@ class ProcessTestRunTest(CommonTestCase):
 
 class ReceiveTestRunTest(TestCase):
 
+    def setUp(self):
+        self.group = Group.objects.create(slug='mygroup')
+        self.project = self.group.projects.create(slug='mygroup')
+
     def test_metadata(self):
-        group = Group.objects.create(slug='mygroup')
-        project = group.projects.create(slug='mygroup')
-        receive = ReceiveTestRun(project)
+        receive = ReceiveTestRun(self.project)
 
         today = timezone.now()
 
@@ -112,9 +115,7 @@ class ReceiveTestRunTest(TestCase):
         self.assertEqual(metadata['build_url'], testrun.build_url)
 
     def test_build_datetime(self):
-        group = Group.objects.create(slug='mygroup')
-        project = group.projects.create(slug='mygroup')
-        receive = ReceiveTestRun(project)
+        receive = ReceiveTestRun(self.project)
 
         yesterday = timezone.now() - relativedelta(days=7)
 
@@ -130,3 +131,18 @@ class ReceiveTestRunTest(TestCase):
         build = Build.objects.get(version='199')
 
         self.assertEqual(yesterday, build.datetime)
+
+    def test_invalid_metadata(self):
+        receive = ReceiveTestRun(self.project)
+        with self.assertRaises(exceptions.InvalidMetadataJSON):
+            receive('199', 'myenv', metadata='{')
+
+    def test_invalid_metrics(self):
+        receive = ReceiveTestRun(self.project)
+        with self.assertRaises(exceptions.InvalidMetricsDataJSON):
+            receive('199', 'myenv', metrics_file='{')
+
+    def test_invalid_tests(self):
+        receive = ReceiveTestRun(self.project)
+        with self.assertRaises(exceptions.InvalidTestsDataJSON):
+            receive('199', 'myenv', tests_file='{')

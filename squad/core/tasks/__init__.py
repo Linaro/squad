@@ -9,6 +9,7 @@ from django.db import transaction
 from squad.core.models import TestRun, Suite, Test, Metric, Status
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
 from squad.core.statistics import geomean
+from . import exceptions
 
 
 test_parser = JSONTestDataParser
@@ -25,8 +26,24 @@ class ReceiveTestRun(object):
         build, _ = self.project.builds.get_or_create(version=version)
         environment, _ = self.project.environments.get_or_create(slug=environment_slug)
 
+        if metrics_file:
+            try:
+                json.loads(metrics_file)
+            except json.decoder.JSONDecodeError as e:
+                raise exceptions.InvalidMetricsDataJSON("metrics is not valid JSON: " + str(e))
+
+        if tests_file:
+            try:
+                json.loads(tests_file)
+            except json.decoder.JSONDecodeError as e:
+                raise exceptions.InvalidTestsDataJSON("tests is not valid JSON: " + str(e))
+
         if metadata:
-            data = json.loads(metadata)
+            try:
+                data = json.loads(metadata)
+            except json.decoder.JSONDecodeError as e:
+                raise exceptions.InvalidMetadataJSON("metadata is not valid JSON: " + str(e))
+
             fields = (
                 "build_url",
                 "datetime",
