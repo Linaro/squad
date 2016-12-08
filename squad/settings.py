@@ -16,6 +16,15 @@ import sys
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+DATA_DIR = BASE_DIR
+if not os.path.exists(os.path.join(BASE_DIR, 'manage.py')):
+    # not running from source, store data in $HOME
+    DATA_DIR = os.path.join(
+        os.getenv('XDG_DATA_HOME', os.path.expanduser('~/.local/share')),
+        'squad',
+    )
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
@@ -23,11 +32,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 secret_key_file = os.getenv('SECRET_KEY_FILE', None)
 if secret_key_file is None:
-    secret_key_file = os.path.join(BASE_DIR, 'secret.txt')
+    secret_key_file = os.path.join(DATA_DIR, 'secret.dat')
 
 if not os.path.exists(secret_key_file):
     from squad.core.utils import random_key
-    with open(secret_key_file, 'w') as f:
+    fd = os.open(secret_key_file, os.O_WRONLY | os.O_CREAT, 0o600)
+    with os.fdopen(fd, 'w') as f:
         f.write(random_key(64))
 
 SECRET_KEY = open(secret_key_file).read()
@@ -105,7 +115,7 @@ WSGI_APPLICATION = 'squad.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(DATA_DIR, 'db.sqlite3'),
     }
 }
 database_config = os.getenv('DATABASE')

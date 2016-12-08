@@ -1,0 +1,9 @@
+include README.md
+include Dockerfile
+include Procfile
+include COPYING
+
+include           squad/frontend/static/main.js
+recursive-include squad/frontend/static/squad/ *
+recursive-include squad/frontend/static/chartjs/ *
+recursive-include squad/frontend/templates/ *

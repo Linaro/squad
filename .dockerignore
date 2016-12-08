@@ -2,7 +2,9 @@
 db.sqlite3
 .git
 .puzzle
-secret.txt
+dist
+build
+secret.dat
 squad/frontend/static/angularjs
 squad/frontend/static/bootstrap
 squad/frontend/static/font-awesome
