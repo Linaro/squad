@@ -1,4 +1,5 @@
 import os
+from io import StringIO
 
 
 from django.test import TestCase
@@ -14,6 +15,10 @@ tests_file = os.path.join(os.path.dirname(__file__), 'tests.json')
 metrics_file = os.path.join(os.path.dirname(__file__), 'benchmarks.json')
 log_file = os.path.join(os.path.dirname(__file__), 'test_run.log')
 metadata_file = os.path.join(os.path.dirname(__file__), 'metadata.json')
+
+
+def invalid_json():
+    return StringIO('{')
 
 
 class ApiTest(TestCase):
@@ -106,13 +111,28 @@ class ApiTest(TestCase):
         self.assertEqual(404, response.status_code)
 
     def test_invalid_metrics_json(self):
-        # FIXME not implemented
-        pass
+        response = self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {
+                'metrics': invalid_json(),
+            }
+        )
+        self.assertEqual(400, response.status_code)
 
     def test_invalid_tests_json(self):
-        # FIXME not implemented
-        pass
+        response = self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {
+                'tests': invalid_json(),
+            }
+        )
+        self.assertEqual(400, response.status_code)
 
     def test_invalid_metadata_json(self):
-        # FIXME not implemented
-        pass
+        response = self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {
+                'metadata': invalid_json(),
+            }
+        )
+        self.assertEqual(400, response.status_code)

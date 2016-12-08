@@ -14,6 +14,7 @@ from squad.core.models import Token
 
 
 from squad.core.tasks import ReceiveTestRun
+from squad.core.tasks import exceptions
 
 
 def valid_token(token, project):
@@ -56,6 +57,10 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
             test_run_data[key] = data.decode('utf-8')
 
     receive = ReceiveTestRun(project)
-    receive(**test_run_data)
+
+    try:
+        receive(**test_run_data)
+    except exceptions.invalid_input as e:
+        return HttpResponse(str(e), status=400)
 
     return HttpResponse('', status=201)
