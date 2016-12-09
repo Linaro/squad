@@ -144,6 +144,7 @@ class ReceiveTestRunTest(TestCase):
 
 class TestValidateTestRun(TestCase):
 
+    # ~~~~~~~~~~~~ TESTS FOR METADATA ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def assertInvalidMetadata(self, metadata, exception=exceptions.InvalidMetadata):
         validate = ValidateTestRun()
         with self.assertRaises(exception):
@@ -158,11 +159,25 @@ class TestValidateTestRun(TestCase):
     def test_invalid_metadata_value(self):
         self.assertInvalidMetadata('{"foo" : [1,2,3]}')
 
-    def test_invalid_metrics(self):
+    # ~~~~~~~~~~~~ TESTS FOR METRICS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def assertInvalidMetrics(self, metrics, exception=exceptions.InvalidMetricsData):
         validate = ValidateTestRun()
-        with self.assertRaises(exceptions.InvalidMetricsDataJSON):
-            validate(metrics_file='{')
+        with self.assertRaises(exception):
+            validate(metrics_file=metrics)
 
+    def test_invalid_metrics_json(self):
+        self.assertInvalidMetrics('{', exceptions.InvalidMetricsDataJSON)
+
+    def test_invalid_metrics_type(self):
+        self.assertInvalidMetrics('[]')
+
+    def test_invalid_metrics_str_as_values(self):
+        self.assertInvalidMetrics('{ "foo" : "bar"}')
+
+    def test_invalid_metrics_list_of_str_as_values(self):
+        self.assertInvalidMetrics('{ "foo" : ["bar"]}')
+
+    # ~~~~~~~~~~~~ TESTS FOR TESTS DATA ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def test_invalid_tests(self):
         validate = ValidateTestRun()
         with self.assertRaises(exceptions.InvalidTestsDataJSON):

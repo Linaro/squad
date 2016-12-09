@@ -44,9 +44,20 @@ class ValidateTestRun(object):
 
     def __validate_metrics(self, metrics_file):
         try:
-            json.loads(metrics_file)
+            metrics = json.loads(metrics_file)
         except json.decoder.JSONDecodeError as e:
             raise exceptions.InvalidMetricsDataJSON("metrics is not valid JSON: " + str(e))
+
+        if type(metrics) != dict:
+            raise exceptions.InvalidMetricsData.type(metrics)
+
+        for key, value in metrics.items():
+            if type(value) not in [int, float, list]:
+                raise exceptions.InvalidMetricsData.value(value)
+            if type(value) is list:
+                for item in value:
+                    if type(item) not in [int, float]:
+                        raise exceptions.InvalidMetricsData.value(value)
 
     def __validate_tests__(self, tests_file):
         try:
