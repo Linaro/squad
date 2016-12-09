@@ -27,6 +27,7 @@ setup(
     entry_points={
         'console_scripts': [
             'squad-admin=squad.manage:main',
+            'squad=squad.run:main',
         ]
     },
     install_requires=requirements,
