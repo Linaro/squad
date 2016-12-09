@@ -4,6 +4,7 @@ import json
 from dateutil.relativedelta import relativedelta
 from django.test import TestCase
 from django.utils import timezone
+from unittest.mock import patch
 
 
 from squad.core.models import Group, TestRun, Status, Build
@@ -12,6 +13,7 @@ from squad.core.tasks import RecordTestRunStatus
 from squad.core.tasks import ProcessTestRun
 from squad.core.tasks import ProcessAllTestRuns
 from squad.core.tasks import ReceiveTestRun
+from squad.core.tasks import ValidateTestRun
 from squad.core.tasks import exceptions
 
 
@@ -132,17 +134,27 @@ class ReceiveTestRunTest(TestCase):
 
         self.assertEqual(yesterday, build.datetime)
 
+    @patch('squad.core.tasks.ValidateTestRun.__call__')
+    def test_should_validate_test_run(self, validator_mock):
+        validator_mock.side_effect = RuntimeError('crashed')
+        with self.assertRaises(RuntimeError):
+            receive = ReceiveTestRun(self.project)
+            receive('199', 'myenv')
+
+
+class TestValidateTestRun(TestCase):
+
     def test_invalid_metadata(self):
-        receive = ReceiveTestRun(self.project)
+        validate = ValidateTestRun()
         with self.assertRaises(exceptions.InvalidMetadataJSON):
-            receive('199', 'myenv', metadata='{')
+            validate('{', None, None)
 
     def test_invalid_metrics(self):
-        receive = ReceiveTestRun(self.project)
+        validate = ValidateTestRun()
         with self.assertRaises(exceptions.InvalidMetricsDataJSON):
-            receive('199', 'myenv', metrics_file='{')
+            validate(None, '{', None)
 
     def test_invalid_tests(self):
-        receive = ReceiveTestRun(self.project)
+        validate = ValidateTestRun()
         with self.assertRaises(exceptions.InvalidTestsDataJSON):
-            receive('199', 'myenv', tests_file='{')
+            validate(None, None, '{')

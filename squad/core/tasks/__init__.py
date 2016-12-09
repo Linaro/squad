@@ -17,14 +17,14 @@ metric_parser = JSONMetricDataParser
 logger = logging.getLogger(__name__)
 
 
-class ReceiveTestRun(object):
+class ValidateTestRun(object):
 
-    def __init__(self, project):
-        self.project = project
-
-    def __call__(self, version, environment_slug, metadata=None, metrics_file=None, tests_file=None, log_file=None):
-        build, _ = self.project.builds.get_or_create(version=version)
-        environment, _ = self.project.environments.get_or_create(slug=environment_slug)
+    def __call__(self, metadata, metrics_file, tests_file):
+        if metadata:
+            try:
+                json.loads(metadata)
+            except json.decoder.JSONDecodeError as e:
+                raise exceptions.InvalidMetadataJSON("metadata is not valid JSON: " + str(e))
 
         if metrics_file:
             try:
@@ -38,11 +38,21 @@ class ReceiveTestRun(object):
             except json.decoder.JSONDecodeError as e:
                 raise exceptions.InvalidTestsDataJSON("tests is not valid JSON: " + str(e))
 
+
+class ReceiveTestRun(object):
+
+    def __init__(self, project):
+        self.project = project
+
+    def __call__(self, version, environment_slug, metadata=None, metrics_file=None, tests_file=None, log_file=None):
+        build, _ = self.project.builds.get_or_create(version=version)
+        environment, _ = self.project.environments.get_or_create(slug=environment_slug)
+
+        validate = ValidateTestRun()
+        validate(metadata, metrics_file, tests_file)
+
         if metadata:
-            try:
-                data = json.loads(metadata)
-            except json.decoder.JSONDecodeError as e:
-                raise exceptions.InvalidMetadataJSON("metadata is not valid JSON: " + str(e))
+            data = json.loads(metadata)
 
             fields = (
                 "build_url",
