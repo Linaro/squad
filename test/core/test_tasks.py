@@ -144,15 +144,13 @@ class ReceiveTestRunTest(TestCase):
 
 class TestValidateTestRun(TestCase):
 
-    def test_invalid_metadata_json(self):
+    def assertInvalidMetadata(self, metadata, exception=exceptions.InvalidMetadata):
         validate = ValidateTestRun()
-        with self.assertRaises(exceptions.InvalidMetadataJSON):
-            validate(metadata='{')
-
-    def assertInvalidMetadata(self, metadata):
-        validate = ValidateTestRun()
-        with self.assertRaises(exceptions.InvalidMetadata):
+        with self.assertRaises(exception):
             validate(metadata=metadata)
+
+    def test_invalid_metadata_json(self):
+        self.assertInvalidMetadata('{', exceptions.InvalidMetadataJSON)
 
     def test_invalid_metadata_type(self):
         self.assertInvalidMetadata('[]')
