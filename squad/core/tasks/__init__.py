@@ -21,22 +21,31 @@ class ValidateTestRun(object):
 
     def __call__(self, metadata, metrics_file, tests_file):
         if metadata:
-            try:
-                json.loads(metadata)
-            except json.decoder.JSONDecodeError as e:
-                raise exceptions.InvalidMetadataJSON("metadata is not valid JSON: " + str(e))
+            self.__validate_metadata__(metadata)
 
         if metrics_file:
-            try:
-                json.loads(metrics_file)
-            except json.decoder.JSONDecodeError as e:
-                raise exceptions.InvalidMetricsDataJSON("metrics is not valid JSON: " + str(e))
+            self.__validate_metrics(metrics_file)
 
         if tests_file:
-            try:
-                json.loads(tests_file)
-            except json.decoder.JSONDecodeError as e:
-                raise exceptions.InvalidTestsDataJSON("tests is not valid JSON: " + str(e))
+            self.__validate_tests__(tests_file)
+
+    def __validate_metadata__(self, metadata):
+        try:
+            json.loads(metadata)
+        except json.decoder.JSONDecodeError as e:
+            raise exceptions.InvalidMetadataJSON("metadata is not valid JSON: " + str(e))
+
+    def __validate_metrics(self, metrics_file):
+        try:
+            json.loads(metrics_file)
+        except json.decoder.JSONDecodeError as e:
+            raise exceptions.InvalidMetricsDataJSON("metrics is not valid JSON: " + str(e))
+
+    def __validate_tests__(self, tests_file):
+        try:
+            json.loads(tests_file)
+        except json.decoder.JSONDecodeError as e:
+            raise exceptions.InvalidTestsDataJSON("tests is not valid JSON: " + str(e))
 
 
 class ReceiveTestRun(object):
