@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class ValidateTestRun(object):
 
-    def __call__(self, metadata, metrics_file, tests_file):
+    def __call__(self, metadata=None, metrics_file=None, tests_file=None):
         if metadata:
             self.__validate_metadata__(metadata)
 

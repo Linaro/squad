@@ -147,14 +147,14 @@ class TestValidateTestRun(TestCase):
     def test_invalid_metadata(self):
         validate = ValidateTestRun()
         with self.assertRaises(exceptions.InvalidMetadataJSON):
-            validate('{', None, None)
+            validate(metadata='{')
 
     def test_invalid_metrics(self):
         validate = ValidateTestRun()
         with self.assertRaises(exceptions.InvalidMetricsDataJSON):
-            validate(None, '{', None)
+            validate(metrics_file='{')
 
     def test_invalid_tests(self):
         validate = ValidateTestRun()
         with self.assertRaises(exceptions.InvalidTestsDataJSON):
-            validate(None, None, '{')
+            validate(tests_file='{')
