@@ -61,9 +61,16 @@ class ValidateTestRun(object):
 
     def __validate_tests__(self, tests_file):
         try:
-            json.loads(tests_file)
+            tests = json.loads(tests_file)
         except json.decoder.JSONDecodeError as e:
             raise exceptions.InvalidTestsDataJSON("tests is not valid JSON: " + str(e))
+
+        if type(tests) != dict:
+            raise exceptions.InvalidTestsData.type(tests)
+
+        for key, value in tests.items():
+            if value not in ["pass", "fail"]:
+                raise exceptions.InvalidTestsData.value(value)
 
 
 class ReceiveTestRun(object):

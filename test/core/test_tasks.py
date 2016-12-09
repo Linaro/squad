@@ -178,7 +178,19 @@ class TestValidateTestRun(TestCase):
         self.assertInvalidMetrics('{ "foo" : ["bar"]}')
 
     # ~~~~~~~~~~~~ TESTS FOR TESTS DATA ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def test_invalid_tests(self):
+    def assertInvalidTests(self, tests, exception=exceptions.InvalidTestsData):
         validate = ValidateTestRun()
-        with self.assertRaises(exceptions.InvalidTestsDataJSON):
-            validate(tests_file='{')
+        with self.assertRaises(exception):
+            validate(tests_file=tests)
+
+    def test_invalid_tests_json(self):
+        self.assertInvalidTests('{', exceptions.InvalidTestsDataJSON)
+
+    def test_invalid_tests_type(self):
+        self.assertInvalidTests('[]')
+
+    def test_invalid_tests_value_type(self):
+        self.assertInvalidTests('{"foo": 1}')
+
+    def test_invalid_tests_string(self):
+        self.assertInvalidTests('{"foo": "bar"}')

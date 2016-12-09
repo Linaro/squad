@@ -14,7 +14,6 @@ class InvalidMetricsDataJSON(Exception):
 
 
 class InvalidMetricsData(Exception):
-
     @classmethod
     def type(cls, obj):
         return cls("%r is not an object ({})" % obj)
@@ -26,6 +25,16 @@ class InvalidMetricsData(Exception):
 
 class InvalidTestsDataJSON(Exception):
     pass
+
+
+class InvalidTestsData(Exception):
+    @classmethod
+    def type(cls, obj):
+        return cls("%r is not an object ({})" % obj)
+
+    @classmethod
+    def value(cls, value):
+        return cls("%r is not a valid test result. Only \"pass\" and \"fail\" are accepted" % value)
 
 
 m = sys.modules[__name__]
