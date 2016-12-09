@@ -31,9 +31,16 @@ class ValidateTestRun(object):
 
     def __validate_metadata__(self, metadata):
         try:
-            json.loads(metadata)
+            metadata = json.loads(metadata)
         except json.decoder.JSONDecodeError as e:
             raise exceptions.InvalidMetadataJSON("metadata is not valid JSON: " + str(e))
+
+        if type(metadata) != dict:
+            raise exceptions.InvalidMetadata("metadata is not a object ({})")
+
+        for key, value in metadata.items():
+            if not isinstance(value, str):
+                raise exceptions.InvalidMetadata("value \"%r\" is not as string" % value)
 
     def __validate_metrics(self, metrics_file):
         try:

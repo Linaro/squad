@@ -2,6 +2,10 @@ class InvalidMetadataJSON(Exception):
     pass
 
 
+class InvalidMetadata(Exception):
+    pass
+
+
 class InvalidMetricsDataJSON(Exception):
     pass
 
@@ -12,6 +16,7 @@ class InvalidTestsDataJSON(Exception):
 
 invalid_input = (
     InvalidMetadataJSON,
+    InvalidMetadata,
     InvalidMetricsDataJSON,
     InvalidTestsDataJSON,
 )
