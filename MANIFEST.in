@@ -1,4 +1,3 @@
-include README.md
 include Dockerfile
 include Procfile
 include COPYING
