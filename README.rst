@@ -52,6 +52,7 @@ request. The following files are supported:
 
 -  ``tests``: test results data
 -  ``metrics``: metrics data
+-  ``metrics``: metadata about the test run
 
 See `Input file formats <#input-file-formats>`__ below for details on
 the format of these data files.
@@ -64,6 +65,7 @@ Example:
         --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
         --form tests=@/path/to/test-rsults.json \
         --form metrics=@/path/to/metrics.json \
+        --form metadata=@/path/to/metadata.json \
         https://squad.example.com/api/submit/my-team/my-project/x.y.z/my-ci-env
 
 Since test results should always come from automation systems, the API
@@ -128,6 +130,27 @@ Example:
       "group1/v1": [1.2, 2.1, 3.03],
       "group1/subgroup/v1": [1, 2, 3, 2, 3, 1]
     }
+
+
+Metadata
+~~~~~~~~
+
+Metadata about the test run must be posted in JSON, encoded in UTF-8.
+The JSON data must be a hash (an object). Keys and values must be
+strings. The following fields are recognized:
+
+* ``build_url``: URL pointing to the origin of the build used in the
+  test run
+* ``datetime``: timestamp of the test run, as a ISO-8601 date
+  representation, with seconds. This is the representation that ``date
+  --iso-8601=seconds`` gives you.
+* ``job_id``: identifier for the test run. Must be unique for the
+  project.
+* ``job_status``: string identifying the status of the project. SQUAD
+  makes no judgement about its value.
+* ``job_url``: URL pointing to the original test run.
+* ``resubmit_url``: URL that can be used to resubmit the test run.
+
 
 How to support multiple use cases
 ---------------------------------
