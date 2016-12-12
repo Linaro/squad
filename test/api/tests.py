@@ -90,6 +90,16 @@ class ApiTest(TestCase):
         t = models.TestRun.objects.last()
         self.assertEqual("2016-09-01T00:00:00+00:00", t.datetime.isoformat())
 
+    def test_stores_metadata_file(self):
+        self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {
+                'metadata': open(metadata_file),
+            }
+        )
+        t = models.TestRun.objects.last()
+        self.assertEqual(open(metadata_file).read(), t.metadata_file)
+
     def test_unauthorized(self):
         client = Client()  # regular client without auth support
         response = client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')

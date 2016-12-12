@@ -151,6 +151,9 @@ strings. The following fields are recognized:
 * ``job_url``: URL pointing to the original test run.
 * ``resubmit_url``: URL that can be used to resubmit the test run.
 
+Other fields must be submitted. They will be stored, but will not be
+handled in any specific way.
+
 
 How to support multiple use cases
 ---------------------------------

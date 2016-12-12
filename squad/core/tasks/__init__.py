@@ -105,6 +105,7 @@ class ReceiveTestRun(object):
             tests_file=tests_file,
             metrics_file=metrics_file,
             log_file=log_file,
+            metadata_file=metadata,
             **metadata_fields,
         )
 

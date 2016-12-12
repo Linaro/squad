@@ -90,6 +90,7 @@ class TestRun(models.Model):
     tests_file = models.TextField(null=True)
     metrics_file = models.TextField(null=True)
     log_file = models.TextField(null=True)
+    metadata_file = models.TextField(null=True)
 
     # fields that should be provided in a submitted metadata JSON
     datetime = models.DateTimeField(null=False)
