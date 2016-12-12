@@ -12,11 +12,22 @@
 		Test run <u>{{test_run.job_id}}</u>
 	</h2>
 
+	<h3>Metadata</h3>
+	<table class='table table-hover table-condensed'>
+		{% for key, value in metadata.items %}
+		<tr>
+			<th>{{key}}</th>
+			<td>{{value}}</td>
+		</tr>
+		{% endfor %}
+	</table>
+
+	<h3>Metrics</h3>
 	<table class='table table-hover table-condensed'>
 		{% for suite, metrics in metrics_by_suite %}
 		<tr class='warning'>
 			<td colspan='2'>
-				<h3>{{suite}}</h3>
+				<h4>{{suite}}</h4>
 			</td>
 		</tr>
 			{% for metric in metrics %}
