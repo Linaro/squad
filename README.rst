@@ -82,11 +82,11 @@ Test results must be posted as JSON, encoded in UTF-8. The JSON data
 must be a hash (an object, strictly speaking). Test names go in the
 keys, and values must be either ``"pass"`` or ``"fail"``.
 
-Tests can be grouped in suites. For that, the test name must be prefixed
-with the group name and a slash (``/``). Therefore, slashes are reserved
-characters in this context, and cannot be used in test names. Group
-names can have embedded slashes in them; so "foo/bar" means group "foo",
-test "bar"; and "foo/bar/baz" means group "foo/bar" test "baz".
+Tests can be grouped in test suites. For that, the test name must be
+prefixed with the suite name and a slash (``/``). Therefore, slashes are
+reserved characters in this context, and cannot be used in test names.
+Suite names can have embedded slashes in them; so "foo/bar" means suite
+"foo", test "bar"; and "foo/bar/baz" means suite "foo/bar", test "baz".
 
 Example:
 
@@ -112,11 +112,11 @@ result; the whole set of results will be used where applicable, e.g. to
 display ranges.
 
 As with test results, metrics can be grouped in suites. For that, the
-test name must be prefixed with the group name and a slash (``/``).
+test name must be prefixed with the suite name and a slash (``/``).
 Therefore, slashes are reserved characters in this context, and cannot
-be used in test names. Group names can have embedded slashes in them; so
-"foo/bar" means group "foo", test "bar"; and "foo/bar/baz" means group
-"foo/bar" test "baz".
+be used in test names. Suite names can have embedded slashes in them; so
+"foo/bar" means suite "foo", metric "bar"; and "foo/bar/baz" means suite
+"foo/bar", metric "baz".
 
 Example:
 
@@ -153,3 +153,5 @@ Public License for more details.
 
 You should have received a copy of the GNU General Public License along
 with this program. If not, see http://www.gnu.org/licenses/.
+
+.. vim: tw=72
