@@ -2,93 +2,93 @@
 {% load squad %}
 
 {% block content %}
-	{% include "squad/project-nav.html" %}
+    {% include "squad/project-nav.html" %}
 
-	<h2>
-		<a href="{% project_url build %}">
-			Build {{build.version}}
-		</a>
-		»
-		Test run <u>{{test_run.job_id}}</u>
-	</h2>
+    <h2>
+        <a href="{% project_url build %}">
+            Build {{build.version}}
+        </a>
+        »
+        Test run <u>{{test_run.job_id}}</u>
+    </h2>
 
-	<h3>Metadata</h3>
-	<table class='table table-hover table-condensed'>
-		{% for key, value in metadata.items %}
-		<tr>
-			<th>{{key}}</th>
-			<td>{{value}}</td>
-		</tr>
-		{% endfor %}
-	</table>
+    <h3>Metadata</h3>
+    <table class='table table-hover table-condensed'>
+        {% for key, value in metadata.items %}
+        <tr>
+            <th>{{key}}</th>
+            <td>{{value}}</td>
+        </tr>
+        {% endfor %}
+    </table>
 
-	<table class='table table-hover table-condensed'>
+    <table class='table table-hover table-condensed'>
 
-		<tr>
-			<td colspan='2'>
-				<h3>Metrics</h3>
-			</td>
-		</tr>
-		{% for suite, metrics in metrics_by_suite %}
-			<tr class='warning'>
-				<td colspan='2'>
-					<h4>{{suite}}</h4>
-				</td>
-			</tr>
-			{% for metric in metrics %}
-				<tr>
-					<td>{{metric.name}}</td>
-					<td>{{metric.result}}</td>
-				</tr>
-			{% endfor %}
-			<tr>
-				<td colspan='2'>&nbsp;</td>
-			</tr>
-		{% endfor %}
+        <tr>
+            <td colspan='2'>
+                <h3>Metrics</h3>
+            </td>
+        </tr>
+        {% for suite, metrics in metrics_by_suite %}
+            <tr class='warning'>
+                <td colspan='2'>
+                    <h4>{{suite}}</h4>
+                </td>
+            </tr>
+            {% for metric in metrics %}
+                <tr>
+                    <td>{{metric.name}}</td>
+                    <td>{{metric.result}}</td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td colspan='2'>&nbsp;</td>
+            </tr>
+        {% endfor %}
 
-		{% if not metrics_by_suite %}
-		<tr>
-			<td colspan='2'>
-				<em>No metrics in this test run</em>
-			</td>
-		</tr>
-		{% endif %}
+        {% if not metrics_by_suite %}
+        <tr>
+            <td colspan='2'>
+                <em>No metrics in this test run</em>
+            </td>
+        </tr>
+        {% endif %}
 
-		<tr>
-			<td colspan='2'>
-				<h3>Tests</h3>
-			</td>
-		</tr>
-		{% for suite, tests in tests_by_suite %}
-		<tr class='warning'>
-			<td colspan='2'>
-				<h4>{{suite}}</h4>
-			</td>
-		</tr>
-			{% for test in tests %}
-			<tr>
-				<td>{{test.name}}</td>
-				<td>
-					{% if test.result %}
-						<strong class='pass'>pass</strong>
-					{% else %}
-						<strong class='fail'>fail</strong>
-					{% endif %}
-				</td>
-			</tr>
-			{% endfor %}
-			<tr>
-				<td colspan='2'>&nbsp;</td>
-			</tr>
-		{% endfor %}
+        <tr>
+            <td colspan='2'>
+                <h3>Tests</h3>
+            </td>
+        </tr>
+        {% for suite, tests in tests_by_suite %}
+        <tr class='warning'>
+            <td colspan='2'>
+                <h4>{{suite}}</h4>
+            </td>
+        </tr>
+            {% for test in tests %}
+            <tr>
+                <td>{{test.name}}</td>
+                <td>
+                    {% if test.result %}
+                        <strong class='pass'>pass</strong>
+                    {% else %}
+                        <strong class='fail'>fail</strong>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan='2'>&nbsp;</td>
+            </tr>
+        {% endfor %}
 
-		{% if not tests_by_suite %}
-		<tr>
-			<td colspan='2'>
-				<em>No tests in this test run</em>
-			</td>
-		</tr>
-		{% endif %}
-	</table>
+        {% if not tests_by_suite %}
+        <tr>
+            <td colspan='2'>
+                <em>No tests in this test run</em>
+            </td>
+        </tr>
+        {% endif %}
+    </table>
 
 {% endblock %}
