@@ -82,12 +82,17 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
     for metric in test_run.metrics.all():
         metrics_by_suite[metric.suite.slug].append(metric)
 
+    tests_by_suite = defaultdict(list)
+    for test in test_run.tests.all():
+        tests_by_suite[test.suite.slug].append(test)
+
     context = {
         'project': project,
         'build': build,
         'test_run': test_run,
         'metadata': json.loads(test_run.metadata_file or '{}'),
         'metrics_by_suite': metrics_by_suite.items(),
+        'tests_by_suite': tests_by_suite.items(),
     }
     return render(request, 'squad/test_run.html', context)
 

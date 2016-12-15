@@ -8,7 +8,7 @@
   <table class='table table-hover table-condensed'>
     {% for test_run in build.test_runs.all %}
     <tr class='warning'>
-      <th colspan='2'>
+      <th colspan='4'>
         <h3>
           <a href="{% project_url test_run %}">Test run #{{test_run.job_id}}</a>
           <small>
@@ -31,24 +31,34 @@
         </h3>
       </th>
     </tr>
+    <tr>
+      <th>Suite</th>
+      <th>Metrics summary</th>
+      <th>Tests passed</th>
+      <th>Tests failed</th>
+    </tr>
     {% for status in test_run.status.by_suite.all %}
     {% if status %}
     <tr>
       <td>{{status.suite.slug}}</td>
       <td>{{status.metrics_summary}}</td>
+      <td>{{status.tests_pass}}</td>
+      <td>{{status.tests_fail}}</td>
     </tr>
     {% endif %}
     {% endfor %}
     {% if test_run.status.by_suite.count > 1 %}
     {% with overall_status=test_run.status.overall.first %}
     <tr>
-      <th>Summary</th>
+      <th>Overall summary</th>
       <th>{{overall_status.metrics_summary}}</th>
+      <th>{{overall_status.tests_pass}}</th>
+      <th>{{overall_status.tests_fail}}</th>
     </tr>
     {% endwith %}
     {% endif %}
     <tr>
-      <td colspan='2'>&nbsp;</td>
+      <td colspan='4'>&nbsp;</td>
     </tr>
     {% endfor %}
   </table>
