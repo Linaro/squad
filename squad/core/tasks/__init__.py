@@ -188,9 +188,9 @@ class RecordTestRunStatus(object):
 
         for sid, values in metrics.items():
             status[sid].metrics_summary = geomean(values)
-            status[sid].suite_id = sid
 
-        for s in status.values():
+        for sid, s in status.items():
+            s.suite_id = sid
             s.save()
 
         testrun.status_recorded = True
