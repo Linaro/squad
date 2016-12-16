@@ -24,12 +24,24 @@ $(dirname $0)/get-tests > $tests
 
 build=$(date +%Y.%m.%d.%H.%M)
 
+display() {
+  echo
+  echo "$1"
+  echo "$1" | sed -e 's/./-/g'
+  cat "$2"
+}
+
 metadata=''
 if [ -f .metadata.json ]; then
   metadata='--form metadata=@.metadata.json'
+  display Metadata .metadata.json
 fi
 
+display Metrics "$metrics"
+display Tests "$tests"
+
 curl \
+  --include \
   --fail \
   --header "Auth-Token: $SQUAD_TOKEN" \
   --form metrics=@$metrics \
