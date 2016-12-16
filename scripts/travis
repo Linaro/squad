@@ -2,7 +2,8 @@
 
 set -eu
 
-git archive origin/cache/static | tar xaf -
+git fetch origin cache/static
+git archive FETCH_HEAD | tar xaf -
 
 ./manage.py test --noinput -v 2 2>&1 | tee .tests
 
