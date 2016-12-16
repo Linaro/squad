@@ -2,6 +2,11 @@
 
 set -eu
 
+touch squad/frontend/static/angularjs
+touch squad/frontend/static/bootstrap
+touch squad/frontend/static/font-awesome
+touch squad/frontend/static/lodash.js
+
 ./manage.py test --noinput -v 2 2>&1 | tee .tests
 
 echo "{
