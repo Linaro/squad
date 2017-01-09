@@ -1,0 +1,31 @@
+#!/bin/sh
+
+set -eu
+
+# TODO: require all changes committed to git
+if ! git diff-index --quiet --exit-code HEAD --; then
+    echo "E: uncommited changes found; cannot release like this"
+    exit 1
+fi
+
+v=$(python3 -c 'from squad.version import __version__ as v; print(v)')
+git tag -s -m "SQUAD release $v" "$v"
+
+# build
+rm -rf dist/ *.egg-info/
+python3 setup.py sdist bdist_wheel
+
+# test
+tar=$(mktemp tar.XXXXXXXXX)
+git=$(mktemp git.XXXXXXXXX)
+trap cleanup INT TERM EXIT
+cleanup() {
+    rm -rf "$tar" "$git"
+}
+git ls-tree -r --name-only HEAD | grep -v '^\.' | sort > "$git"
+tar taf dist/squad-${v}.tar.gz | cut -d / -f 2- | grep -v '\(/$\|^$\|PKG-INFO\|egg-info\)' | sort > "$tar"
+diff -u "$tar" "$git"
+
+# sign & upload
+gpg --detach-sign --armor dist/*
+twine upload dist/*
