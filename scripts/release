@@ -25,7 +25,7 @@ cleanup() {
     rm -rf "$tar" "$git"
 }
 git ls-tree -r --name-only HEAD | grep -v '^\.' | sort > "$git"
-tar taf dist/squad-${v}.tar.gz | cut -d / -f 2- | grep -v '\(/$\|^$\|PKG-INFO\|egg-info\)' | sort > "$tar"
+tar taf dist/squad-${v}.tar.gz | cut -d / -f 2- | grep -v '\(/$\|^$\|PKG-INFO\|egg-info\|static\/\(angularjs\|font-awesome\|bootstrap\|lodash\)\)' | sort > "$tar"
 diff -u "$tar" "$git"
 
 # sign & upload
