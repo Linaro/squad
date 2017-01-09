@@ -27,5 +27,7 @@ tar taf dist/squad-${v}.tar.gz | cut -d / -f 2- | grep -v '\(/$\|^$\|PKG-INFO\|e
 diff -u "$tar" "$git"
 
 # sign & upload
-gpg --detach-sign --armor dist/*
+for f in dist/*; do
+    gpg --detach-sign --armor "$f"
+done
 twine upload dist/*
