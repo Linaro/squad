@@ -1,8 +1,15 @@
 include Dockerfile
 include Procfile
 include COPYING
+include requirements*.txt
+include manage.py
 
 include           squad/frontend/static/main.js
+include           squad/frontend/static/main.css
+include           squad/frontend/static/favicon.ico
+include           squad/core/management/commands/import_data.rst
 recursive-include squad/frontend/static/squad/ *
 recursive-include squad/frontend/static/chartjs/ *
 recursive-include squad/frontend/templates/ *
+recursive-include test/ *.py *.json *.csv *.log
+recursive-include scripts/ *
