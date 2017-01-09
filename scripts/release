@@ -2,6 +2,8 @@
 
 set -eu
 
+./manage.py test
+
 # TODO: require all changes committed to git
 if ! git diff-index --quiet --exit-code HEAD --; then
     echo "E: uncommited changes found; cannot release like this"
