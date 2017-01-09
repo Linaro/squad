@@ -17,10 +17,12 @@ def main():
     print('---------------------------------------')
     print('')
 
+    argv = sys.argv
+
     sys.argv = ['squad-admin', 'migrate']
     manage()
 
-    sys.argv = ['gunicorn', 'squad.wsgi'] + sys.argv[1:]
+    sys.argv = ['gunicorn', 'squad.wsgi'] + argv[1:]
     gunicorn()
 
 
