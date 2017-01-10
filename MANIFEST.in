@@ -3,6 +3,7 @@ include Procfile
 include COPYING
 include requirements*.txt
 include manage.py
+include INSTALL.rst
 
 include           squad/core/management/commands/import_data.rst
 recursive-include squad/frontend/static/ *
