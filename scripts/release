@@ -33,3 +33,6 @@ for f in dist/*; do
     gpg --detach-sign --armor "$f"
 done
 twine upload dist/*
+
+git push
+git push --tags
