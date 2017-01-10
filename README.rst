@@ -1,6 +1,42 @@
 SQUAD - Software Quality Dashboard
 ==================================
 
+Quick start
+-----------
+
+SQUAD is a Django application and works just like any other Django
+application. If you are new to Django and want to setup a development
+environment, you can follow the instructions below. If you want to
+install SQUAD for production usage, see [INSTALL](INSTALL.rst) instead.
+
+Note that SQUAD is Python3-only, so it won't work with Python 2.
+
+If running from git, you need to install a few packages needed for the
+web frontend::
+
+    apt-get install fonts-font-awesome libjs-angularjs libjs-bootstrap libjs-lodash
+
+To install the dependencies::
+
+    pip3 install -r requirements-dev.txt
+
+Alternatively to using pip, on Debian stretch or later you can install
+dependencies from the repository::
+
+    apt-get install python3-dateutil python3-django python3-whitenoise
+
+To run the tests::
+
+    python3 manage.py test
+
+Before running the application, create a admin user for yourself::
+
+    python3 manage.py createsuperuser
+
+To run the application locally::
+
+    python3 manage.py runserver
+
 Data model
 ----------
 

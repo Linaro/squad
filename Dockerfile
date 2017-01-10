@@ -2,6 +2,7 @@ FROM debian:stretch
 RUN apt-get update && \
   apt-get install -qy auto-apt-proxy && \
   apt-get install -qy \
+    python3-dateutil \
     python3-django \
     python3-whitenoise \
     fonts-font-awesome \
