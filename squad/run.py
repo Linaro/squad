@@ -34,7 +34,7 @@ def main():
         print('squad (version %s)' % __version__)
         return
 
-    os.putenv("ENVIRONMENT", "production")
+    os.putenv("ENV", "production")
     os.putenv('DJANGO_SETTINGS_MODULE', 'squad.settings')
 
     sys.argv = ['squad-admin', 'migrate']
