@@ -106,7 +106,7 @@ class ReceiveTestRun(object):
             metrics_file=metrics_file,
             log_file=log_file,
             metadata_file=metadata,
-            **metadata_fields,
+            **metadata_fields
         )
 
         testrun.refresh_from_db()
