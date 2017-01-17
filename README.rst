@@ -73,9 +73,8 @@ The API is the following
 
 **POST** /api/submit/:team/:project/:build/:environment
 
--  ``:team`` is the team identifier. It must exist previously
--  ``:project`` is the project identifier. It will be craeted a
-   automatically if it does not exist previously.
+-  ``:team`` is the team identifier. It must exist previously.
+-  ``:project`` is the project identifier. It must exist previously.
 -  ``:build`` is the build identifier. It can be a git commit hash, a
    Android manifest hash, or anything really. Extra information on the
    build can be submitted as an attachment. If a build timestamp is not
@@ -88,7 +87,7 @@ request. The following files are supported:
 
 -  ``tests``: test results data
 -  ``metrics``: metrics data
--  ``metrics``: metadata about the test run
+-  ``metadata``: metadata about the test run
 
 See `Input file formats <#input-file-formats>`__ below for details on
 the format of these data files.
