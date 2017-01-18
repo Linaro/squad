@@ -13,10 +13,10 @@ class ImportTest(TestCase):
         self.importer = Command()
         self.importer.silent = True
 
-    def test_import_basics(self):
         d = os.path.join(os.path.dirname(__file__), 'test_import_data_input')
         self.importer.handle(PROJECT='foo/bar', DIRECTORY=d)
 
+    def test_import_basics(self):
         group = Group.objects.get(slug='foo')
         project = group.projects.get(slug='bar')
 
@@ -27,8 +27,10 @@ class ImportTest(TestCase):
         self.assertEqual(1, project.builds.all()[0].test_runs.count())
         self.assertEqual(1, project.builds.all()[1].test_runs.count())
 
+    def test_import_dates(self):
         dates = [t.datetime for t in TestRun.objects.all()]
         self.assertIsNotNone(dates[0])
         self.assertEqual(dates[0], dates[1])
 
+    def test_import_metrics(self):
         self.assertEqual(2, Metric.objects.count())
