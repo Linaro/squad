@@ -63,6 +63,12 @@ class Command(BaseCommand):
         metadata = open(os.path.join(directory, 'metadata.json')).read()
         metrics = open(os.path.join(directory, 'metrics.json')).read()
 
+        attachments = {}
+        for f in glob(os.path.join(directory, '*')):
+            name = os.path.basename(f)
+            if name not in ['metrics.json', 'metadata.json']:
+                attachments[name] = open(f, 'rb').read()
+
         if not self.silent:
             print("Importing test run: %s" % directory)
         self.receive_test_run(
@@ -70,4 +76,5 @@ class Command(BaseCommand):
             environment_slug=environment_slug,
             metadata=metadata,
             metrics_file=metrics,
+            attachments=attachments,
         )

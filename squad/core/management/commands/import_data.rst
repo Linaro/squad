@@ -22,10 +22,14 @@ The input directory must have the following structure::
           metadata.json
           metrics.json
           tests.json
+          attachment1.pdf
+          attachment2.png
         JID/
           metadata.json
           metrics.json
           tests.json
+          attachment1.pdf
+          attachment2.png
       env2/
       ...
     B/
@@ -43,6 +47,8 @@ That is:
   executed in that environment * each  test job directory can have inside it
   ``metadata.json``, ``metrics.json``, and ``tests.json``, which are in the
   same format as described in README.md.
+  * Any file other than the above is considered an attachment and imported as
+    such.
 
 Note that the directory names are used as the identifier for builds,
 environments, and test jobs.

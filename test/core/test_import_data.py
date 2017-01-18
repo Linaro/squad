@@ -3,7 +3,7 @@ import os
 
 from django.test import TestCase
 
-from squad.core.models import Group, TestRun, Metric
+from squad.core.models import Build, Group, TestRun, Metric
 from squad.core.management.commands.import_data import Command
 
 
@@ -34,3 +34,7 @@ class ImportTest(TestCase):
 
     def test_import_metrics(self):
         self.assertEqual(2, Metric.objects.count())
+
+    def test_import_attachments(self):
+        t = Build.objects.get(version='2').test_runs.last()
+        self.assertIsNotNone(t.attachments.get(filename='screenshot.png'))
