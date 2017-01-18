@@ -61,7 +61,11 @@ class Command(BaseCommand):
 
     def import_testrun(self, build_id, environment_slug, directory):
         metadata = open(os.path.join(directory, 'metadata.json')).read()
-        metrics = open(os.path.join(directory, 'metrics.json')).read()
+
+        try:
+            metrics = open(os.path.join(directory, 'metrics.json')).read()
+        except FileNotFoundError:
+            metrics = None
 
         try:
             tests = open(os.path.join(directory, 'tests.json')).read()
