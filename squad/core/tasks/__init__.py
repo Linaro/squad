@@ -78,7 +78,7 @@ class ReceiveTestRun(object):
     def __init__(self, project):
         self.project = project
 
-    def __call__(self, version, environment_slug, metadata=None, metrics_file=None, tests_file=None, log_file=None):
+    def __call__(self, version, environment_slug, metadata=None, metrics_file=None, tests_file=None, log_file=None, attachments={}):
         build, _ = self.project.builds.get_or_create(version=version)
         environment, _ = self.project.environments.get_or_create(slug=environment_slug)
 
@@ -108,6 +108,9 @@ class ReceiveTestRun(object):
             metadata_file=metadata,
             **metadata_fields
         )
+
+        for f, data in attachments.items():
+            testrun.attachments.create(filename=f, data=data, length=len(data))
 
         testrun.refresh_from_db()
 

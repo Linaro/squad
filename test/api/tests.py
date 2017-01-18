@@ -100,6 +100,31 @@ class ApiTest(TestCase):
         t = models.TestRun.objects.last()
         self.assertEqual(open(metadata_file).read(), t.metadata_file)
 
+    def test_attachment(self):
+        self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {
+                'attachment': open(metadata_file),
+            }
+        )
+        t = models.TestRun.objects.last()
+        attachment = t.attachments.first()
+        self.assertEqual(open(metadata_file, mode='rb').read(), attachment.data)
+
+    def test_multiple_attachments(self):
+        self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {
+                'attachment': [
+                    open(metadata_file),
+                    open(log_file),
+                ]
+            }
+        )
+        t = models.TestRun.objects.last()
+        self.assertIsNotNone(t.attachments.get(filename=os.path.basename(metadata_file)))
+        self.assertIsNotNone(t.attachments.get(filename=os.path.basename(log_file)))
+
     def test_unauthorized(self):
         client = Client()  # regular client without auth support
         response = client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
