@@ -21,6 +21,13 @@ def valid_token(token, project):
     return project.tokens.filter(key=token).exists()
 
 
+def __read_upload(stream):
+    data = bytes()
+    for chunk in stream.chunks():
+        data = data + chunk
+    return data
+
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def add_test_run(request, group_slug, project_slug, version, environment_slug):
@@ -50,11 +57,14 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
     }
     for key, field in uploads.items():
         if field in request.FILES:
-            data = bytes()
             f = request.FILES[field]
-            for chunk in f.chunks():
-                data = data + chunk
-            test_run_data[key] = data.decode('utf-8')
+            test_run_data[key] = __read_upload(f).decode('utf-8')
+
+    if 'attachment' in request.FILES:
+        attachments = {}
+        for f in request.FILES.getlist('attachment'):
+            attachments[f.name] = __read_upload(f)
+        test_run_data['attachments'] = attachments
 
     receive = ReceiveTestRun(project)
 

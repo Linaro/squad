@@ -113,6 +113,13 @@ class TestRun(models.Model):
         return self.build.project
 
 
+class Attachment(models.Model):
+    test_run = models.ForeignKey(TestRun, related_name='attachments')
+    filename = models.CharField(null=False, max_length=1024)
+    data = models.BinaryField(default=None)
+    length = models.IntegerField(default=None)
+
+
 class Suite(models.Model):
     project = models.ForeignKey(Project, related_name='suites')
     slug = models.CharField(max_length=100)

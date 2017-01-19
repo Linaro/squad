@@ -88,9 +88,11 @@ request. The following files are supported:
 -  ``tests``: test results data
 -  ``metrics``: metrics data
 -  ``metadata``: metadata about the test run
+- ``attachment``: arbitrary file attachments. Multiple attachments can
+  be submitted by providing this parameter multiple times.
 
 See `Input file formats <#input-file-formats>`__ below for details on
-the format of these data files.
+the format of the data files.
 
 Example:
 
@@ -101,6 +103,8 @@ Example:
         --form tests=@/path/to/test-rsults.json \
         --form metrics=@/path/to/metrics.json \
         --form metadata=@/path/to/metadata.json \
+        --form attachment=@/path/to/screenshot.png \
+        --form attachment=@/path/to/extra-info.txt \
         https://squad.example.com/api/submit/my-team/my-project/x.y.z/my-ci-env
 
 Since test results should always come from automation systems, the API

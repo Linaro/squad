@@ -60,8 +60,24 @@ class Command(BaseCommand):
             self.import_testrun(build_id, environment_slug, testrundir)
 
     def import_testrun(self, build_id, environment_slug, directory):
+        # mandatory
         metadata = open(os.path.join(directory, 'metadata.json')).read()
-        metrics = open(os.path.join(directory, 'metrics.json')).read()
+
+        try:
+            metrics = open(os.path.join(directory, 'metrics.json')).read()
+        except FileNotFoundError:
+            metrics = None
+
+        try:
+            tests = open(os.path.join(directory, 'tests.json')).read()
+        except FileNotFoundError:
+            tests = None
+
+        attachments = {}
+        for f in glob(os.path.join(directory, '*')):
+            name = os.path.basename(f)
+            if name not in ['metrics.json', 'metadata.json', 'tests.json']:
+                attachments[name] = open(f, 'rb').read()
 
         if not self.silent:
             print("Importing test run: %s" % directory)
@@ -70,4 +86,6 @@ class Command(BaseCommand):
             environment_slug=environment_slug,
             metadata=metadata,
             metrics_file=metrics,
+            tests_file=tests,
+            attachments=attachments,
         )

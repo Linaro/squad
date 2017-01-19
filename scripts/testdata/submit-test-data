@@ -76,7 +76,10 @@ cat > "${metadata}" <<METADATA
 }
 METADATA
 
-trap "rm -rf $metrics $tests $metadata" INT TERM EXIT
+attachment="$metadata.txt"
+date > "$attachment"
+
+trap "rm -rf $metrics $tests $metadata $attachment" INT TERM EXIT
 
 
 hit_api "/api/submit/$TEAM/$PROJECT/$build/testenv" \
@@ -86,3 +89,5 @@ hit_api "/api/submit/$TEAM/$PROJECT/$build/testenv" \
   --form metadata=@${metadata} \
   --form metrics=@${metrics} \
   --form tests=@${tests} \
+  --form attachment=@${attachment} \
+  --form attachment=@test/core/test_import_data_input/2/default/2/screenshot.png \
