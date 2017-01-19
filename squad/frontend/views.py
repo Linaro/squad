@@ -1,5 +1,6 @@
 from collections import defaultdict
 import json
+import mimetypes
 import os
 
 from django.contrib.auth.decorators import login_required
@@ -10,6 +11,7 @@ from squad.settings import PUBLIC_SITE
 from squad.core.models import Group, Project, Metric
 from squad.core.queries import get_metric_data
 from squad.core.utils import join_name
+from squad.frontend.utils import file_type
 
 
 def login_required_on_private_site(func):
@@ -86,15 +88,40 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
     for test in test_run.tests.all():
         tests_by_suite[test.suite.slug].append(test)
 
+    attachments = [
+        (f['filename'], file_type(f['filename']), f['length'])
+        for f in test_run.attachments.values('filename', 'length')
+    ]
+
     context = {
         'project': project,
         'build': build,
         'test_run': test_run,
         'metadata': json.loads(test_run.metadata_file or '{}'),
+        'attachments': attachments,
         'metrics_by_suite': metrics_by_suite.items(),
         'tests_by_suite': tests_by_suite.items(),
     }
     return render(request, 'squad/test_run.html', context)
+
+
+@login_required_on_private_site
+def attachment(request, group_slug, project_slug, build_version, job_id, fname):
+    group = Group.objects.get(slug=group_slug)
+    project = group.projects.get(slug=project_slug)
+    build = project.builds.get(version=build_version)
+    test_run = build.test_runs.get(job_id=job_id)
+
+    attachment = test_run.attachments.get(filename=fname)
+    filename = attachment.filename
+    data = attachment.data
+
+    content_type, _ = mimetypes.guess_type(filename)
+    if content_type is None:
+        content_type = 'application/octet-stream'
+    response = HttpResponse(data, content_type=content_type)
+    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
+    return response
 
 
 @login_required_on_private_site

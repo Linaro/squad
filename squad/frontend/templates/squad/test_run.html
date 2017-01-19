@@ -12,14 +12,38 @@
         Test run <u>{{test_run.job_id}}</u>
     </h2>
 
-    <h3>Metadata</h3>
     <table class='table table-hover table-condensed'>
+        <tr>
+            <td colspan='2'><h3>Metadata</h3></td>
+        </tr>
         {% for key, value in metadata.items %}
         <tr>
             <th>{{key}}</th>
             <td>{{value}}</td>
         </tr>
         {% endfor %}
+        {% if attachments|length > 0 %}
+            <tr>
+                <td colspan='2'><h3>Attachments</h3></td>
+            </tr>
+            {% for file, file_type, length in attachments %}
+            <tr>
+                <td>
+                </td>
+                <td>
+                    <a href="attachments/{{file}}">
+                        {% if file_type %}
+                        <i class='fa fa-file-{{file_type}}-o'></i>
+                        {% else %}
+                        <i class='fa fa-file-o'></i>
+                        {% endif %}
+                        {{file}}
+                    </a>
+                    ({{length|filesizeformat}})
+                </td>
+            </tr>
+            {% endfor %}
+        {% endif %}
     </table>
 
     <table class='table table-hover table-condensed'>
