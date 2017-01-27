@@ -1,29 +1,17 @@
 import mimetypes
 
 
-file_mapping = {
-    'code': (
-        'text/x-'
-    ),
-    'text': (
-        'text/',
-        'application/pdf',
-    ),
-    'image': (
-        'image/',
-    ),
-    'audio': (
-        'audio/',
-    ),
-    'video': (
-        'video/',
-    ),
-    'archive': (
-        'application/gzip',
-        'application/z-xz',
-        'application/zip',
-    ),
-}
+file_mapping = (
+    ('text/x-', 'code'),
+    ('text/', 'text'),
+    ('application/pdf', 'text'),
+    ('image/', 'image'),
+    ('audio/', 'audio'),
+    ('video/', 'video'),
+    ('application/gzip', 'archive'),
+    ('application/z-xz', 'archive'),
+    ('application/zip', 'archive'),
+)
 
 
 def file_type(filename):
@@ -32,9 +20,8 @@ def file_type(filename):
     if content_type is None:
         return None
 
-    for candidate, patterns in file_mapping.items():
-        for p in patterns:
-            if p in content_type:
-                return candidate
+    for pattern, ftype in file_mapping:
+        if pattern in content_type:
+            return ftype
 
     return None
