@@ -112,6 +112,9 @@ class TestRun(models.Model):
     def project(self):
         return self.build.project
 
+    def __str__(self):
+        return self.job_id and ('#%s' % self.job_id) or ('(%s)' % self.id)
+
 
 class Attachment(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='attachments')
