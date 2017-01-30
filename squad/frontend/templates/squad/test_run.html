@@ -75,36 +75,6 @@
 
         <tr>
             <td colspan='2'>
-                <h3>Metrics</h3>
-            </td>
-        </tr>
-        {% for suite, metrics in metrics_by_suite %}
-            <tr class='warning'>
-                <td colspan='2'>
-                    <h4>{{suite}}</h4>
-                </td>
-            </tr>
-            {% for metric in metrics %}
-                <tr>
-                    <td>{{metric.name}}</td>
-                    <td>{{metric.result}}</td>
-                </tr>
-            {% endfor %}
-            <tr>
-                <td colspan='2'>&nbsp;</td>
-            </tr>
-        {% endfor %}
-
-        {% if not metrics_by_suite %}
-        <tr>
-            <td colspan='2'>
-                <em>No metrics in this test run</em>
-            </td>
-        </tr>
-        {% endif %}
-
-        <tr>
-            <td colspan='2'>
                 <h3>Tests</h3>
             </td>
         </tr>
@@ -138,6 +108,37 @@
             </td>
         </tr>
         {% endif %}
+
+        <tr>
+            <td colspan='2'>
+                <h3>Metrics</h3>
+            </td>
+        </tr>
+        {% for suite, metrics in metrics_by_suite %}
+            <tr class='warning'>
+                <td colspan='2'>
+                    <h4>{{suite}}</h4>
+                </td>
+            </tr>
+            {% for metric in metrics %}
+                <tr>
+                    <td>{{metric.name}}</td>
+                    <td>{{metric.result}}</td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td colspan='2'>&nbsp;</td>
+            </tr>
+        {% endfor %}
+
+        {% if not metrics_by_suite %}
+        <tr>
+            <td colspan='2'>
+                <em>No metrics in this test run</em>
+            </td>
+        </tr>
+        {% endif %}
+
     </table>
 
 {% endblock %}
