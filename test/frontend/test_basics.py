@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 
 from squad.core import models
+from squad.core.tasks import ReceiveTestRun
 
 
 class FrontendTest(TestCase):
@@ -15,6 +16,16 @@ class FrontendTest(TestCase):
 
         self.client = Client()
         self.client.force_login(self.user)
+
+        ReceiveTestRun(self.project)(
+            version='1.0',
+            environment_slug='myenv',
+            log_file='log file contents ...',
+            tests_file='{}',
+            metrics_file='{}',
+            metadata='{ "job_id" : "1" }',
+        )
+        self.test_run = models.TestRun.objects.last()
 
     def hit(self, url):
         response = self.client.get(url)
@@ -32,3 +43,25 @@ class FrontendTest(TestCase):
 
     def test_builds(self):
         self.hit('/mygroup/myproject/builds/')
+
+    def test_attachment(self):
+        data = bytes('text file', 'utf-8')
+        self.test_run.attachments.create(filename='foo.txt', data=data, length=len(data))
+        response = self.hit('/mygroup/myproject/build/1.0/testrun/1/attachments/foo.txt')
+        self.assertEqual('text/plain', response['Content-Type'])
+
+    def test_log(self):
+        response = self.hit('/mygroup/myproject/build/1.0/testrun/1/log')
+        self.assertEqual('text/plain', response['Content-Type'])
+
+    def test_tests(self):
+        response = self.hit('/mygroup/myproject/build/1.0/testrun/1/tests')
+        self.assertEqual('application/json', response['Content-Type'])
+
+    def test_metrics(self):
+        response = self.hit('/mygroup/myproject/build/1.0/testrun/1/metrics')
+        self.assertEqual('application/json', response['Content-Type'])
+
+    def test_metadata(self):
+        response = self.hit('/mygroup/myproject/build/1.0/testrun/1/metadata')
+        self.assertEqual('application/json', response['Content-Type'])

@@ -22,27 +22,52 @@
             <td>{{value}}</td>
         </tr>
         {% endfor %}
+        <tr>
+            <td><h3>Downloads</h3></td>
+            <td style='vertical-align: middle'>
+                {% if test_run.log_file|length > 0 %}
+                <a href="log" class='btn btn-default'>
+                    <i class='fa fa-file-text-o'></i>
+                    Log file
+                </a>
+                {% endif %}
+                {% if test_run.tests_file|length > 0 %}
+                <a href="tests" class='btn btn-default'>
+                    <i class='fa fa-file-code-o'></i>
+                    Tests file
+                </a>
+                {% endif %}
+                {% if test_run.metrics_file|length > 0 %}
+                <a href="metrics" class='btn btn-default'>
+                    <i class='fa fa-file-code-o'></i>
+                    Metrics file
+                </a>
+                {% endif %}
+                {% if test_run.metadata_file|length > 0 %}
+                <a href="metadata" class='btn btn-default'>
+                    <i class='fa fa-file-code-o'></i>
+                    Metadata file
+                </a>
+                {% endif %}
+            </td>
+        </tr>
         {% if attachments|length > 0 %}
-            <tr>
-                <td colspan='2'><h3>Attachments</h3></td>
-            </tr>
-            {% for file, file_type, length in attachments %}
-            <tr>
-                <td>
-                </td>
-                <td>
-                    <a href="attachments/{{file}}">
-                        {% if file_type %}
-                        <i class='fa fa-file-{{file_type}}-o'></i>
-                        {% else %}
-                        <i class='fa fa-file-o'></i>
-                        {% endif %}
-                        {{file}}
-                    </a>
+        <tr>
+            <td><h3>Attachments</h3></td>
+            <td style='vertical-align: middle'>
+                {% for file, file_type, length in attachments %}
+                <a href="attachments/{{file}}" class='btn btn-default'>
+                    {% if file_type %}
+                    <i class='fa fa-file-{{file_type}}-o'></i>
+                    {% else %}
+                    <i class='fa fa-file-o'></i>
+                    {% endif %}
+                    {{file}}
                     ({{length|filesizeformat}})
-                </td>
-            </tr>
-            {% endfor %}
+                </a>
+                {% endfor %}
+            </td>
+        </tr>
         {% endif %}
     </table>
 

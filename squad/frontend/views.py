@@ -116,6 +116,50 @@ def __download__(filename, data, content_type=None):
 
 
 @login_required_on_private_site
+def test_run_log(request, group_slug, project_slug, build_version, job_id):
+    group = Group.objects.get(slug=group_slug)
+    project = group.projects.get(slug=project_slug)
+    build = project.builds.get(version=build_version)
+    test_run = build.test_runs.get(job_id=job_id)
+
+    filename = '%s_%s_%s_%s.log' % (group.slug, project.slug, build.version, test_run.job_id)
+    return __download__(filename, test_run.log_file, 'text/plain')
+
+
+@login_required_on_private_site
+def test_run_tests(request, group_slug, project_slug, build_version, job_id):
+    group = Group.objects.get(slug=group_slug)
+    project = group.projects.get(slug=project_slug)
+    build = project.builds.get(version=build_version)
+    test_run = build.test_runs.get(job_id=job_id)
+
+    filename = '%s_%s_%s_%s_tests.json' % (group.slug, project.slug, build.version, test_run.job_id)
+    return __download__(filename, test_run.tests_file)
+
+
+@login_required_on_private_site
+def test_run_metrics(request, group_slug, project_slug, build_version, job_id):
+    group = Group.objects.get(slug=group_slug)
+    project = group.projects.get(slug=project_slug)
+    build = project.builds.get(version=build_version)
+    test_run = build.test_runs.get(job_id=job_id)
+
+    filename = '%s_%s_%s_%s_metrics.json' % (group.slug, project.slug, build.version, test_run.job_id)
+    return __download__(filename, test_run.metrics_file)
+
+
+@login_required_on_private_site
+def test_run_metadata(request, group_slug, project_slug, build_version, job_id):
+    group = Group.objects.get(slug=group_slug)
+    project = group.projects.get(slug=project_slug)
+    build = project.builds.get(version=build_version)
+    test_run = build.test_runs.get(job_id=job_id)
+
+    filename = '%s_%s_%s_%s_metadata.json' % (group.slug, project.slug, build.version, test_run.job_id)
+    return __download__(filename, test_run.metadata_file)
+
+
+@login_required_on_private_site
 def attachment(request, group_slug, project_slug, build_version, job_id, fname):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
