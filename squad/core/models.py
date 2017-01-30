@@ -221,6 +221,22 @@ class Status(models.Model):
     def environment(self):
         return self.test_run.environment
 
+    @property
+    def tests(self):
+        return self.test_run.tests.filter(suite=self.suite)
+
+    @property
+    def metrics(self):
+        return self.test_run.metrics.filter(suite=self.suite)
+
+    @property
+    def has_tests(self):
+        return (self.tests_pass + self.tests_fail) > 0
+
+    @property
+    def has_metrics(self):
+        return len(self.metrics) > 0
+
     def __str__(self):
         if self.suite:
             name = self.suite.slug + ' on ' + self.environment.slug
