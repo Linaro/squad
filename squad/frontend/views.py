@@ -105,6 +105,16 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
     return render(request, 'squad/test_run.html', context)
 
 
+def __download__(filename, data, content_type=None):
+    if not content_type:
+        content_type, _ = mimetypes.guess_type(filename)
+        if content_type is None:
+            content_type = 'application/octet-stream'
+    response = HttpResponse(data, content_type=content_type)
+    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
+    return response
+
+
 @login_required_on_private_site
 def attachment(request, group_slug, project_slug, build_version, job_id, fname):
     group = Group.objects.get(slug=group_slug)
@@ -113,15 +123,7 @@ def attachment(request, group_slug, project_slug, build_version, job_id, fname):
     test_run = build.test_runs.get(job_id=job_id)
 
     attachment = test_run.attachments.get(filename=fname)
-    filename = attachment.filename
-    data = attachment.data
-
-    content_type, _ = mimetypes.guess_type(filename)
-    if content_type is None:
-        content_type = 'application/octet-stream'
-    response = HttpResponse(data, content_type=content_type)
-    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
-    return response
+    return __download__(attachment.filename, attachment.data)
 
 
 @login_required_on_private_site
