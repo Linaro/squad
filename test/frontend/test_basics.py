@@ -17,17 +17,18 @@ class FrontendTest(TestCase):
         self.client.force_login(self.user)
 
     def hit(self, url):
-        response = self.client.get('/')
+        response = self.client.get(url)
         self.assertEqual(200, response.status_code)
+        return response
 
     def test_home(self):
         self.hit('/')
 
     def test_group(self):
-        self.hit('/mygroup')
+        self.hit('/mygroup/')
 
     def test_project(self):
-        self.hit('/mygroup/myproject')
+        self.hit('/mygroup/myproject/')
 
     def test_builds(self):
-        self.hit('/mygroup/myproject/builds')
+        self.hit('/mygroup/myproject/builds/')
