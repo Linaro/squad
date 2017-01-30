@@ -82,8 +82,18 @@
         {% endif %}
         {% for status in tests_status %}
         <tr class='warning'>
-            <td colspan='2'>
+            <td>
                 <h4>{{status.suite.slug}}</h4>
+            </td>
+            <td style='vertical-align: middle'>
+                <div class="progress" style='margin-bottom: 0px'>
+                    <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%">
+                        <span class="sr-only">Pass: {{status.pass_percentage}}% </span>
+                    </div>
+                    <div class="progress-bar progress-bar-danger" style="width: {{status.fail_percentage}}%">
+                        <span class="sr-only">Fail: {{status.fail_percentage}}%</span>
+                    </div>
+                </div>
             </td>
         </tr>
             {% for test in status.tests %}
