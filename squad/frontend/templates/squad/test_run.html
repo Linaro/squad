@@ -73,18 +73,20 @@
 
     <table class='table table-hover table-condensed'>
 
+        {% if tests_status|length > 0 %}
         <tr>
             <td colspan='2'>
                 <h3>Tests</h3>
             </td>
         </tr>
-        {% for suite, tests in tests_by_suite %}
+        {% endif %}
+        {% for status in tests_status %}
         <tr class='warning'>
             <td colspan='2'>
-                <h4>{{suite}}</h4>
+                <h4>{{status.suite.slug}}</h4>
             </td>
         </tr>
-            {% for test in tests %}
+            {% for test in status.tests %}
             <tr>
                 <td>{{test.name}}</td>
                 <td>
@@ -101,26 +103,21 @@
             </tr>
         {% endfor %}
 
-        {% if not tests_by_suite %}
-        <tr>
-            <td colspan='2'>
-                <em>No tests in this test run</em>
-            </td>
-        </tr>
-        {% endif %}
 
+        {% if metrics_status|length > 0 %}
         <tr>
             <td colspan='2'>
                 <h3>Metrics</h3>
             </td>
         </tr>
-        {% for suite, metrics in metrics_by_suite %}
+        {% endif %}
+        {% for status in metrics_status %}
             <tr class='warning'>
                 <td colspan='2'>
-                    <h4>{{suite}}</h4>
+                    <h4>{{status.suite.slug}}</h4>
                 </td>
             </tr>
-            {% for metric in metrics %}
+            {% for metric in status.metrics %}
                 <tr>
                     <td>{{metric.name}}</td>
                     <td>{{metric.result}}</td>
@@ -130,14 +127,6 @@
                 <td colspan='2'>&nbsp;</td>
             </tr>
         {% endfor %}
-
-        {% if not metrics_by_suite %}
-        <tr>
-            <td colspan='2'>
-                <em>No metrics in this test run</em>
-            </td>
-        </tr>
-        {% endif %}
 
     </table>
 
