@@ -177,7 +177,9 @@ def charts(request, group_slug, project_slug):
     metric_set = Metric.objects.filter(
         test_run__environment__project=project
     ).values('suite__slug', 'name').order_by('suite__slug', 'name').distinct()
-    metrics = [{"name": join_name(m['suite__slug'], m['name'])} for m in metric_set]
+
+    metrics = [{"name": ":tests:", "label": "Test pass %", "max": 100, "min": 0}]
+    metrics += [{"name": join_name(m['suite__slug'], m['name'])} for m in metric_set]
 
     data = get_metric_data(
         project,
