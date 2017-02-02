@@ -8,8 +8,9 @@ env:
   - DATABASE=
 
 before_install:
-  - psql -d template1 -c 'create extension hstore;' -U postgres
-  - psql -c 'create database "squad";' -U postgres
+  - if test -n "$DATABASE"; then pip install psycopg2; fi
+  - if test -n "$DATABASE"; then psql -d template1 -c 'create extension hstore;' -U postgres; fi
+  - if test -n "$DATABASE"; then psql -c 'create database "squad";' -U postgres; fi
 
 install:
   - pip install -r requirements-dev.txt
