@@ -15,6 +15,7 @@ before_install:
   - if test -n "$DATABASE"; then psql -c 'create database "squad";' -U postgres; fi
 
 install:
+  - pip install --upgrade setuptools
   - pip install -r requirements-dev.txt
 
 script:
