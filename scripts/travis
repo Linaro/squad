@@ -1,6 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
 set -eu
+set -o pipefail
 
 git fetch origin cache/static
 git archive FETCH_HEAD | tar xaf -
