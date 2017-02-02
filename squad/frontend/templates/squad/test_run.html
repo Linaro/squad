@@ -73,48 +73,30 @@
 
     <table class='table table-hover table-condensed'>
 
-        <tr>
-            <td colspan='2'>
-                <h3>Metrics</h3>
-            </td>
-        </tr>
-        {% for suite, metrics in metrics_by_suite %}
-            <tr class='warning'>
-                <td colspan='2'>
-                    <h4>{{suite}}</h4>
-                </td>
-            </tr>
-            {% for metric in metrics %}
-                <tr>
-                    <td>{{metric.name}}</td>
-                    <td>{{metric.result}}</td>
-                </tr>
-            {% endfor %}
-            <tr>
-                <td colspan='2'>&nbsp;</td>
-            </tr>
-        {% endfor %}
-
-        {% if not metrics_by_suite %}
-        <tr>
-            <td colspan='2'>
-                <em>No metrics in this test run</em>
-            </td>
-        </tr>
-        {% endif %}
-
+        {% if tests_status|length > 0 %}
         <tr>
             <td colspan='2'>
                 <h3>Tests</h3>
             </td>
         </tr>
-        {% for suite, tests in tests_by_suite %}
+        {% endif %}
+        {% for status in tests_status %}
         <tr class='warning'>
-            <td colspan='2'>
-                <h4>{{suite}}</h4>
+            <td>
+                <h4>{{status.suite.slug}}</h4>
+            </td>
+            <td style='vertical-align: middle'>
+                <div class="progress" style='margin-bottom: 0px'>
+                    <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%">
+                        <span class="sr-only">Pass: {{status.pass_percentage}}% </span>
+                    </div>
+                    <div class="progress-bar progress-bar-danger" style="width: {{status.fail_percentage}}%">
+                        <span class="sr-only">Fail: {{status.fail_percentage}}%</span>
+                    </div>
+                </div>
             </td>
         </tr>
-            {% for test in tests %}
+            {% for test in status.tests %}
             <tr>
                 <td>{{test.name}}</td>
                 <td>
@@ -131,13 +113,31 @@
             </tr>
         {% endfor %}
 
-        {% if not tests_by_suite %}
+
+        {% if metrics_status|length > 0 %}
         <tr>
             <td colspan='2'>
-                <em>No tests in this test run</em>
+                <h3>Metrics</h3>
             </td>
         </tr>
         {% endif %}
+        {% for status in metrics_status %}
+            <tr class='warning'>
+                <td colspan='2'>
+                    <h4>{{status.suite.slug}}</h4>
+                </td>
+            </tr>
+            {% for metric in status.metrics %}
+                <tr>
+                    <td>{{metric.name}}</td>
+                    <td>{{metric.result}}</td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td colspan='2'>&nbsp;</td>
+            </tr>
+        {% endfor %}
+
     </table>
 
 {% endblock %}

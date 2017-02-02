@@ -17,22 +17,23 @@ class ApiDataTest(TestCase):
         self.project.tokens.create(key='thekey')
         self.client = APIClient('thekey')
 
-    def receive(self, datestr, metrics):
+    def receive(self, datestr, metrics={}, tests={}):
         receive = ReceiveTestRun(self.project)
         receive(
             version=datestr,
             environment_slug="env1",
             metadata=json.dumps({"datetime": datestr + "T00:00:00+00:00"}),
             metrics_file=json.dumps(metrics),
+            tests_file=json.dumps(tests),
         )
 
     def test_basics(self):
-        self.receive("2016-09-01", {
+        self.receive("2016-09-01", metrics={
             "foo": 1,
             "bar/baz": 2,
         })
 
-        self.receive("2016-09-02", {
+        self.receive("2016-09-02", metrics={
             "foo": 2,
             "bar/baz": 3,
         })
@@ -52,6 +53,25 @@ class ApiDataTest(TestCase):
         self.assertEqual([1472774400, 3.0], second[0:2])
 
         self.assertEqual('application/json; charset=utf-8', resp.http['Content-Type'])
+
+    def test_tests(self):
+        self.receive("2017-01-01", tests={
+            "foo": "pass",
+            "bar": "fail",
+        })
+        self.receive("2017-01-02", tests={
+            "foo": "pass",
+            "bar": "pass",
+        })
+
+        response = self.client.get_json('/api/data/mygroup/myproject?metric=:tests:&environment=env1')
+        json = response.data
+
+        first = json[':tests:']['env1'][0]
+        second = json[':tests:']['env1'][1]
+
+        self.assertEqual([1483228800, 50], first)
+        self.assertEqual([1483315200, 100], second)
 
     def test_no_auth(self):
         unauthenticated_client = Client()
