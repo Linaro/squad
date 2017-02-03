@@ -53,7 +53,7 @@ function ChartsController($scope, $http, $location) {
             options: {
                 title: {
                     display: true,
-                    text: metric.name
+                    text: metric.label
                 },
                 tooltips: {
                     callbacks: {
@@ -72,6 +72,12 @@ function ChartsController($scope, $http, $location) {
                     }
                 },
                 scales: {
+                    yAxes: [{
+                        ticks: {
+                            max: metric.max,
+                            min: metric.min
+                        }
+                    }],
                     xAxes: [{
                         type: 'linear',
                         position: 'bottom',
@@ -225,6 +231,11 @@ function ChartsController($scope, $http, $location) {
         })
 
         $scope.metrics = DATA.metrics
+        _.each($scope.metrics, function(metric) {
+            if (!metric.label) {
+                metric.label = metric.name
+            }
+        })
         $scope.selectedMetrics = _.filter($scope.metrics, function(metric) {
             var found = _.find(_.castArray(params.metric), function(param) { return param == metric.name })
             return found

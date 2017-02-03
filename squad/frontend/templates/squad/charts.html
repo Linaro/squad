@@ -50,7 +50,7 @@
 
           Add metric:
           <select ng-disabled="disabled" ng-model="metric" class="form-control"
-                  ng-change="addMetric(metric)" ng-options="item.padding + item.name for item in metrics"></select>
+                  ng-change="addMetric(metric)" ng-options="item.padding + item.label for item in metrics"></select>
         </div>
       </div>
       {% endverbatim %}
@@ -68,7 +68,6 @@
 
 {% block javascript %}
 <script type="text/javascript">
-// FIXME should come from the DB
 DATA = {
   'project': '{{project.group.slug}}/{{project.slug}}',
   'environments': {{environments|safe}},

@@ -80,13 +80,10 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
     build = project.builds.get(version=build_version)
     test_run = build.test_runs.get(job_id=job_id)
 
-    metrics_by_suite = defaultdict(list)
-    for metric in test_run.metrics.all():
-        metrics_by_suite[metric.suite.slug].append(metric)
+    status = test_run.status.by_suite()
 
-    tests_by_suite = defaultdict(list)
-    for test in test_run.tests.all():
-        tests_by_suite[test.suite.slug].append(test)
+    tests_status = [s for s in status if s.has_tests]
+    metrics_status = [s for s in status if s.has_metrics]
 
     attachments = [
         (f['filename'], file_type(f['filename']), f['length'])
@@ -99,8 +96,8 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
         'test_run': test_run,
         'metadata': json.loads(test_run.metadata_file or '{}'),
         'attachments': attachments,
-        'metrics_by_suite': metrics_by_suite.items(),
-        'tests_by_suite': tests_by_suite.items(),
+        'tests_status': tests_status,
+        'metrics_status': metrics_status,
     }
     return render(request, 'squad/test_run.html', context)
 
@@ -180,7 +177,9 @@ def charts(request, group_slug, project_slug):
     metric_set = Metric.objects.filter(
         test_run__environment__project=project
     ).values('suite__slug', 'name').order_by('suite__slug', 'name').distinct()
-    metrics = [{"name": join_name(m['suite__slug'], m['name'])} for m in metric_set]
+
+    metrics = [{"name": ":tests:", "label": "Test pass %", "max": 100, "min": 0}]
+    metrics += [{"name": join_name(m['suite__slug'], m['name'])} for m in metric_set]
 
     data = get_metric_data(
         project,
