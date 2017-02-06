@@ -109,7 +109,7 @@ class ApiTest(TestCase):
         )
         t = models.TestRun.objects.last()
         attachment = t.attachments.first()
-        self.assertEqual(open(metadata_file, mode='rb').read(), attachment.data)
+        self.assertEqual(open(metadata_file, mode='rb').read(), bytes(attachment.data))
 
     def test_multiple_attachments(self):
         self.client.post(
