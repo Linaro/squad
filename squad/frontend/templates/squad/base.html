@@ -33,31 +33,20 @@
         </ul>
         -->
 
-        <div class="pull-right">
-          {% if user.is_authenticated %}
-          <button
-            onclick='toggle_drop_down("user-menu-button","user-menu")'
-            class="btn btn-default navbar-btn dropdown-toggle"
-            type="button"
-            id="user-menu-button"
-            data-toggle="dropdown"
-            aria-haspopup="true"
-            aria-expanded="true">
-            {{ user.username }}
-            <span class="caret"></span>
-          </button>
-          <ul id='user-menu' class="dropdown-menu" aria-labelledby="user-menu-button">
-            <li><a href="#">Profile</a></li>
-            <li><a href="/admin/">Administration</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="/logout">Log out</a></li>
+        <div class="collapse navbar-collapse">
+          <ul id='user-menu' class="nav navbar-nav navbar-right">
+            {% if user.is_authenticated %}
+            <li><a><i class='fa fa-user-circle'></i> {{ user.username }}</a></li>
+            {% if user.is_staff %}
+            <li><a href="/admin/"><i class='fa fa-gear'></i> Administration</a></li>
+            {% endif %}
+            <li><a href="/logout"><i class='fa fa-sign-out'></i> Log out</a></li>
           </ul>
           {% else %}
-          <a class="btn btn-default navbar-btn dropdown-toggle" href="/login/">
-            Log in
-          </a>
+          <li><a href="/login/"><i class='fa fa-sign-in'></i> Log in</a></li>
           {% endif %}
         </div>
+
       </div>
     </nav>
 
@@ -71,7 +60,6 @@
 
     <script type="text/javascript" src="{% static "chartjs/Chart.bundle.js" %}"></script>
 
-    <script type="text/javascript" src="{% static "main.js" %}"></script>
     {% block javascript %}{% endblock %}
   </body>
 </html>
