@@ -56,10 +56,12 @@ The following environment variables affect the behavior of SQUAD:
 
 * ``SQUAD_EXTRA_SETTINGS``: path to a Python file with extra Django settings.
 
+* ``SQUAD_SITE_NAME``: name to be displayed at the page title and navigation
+  bar. Defaults to 'SQUAD'.
+
 * ``XDG_DATA_HOME``: parent directory of the SQUAD internal data directory.
   Defaults to ``~/.local/share``.  The actual data directory will be
   ``${XDG_DATA_HOME}/squad``.
 
 * ``SECRET_KEY_FILE``: file to store encryption key for user sessions. Defaults
   to ``${XDG_DATA_HOME}/squad/secret.dat``
-

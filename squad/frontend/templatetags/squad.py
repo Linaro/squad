@@ -1,4 +1,5 @@
 from django import template
+from django.conf import settings
 from django.core.urlresolvers import reverse
 
 
@@ -42,3 +43,8 @@ def project_url(the_object):
 @register.simple_tag
 def project_section_url(project, name):
     return reverse(name, args=(project.group.slug, project.slug))
+
+
+@register.simple_tag
+def site_name():
+    return settings.SITE_NAME

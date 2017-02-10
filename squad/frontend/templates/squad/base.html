@@ -1,11 +1,12 @@
 {% load static %}
+{% load squad %}
 <html lang="en">
 
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SQUAD - {% block page_title %}{% endblock %}</title>
+    <title>{% site_name %} - {% block page_title %}{% endblock %}</title>
 
     <link rel="shortcut icon"  href="{% static "favicon.ico" %}"/>
 
@@ -22,7 +23,7 @@
         <div class="navbar-header">
           <a class="navbar-brand" href="/">
             <span class="fa fa-line-chart" aria-hidden="true"></span>
-            SQUAD
+            {% site_name %}
           </a>
         </div>
 
