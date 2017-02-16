@@ -27,11 +27,12 @@ rand() {
   echo $((0x$(openssl rand -hex 1) % ${max} + 1))
 }
 
+# generates a pass with 75% chance
 rand_pass_fail() {
-  if [ "$(rand 1)" -eq 1 ]; then
-    echo "pass"
-  else
+  if [ "$(rand 4)" -eq 1 ]; then
     echo "fail"
+  else
+    echo "pass"
   fi
 }
 
