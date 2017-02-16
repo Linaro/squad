@@ -38,6 +38,9 @@ class ValidateTestRun(object):
         if type(metadata) != dict:
             raise exceptions.InvalidMetadata("metadata is not a object ({})")
 
+        if "job_id" not in metadata.keys():
+            raise exceptions.InvalidMetadata("job_id is mandatory in metadata")
+
         for key, value in metadata.items():
             if not isinstance(value, str):
                 raise exceptions.InvalidMetadata("value \"%r\" is not as string" % value)

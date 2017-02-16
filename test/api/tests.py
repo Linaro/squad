@@ -171,3 +171,12 @@ class ApiTest(TestCase):
             }
         )
         self.assertEqual(400, response.status_code)
+
+    def test_reject_submission_without_job_id(self):
+        response = self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {
+                'metadata': StringIO('{"datetime": "2016-09-01T00:00:00+00:00"}'),
+            }
+        )
+        self.assertEqual(400, response.status_code)
