@@ -78,7 +78,7 @@ class ApiDataTest(TestCase):
         resp = unauthenticated_client.get('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')
         self.assertEqual(401, resp.status_code)
 
-    @patch("squad.api.data.PUBLIC_SITE", True)
+    @patch("squad.http.PUBLIC_SITE", True)
     def test_no_auth_on_public_site(self):
         unauthenticated_client = Client()
         resp = unauthenticated_client.get('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')
