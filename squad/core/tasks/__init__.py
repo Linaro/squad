@@ -38,6 +38,9 @@ class ValidateTestRun(object):
         if type(metadata) != dict:
             raise exceptions.InvalidMetadata("metadata is not a object ({})")
 
+        if "job_id" not in metadata.keys():
+            raise exceptions.InvalidMetadata("job_id is mandatory in metadata")
+
         for key, value in metadata.items():
             if not isinstance(value, str):
                 raise exceptions.InvalidMetadata("value \"%r\" is not as string" % value)
@@ -97,6 +100,11 @@ class ReceiveTestRun(object):
                 "resubmit_url",
             )
             metadata_fields = {k: data[k] for k in fields if data.get(k)}
+
+            job_id = metadata_fields['job_id']
+            if build.test_runs.filter(job_id=job_id).exists():
+                raise exceptions.InvalidMetadata("There is already a test run with job_id %s" % job_id)
+
         else:
             metadata_fields = {}
 

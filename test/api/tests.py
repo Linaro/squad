@@ -171,3 +171,27 @@ class ApiTest(TestCase):
             }
         )
         self.assertEqual(400, response.status_code)
+
+    def test_reject_submission_without_job_id(self):
+        response = self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {
+                'metadata': StringIO('{"datetime": "2016-09-01T00:00:00+00:00"}'),
+            }
+        )
+        self.assertEqual(400, response.status_code)
+
+    def test_reject_submission_with_existing_job_id(self):
+        def post():
+            return self.client.post(
+                '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+                {
+                    'metadata': open(metadata_file),
+                }
+            )
+
+        first = post()
+        second = post()
+
+        self.assertEqual(201, first.status_code)
+        self.assertEqual(400, second.status_code)
