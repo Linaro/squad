@@ -7,39 +7,30 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from squad.settings import PUBLIC_SITE
 from squad.core.models import Group, Project, Metric
 from squad.core.queries import get_metric_data
 from squad.core.utils import join_name
 from squad.frontend.utils import file_type
+from squad.http import auth
 
 
-def login_required_on_private_site(func):
-    if PUBLIC_SITE:
-        return func
-    else:
-        return login_required(func)
-
-
-@login_required_on_private_site
 def home(request):
     context = {
-        'projects': Project.objects.all(),
+        'projects': Project.objects.accessible_to(request.user),
     }
     return render(request, 'squad/index.html', context)
 
 
-@login_required_on_private_site
 def group(request, group_slug):
     group = Group.objects.get(slug=group_slug)
     context = {
         'group': group,
-        'projects': group.projects.all(),
+        'projects': group.projects.accessible_to(request.user),
     }
     return render(request, 'squad/group.html', context)
 
 
-@login_required_on_private_site
+@auth
 def project(request, group_slug, project_slug):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
@@ -49,7 +40,7 @@ def project(request, group_slug, project_slug):
     return render(request, 'squad/project.html', context)
 
 
-@login_required_on_private_site
+@auth
 def builds(request, group_slug, project_slug):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
@@ -61,7 +52,7 @@ def builds(request, group_slug, project_slug):
     return render(request, 'squad/builds.html', context)
 
 
-@login_required_on_private_site
+@auth
 def build(request, group_slug, project_slug, version):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
@@ -73,7 +64,7 @@ def build(request, group_slug, project_slug, version):
     return render(request, 'squad/build.html', context)
 
 
-@login_required_on_private_site
+@auth
 def test_run(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
@@ -112,7 +103,7 @@ def __download__(filename, data, content_type=None):
     return response
 
 
-@login_required_on_private_site
+@auth
 def test_run_log(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
@@ -123,7 +114,7 @@ def test_run_log(request, group_slug, project_slug, build_version, job_id):
     return __download__(filename, test_run.log_file, 'text/plain')
 
 
-@login_required_on_private_site
+@auth
 def test_run_tests(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
@@ -134,7 +125,7 @@ def test_run_tests(request, group_slug, project_slug, build_version, job_id):
     return __download__(filename, test_run.tests_file)
 
 
-@login_required_on_private_site
+@auth
 def test_run_metrics(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
@@ -145,7 +136,7 @@ def test_run_metrics(request, group_slug, project_slug, build_version, job_id):
     return __download__(filename, test_run.metrics_file)
 
 
-@login_required_on_private_site
+@auth
 def test_run_metadata(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
@@ -156,7 +147,7 @@ def test_run_metadata(request, group_slug, project_slug, build_version, job_id):
     return __download__(filename, test_run.metadata_file)
 
 
-@login_required_on_private_site
+@auth
 def attachment(request, group_slug, project_slug, build_version, job_id, fname):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
@@ -167,7 +158,7 @@ def attachment(request, group_slug, project_slug, build_version, job_id, fname):
     return __download__(attachment.filename, attachment.data)
 
 
-@login_required_on_private_site
+@auth
 def charts(request, group_slug, project_slug):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)

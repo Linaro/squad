@@ -2,7 +2,7 @@ from django.test import TestCase
 import json
 from unittest.mock import patch
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 from test.api import Client, APIClient
 from squad.core.tasks import ReceiveTestRun
@@ -12,7 +12,9 @@ from squad.core import models
 class ApiDataTest(TestCase):
 
     def setUp(self):
+        self.user_group = Group.objects.create(name='foo')
         self.group = models.Group.objects.create(slug='mygroup')
+        self.group.user_groups.add(self.user_group)
         self.project = self.group.projects.create(slug='myproject')
         self.project.tokens.create(key='thekey')
         self.client = APIClient('thekey')
@@ -73,25 +75,34 @@ class ApiDataTest(TestCase):
         self.assertEqual([1483228800, 50], first)
         self.assertEqual([1483315200, 100], second)
 
-    def test_no_auth(self):
+    def test_no_auth_on_non_public_project(self):
+        self.project.is_public = False
+        self.project.save()
+
         unauthenticated_client = Client()
         resp = unauthenticated_client.get('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')
         self.assertEqual(401, resp.status_code)
 
-    @patch("squad.http.PUBLIC_SITE", True)
-    def test_no_auth_on_public_site(self):
+    def test_no_auth_on_public_project(self):
         unauthenticated_client = Client()
         resp = unauthenticated_client.get('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')
         self.assertEqual(200, resp.status_code)
 
     def test_invalid_auth(self):
+        self.project.is_public = False
+        self.project.save()
+
         wrong_client = APIClient('invalidkey')
         resp = wrong_client.get('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')
         self.assertEqual(401, resp.status_code)
 
     def test_auth_from_web_ui(self):
+        self.project.is_public = False
+        self.project.save()
+
         web_client = Client()
         user = User.objects.create(username='theuser')
+        user.groups.add(self.user_group)
         web_client.force_login(user)
 
         resp = web_client.get('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')

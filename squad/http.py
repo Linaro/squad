@@ -3,7 +3,6 @@ from django.shortcuts import get_object_or_404
 
 
 from squad.core import models
-from squad.settings import PUBLIC_SITE
 
 
 def auth(func):
@@ -12,16 +11,16 @@ def auth(func):
         group_slug = args[1]
         project_slug = args[2]
 
-        token = request.META.get('HTTP_AUTH_TOKEN', None)
-        logged_in = request.user.is_authenticated
-
-        if not (PUBLIC_SITE or logged_in or token):
-            return HttpResponse('Authentication needed', status=401)
-
         group = get_object_or_404(models.Group, slug=group_slug)
         project = get_object_or_404(group.projects, slug=project_slug)
 
-        if PUBLIC_SITE or logged_in or project.tokens.filter(key=token).exists():
+        token = request.META.get('HTTP_AUTH_TOKEN', None)
+        user = request.user
+
+        if not (project.is_public or user.is_authenticated or token):
+            return HttpResponse('Authentication needed', status=401)
+
+        if project.is_public or project.tokens.filter(key=token).exists() or project.accessible_to(user):
             # authentication OK, call the original view
             return func(*args, **kwargs)
         else:
