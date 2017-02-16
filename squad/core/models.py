@@ -19,6 +19,7 @@ class Project(models.Model):
     group = models.ForeignKey(Group, related_name='projects')
     slug = models.CharField(max_length=100)
     name = models.CharField(max_length=100, null=True)
+    is_public = models.BooleanField(default=True)
 
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
