@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import Group as UserGroup
 from django.utils import timezone
 
@@ -15,7 +16,15 @@ class Group(models.Model):
         return self.slug
 
 
+class ProjectManager(models.Manager):
+
+    def accessible_to(self, user):
+        return self.filter(Q(group__user_groups__in=user.groups.all()) | Q(is_public=True))
+
+
 class Project(models.Model):
+    objects = ProjectManager()
+
     group = models.ForeignKey(Group, related_name='projects')
     slug = models.CharField(max_length=100)
     name = models.CharField(max_length=100, null=True)
@@ -32,6 +41,9 @@ class Project(models.Model):
                 test_run__build__project=self, suite=None
             ).latest('test_run__datetime')
         return self.__status__
+
+    def accessible_to(self, user):
+        return self.is_public or self.group.user_groups.filter(id__in=user.groups.all()).exists()
 
     def __str__(self):
         return str(self.group) + '/' + self.slug
