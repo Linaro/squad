@@ -161,6 +161,10 @@ class Test(models.Model):
     def status(self):
         return self.result and 'pass' or 'fail'
 
+    @property
+    def full_name(self):
+        return join_name(self.suite.slug, self.name)
+
 
 class MetricManager(models.Manager):
 
