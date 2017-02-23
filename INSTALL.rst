@@ -50,10 +50,6 @@ The following environment variables affect the behavior of SQUAD:
 
       DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=mydatabase:USER=myuser:HOST=myserver:PASSWORD=mypassword
 
-* ``SQUAD_PUBLIC_SITE``: if set to anything, SQUAD will *not* require
-  authentication just to view the data. By default, authentication is always
-  required.
-
 * ``SQUAD_EXTRA_SETTINGS``: path to a Python file with extra Django settings.
 
 * ``SQUAD_SITE_NAME``: name to be displayed at the page title and navigation
