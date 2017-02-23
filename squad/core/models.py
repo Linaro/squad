@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Q
+from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import Group as UserGroup
 from django.utils import timezone
 
@@ -82,6 +83,18 @@ class Build(models.Model):
 
     def __str__(self):
         return '%s (%s)' % (self.version, self.created_at)
+
+    @staticmethod
+    def prefetch_related(builds):
+        prefetch_related_objects(
+            builds,
+            'project',
+            'project__group',
+            'test_runs',
+            'test_runs__environment',
+            'test_runs__tests',
+            'test_runs__tests__suite',
+        )
 
 
 class Environment(models.Model):
