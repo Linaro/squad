@@ -2,14 +2,18 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import Group as UserGroup
+from django.core.validators import RegexValidator
 from django.utils import timezone
 
 
 from squad.core.utils import random_token, parse_name, join_name
 
 
+slug_validator = RegexValidator(regex='^[a-zA-Z0-9][a-zA-Z0-9_-]+')
+
+
 class Group(models.Model):
-    slug = models.CharField(max_length=100, unique=True)
+    slug = models.CharField(max_length=100, unique=True, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
     user_groups = models.ManyToManyField(UserGroup)
 
@@ -27,7 +31,7 @@ class Project(models.Model):
     objects = ProjectManager()
 
     group = models.ForeignKey(Group, related_name='projects')
-    slug = models.CharField(max_length=100)
+    slug = models.CharField(max_length=100, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
     is_public = models.BooleanField(default=True)
 
@@ -99,7 +103,7 @@ class Build(models.Model):
 
 class Environment(models.Model):
     project = models.ForeignKey(Project, related_name='environments')
-    slug = models.CharField(max_length=100)
+    slug = models.CharField(max_length=100, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
 
     class Meta:
@@ -151,7 +155,7 @@ class Attachment(models.Model):
 
 class Suite(models.Model):
     project = models.ForeignKey(Project, related_name='suites')
-    slug = models.CharField(max_length=100)
+    slug = models.CharField(max_length=100, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
 
     class Meta:
