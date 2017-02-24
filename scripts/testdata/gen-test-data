@@ -2,13 +2,14 @@
 
 set -eu
 
-if [ $# -ne 1 -a $# -ne 2 ]; then
-  echo "usage: [DAYS=n] $0 PROJECT TEAM"
+if [ $# -lt 2 ]; then
+  echo "usage: [DAYS=n] $0 TEAM PROJECT [ENVIRONMENT]"
   exit 1
 fi
 
 TEAM="$1"
 PROJECT="$2"
+ENVIRONMENT="${3:-}"
 days=${DAYS:-10}
 
 if ! which faketime >/dev/null; then
@@ -17,6 +18,7 @@ if ! which faketime >/dev/null; then
 fi
 
 for i in $(seq ${days} -1 0); do
-  faketime "$i days ago" $(dirname $0)/submit-test-data "$TEAM" "$PROJECT"
+  build=$((days - i))
+  faketime "$i days ago" $(dirname $0)/submit-test-data "$TEAM" "$PROJECT" "$build" "$ENVIRONMENT"
   echo "submitted data for $i days ago"
 done
