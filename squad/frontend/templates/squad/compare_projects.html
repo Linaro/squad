@@ -1,0 +1,64 @@
+{% extends "squad/base.html" %}
+{% load squad %}
+
+{% block content %}
+<h1>Compare projects</h1>
+
+
+{% if comparison %}
+<table class='table table-bordered compare-projects'>
+  <tr>
+    <td rowspan='2'></td>
+    {% for build, test_runs in comparison.test_runs.items %}
+    <th colspan={{test_runs|length}}>
+      <a href="{% project_url build %}">{{build.project}}, build {{build.version}}</a>
+    </th>
+    {% endfor %}
+  </tr>
+  <tr>
+    {% for build, test_runs in comparison.test_runs.items %}
+      {% for test_run in test_runs %}
+      <th>
+        <a href="{% project_url test_run %}">{{test_run.environment.slug}}</a>
+      </th>
+      {% endfor %}
+    {% endfor %}
+  </tr>
+  {% for test, results in comparison.results.items %}
+    <tr>
+      <th>{{test}}</th>
+      {% for build, test_runs in comparison.test_runs.items %}
+        {% for test_run in test_runs %}
+          {% with result=results|get_value:test_run %}
+            <td class='{{result}}'>
+              {% if result %}
+              <strong>{{result}}</strong>
+              {% else %}
+              <i>n/a</i>
+              {% endif %}
+            </td>
+          {% endwith %}
+        {% endfor %}
+      {% endfor %}
+    </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+<h2>Select projects to compare</h2>
+<form>
+  {% for project in projects %}
+  <div class="checkbox">
+    <label>
+      <input type='checkbox' name='project' value='{{project}}'
+       {% if project in selected %}
+       checked
+       {% endif %}
+       />
+      {{project}}
+    </label>
+  </div>
+  {% endfor %}
+  <input type='submit' value='Compare' class='btn btn-default'/>
+</form>
+{% endblock %}

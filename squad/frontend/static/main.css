@@ -1,7 +1,29 @@
 .pass {
-  color: green;
+  color: #214203;
+}
+
+td.pass {
+  background-color: #c7e39a;
+}
+td.pass:hover {
+  background-color: #d8f4ab;
 }
 
 .fail {
-  color: red;
+  color: #a40000;
+}
+
+td.fail {
+  background-color: #ffcccc;
+}
+td.fail:hover {
+  background-color: #ffeeee;
+}
+
+table.compare-projects th a:link,
+table.compare-projects td a:link {
+  display: block;
+}
+table.compare-projects th:hover {
+  background-color: rgb(221,221,221);
 }

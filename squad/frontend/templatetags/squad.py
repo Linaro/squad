@@ -48,3 +48,8 @@ def project_section_url(project, name):
 @register.simple_tag
 def site_name():
     return settings.SITE_NAME
+
+
+@register.filter
+def get_value(data, key):
+    return data.get(key)

@@ -50,8 +50,12 @@ class Project(models.Model):
     def accessible_to(self, user):
         return self.is_public or self.group.user_groups.filter(id__in=user.groups.all()).exists()
 
-    def __str__(self):
+    @property
+    def full_name(self):
         return str(self.group) + '/' + self.slug
+
+    def __str__(self):
+        return self.full_name
 
     class Meta:
         unique_together = ('group', 'slug',)
