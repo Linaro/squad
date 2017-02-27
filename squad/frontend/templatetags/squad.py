@@ -53,3 +53,13 @@ def site_name():
 @register.filter
 def get_value(data, key):
     return data.get(key)
+
+
+@register.simple_tag(takes_context=True)
+def active(context, name):
+    wanted = reverse(name)
+    path = context['request'].path
+    if path == wanted:
+        return 'active'
+    else:
+        return None
