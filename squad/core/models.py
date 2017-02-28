@@ -186,6 +186,15 @@ class Test(models.Model):
     def full_name(self):
         return join_name(self.suite.slug, self.name)
 
+    @staticmethod
+    def prefetch_related(tests):
+        prefetch_related_objects(
+            tests,
+            'test_run',
+            'test_run__environment',
+            'test_run__build',
+        )
+
 
 class MetricManager(models.Manager):
 
