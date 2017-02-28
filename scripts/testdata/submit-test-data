@@ -2,13 +2,15 @@
 
 set -eu
 
-if [ $# -ne 2 ]; then
-  echo "usage: $0 TEAM PROJECT"
+if [ $# -lt 2 ]; then
+  echo "usage: $0 TEAM PROJECT [BUILD] [ENVIRONMENT]"
   exit 1
 fi
 
 TEAM="$1"
 PROJECT="$2"
+BUILD=${3:-}
+ENVIRONMENT="${4:-testenv}"
 
 checkdep() {
   if ! which "$1" > /dev/null; then
@@ -43,7 +45,10 @@ hit_api() {
     "http://localhost:8000${endpoint}" "$@"
 }
 
-build=$(date '+%Y.%m.%d')
+
+if [ -z "$BUILD" ]; then
+  BUILD=$(date '+%Y.%m.%d')
+fi
 
 metrics=$(mktemp)
 cat > "${metrics}" <<METRICS
@@ -71,9 +76,9 @@ metadata=$(mktemp)
 cat > "${metadata}" <<METADATA
 {
   "datetime": "$(date --iso-8601=seconds)",
-  "job_id": "1",
-  "job_url": "http://example.com/$build/1",
-  "resubmit_url": "http://example.com/$build/1/resubmit"
+  "job_id": "1.$ENVIRONMENT",
+  "job_url": "http://example.com/$BUILD/1",
+  "resubmit_url": "http://example.com/$BUILD/1/resubmit"
 }
 METADATA
 
@@ -83,7 +88,7 @@ date > "$attachment"
 trap "rm -rf $metrics $tests $metadata $attachment" INT TERM EXIT
 
 
-hit_api "/api/submit/$TEAM/$PROJECT/$build/testenv" \
+hit_api "/api/submit/$TEAM/$PROJECT/$BUILD/$ENVIRONMENT" \
   --fail \
   --header "Auth-Token: $AUTH_TOKEN" \
   --silent --output /dev/null \

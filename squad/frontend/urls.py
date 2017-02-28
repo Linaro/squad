@@ -1,10 +1,12 @@
 from django.conf.urls import url
 
 from . import views
+from . import comparison
 
 slug_pattern = '[a-z0-9_.-]+'
 urlpatterns = [
     url(r'^$', views.home, name='home'),
+    url(r'^_/compare/$', comparison.compare_projects, name='compare_projects'),
     url(r'^(%s)/$' % slug_pattern, views.group, name='group'),
     url(r'^(%s)/(%s)/$' % ((slug_pattern,) * 2), views.project, name='project'),
     url(r'^(%s)/(%s)/builds/$' % ((slug_pattern,) * 2), views.builds, name='builds'),

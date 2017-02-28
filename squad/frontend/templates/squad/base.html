@@ -27,12 +27,10 @@
           </a>
         </div>
 
-        <!-- TODO uncomment if/when there is something useful to have here
         <ul class="nav navbar-nav">
-          <li><a href="/explore/">Explore</a></li>
-          <li><a href="/doc/">Documentation</a></li>
+          <li class="{% active 'home'%}"><a href="{% url 'home' %}">Explore</a></li>
+          <li class="{% active 'compare_projects' %}"><a href="{% url 'compare_projects' %}">Compare</a></li>
         </ul>
-        -->
 
         <div class="collapse navbar-collapse">
           <ul id='user-menu' class="nav navbar-nav navbar-right">
