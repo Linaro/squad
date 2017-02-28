@@ -27,7 +27,9 @@
           {% with result=results|get_value:test_run %}
             <td class='{{result}}'>
               {% if result %}
-              <strong>{{result}}</strong>
+              <a href="{% url 'test_history' build.project.group.slug build.project.slug test %}">
+                <strong>{{result}}</strong>
+              </a>
               {% else %}
               <i>n/a</i>
               {% endif %}

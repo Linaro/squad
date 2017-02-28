@@ -1,4 +1,4 @@
-.pass {
+.pass, .pass a {
   color: #214203;
 }
 
@@ -9,7 +9,7 @@ td.pass:hover {
   background-color: #d8f4ab;
 }
 
-.fail {
+.fail, .fail a {
   color: #a40000;
 }
 
