@@ -1,0 +1,40 @@
+{% extends "squad/base.html" %}
+{% load squad %}
+
+{% block content %}
+
+  {% include "squad/project-nav.html" %}
+
+  <h2>
+    <a href="{% project_section_url project 'tests' %}">Test results</a>
+    »
+    history for <u>{{history.test}}</u>
+  </h2>
+
+  <table class='table table-bordered test-results'>
+
+    <tr>
+      <th>Build</th>
+      <th>Date</th>
+      {% for environment in history.environments %}
+      <th>{{environment.slug}}</th>
+      {% endfor %}
+    </tr>
+
+    {% for build, results in history.results.items %}
+    <tr>
+      <td><a href="{% project_url build %}">{{build.version}}</a></td>
+      <td>{{build.datetime}}</td>
+      {% for environment in history.environments %}
+      {% with result=results|get_value:environment%}
+      <td class='{{result.status}}'>
+        <a href="{% project_url result.test_run %}">{{result.status}}</a>
+      </td>
+      {% endwith %}
+      {% endfor %}
+    </tr>
+    {% endfor %}
+
+  </table>
+
+{% endblock %}

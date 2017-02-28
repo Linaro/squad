@@ -2,6 +2,7 @@ from django.conf.urls import url
 
 from . import views
 from . import comparison
+from . import tests
 
 slug_pattern = '[a-z0-9_.-]+'
 urlpatterns = [
@@ -18,4 +19,6 @@ urlpatterns = [
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/metadata$' % ((slug_pattern,) * 2), views.test_run_metadata, name='testrun_metadata'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/attachments/([^/]+)$' % ((slug_pattern,) * 2), views.attachment, name='attachment'),
     url(r'^(%s)/(%s)/charts/$' % ((slug_pattern,) * 2), views.charts, name='charts'),
+    url(r'^(%s)/(%s)/tests/$' % ((slug_pattern,) * 2), tests.tests, name='tests'),
+    url(r'^(%s)/(%s)/tests/(.*)$' % ((slug_pattern,) * 2), tests.test_history, name='test_history'),
 ]
