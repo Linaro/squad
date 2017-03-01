@@ -2,14 +2,19 @@
 
 set -eu
 
-if [ $# -ne 3 ]; then
-  echo "usage: $0 APIURL GROUP/PROJECT ENVIRONMENT"
+if [ $# -ne 3 ] && [ $# -ne 4 ]; then
+  echo "usage: $0 APIURL GROUP/PROJECT ENVIRONMENT [BUILD]"
   exit 1
 fi
 
 apiurl="$1"
 project="$2"
 environment="$3"
+
+build=${4:-}
+if [ -z "$build" ]; then
+  build=$(date +%Y.%m.%d.%H.%M)
+fi
 
 if [ -z "${SQUAD_TOKEN:-}" ]; then
   echo 'SQUAD_TOKEN not defined, skipping metrics submission'
@@ -22,8 +27,6 @@ trap "rm -rf $metrics $tests" INT TERM EXIT
 
 $(dirname $0)/get-metrics > $metrics
 $(dirname $0)/get-tests > $tests
-
-build=$(date +%Y.%m.%d.%H.%M)
 
 display() {
   echo

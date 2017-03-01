@@ -17,7 +17,7 @@ echo "{
 SUBMIT_TO=${SUBMIT_TO:-http://squad.puzzle.analizo.org/api}
 
 if [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_BRANCH" = "master" ]; then
-  ./scripts/dogfood "${SUBMIT_TO}" linaro-qa/squad "$TESTENV"
+  ./scripts/dogfood "${SUBMIT_TO}" linaro-qa/squad "$TESTENV" "$TRAVIS_BUILD_ID"
 fi
 
 ! grep '^test_.*\\(ERROR\\|FAIL\\)' .tests
