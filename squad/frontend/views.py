@@ -159,7 +159,7 @@ def attachment(request, group_slug, project_slug, build_version, job_id, fname):
 
 
 @auth
-def charts(request, group_slug, project_slug):
+def metrics(request, group_slug, project_slug):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
 
@@ -184,4 +184,4 @@ def charts(request, group_slug, project_slug):
         "metrics": metrics,
         "data": data,
     }
-    return render(request, 'squad/charts.html', context)
+    return render(request, 'squad/metrics.html', context)
