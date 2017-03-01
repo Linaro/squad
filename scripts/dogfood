@@ -3,12 +3,13 @@
 set -eu
 
 if [ $# -ne 2 ]; then
-  echo "usage: $0 APIURL GROUP/PROJECT"
+  echo "usage: $0 APIURL GROUP/PROJECT ENVIRONMENT"
   exit 1
 fi
 
 apiurl="$1"
 project="$2"
+environment="$3"
 
 if [ -z "${SQUAD_TOKEN:-}" ]; then
   echo 'SQUAD_TOKEN not defined, skipping metrics submission'
@@ -48,4 +49,4 @@ curl \
   --form tests=@$tests \
   --form log=@.tests \
   $metadata \
-  "$apiurl"/submit/$project/$build/metrics
+  "$apiurl"/submit/$project/$build/$environment

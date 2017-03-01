@@ -16,8 +16,8 @@ echo "{
 
 SUBMIT_TO=${SUBMIT_TO:-http://squad.puzzle.analizo.org/api}
 
-if [ -z "${DATABASE:-}" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_BRANCH" = "master" ]; then
-  ./scripts/dogfood "${SUBMIT_TO}" linaro-qa/squad
+if [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_BRANCH" = "master" ]; then
+  ./scripts/dogfood "${SUBMIT_TO}" linaro-qa/squad "$TESTENV"
 fi
 
 ! grep '^test_.*\\(ERROR\\|FAIL\\)' .tests

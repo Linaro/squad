@@ -5,8 +5,8 @@ cache: pip
 addons:
   postgresql: "9.3"
 env:
-  - DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432
-  - DATABASE=
+  - TESTENV=travis-postgresql DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432
+  - TESTENV=travis-sqlite3 DATABASE=
 
 before_install:
   - if test -n "$DATABASE"; then pip install psycopg2; fi
