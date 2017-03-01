@@ -2,7 +2,7 @@
 
 set -eu
 
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   echo "usage: $0 APIURL GROUP/PROJECT ENVIRONMENT"
   exit 1
 fi
