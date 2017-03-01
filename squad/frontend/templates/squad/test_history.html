@@ -28,7 +28,11 @@
       {% for environment in history.environments %}
       {% with result=results|get_value:environment%}
       <td class='{{result.status}}'>
+        {% if result %}
         <a href="{% project_url result.test_run %}">{{result.status}}</a>
+        {% else %}
+        <i>n/a</i>
+        {% endif %}
       </td>
       {% endwith %}
       {% endfor %}
