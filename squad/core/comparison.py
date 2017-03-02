@@ -25,6 +25,8 @@ class TestComparison(object):
 
     def __extract_test_runs__(self):
         for build in self.builds:
+            if not build:
+                continue
             self.test_runs[build] = list(build.test_runs.all())
             for test_run in self.test_runs[build]:
                 self.__extract_test_results__(test_run)

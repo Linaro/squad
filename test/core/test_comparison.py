@@ -72,3 +72,7 @@ class TestComparisonTest(TestCase):
     def test_compare_projects(self):
         comp = TestComparison.compare_projects(self.project1, self.project2)
         self.assertEqual([self.build1, self.build2], comp.builds)
+
+    def test_no_data(self):
+        new_project = self.group.projects.create(slug='new')
+        TestComparison.compare_projects(new_project)
