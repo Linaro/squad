@@ -14,7 +14,7 @@ echo "{
   \"build_url\": \"https://travis-ci.org/Linaro/squad/builds/$TRAVIS_BUILD_ID\"
 }" | jq '' > .metadata.json
 
-SUBMIT_TO=${SUBMIT_TO:-http://squad.puzzle.analizo.org/api}
+SUBMIT_TO=${SUBMIT_TO:-https://squad.puzzle.analizo.org/api}
 
 if [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_BRANCH" = "master" ]; then
   ./scripts/dogfood "${SUBMIT_TO}" linaro-qa/squad "$TESTENV" "$TRAVIS_BUILD_NUMBER"
