@@ -14,7 +14,6 @@ from . import exceptions
 
 test_parser = JSONTestDataParser
 metric_parser = JSONMetricDataParser
-logger = logging.getLogger(__name__)
 
 
 class ValidateTestRun(object):
@@ -221,10 +220,8 @@ class ProcessAllTestRuns(object):
     @staticmethod
     def __call__():
         for testrun in TestRun.objects.filter(data_processed=False).all():
-            logger.info("Parsing data for TestRun %d" % testrun.id)
             parser = ParseTestRunData()
             parser(testrun)
         for testrun in TestRun.objects.filter(status_recorded=False).all():
-            logger.info("Recording status of TestRun %d" % testrun.id)
             recorder = RecordTestRunStatus()
             recorder(testrun)

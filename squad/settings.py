@@ -172,4 +172,35 @@ LOGIN_REDIRECT_URL = '/'
 
 SITE_NAME = os.getenv('SQUAD_SITE_NAME', 'SQUAD')
 
+if not TESTING:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'myformatter': {
+                'class': 'logging.Formatter',
+                "format": "[%(asctime)s] [%(levelname)s] %(message)s",
+                "datefmt": "%Y-%m-%d %H:%M:%S %z",
+            },
+        },
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'myformatter',
+            }
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'propagate': False,
+                'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            },
+            '': {
+                'handlers': ['console'],
+                'propagate': False,
+                'level': os.getenv('SQUAD_LOG_LEVEL', 'INFO'),
+            }
+        }
+    }
+
 exec(open(os.getenv('SQUAD_EXTRA_SETTINGS', '/dev/null')).read())
