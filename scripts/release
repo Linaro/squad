@@ -36,3 +36,6 @@ twine upload dist/*
 
 git push
 git push --tags
+
+rm -rf build/
+rm -rf dist/
