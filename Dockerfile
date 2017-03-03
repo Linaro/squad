@@ -24,4 +24,4 @@ RUN ./manage.py collectstatic --noinput
 
 
 USER www-data
-CMD sh -c "./manage.py migrate && exec gunicorn3 squad.wsgi --bind 0.0.0.0:${PORT:-8000} --log-file=- --log-level=debug"
+CMD sh -c "./manage.py migrate && exec gunicorn3 squad.wsgi --bind 0.0.0.0:${PORT:-8000}"
