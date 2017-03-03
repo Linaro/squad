@@ -44,8 +44,6 @@ SECRET_KEY = open(secret_key_file).read()
 
 DEBUG = os.getenv('ENV') != 'production'
 
-TESTING = sys.argv[1:2] == ['test']
-
 ALLOWED_HOSTS = ['*']
 
 
@@ -161,8 +159,7 @@ USE_TZ = True
 # http://whitenoise.evans.io/en/stable/django.html
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(DATA_DIR, 'static')
-if not TESTING:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Always use IPython for shell_plus
 SHELL_PLUS = "ipython"
@@ -172,35 +169,34 @@ LOGIN_REDIRECT_URL = '/'
 
 SITE_NAME = os.getenv('SQUAD_SITE_NAME', 'SQUAD')
 
-if not TESTING:
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'myformatter': {
-                'class': 'logging.Formatter',
-                "format": "[%(asctime)s] [%(levelname)s] %(message)s",
-                "datefmt": "%Y-%m-%d %H:%M:%S %z",
-            },
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'myformatter': {
+            'class': 'logging.Formatter',
+            "format": "[%(asctime)s] [%(levelname)s] %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S %z",
         },
-        'handlers': {
-            'console': {
-                'class': 'logging.StreamHandler',
-                'formatter': 'myformatter',
-            }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'myformatter',
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'propagate': False,
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
         },
-        'loggers': {
-            'django': {
-                'handlers': ['console'],
-                'propagate': False,
-                'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-            },
-            '': {
-                'handlers': ['console'],
-                'propagate': False,
-                'level': os.getenv('SQUAD_LOG_LEVEL', 'INFO'),
-            }
+        '': {
+            'handlers': ['console'],
+            'propagate': False,
+            'level': os.getenv('SQUAD_LOG_LEVEL', 'INFO'),
         }
     }
+}
 
 exec(open(os.getenv('SQUAD_EXTRA_SETTINGS', '/dev/null')).read())
