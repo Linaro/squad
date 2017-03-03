@@ -160,7 +160,7 @@ USE_TZ = True
 # staticfile courtesy of whitenoise
 # http://whitenoise.evans.io/en/stable/django.html
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(DATA_DIR, 'static')
 if not TESTING:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 

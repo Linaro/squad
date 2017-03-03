@@ -34,10 +34,12 @@ def main():
         print('squad (version %s)' % __version__)
         return
 
-    os.putenv("ENV", "production")
-    os.putenv('DJANGO_SETTINGS_MODULE', 'squad.settings')
+    os.environ.setdefault("ENV", "production")
 
     sys.argv = ['squad-admin', 'migrate']
+    manage()
+
+    sys.argv = ['squad-admin', 'collectstatic', '--no-input', '-v', '0']
     manage()
 
     sys.argv = ['gunicorn', 'squad.wsgi'] + argv[1:]
