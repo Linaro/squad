@@ -3,7 +3,7 @@ import sys
 
 
 def main():
-    if sys.argv[1] == 'test':
+    if len(sys.argv) > 1 and sys.argv[1] == 'test':
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "test.settings")
     else:
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "squad.settings")
