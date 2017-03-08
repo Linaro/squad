@@ -68,8 +68,9 @@ class TestComparisonTest(TestCase):
     def test_test_runs(self):
         comp = compare(self.build1, self.build2)
 
-        environments = list(self.project1.environments.all()) + list(self.project2.environments.all())
-        myenv1, otherenv1, myenv2, otherenv2 = environments  # order of creation
+        envs = list(self.project1.environments.order_by('id').all())
+        envs = envs + list(self.project2.environments.order_by('id').all())
+        myenv1, otherenv1, myenv2, otherenv2 = envs  # order of creation
 
         self.assertEqual([myenv1, otherenv1], comp.environments[self.build1])
         self.assertEqual([myenv2, otherenv2], comp.environments[self.build2])
