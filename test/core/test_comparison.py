@@ -15,7 +15,7 @@ def compare(b1, b2):
 
 class TestComparisonTest(TestCase):
 
-    def receive_build(self, project, version, env, tests):
+    def receive_test_run(self, project, version, env, tests):
         receive = ReceiveTestRun(project)
         receive(version, env, tests_file=json.dumps(tests))
 
@@ -24,15 +24,36 @@ class TestComparisonTest(TestCase):
         self.project1 = self.group.projects.create(slug='project1')
         self.project2 = self.group.projects.create(slug='project2')
 
-        self.receive_build(self.project1, '1', 'myenv', {
+        self.receive_test_run(self.project1, '1', 'myenv', {
             'a': 'pass',
             'b': 'pass',
+        })
+        self.receive_test_run(self.project1, '1', 'myenv', {
             'c': 'fail',
             'd/e': 'pass',
         })
-        self.receive_build(self.project2, '1', 'myenv', {
+        self.receive_test_run(self.project2, '1', 'myenv', {
             'a': 'fail',
             'b': 'pass',
+        })
+        self.receive_test_run(self.project2, '1', 'myenv', {
+            'c': 'pass',
+            'd/e': 'pass',
+        })
+
+        self.receive_test_run(self.project1, '1', 'otherenv', {
+            'a': 'pass',
+            'b': 'pass',
+        })
+        self.receive_test_run(self.project1, '1', 'otherenv', {
+            'c': 'fail',
+            'd/e': 'pass',
+        })
+        self.receive_test_run(self.project2, '1', 'otherenv', {
+            'a': 'fail',
+            'b': 'pass',
+        })
+        self.receive_test_run(self.project2, '1', 'otherenv', {
             'c': 'pass',
             'd/e': 'pass',
         })
@@ -47,11 +68,11 @@ class TestComparisonTest(TestCase):
     def test_test_runs(self):
         comp = compare(self.build1, self.build2)
 
-        t1 = self.project1.builds.last().test_runs.last()
-        t2 = self.project2.builds.last().test_runs.last()
+        environments = list(self.project1.environments.all()) + list(self.project2.environments.all())
+        myenv1, otherenv1, myenv2, otherenv2 = environments  # order of creation
 
-        self.assertEqual([t1], comp.test_runs[self.build1])
-        self.assertEqual([t2], comp.test_runs[self.build2])
+        self.assertEqual([myenv1, otherenv1], comp.environments[self.build1])
+        self.assertEqual([myenv2, otherenv2], comp.environments[self.build2])
 
     def test_tests(self):
         comp = compare(self.build1, self.build2)
@@ -60,14 +81,14 @@ class TestComparisonTest(TestCase):
     def test_test_results(self):
         comp = compare(self.build1, self.build2)
 
-        t1 = self.project1.builds.last().test_runs.last()
-        t2 = self.project2.builds.last().test_runs.last()
+        env1 = self.project1.builds.last().test_runs.last().environment
+        env2 = self.project2.builds.last().test_runs.last().environment
 
-        self.assertEqual('pass', comp.results['a'][t1])
-        self.assertEqual('fail', comp.results['c'][t1])
+        self.assertEqual('pass', comp.results['a'][env1])
+        self.assertEqual('fail', comp.results['c'][env1])
 
-        self.assertEqual('fail', comp.results['a'][t2])
-        self.assertEqual('pass', comp.results['b'][t2])
+        self.assertEqual('fail', comp.results['a'][env2])
+        self.assertEqual('pass', comp.results['b'][env2])
 
     def test_compare_projects(self):
         comp = TestComparison.compare_projects(self.project1, self.project2)

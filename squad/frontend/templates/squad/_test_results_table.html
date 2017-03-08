@@ -4,17 +4,17 @@
 <table class='table table-bordered test-results'>
   <tr>
     <td rowspan='2'></td>
-    {% for build, test_runs in comparison.test_runs.items %}
-    <th colspan={{test_runs|length}}>
+    {% for build, environments in comparison.environments.items %}
+    <th colspan={{environments|length}}>
       <a href="{% project_url build %}">{{build.project}}, build {{build.version}}</a>
     </th>
     {% endfor %}
   </tr>
   <tr>
-    {% for build, test_runs in comparison.test_runs.items %}
-      {% for test_run in test_runs %}
+    {% for build, environments in comparison.environments.items %}
+      {% for environment in environments %}
       <th>
-        <a href="{% project_url test_run %}">{{test_run.environment.slug}}</a>
+        {{environment.slug}}
       </th>
       {% endfor %}
     {% endfor %}
@@ -22,9 +22,9 @@
   {% for test, results in comparison.results.items %}
     <tr>
       <th>{{test}}</th>
-      {% for build, test_runs in comparison.test_runs.items %}
-        {% for test_run in test_runs %}
-          {% with result=results|get_value:test_run %}
+      {% for build, environments in comparison.environments.items %}
+        {% for environment in environments %}
+          {% with result=results|get_value:environment %}
             <td class='{{result}}'>
               {% if result %}
               <a href="{% url 'test_history' build.project.group.slug build.project.slug test %}">
