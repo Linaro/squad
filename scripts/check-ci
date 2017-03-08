@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+
+import json
+import requests
+import subprocess
+
+head = subprocess.check_output('git log --format=%H --max-count=1', shell=True).decode('utf-8').strip()
+
+res = requests.get('https://api.travis-ci.org/repos/Linaro/squad/builds')
+builds = json.loads(res.content.decode('utf-8'))
+
+for build in builds:
+    if build['commit'] == head:
+        if build['result'] == 0:
+            exit(0)
+        else:
+            print("E: HEAD failed on CI: https://travis-ci.org/Linaro/squad/builds/%s" % build['id'])
+            exit(1)
+
+print("W: HEAD was not tested on CI yet.")
+exit(2)

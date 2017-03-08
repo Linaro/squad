@@ -10,6 +10,14 @@ if ! git diff-index --quiet --exit-code HEAD --; then
     exit 1
 fi
 
+if ! ./scripts/check-ci; then
+    printf "Are you sure you want to continue? [y/N]"
+    read -r confirm
+    if [ "$confirm" != 'y' ] && [ "$confirm" != 'Y' ]; then
+        exit 1
+    fi
+fi
+
 v=$(python3 -c 'from squad.version import __version__ as v; print(v)')
 git tag -s -m "SQUAD release $v" "$v"
 
