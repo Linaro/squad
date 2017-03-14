@@ -3,7 +3,7 @@ python:
   - 3.5
 cache: pip
 addons:
-  postgresql: "9.5"
+  postgresql: "9.3"
 env:
   - TESTENV=travis-postgresql DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432
   - TESTENV=travis-sqlite3 DATABASE=
