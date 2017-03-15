@@ -1,17 +1,21 @@
+dist: trusty
 language: python
 python:
   - 3.5
 cache: pip
 addons:
-  postgresql: "9.3"
+  postgresql: 9.5
+addons:
+  apt:
+    packages:
+      - postgresql-9.5
+      - postgresql-9.5-debversion
 env:
   - TESTENV=travis-postgresql DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432
   - TESTENV=travis-sqlite3 DATABASE=
 
 before_install:
-  - if test -n "$DATABASE"; then pip install psycopg2; fi
-  - if test -n "$DATABASE"; then psql -d template1 -c 'create extension hstore;' -U postgres; fi
-  - if test -n "$DATABASE"; then psql -c 'create database "squad";' -U postgres; fi
+  - if test -n "$DATABASE"; then ./scripts/travis-postgresql; fi
 
 install:
   - pip install --upgrade setuptools
