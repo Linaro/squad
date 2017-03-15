@@ -18,3 +18,9 @@ class BuildTest(TestCase):
         b = Build.objects.create(project=self.project, version='1.0-rc1')
         self.assertEqual('1.0-rc1', b.name)
         self.assertEqual('1.0~rc1', b.version)
+
+    def test_default_ordering(self):
+        newer = Build.objects.create(project=self.project, version='1.1')
+        Build.objects.create(project=self.project, version='1.0')
+
+        self.assertEqual(newer, Build.objects.last())
