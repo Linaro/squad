@@ -13,7 +13,7 @@
     </tr>
     {% for build in builds %}
       <tr>
-        <td><a href="{% project_url build %}">{{build.version}}</a></td>
+        <td><a href="{% project_url build %}">{{build.name}}</a></td>
         <td>
           <a href="{% project_url build %}">{{build.datetime}}</a>
           <em>{{build.datetime|naturaltime}}</em>
