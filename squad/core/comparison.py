@@ -15,16 +15,16 @@ class TestComparison(object):
     The best way to think about this is to think of the table you want as
     result:
 
-   +-------+---------------+---------------+
-   |       |    build 1    |    build 2    |
-   +       +-------+-------+-------+-------+
-   |       | env 1 | env 2 | env 1 | env 2 |
-   +-------+-------+-------+-------+-------+
-   | test1 |       |       |       |       |
-   | test2 |       |       |       |       |
-   | test3 |       |       |       |       |
-   | test4 |       |       |       |       |
-   +-------+-------+-------+-------+-------+
+    +-------+---------------+---------------+
+    |       |    build 1    |    build 2    |
+    +       +-------+-------+-------+-------+
+    |       | env 1 | env 2 | env 1 | env 2 |
+    +-------+-------+-------+-------+-------+
+    | test1 |       |       |       |       |
+    | test2 |       |       |       |       |
+    | test3 |       |       |       |       |
+    | test4 |       |       |       |       |
+    +-------+-------+-------+-------+-------+
 
     `builds` is the list of builds (the top header row)
 
