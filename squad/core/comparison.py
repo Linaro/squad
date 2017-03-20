@@ -53,12 +53,11 @@ class TestComparison(object):
     @classmethod
     def compare_projects(cls, *projects):
         builds = [p.builds.last() for p in projects]
+        builds = [b for b in builds if b]
         return cls.compare_builds(*builds)
 
     def __extract_results__(self):
         for build in self.builds:
-            if not build:
-                continue
             test_runs = list(build.test_runs.all())
             environments = [t.environment for t in test_runs]
             self.environments[build] = sorted(set(environments), key=lambda e: e.id)
