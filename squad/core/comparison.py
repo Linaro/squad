@@ -1,7 +1,8 @@
 from collections import OrderedDict
 
 
-from squad.core.models import Build
+from squad.core.utils import join_name
+from squad.core.models import Build, Test
 
 
 class TestComparison(object):
@@ -57,6 +58,8 @@ class TestComparison(object):
         return cls.compare_builds(*builds)
 
     def __extract_results__(self):
+        for test in self.__all_tests__():
+            self.results[test] = OrderedDict()
         for build in self.builds:
             test_runs = list(build.test_runs.all())
             environments = [t.environment for t in test_runs]
@@ -65,8 +68,17 @@ class TestComparison(object):
                 self.__extract_test_results__(test_run)
 
     def __extract_test_results__(self, test_run):
-        tests = sorted(test_run.tests.all(), key=lambda t: t.full_name)
-        for test in tests:
-            if test.full_name not in self.results:
-                self.results[test.full_name] = OrderedDict()
+        for test in test_run.tests.all():
             self.results[test.full_name][test_run.environment] = test.status
+
+    def __all_tests__(self):
+        data = Test.objects.filter(
+            test_run__build__project__in=[b.project for b in self.builds]
+        ).order_by(
+            'suite__slug',
+            'name',
+        ).values(
+            'suite__slug',
+            'name',
+        ).distinct()
+        return [join_name(item['suite__slug'], item['name']) for item in data]

@@ -24,6 +24,10 @@ class TestComparisonTest(TestCase):
         self.project1 = self.group.projects.create(slug='project1')
         self.project2 = self.group.projects.create(slug='project2')
 
+        self.receive_test_run(self.project1, '0', 'myenv', {
+            'z': 'pass',
+        })
+
         self.receive_test_run(self.project1, '1', 'myenv', {
             'a': 'pass',
             'b': 'pass',
@@ -77,7 +81,7 @@ class TestComparisonTest(TestCase):
 
     def test_tests(self):
         comp = compare(self.build1, self.build2)
-        self.assertEqual(['a', 'b', 'c', 'd/e'], sorted(comp.results.keys()))
+        self.assertEqual(['a', 'b', 'c', 'd/e', 'z'], sorted(comp.results.keys()))
 
     def test_test_results(self):
         comp = compare(self.build1, self.build2)
