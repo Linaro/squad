@@ -22,22 +22,19 @@ class TestHistory(object):
             suite__slug=suite,
             name=test_name,
             test_run__build__project=project,
-        ).order_by(
-            '-test_run__build__created_at',
-            'test_run__environment_id'
         )
         Test.prefetch_related(tests)
 
         environments = OrderedDict()
         results = OrderedDict()
+        for build in project.builds.order_by('-version').all():
+            results[build] = {}
+
         for test in tests:
             build = test.test_run.build
             environment = test.test_run.environment
 
             environments[environment] = True
-
-            if build not in results:
-                results[build] = {}
             results[build][environment] = TestResult(test)
 
         self.environments = list(environments.keys())

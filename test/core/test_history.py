@@ -17,6 +17,11 @@ class TestHistoryTest(TestCase):
         self.group = models.Group.objects.create(slug='mygruop')
         self.project1 = self.group.projects.create(slug='project1')
 
+        self.receive_test_run(self.project1, '0', 'env1', {
+            'foo/bar': 'fail',
+            # missing `root` on purpose
+        })
+
         self.receive_test_run(self.project1, '1', 'env1', {
             'foo/bar': 'fail',
             'root': 'fail',
@@ -66,3 +71,9 @@ class TestHistoryTest(TestCase):
         self.assertEqual('pass', history.results[build1][env2].status)
         self.assertEqual('pass', history.results[build2][env1].status)
         self.assertEqual('fail', history.results[build2][env2].status)
+
+    def test_displays_all_builds(self):
+        build0 = self.project1.builds.get(version='0')
+        history = TestHistory(self.project1, 'root')
+
+        self.assertIn(build0, history.results)
