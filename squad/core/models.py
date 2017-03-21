@@ -1,3 +1,6 @@
+import re
+
+
 from django.db import models
 from django.db.models import Q
 from django.db.models.query import prefetch_related_objects
@@ -6,6 +9,7 @@ from django.core.validators import RegexValidator
 from django.utils import timezone
 
 
+from squad.core.fields import VersionField
 from squad.core.utils import random_token, parse_name, join_name
 
 
@@ -77,16 +81,25 @@ class Token(models.Model):
 
 class Build(models.Model):
     project = models.ForeignKey(Project, related_name='builds')
-    version = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
+    version = VersionField()
     created_at = models.DateTimeField(auto_now_add=True)
     datetime = models.DateTimeField()
 
     class Meta:
         unique_together = ('project', 'version',)
+        ordering = ['version']
 
     def save(self, *args, **kwargs):
         if not self.datetime:
             self.datetime = timezone.now()
+        if self.version and not self.name:
+            self.name = self.version
+            self.version = None
+        if self.name and not self.version:
+            # -rc must be replaced with ~rc because 1.0-rc1 higher than 1.0,
+            # and we don't want that. 1.0~rc1 will sort lower than 1.0.
+            self.version = re.sub('-rc', '~rc', self.name)
         super(Build, self).save(*args, **kwargs)
 
     def __str__(self):
