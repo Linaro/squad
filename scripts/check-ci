@@ -13,6 +13,9 @@ for build in builds:
     if build['commit'] == head:
         if build['result'] == 0:
             exit(0)
+        elif build['result'] is None:
+            print("E: HEAD is still being tested on CI: https://travis-ci.org/Linaro/squad/builds/%s" % build['id'])
+            exit(1)
         else:
             print("E: HEAD failed on CI: https://travis-ci.org/Linaro/squad/builds/%s" % build['id'])
             exit(1)
