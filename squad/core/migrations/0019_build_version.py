@@ -9,20 +9,10 @@ import squad.core.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0017_slug_validator'),
+        ('core', '0018_build_name'),
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='build',
-            name='name',
-            field=models.CharField(default='', max_length=100),
-            preserve_default=False,
-        ),
-        migrations.RunSQL(
-            sql="UPDATE core_build SET name = version;",
-            reverse_sql="SELECT 1"  # i.e. nothing
-        ),
         migrations.AlterField(
             model_name='build',
             name='version',
