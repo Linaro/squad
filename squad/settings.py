@@ -70,6 +70,7 @@ __apps__ = [
     'squad.core',
     'squad.api',
     'squad.frontend',
+    'squad.ci',
 ]
 
 INSTALLED_APPS = [app for app in __apps__ if app]
