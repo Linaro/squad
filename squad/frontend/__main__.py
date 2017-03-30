@@ -1,1 +1,1 @@
-import squad.frontend
+import squad.frontend.setup
