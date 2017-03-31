@@ -6,6 +6,8 @@ set -o pipefail
 git fetch origin cache/static
 git archive FETCH_HEAD | tar xaf -
 
+./manage.py test --noinput -v 2 2>&1 | tee .tests
+
 echo "{
   \"job_id\": \"$TRAVIS_JOB_NUMBER\",
   \"job_url\": \"https://travis-ci.org/Linaro/squad/jobs/$TRAVIS_JOB_ID\",
