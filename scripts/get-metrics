@@ -15,6 +15,12 @@ git_authors=$(git log --format=%aN | sort -u | wc -l)
 doc_files=$(find -name '*.md' -or -name '*.rst' | wc -l)
 doc_lines=$(find -name '*.md' -or -name '*.rst' | xargs grep '\S'  | wc -l)
 
+if [ -f .tests ]; then
+  tests_per_sec=$(sed -e '/^Ran [0-9]\+ tests/ !d; s/Ran \([0-9]\+\) tests in \([0-9.]\+\)s/scale=2\n\1.0 \/ \2/' .tests  | bc)
+else
+  tests_per_sec=0
+fi
+
 echo "
 {
   \"python/lines\": $python_lines,
@@ -23,6 +29,8 @@ echo "
   \"python/runtime_dependencies\": $python_runtime_dependencies,
   \"python/development_dependencies\": $python_development_dependencies,
   \"python/files\": $python_files,
+
+  \"tests_per_sec\": $tests_per_sec,
 
   \"doc/files\": $doc_files,
   \"doc/lines\": $doc_lines,
