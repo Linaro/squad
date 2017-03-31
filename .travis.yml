@@ -8,6 +8,7 @@ addons:
 addons:
   apt:
     packages:
+      - bc
       - postgresql-9.5
       - postgresql-9.5-debversion
 env:
