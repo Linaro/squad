@@ -3,6 +3,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseForbidden
 from django.http import HttpResponse
+import logging
 
 
 from squad.core.models import Group
@@ -15,6 +16,9 @@ from squad.core.models import Token
 
 from squad.core.tasks import ReceiveTestRun
 from squad.core.tasks import exceptions
+
+
+logger = logging.getLogger()
 
 
 def valid_token(token, project):
@@ -71,6 +75,7 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
     try:
         receive(**test_run_data)
     except exceptions.invalid_input as e:
+        logger.warning(request.get_full_path() + ": " + str(e))
         return HttpResponse(str(e), status=400)
 
     return HttpResponse('', status=201)
