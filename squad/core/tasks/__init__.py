@@ -28,11 +28,11 @@ class ValidateTestRun(object):
         if tests_file:
             self.__validate_tests__(tests_file)
 
-    def __validate_metadata__(self, metadata):
+    def __validate_metadata__(self, metadata_json):
         try:
-            metadata = json.loads(metadata)
+            metadata = json.loads(metadata_json)
         except json.decoder.JSONDecodeError as e:
-            raise exceptions.InvalidMetadataJSON("metadata is not valid JSON: " + str(e))
+            raise exceptions.InvalidMetadataJSON("metadata is not valid JSON: " + str(e) + "\n" + metadata_json)
 
         if type(metadata) != dict:
             raise exceptions.InvalidMetadata("metadata is not a object ({})")
@@ -48,7 +48,7 @@ class ValidateTestRun(object):
         try:
             metrics = json.loads(metrics_file)
         except json.decoder.JSONDecodeError as e:
-            raise exceptions.InvalidMetricsDataJSON("metrics is not valid JSON: " + str(e))
+            raise exceptions.InvalidMetricsDataJSON("metrics is not valid JSON: " + str(e) + "\n" + metrics_file)
 
         if type(metrics) != dict:
             raise exceptions.InvalidMetricsData.type(metrics)
@@ -65,7 +65,7 @@ class ValidateTestRun(object):
         try:
             tests = json.loads(tests_file)
         except json.decoder.JSONDecodeError as e:
-            raise exceptions.InvalidTestsDataJSON("tests is not valid JSON: " + str(e))
+            raise exceptions.InvalidTestsDataJSON("tests is not valid JSON: " + str(e) + "\n" + tests_file)
 
         if type(tests) != dict:
             raise exceptions.InvalidTestsData.type(tests)
