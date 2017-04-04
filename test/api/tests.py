@@ -5,7 +5,6 @@ from io import StringIO
 from django.test import TestCase
 from django.test import Client
 from test.api import APIClient
-from django.test.utils import setup_test_environment
 
 
 from squad.core import models
@@ -24,7 +23,6 @@ def invalid_json():
 class ApiTest(TestCase):
 
     def setUp(self):
-        setup_test_environment()
 
         self.group = models.Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
