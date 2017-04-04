@@ -67,6 +67,7 @@ __apps__ = [
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     django_extensions,  # OPTIONAL
+    'djcelery',
     'squad.core',
     'squad.api',
     'squad.frontend',
@@ -199,5 +200,11 @@ LOGGING = {
         }
     }
 }
+
+# Celery settings
+CELERYD_HIJACK_ROOT_LOGGER = False
+CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
+CELERY_TASK_SERIALIZER = 'msgpack'
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
 exec(open(os.getenv('SQUAD_EXTRA_SETTINGS', '/dev/null')).read())
