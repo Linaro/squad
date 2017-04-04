@@ -22,7 +22,7 @@ before_install:
 
 install:
   - pip install --upgrade setuptools
-    ./scripts/travis-django
+  - ./scripts/travis-django
   - pip install -r requirements-dev.txt
 
 script:
