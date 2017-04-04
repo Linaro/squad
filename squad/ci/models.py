@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 
 
 from squad.core.models import Project, slug_validator
@@ -23,6 +25,31 @@ class Backend(models.Model):
         default='null',
     )
     poll_interval = models.IntegerField(default=60)  # minutes
+
+    def poll(self):
+        for test_job in self.test_jobs.filter(submitted=True, fetched=False):
+            self.fetch(test_job)
+
+    def fetch(self, test_job):
+        last = test_job.last_fetch_attempt
+        if last:
+            now = timezone.now()
+            next_poll = last + relativedelta(minutes=self.poll_interval)
+            if now > next_poll:
+                self.really_fetch(test_job)
+        else:
+            self.really_fetch(test_job)
+
+    def really_fetch(self, test_job):
+        self.get_implementation().fetch(test_job)
+        test_job.last_fetch_attempt = timezone.now()
+        test_job.fetched = True
+        test_job.save()
+
+    def submit(self, test_job):
+        test_job.job_id = self.get_implementation().submit(test_job)
+        test_job.submitted = True
+        test_job.save()
 
     def get_implementation(self):
         return get_backend_implementation(self)
