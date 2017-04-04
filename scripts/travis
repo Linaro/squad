@@ -20,4 +20,4 @@ if [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_BRANCH" = "master" ]; then
   ./scripts/dogfood "${SUBMIT_TO}" linaro-qa/squad "$TESTENV" "$TRAVIS_BUILD_NUMBER"
 fi
 
-! grep '^test_.*\\(ERROR\\|FAIL\\)' .tests
+! grep -q '^FAILED ' .tests
