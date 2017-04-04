@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -eu
+
+major=${DJANGO%%.*}
+minor=${DJANGO##*.}
+NEXT_DJANGO=${major}.$((minor+1))
+
+set -x
+pip install "Django>=$DJANGO,<$NEXT_DJANGO"
