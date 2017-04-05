@@ -14,6 +14,26 @@ from squad.ci.backend.null import Backend as BaseBackend
 description = "LAVA"
 
 
+class MetadataParser(object):
+
+    def __init__(self, definition):
+        self.definition = definition
+        self.metadata = {}
+        self.__extract_metadata_recursively__(self.definition)
+
+    def __extract_metadata_recursively__(self, data):
+        if isinstance(data, dict):
+            for key in data:
+                if key == 'metadata':
+                    for k in data[key]:
+                        self.metadata[k] = data[key][k]
+                else:
+                    self.__extract_metadata_recursively__(data[key])
+        elif isinstance(data, list):
+            for item in data:
+                self.__extract_metadata_recursively__(item)
+
+
 class Backend(BaseBackend):
 
     # ------------------------------------------------------------------------
@@ -94,4 +114,24 @@ class Backend(BaseBackend):
         return self.proxy.results.get_testjob_results_yaml(job_id)
 
     def __parse_results__(self, data):
-        return (data['status'], {}, {}, {})
+        if data['is_pipeline'] is False:
+            # in case of v1 job, return empty data
+            return (data['status'], {}, {}, {})
+        definition = yaml.load(data['definition'])
+        if content['multinode_definition']:
+            definition = yaml.load(data['multinode_definition'])
+        mp = MetadataParser(definition)
+        results = {}
+        metrics = {}
+        for result in yaml.load(data['results']):
+            if result['suite'] != 'lava':
+                suite = result['suite'].split("_", 1)[1]
+                res_name = "%s/%s" % (suite, result['name'])
+                # YAML from LAVA has all values serialized to strings
+                if result['measurement'] == 'None':
+                    res_value = result['result']
+                    results.update({res_name: res_value})
+                else:
+                    res_value = result['measurement']
+                    metrics.updatE({res_name: res_value})
+        return (data['status'], mp.metadata, results, metrics)
