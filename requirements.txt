@@ -5,3 +5,5 @@ gunicorn
 whitenoise
 celery>=3.1,<4.0
 django-celery
+PyYAML
+pyzmq
