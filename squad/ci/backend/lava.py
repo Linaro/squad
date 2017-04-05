@@ -57,7 +57,7 @@ class Backend(BaseBackend):
         # Topic should be set in the Backend model
         # TODO: there might be an issue with setsockopt_string depending on
         # python version. This might need refactoring
-        self.socket.setsockopt_string(zmq.SUBSCRIBE, "")  # listen to all messages
+        self.socket.setsockopt_string(zmq.SUBSCRIBE, "")  # listen to all msgs
         # TODO: change address to proper one
         # This hardcoded value is incorrect in most cases
         self.socket.connect("tcp://%s:5510" % urlsplit(self.data.url).netloc)
@@ -75,7 +75,8 @@ class Backend(BaseBackend):
                         submitted=True,
                         fetched=False,
                         job_id=lava_id)
-                    if db_test_job_list.exists() and len(db_test_job_list) == 1:
+                    if db_test_job_list.exists() and \
+                            len(db_test_job_list) == 1:
                         # TODO: move to async execution
                         self.data.fetch(db_test_job_list[0])
             except Exception as e:
