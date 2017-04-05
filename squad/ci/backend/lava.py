@@ -48,7 +48,7 @@ class Backend(BaseBackend):
         if data['status'] in self.complete_statuses:
             yamldata = self.__get_testjob_results_yaml__(test_job.job_id)
             data['results'] = yaml.load(yamldata)
-        return self.__parse_results__(data)
+            return self.__parse_results__(data)
 
     def listen(self):
         self.context = zmq.Context()
@@ -118,12 +118,12 @@ class Backend(BaseBackend):
             # in case of v1 job, return empty data
             return (data['status'], {}, {}, {})
         definition = yaml.load(data['definition'])
-        if content['multinode_definition']:
+        if data['multinode_definition']:
             definition = yaml.load(data['multinode_definition'])
         mp = MetadataParser(definition)
         results = {}
         metrics = {}
-        for result in yaml.load(data['results']):
+        for result in data['results']:
             if result['suite'] != 'lava':
                 suite = result['suite'].split("_", 1)[1]
                 res_name = "%s/%s" % (suite, result['name'])
@@ -133,5 +133,5 @@ class Backend(BaseBackend):
                     results.update({res_name: res_value})
                 else:
                     res_value = result['measurement']
-                    metrics.updatE({res_name: res_value})
+                    metrics.update({res_name: res_value})
         return (data['status'], mp.metadata, results, metrics)
