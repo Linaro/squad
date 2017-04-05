@@ -11,6 +11,7 @@ addons:
       - bc
       - postgresql-9.5
       - postgresql-9.5-debversion
+      - snakefood
 env:
   - DJANGO=1.11 TESTENV=travis-postgresql DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432
   - DJANGO=1.11 TESTENV=travis-sqlite3 DATABASE=

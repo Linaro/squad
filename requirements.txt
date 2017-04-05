@@ -3,3 +3,5 @@ sqlparse
 python_dateutil
 gunicorn
 whitenoise
+celery>=3.1,<4.0
+django-celery

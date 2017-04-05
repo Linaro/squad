@@ -1,1 +1,3 @@
-web: gunicorn3 squad.wsgi --log-file=- --log-level=debug
+web: gunicorn3 squad.wsgi
+worker: python3 -m squad.manage celery worker
+scheduler: python3 -m squad.manage celery beat --pidfile=''
