@@ -21,8 +21,8 @@ class PollTest(TestCase):
 
     @patch("squad.ci.models.Backend.poll")
     def test_poll_one_backend(self, poll_method):
-        b1 = models.Backend.objects.create()
-        models.Backend.objects.create()
+        b1 = models.Backend.objects.create(name='b1')
+        models.Backend.objects.create(name='b2')
         poll.apply(args=[b1.id])
         poll_method.assert_called_once()
 
