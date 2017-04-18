@@ -30,3 +30,10 @@ def auth(func):
             return HttpResponse('Authentication needed', status=401)
 
     return auth_wrapper
+
+
+def read_file_upload(stream):
+    data = bytes()
+    for chunk in stream.chunks():
+        data = data + chunk
+    return data
