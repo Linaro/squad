@@ -1,9 +1,14 @@
 from django.test import TestCase
 from mock import patch
 
+
+from celery.exceptions import Retry
+
+
 from squad.ci import models
 from squad.core import models as core_models
 from squad.ci.tasks import poll, fetch, submit
+from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue
 
 
 class PollTest(TestCase):
@@ -43,13 +48,36 @@ class FetchTest(TestCase):
 
 class SubmitTest(TestCase):
 
-    @patch('squad.ci.models.Backend.submit')
-    def test_submit(self, submit_method):
+    def setUp(self):
         group = core_models.Group.objects.create(slug='test')
         project = group.projects.create(slug='test')
-
         backend = models.Backend.objects.create()
-        test_job = models.TestJob.objects.create(backend=backend, target=project)
+        self.test_job = models.TestJob.objects.create(backend=backend, target=project)
 
-        submit.apply(args=[test_job.id])
-        submit_method.assert_called_with(test_job)
+    @patch('squad.ci.models.Backend.submit')
+    def test_submit(self, submit_method):
+        submit.apply(args=[self.test_job.id])
+        submit_method.assert_called_with(self.test_job)
+
+    @patch('squad.ci.models.Backend.submit')
+    def test_submit_fatal_error(self, submit_method):
+        submit_method.side_effect = SubmissionIssue("ERROR")
+
+        submit.apply(args=[self.test_job.id])
+
+        self.test_job.refresh_from_db()
+        self.assertEqual(self.test_job.failure, "ERROR")
+
+    @patch('squad.ci.tasks.submit.retry')
+    @patch('squad.ci.models.Backend.submit')
+    def test_submit_temporary_error(self, submit_method, retry):
+        exception = TemporarySubmissionIssue("TEMPORARY ERROR")
+        retry.return_value = Retry()
+        submit_method.side_effect = exception
+
+        with self.assertRaises(Retry):
+            submit.apply(args=[self.test_job.id])
+
+        retry.assert_called_with(exc=exception, countdown=3600)
+        self.test_job.refresh_from_db()
+        self.assertEqual(self.test_job.failure, "TEMPORARY ERROR")

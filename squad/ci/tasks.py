@@ -1,5 +1,6 @@
 from squad.celery import app as celery
 from squad.ci.models import Backend, TestJob
+from squad.ci.exceptions import SubmissionIssue
 import logging
 
 
@@ -22,7 +23,13 @@ def fetch(job_id):
     test_job.backend.really_fetch(test_job)
 
 
-@celery.task
-def submit(job_id):
+@celery.task(bind=True)
+def submit(self, job_id):
     test_job = TestJob.objects.get(pk=job_id)
-    test_job.backend.submit(test_job)
+    try:
+        test_job.backend.submit(test_job)
+    except SubmissionIssue as issue:
+        test_job.failure = str(issue)
+        test_job.save()
+        if issue.retry:
+            raise self.retry(exc=issue, countdown=3600)  # retry in 1 hour
