@@ -1,13 +1,14 @@
 import re
 import os
+from collections import OrderedDict
 from glob import glob
 from importlib import import_module
 
 
-__ALL_BACKENDS__ = {}
+__ALL_BACKENDS__ = OrderedDict()
 
 
-for filename in glob(os.path.dirname(__file__) + '/*.py'):
+for filename in sorted(glob(os.path.dirname(__file__) + '/*.py')):
     name = re.sub('.py$', '', os.path.basename(filename))
     if name != '__init__':
         module = import_module('squad.ci.backend.' + name)
