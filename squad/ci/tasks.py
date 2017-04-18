@@ -7,8 +7,12 @@ logger = logging.getLogger()
 
 
 @celery.task
-def poll():
-    for backend in Backend.objects.all():
+def poll(backend_id=None):
+    if backend_id:
+        backends = Backend.objects.filter(pk=backend_id)
+    else:
+        backends = Backend.objects.all()
+    for backend in backends:
         backend.poll()
 
 

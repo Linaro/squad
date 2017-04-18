@@ -1,10 +1,19 @@
 from django.contrib import admin
 from squad.ci.models import Backend, TestJob
-from squad.ci.tasks import submit, fetch
+from squad.ci.tasks import submit, fetch, poll
+
+
+def poll_backends(modeladmin, request, queryset):
+    for backend in queryset:
+        poll.delay(backend.id)
+
+
+poll_backends.short_description = "Poll selected backends"
 
 
 class BackendAdmin(admin.ModelAdmin):
     list_display = ('url', 'implementation_type')
+    actions = [poll_backends]
 
 
 def submit_job(modeladmin, request, queryset):

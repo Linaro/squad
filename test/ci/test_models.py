@@ -85,7 +85,7 @@ class BackendFetchTest(BackendTestBase):
     @patch('squad.ci.models.Backend.get_implementation')
     def test_really_fetch(self, get_implementation, __now__):
         impl = MagicMock()
-        impl.fetch = MagicMock()
+        impl.fetch = MagicMock(return_value=None)
         get_implementation.return_value = impl
 
         test_job = self.create_test_job()
@@ -93,10 +93,58 @@ class BackendFetchTest(BackendTestBase):
 
         test_job.refresh_from_db()
         self.assertEqual(NOW, test_job.last_fetch_attempt)
-        self.assertTrue(test_job.fetched)
+        self.assertFalse(test_job.fetched)
 
         get_implementation.assert_called()
         impl.fetch.assert_called()
+
+    @patch('django.utils.timezone.now', return_value=NOW)
+    @patch('squad.ci.models.Backend.get_implementation')
+    def test_really_fetch_creates_testrun(self, get_implementation, __now__):
+        metadata = {"foo": "bar"}
+        tests = {"foo": "pass"}
+        metrics = {"bar": 1}
+        results = ('Complete', metadata, tests, metrics)
+
+        impl = MagicMock()
+        impl.fetch = MagicMock(return_value=results)
+        get_implementation.return_value = impl
+
+        test_job = self.create_test_job(
+            backend=self.backend,
+            definition='foo: 1',
+            build='1',
+            environment='myenv',
+            job_id='999',
+        )
+
+        self.backend.really_fetch(test_job)
+
+        # should not crash
+        test_run = core_models.TestRun.objects.get(
+            build__project=self.project,
+            environment__slug='myenv',
+            build__version='1',
+            job_id='999',
+            job_status='Complete',
+        )
+        self.assertEqual(
+            1,
+            core_models.Test.objects.filter(
+                test_run=test_run,
+                name="foo",
+                result=True,
+            ).count()
+        )
+        self.assertEqual(
+            1,
+            core_models.Metric.objects.filter(
+                test_run=test_run,
+                name="bar",
+                result=1,
+            ).count()
+        )
+        self.assertTrue(test_job.fetched)
 
 
 class BackendSubmitTest(BackendTestBase):

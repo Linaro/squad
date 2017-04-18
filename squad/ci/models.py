@@ -1,8 +1,10 @@
+import json
 from django.db import models
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
 
+from squad.core.tasks import ReceiveTestRun
 from squad.core.models import Project, slug_validator
 from squad.core.fields import VersionField
 
@@ -17,6 +19,11 @@ def list_backends():
 
 class Backend(models.Model):
     url = models.URLField()
+    # listener_url is used by backend's listen() method
+    listener_url = models.URLField(null=True, blank=True)
+    # listener_filter might be used by backend to filter out
+    # unwanted messages
+    listener_filter = models.CharField(max_length=1024, null=True, blank=True)
     username = models.CharField(max_length=128)
     token = models.CharField(max_length=1024)
     implementation_type = models.CharField(
@@ -41,9 +48,30 @@ class Backend(models.Model):
             self.really_fetch(test_job)
 
     def really_fetch(self, test_job):
-        self.get_implementation().fetch(test_job)
+        implementation = self.get_implementation()
+        results = implementation.fetch(test_job)
+
+        if results:
+            # create TestRun
+            status, metadata, tests, metrics = results
+
+            test_job.job_status = status
+
+            metadata['job_id'] = test_job.job_id
+            metadata['job_status'] = test_job.job_status
+
+            receive = ReceiveTestRun(test_job.target)
+            receive(
+                version=test_job.build,
+                environment_slug=test_job.environment,
+                metadata=json.dumps(metadata),
+                tests_file=json.dumps(tests),
+                metrics_file=json.dumps(metrics),
+            )
+            test_job.fetched = True
+
+        # save test job
         test_job.last_fetch_attempt = timezone.now()
-        test_job.fetched = True
         test_job.save()
 
     def submit(self, test_job):
@@ -59,12 +87,14 @@ class Backend(models.Model):
 
 
 class TestJob(models.Model):
-    # input
+    # input - internal
     backend = models.ForeignKey(Backend, related_name='test_jobs')
+    definition = models.TextField()
+
+    # input - for TestRun later
     target = models.ForeignKey(Project)
     build = VersionField()
     environment = models.CharField(max_length=100, validators=[slug_validator])
-    definition = models.TextField()
 
     # control
     submitted = models.BooleanField(default=False)

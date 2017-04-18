@@ -10,8 +10,27 @@ from urllib.parse import urlsplit
 
 from squad.ci.backend.null import Backend as BaseBackend
 
-
 description = "LAVA"
+
+
+class MetadataParser(object):
+
+    def __init__(self, definition):
+        self.definition = definition
+        self.metadata = {}
+        self.__extract_metadata_recursively__(self.definition)
+
+    def __extract_metadata_recursively__(self, data):
+        if isinstance(data, dict):
+            for key in data:
+                if key == 'metadata':
+                    for k in data[key]:
+                        self.metadata[k] = data[key][k]
+                else:
+                    self.__extract_metadata_recursively__(data[key])
+        elif isinstance(data, list):
+            for item in data:
+                self.__extract_metadata_recursively__(item)
 
 
 class Backend(BaseBackend):
@@ -28,39 +47,39 @@ class Backend(BaseBackend):
         if data['status'] in self.complete_statuses:
             yamldata = self.__get_testjob_results_yaml__(test_job.job_id)
             data['results'] = yaml.load(yamldata)
-        return self.__parse_results__(data)
+            return self.__parse_results__(data)
 
     def listen(self):
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.SUB)
-        # TODO: filter by topic for each server
-        # Topic should be set in the Backend model
-        # TODO: there might be an issue with setsockopt_string depending on
-        # python version. This might need refactoring
-        self.socket.setsockopt_string(zmq.SUBSCRIBE, "")  # listen to all messages
-        # TODO: change address to proper one
-        # This hardcoded value is incorrect in most cases
-        self.socket.connect("tcp://%s:5510" % urlsplit(self.data.url).netloc)
+        if self.data.listener_url:
+            self.context = zmq.Context()
+            self.socket = self.context.socket(zmq.SUB)
+            # TODO: there might be an issue with setsockopt_string depending on
+            # python version. This might need refactoring
+            socket_filter = ""
+            if self.data.listener_filter:
+                socket_filter = self.data.listener_filter
+            self.socket.setsockopt_string(zmq.SUBSCRIBE, socket_filter)
+            self.socket.connect(self.data.listener_url)
 
-        while True:
-            try:
-                message = self.socket.recv_multipart()
-                (topic, uuid, dt, username, data) = (u(m) for m in message[:])
-                lava_id = data['job']
-                if 'sub_id' in data.keys():
-                    lava_id = data['sub_id']
-                lava_status = data['status']
-                if lava_status in self.complete_statuses:
-                    db_test_job_list = self.data.test_jobs.filter(
-                        submitted=True,
-                        fetched=False,
-                        job_id=lava_id)
-                    if db_test_job_list.exists() and len(db_test_job_list) == 1:
-                        # TODO: move to async execution
-                        self.data.fetch(db_test_job_list[0])
-            except Exception as e:
-                # TODO: at least log error
-                pass
+            while True:
+                try:
+                    message = self.socket.recv_multipart()
+                    (topic, uuid, dt, username, data) = (u(m) for m in message[:])
+                    lava_id = data['job']
+                    if 'sub_id' in data.keys():
+                        lava_id = data['sub_id']
+                    lava_status = data['status']
+                    if lava_status in self.complete_statuses:
+                        db_test_job_list = self.data.test_jobs.filter(
+                            submitted=True,
+                            fetched=False,
+                            job_id=lava_id)
+                        if db_test_job_list.exists() and \
+                                len(db_test_job_list) == 1:
+                            self.data.fetch(db_test_job_list[0])
+                except Exception as e:
+                    # TODO: at least log error
+                    pass
 
     # ------------------------------------------------------------------------
     # implementation details
@@ -94,4 +113,24 @@ class Backend(BaseBackend):
         return self.proxy.results.get_testjob_results_yaml(job_id)
 
     def __parse_results__(self, data):
-        return (data['status'], {}, {}, {})
+        if data['is_pipeline'] is False:
+            # in case of v1 job, return empty data
+            return (data['status'], {}, {}, {})
+        definition = yaml.load(data['definition'])
+        if data['multinode_definition']:
+            definition = yaml.load(data['multinode_definition'])
+        mp = MetadataParser(definition)
+        results = {}
+        metrics = {}
+        for result in data['results']:
+            if result['suite'] != 'lava':
+                suite = result['suite'].split("_", 1)[1]
+                res_name = "%s/%s" % (suite, result['name'])
+                # YAML from LAVA has all values serialized to strings
+                if result['measurement'] == 'None':
+                    res_value = result['result']
+                    results.update({res_name: res_value})
+                else:
+                    res_value = result['measurement']
+                    metrics.update({res_name: res_value})
+        return (data['status'], mp.metadata, results, metrics)

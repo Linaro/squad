@@ -8,7 +8,65 @@ from squad.ci.backend.lava import Backend as LAVABackend
 
 
 TEST_RESULTS = [
+    {'duration': '',
+     'job': '1234',
+     'level': 'None',
+     'logged': '2017-02-15 11:31:21.973616+00:00',
+     'measurement': '10',
+     'metadata': {'case': 'case_foo',
+                  'definition': '1_DefinitionFoo',
+                  'measurement': '10',
+                  'result': 'pass',
+                  'units': 'bottles'},
+     'name': 'case_foo',
+     'result': 'pass',
+     'suite': '1_DefinitionFoo',
+     'timeout': '',
+     'unit': 'bottles',
+     'url': '/results/1234/1_DefinitionFoo/case_foo'},
+    {'duration': '',
+     'job': '1234',
+     'level': 'None',
+     'logged': '2017-02-15 11:31:21.973616+00:00',
+     'measurement': 'None',
+     'metadata': {'case': 'case_bar',
+                  'definition': '1_DefinitionFoo',
+                  'measurement': 'None',
+                  'result': 'pass'},
+     'name': 'case_bar',
+     'result': 'pass',
+     'suite': '1_DefinitionFoo',
+     'timeout': '',
+     'unit': '',
+     'url': '/results/1234/1_DefinitionFoo/case_bar'},
 ]
+
+JOB_METADATA = {
+    'key_foo': 'value_foo',
+    'key_bar': 'value_bar'
+}
+
+
+JOB_DEFINITION = {
+    'job_name': 'job_foo',
+    'metadata': JOB_METADATA
+}
+
+JOB_DETAILS = {
+    'is_pipeline': True,
+    'status': 'Complete',
+    'id': 1234,
+    'definition': yaml.dump(JOB_DEFINITION),
+    'multinode_definition': ''
+}
+
+JOB_DETAILS_RUNNING = {
+    'is_pipeline': True,
+    'status': 'Running',
+    'id': 1234,
+    'definition': yaml.dump(JOB_DEFINITION),
+    'multinode_definition': ''
+}
 
 
 TEST_RESULTS_YAML = yaml.dump(TEST_RESULTS)
@@ -35,7 +93,7 @@ class LavaTest(TestCase):
         self.assertEqual('1234', lava.submit(testjob))
         __submit__.assert_called_with("foo: 1\n")
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value={"status": "Complete"})
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
     def test_fetch_basics(self, get_results, get_details):
         testjob = TestJob(job_id='9999')
@@ -46,7 +104,7 @@ class LavaTest(TestCase):
         get_results.assert_called_with('9999')
         self.assertEqual('Complete', results[0])
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value={"status": "Running"})
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_RUNNING)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__")
     def test_fetch_not_finished(self, get_results, get_details):
         testjob = TestJob(job_id='9999')
@@ -55,11 +113,21 @@ class LavaTest(TestCase):
 
         get_results.assert_not_called()
 
-    def test_parse_results_metadata(self):
-        pass  # TODO
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
+    def test_parse_results_metadata(self, get_results, get_details):
+        testjob = TestJob(job_id='1234')
+        lava = LAVABackend(None)
+        status, metadata, results, metrics = lava.fetch(testjob)
 
-    def test_parse_results_tests(self):
-        pass  # TODO
+        self.assertEqual(JOB_METADATA, metadata)
 
-    def test_parse_results_metrics(self):
-        pass  # TODO
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
+    def test_parse_results(self, get_results, get_details):
+        testjob = TestJob(job_id='1234')
+        lava = LAVABackend(None)
+        status, metadata, results, metrics = lava.fetch(testjob)
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(len(metrics), 1)
