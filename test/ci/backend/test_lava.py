@@ -1,10 +1,12 @@
 from django.test import TestCase
 from mock import patch
 import yaml
+import xmlrpc
 
 
 from squad.ci.models import Backend, TestJob
 from squad.ci.backend.lava import Backend as LAVABackend
+from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue
 
 
 TEST_RESULTS = [
@@ -72,6 +74,10 @@ JOB_DETAILS_RUNNING = {
 TEST_RESULTS_YAML = yaml.dump(TEST_RESULTS)
 
 
+HTTP_400 = xmlrpc.client.Fault(400, 'Problem with submitted job data')
+HTTP_503 = xmlrpc.client.Fault(503, 'Service Unavailable')
+
+
 class LavaTest(TestCase):
 
     def setUp(self):
@@ -131,3 +137,17 @@ class LavaTest(TestCase):
 
         self.assertEqual(len(results), 1)
         self.assertEqual(len(metrics), 1)
+
+    @patch('squad.ci.backend.lava.Backend.__submit__', side_effect=HTTP_400)
+    def test_submit_400(self, __submit__):
+        lava = LAVABackend(None)
+        testjob = TestJob(job_id='1234')
+        with self.assertRaises(SubmissionIssue):
+            lava.submit(testjob)
+
+    @patch('squad.ci.backend.lava.Backend.__submit__', side_effect=HTTP_503)
+    def test_submit_503(self, __submit__):
+        lava = LAVABackend(None)
+        testjob = TestJob(job_id='1234')
+        with self.assertRaises(TemporarySubmissionIssue):
+            lava.submit(testjob)

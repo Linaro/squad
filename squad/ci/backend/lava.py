@@ -1,5 +1,6 @@
 import json
 import yaml
+import xmlrpc
 import zmq
 
 from zmq.utils.strtypes import u
@@ -8,6 +9,7 @@ from xmlrpc import client as xmlrpclib
 from urllib.parse import urlsplit
 
 
+from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue
 from squad.ci.backend.null import Backend as BaseBackend
 
 description = "LAVA"
@@ -39,8 +41,15 @@ class Backend(BaseBackend):
     # API implementation
     # ------------------------------------------------------------------------
     def submit(self, test_job):
-        job_id = self.__submit__(test_job.definition)
-        return job_id
+        try:
+            job_id = self.__submit__(test_job.definition)
+            return job_id
+        except xmlrpc.client.Fault as fault:
+            if fault.faultCode // 100 == 5:
+                # assume HTTP errors 5xx are temporary issues
+                raise TemporarySubmissionIssue(str(fault))
+            else:
+                raise SubmissionIssue(str(fault))
 
     def fetch(self, test_job):
         data = self.__get_job_details__(test_job.job_id)
