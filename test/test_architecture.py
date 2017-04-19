@@ -7,6 +7,7 @@ import subprocess
 ALLOWED_MODULE_DEPENDENCIES = (
     ('squad', 'squad.celery'),
     ('squad.api', 'squad.api'),
+    ('squad.api', 'squad.ci'),
     ('squad.api', 'squad.core'),
     ('squad.api', 'squad.http'),
     ('squad.ci', 'squad.ci'),

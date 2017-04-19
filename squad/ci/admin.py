@@ -12,7 +12,7 @@ poll_backends.short_description = "Poll selected backends"
 
 
 class BackendAdmin(admin.ModelAdmin):
-    list_display = ('url', 'implementation_type')
+    list_display = ('name', 'url', 'implementation_type')
     actions = [poll_backends]
 
 

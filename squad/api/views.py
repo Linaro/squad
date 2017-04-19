@@ -6,6 +6,9 @@ from django.http import HttpResponse
 import logging
 
 
+from squad.http import read_file_upload
+
+
 from squad.core.models import Group
 from squad.core.models import Project
 from squad.core.models import Build
@@ -23,13 +26,6 @@ logger = logging.getLogger()
 
 def valid_token(token, project):
     return project.tokens.filter(key=token).exists()
-
-
-def __read_upload(stream):
-    data = bytes()
-    for chunk in stream.chunks():
-        data = data + chunk
-    return data
 
 
 @csrf_exempt
@@ -62,12 +58,12 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
     for key, field in uploads.items():
         if field in request.FILES:
             f = request.FILES[field]
-            test_run_data[key] = __read_upload(f).decode('utf-8')
+            test_run_data[key] = read_file_upload(f).decode('utf-8')
 
     if 'attachment' in request.FILES:
         attachments = {}
         for f in request.FILES.getlist('attachment'):
-            attachments[f.name] = __read_upload(f)
+            attachments[f.name] = read_file_upload(f)
         test_run_data['attachments'] = attachments
 
     receive = ReceiveTestRun(project)
