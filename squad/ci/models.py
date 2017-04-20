@@ -84,7 +84,7 @@ class Backend(models.Model):
         return get_backend_implementation(self)
 
     def __str__(self):
-        return '%s (%s)' % (self.url, self.implementation_type)
+        return '%s (%s)' % (self.name, self.implementation_type)
 
 
 class TestJob(models.Model):
