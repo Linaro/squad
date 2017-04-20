@@ -101,6 +101,11 @@ class TestJob(models.Model):
     submitted = models.BooleanField(default=False)
     fetched = models.BooleanField(default=False)
     last_fetch_attempt = models.DateTimeField(null=True, default=None, blank=True)
+    failure = models.TextField(null=True, blank=True)
+
+    def success(self):
+        return not self.failure
+    success.boolean = True
 
     # output
     job_id = models.CharField(null=True, max_length=128, blank=True)
