@@ -303,3 +303,23 @@ class Status(models.Model):
         else:
             name = self.environment.slug
         return '%s: %f, %d%% pass' % (name, self.metrics_summary, self.pass_percentage)
+
+
+class ProjectStatus(models.Model):
+    """
+    Represents a "checkpoint" of a project status in time. It is used by the
+    notification system to know what was the project status at the time of the
+    last notification.
+    """
+    build = models.ForeignKey('Build', null=True)
+    previous = models.ForeignKey('ProjectStatus', null=True, related_name='next')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @classmethod
+    def create(cls, project):
+        build = project.builds.last()
+        previous = cls.objects.filter(build__project=project).last()
+        if build and (not previous or (previous.build != build)):
+            return cls.objects.create(build=build, previous=previous)
+        else:
+            return None
