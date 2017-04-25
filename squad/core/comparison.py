@@ -82,3 +82,27 @@ class TestComparison(object):
             'name',
         ).distinct()
         return [join_name(item['suite__slug'], item['name']) for item in data]
+
+    __diff__ = None
+
+    @property
+    def diff(self):
+        """
+        Returns a subset of the rows, containing only the rows where results
+        differ between the builds.
+        """
+        if self.__diff__ is not None:
+            return self.__diff__
+
+        d = OrderedDict()
+        for test, results in self.results.items():
+            previous = None
+            for build in self.builds:
+                current = [results.get(e) for e in self.environments[build]]
+                if previous and previous != current:
+                    d[test] = results
+                    break
+                previous = current
+
+        self.__diff__ = d
+        return self.__diff__

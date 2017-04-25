@@ -102,3 +102,17 @@ class TestComparisonTest(TestCase):
     def test_no_data(self):
         new_project = self.group.projects.create(slug='new')
         TestComparison.compare_projects(new_project)
+
+    def test_diff(self):
+        comparison = compare(self.build1, self.build2)
+        diff = comparison.diff
+        self.assertEqual(['a', 'c'], sorted(diff.keys()))
+
+    def test_empty_diff(self):
+        comparison = compare(self.build1, self.build1)  # same build → no diff
+        self.assertFalse(comparison.diff)
+
+    def test_empty_with_no_builds(self):
+        new_project = self.group.projects.create(slug='new')
+        comparison = TestComparison.compare_projects(new_project)
+        self.assertFalse(comparison.diff)
