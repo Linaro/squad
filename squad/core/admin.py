@@ -24,8 +24,14 @@ class TokenInline(admin.StackedInline):
     extra = 0
 
 
+class SubscriptionInline(admin.StackedInline):
+    model = models.Subscription
+    fields = ['email']
+    extra = 0
+
+
 class ProjectAdmin(admin.ModelAdmin):
-    inlines = [TokenInline]
+    inlines = [TokenInline, SubscriptionInline]
 
 
 admin.site.register(models.Group)

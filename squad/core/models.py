@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import Group as UserGroup
+from django.core.validators import EmailValidator
 from django.core.validators import RegexValidator
 from django.utils import timezone
 
@@ -323,3 +324,8 @@ class ProjectStatus(models.Model):
             return cls.objects.create(build=build, previous=previous)
         else:
             return None
+
+
+class Subscription(models.Model):
+    project = models.ForeignKey(Project, related_name='subscriptions')
+    email = models.CharField(max_length=1024, validators=[EmailValidator()])
