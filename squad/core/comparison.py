@@ -63,7 +63,7 @@ class TestComparison(object):
         for build in self.builds:
             test_runs = list(build.test_runs.all())
             environments = [t.environment for t in test_runs]
-            self.environments[build] = sorted(set(environments), key=lambda e: e.id)
+            self.environments[build] = sorted(set(environments), key=lambda e: e.slug)
             for test_run in test_runs:
                 self.__extract_test_results__(test_run)
 
