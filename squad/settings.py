@@ -201,6 +201,19 @@ LOGGING = {
     }
 }
 
+HOSTNAME = os.getenv("SQUAD_HOSTNAME")
+if not HOSTNAME:
+    import socket
+    HOSTNAME = socket.getfqdn()
+
+BASE_URL = os.getenv('SQUAD_BASE_URL')
+if not BASE_URL:
+    BASE_URL = 'https://%s' % HOSTNAME
+
+EMAIL_FROM = os.getenv('SQUAD_EMAIL_FROM')
+if not EMAIL_FROM:
+    EMAIL_FROM = 'noreply@%s' % HOSTNAME
+
 # Celery settings
 CELERYD_HIJACK_ROOT_LOGGER = False
 CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
