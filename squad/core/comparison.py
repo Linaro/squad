@@ -10,8 +10,8 @@ class TestComparison(object):
     Data structure:
 
     builds: [Build]
-    environments: Build → Environment
-    results: str → (Environment → TestResults)
+    environments: Build → [EnvironmentName(str)]
+    results: TestName(str) → ((Build,EnvironmentName(str)) → TestResults)
 
     The best way to think about this is to think of the table you want as
     result:
@@ -63,13 +63,14 @@ class TestComparison(object):
         for build in self.builds:
             test_runs = list(build.test_runs.all())
             environments = [t.environment for t in test_runs]
-            self.environments[build] = sorted(set(environments), key=lambda e: e.slug)
+            self.environments[build] = sorted([e.slug for e in set(environments)])
             for test_run in test_runs:
                 self.__extract_test_results__(test_run)
 
     def __extract_test_results__(self, test_run):
         for test in test_run.tests.all():
-            self.results[test.full_name][test_run.environment] = test.status
+            key = (test_run.build, test_run.environment.slug)
+            self.results[test.full_name][key] = test.status
 
     def __all_tests__(self):
         data = Test.objects.filter(
@@ -98,7 +99,7 @@ class TestComparison(object):
         for test, results in self.results.items():
             previous = None
             for build in self.builds:
-                current = [results.get(e) for e in self.environments[build]]
+                current = [results.get((build, e)) for e in self.environments[build]]
                 if previous and previous != current:
                     d[test] = results
                     break

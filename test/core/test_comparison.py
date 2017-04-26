@@ -72,12 +72,8 @@ class TestComparisonTest(TestCase):
     def test_test_runs(self):
         comp = compare(self.build1, self.build2)
 
-        envs = list(self.project1.environments.order_by('id').all())
-        envs = envs + list(self.project2.environments.order_by('id').all())
-        myenv1, otherenv1, myenv2, otherenv2 = envs  # order of creation
-
-        self.assertEqual([myenv1, otherenv1], comp.environments[self.build1])
-        self.assertEqual([myenv2, otherenv2], comp.environments[self.build2])
+        self.assertEqual(['myenv', 'otherenv'], comp.environments[self.build1])
+        self.assertEqual(['myenv', 'otherenv'], comp.environments[self.build2])
 
     def test_tests(self):
         comp = compare(self.build1, self.build2)
@@ -86,14 +82,11 @@ class TestComparisonTest(TestCase):
     def test_test_results(self):
         comp = compare(self.build1, self.build2)
 
-        env1 = self.project1.builds.last().test_runs.last().environment
-        env2 = self.project2.builds.last().test_runs.last().environment
+        self.assertEqual('pass', comp.results['a'][self.build1, 'otherenv'])
+        self.assertEqual('fail', comp.results['c'][self.build1, 'otherenv'])
 
-        self.assertEqual('pass', comp.results['a'][env1])
-        self.assertEqual('fail', comp.results['c'][env1])
-
-        self.assertEqual('fail', comp.results['a'][env2])
-        self.assertEqual('pass', comp.results['b'][env2])
+        self.assertEqual('fail', comp.results['a'][self.build2, 'otherenv'])
+        self.assertEqual('pass', comp.results['b'][self.build2, 'otherenv'])
 
     def test_compare_projects(self):
         comp = TestComparison.compare_projects(self.project1, self.project2)

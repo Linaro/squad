@@ -55,6 +55,16 @@ def get_value(data, key):
     return data.get(key)
 
 
+@register.filter
+def test_result_by_build(data, build):
+    return (lambda env: data.get((build, env)))
+
+
+@register.filter
+def test_result_by_env(f, env):
+    return f(env)
+
+
 @register.simple_tag(takes_context=True)
 def active(context, name):
     wanted = reverse(name)

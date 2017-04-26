@@ -14,7 +14,7 @@
     {% for build, environments in comparison.environments.items %}
       {% for environment in environments %}
       <th>
-        {{environment.slug}}
+        {{environment}}
       </th>
       {% endfor %}
     {% endfor %}
@@ -24,7 +24,7 @@
       <th>{{test}}</th>
       {% for build, environments in comparison.environments.items %}
         {% for environment in environments %}
-          {% with result=results|get_value:environment %}
+          {% with result=results|test_result_by_build:build|test_result_by_env:environment %}
             <td class='{{result}}'>
               {% if result %}
               <a href="{% url 'test_history' build.project.group.slug build.project.slug test %}">
