@@ -82,7 +82,7 @@ class TestComparison(object):
             'suite__slug',
             'name',
         ).distinct()
-        return [join_name(item['suite__slug'], item['name']) for item in data]
+        return sorted([join_name(item['suite__slug'], item['name']) for item in data])
 
     __diff__ = None
 
