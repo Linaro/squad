@@ -2,7 +2,22 @@ from django.contrib import admin
 from . import models
 
 
+class TokenAdmin(admin.ModelAdmin):
+    """
+    Handles global tokens, i.e. tokens that are not projec-specific.
+    """
+    model = models.Token
+    fields = ['description', 'key']
+    readonly_fields = ['key']
+
+    def get_queryset(self, request):
+        return super(TokenAdmin, self).get_queryset(request).filter(project=None)
+
+
 class TokenInline(admin.StackedInline):
+    """
+    Handles project-specific tokens inline when editing the project.
+    """
     model = models.Token
     fields = ['description', 'key']
     readonly_fields = ['key']
@@ -15,3 +30,4 @@ class ProjectAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Group)
 admin.site.register(models.Project, ProjectAdmin)
+admin.site.register(models.Token, TokenAdmin)

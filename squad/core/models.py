@@ -66,7 +66,7 @@ class Project(models.Model):
 
 
 class Token(models.Model):
-    project = models.ForeignKey(Project, related_name='tokens')
+    project = models.ForeignKey(Project, related_name='tokens', null=True)
     key = models.CharField(max_length=64, unique=True)
     description = models.CharField(max_length=100)
 
