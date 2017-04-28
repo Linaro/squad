@@ -1,5 +1,7 @@
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core import mail
+from django.utils import timezone
 from django.test import TestCase
 from unittest.mock import patch, MagicMock, PropertyMock
 
@@ -62,11 +64,14 @@ def fake_diff():
 class TestSendNotification(TestCase):
 
     def setUp(self):
+        t0 = timezone.now() - relativedelta(hours=3)
+        t = timezone.now() - relativedelta(hours=3)
+
         self.group = Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
-        self.project.builds.create(version='1')
+        self.project.builds.create(version='1', datetime=t0)
         ProjectStatus.create(self.project)
-        self.project.builds.create(version='2')
+        self.project.builds.create(version='2', datetime=t)
 
     @patch("squad.core.comparison.TestComparison.diff", new_callable=PropertyMock)
     def test_send_notification(self, diff):

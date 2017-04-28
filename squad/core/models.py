@@ -2,6 +2,7 @@ import re
 from collections import OrderedDict
 
 
+from dateutil.relativedelta import relativedelta
 from django.db import models
 from django.db.models import Q
 from django.db.models.query import prefetch_related_objects
@@ -40,6 +41,7 @@ class Project(models.Model):
     slug = models.CharField(max_length=100, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
     is_public = models.BooleanField(default=True)
+    build_completion_threshold = models.IntegerField(default=120)
 
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
@@ -332,12 +334,19 @@ class ProjectStatus(models.Model):
 
     @classmethod
     def create(cls, project):
-        build = project.builds.last()
+        completion_window = relativedelta(minutes=project.build_completion_threshold)
+        completed_by = timezone.now() - completion_window
+        builds = project.builds.filter(datetime__lt=completed_by)
+
+        build = builds.last()
         previous = cls.objects.filter(build__project=project).last()
         if build and (not previous or (previous.build != build)):
             return cls.objects.create(build=build, previous=previous)
         else:
             return None
+
+    def __str__(self):
+        return 'Build %s; created at %s' % (self.build, self.created_at)
 
 
 class Subscription(models.Model):

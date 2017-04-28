@@ -1,5 +1,6 @@
+from django.utils import timezone
 from django.test import TestCase
-
+from dateutil.relativedelta import relativedelta
 
 from squad.core.models import Group, ProjectStatus
 
@@ -8,10 +9,13 @@ class ProjectStatusTest(TestCase):
 
     def setUp(self):
         group = Group.objects.create(slug='mygroup')
-        self.project = group.projects.create(slug='myproject')
+        self.project = group.projects.create(slug='myproject', build_completion_threshold=120)
 
-    def create_build(self, v):
-        return self.project.builds.create(version=v)
+    def create_build(self, v, **kwargs):
+        two_hours_ago = timezone.now() - relativedelta(hours=2)
+        args = {'datetime': two_hours_ago}
+        args.update(kwargs)
+        return self.project.builds.create(version=v, **args)
 
     def test_status_without_builds(self):
         status = ProjectStatus.create(self.project)
@@ -39,3 +43,8 @@ class ProjectStatusTest(TestCase):
         ProjectStatus.create(self.project)
         self.assertIsNone(ProjectStatus.create(self.project))
         self.assertEqual(1, ProjectStatus.objects.count())
+
+    def test_wait_for_build_completion(self):
+        self.create_build('1', datetime=timezone.now() - relativedelta(hours=1))
+        status = ProjectStatus.create(self.project)
+        self.assertIsNone(status)
