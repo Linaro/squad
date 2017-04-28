@@ -25,7 +25,7 @@ logger = logging.getLogger()
 
 
 def valid_token(token, project):
-    return project.tokens.filter(key=token).exists()
+    return project.tokens.filter(key=token).exists() or Token.objects.filter(project=None).exists()
 
 
 @csrf_exempt

@@ -135,6 +135,13 @@ class ApiTest(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(models.TestRun.objects.count(), 0)
 
+    def test_auth_with_global_token(self):
+        global_token = models.Token.objects.create()
+        self.client.token = global_token.key
+        response = self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, models.TestRun.objects.count())
+
     def test_404_on_non_existing_group(self):
         response = self.client.post('/api/submit/mygrouppp/myproject/1.0.0/myenv')
         self.assertEqual(404, response.status_code)
