@@ -17,7 +17,7 @@ echo "{
 SUBMIT_TO=${SUBMIT_TO:-https://qa-reports.linaro.org/api}
 
 if [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_BRANCH" = "master" ]; then
-  ./scripts/dogfood "${SUBMIT_TO}" linaro-qa/squad "$TESTENV" "$TRAVIS_BUILD_NUMBER"
+  ./scripts/dogfood "${SUBMIT_TO}" qa/squad "$TESTENV" "$TRAVIS_BUILD_NUMBER"
 fi
 
 ! grep -q '^FAILED ' .tests
