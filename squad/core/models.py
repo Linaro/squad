@@ -1,4 +1,5 @@
 import re
+from collections import OrderedDict
 
 
 from django.db import models
@@ -117,6 +118,19 @@ class Build(models.Model):
             'test_runs__tests',
             'test_runs__tests__suite',
         )
+
+    @property
+    def test_summary(self):
+        summary = OrderedDict()
+        summary['total'] = 0
+        summary['pass'] = 0
+        summary['fail'] = 0
+        mapping = {True: 'pass', False: 'fail'}
+        for run in self.test_runs.all():
+            for test in run.tests.all():
+                summary[mapping[test.result]] += 1
+                summary['total'] += 1
+        return summary
 
 
 class Environment(models.Model):
