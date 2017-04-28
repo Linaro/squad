@@ -12,6 +12,9 @@ from squad.core.statistics import geomean
 from . import exceptions
 
 
+from .notification import notify_project, notify_all_projects
+
+
 test_parser = JSONTestDataParser
 metric_parser = JSONMetricDataParser
 
