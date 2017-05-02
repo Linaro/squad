@@ -27,3 +27,18 @@ table.test-results td a:link {
 table.test-results th:hover {
   background-color: rgb(221,221,221);
 }
+
+footer {
+  width: 100%;
+
+  background: #f9f9f9;
+  color: #777777;
+  margin-top: 3em;
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+
+footer a:visited, footer a:link {
+  color: #777777;
+  font-weight: bold;
+}

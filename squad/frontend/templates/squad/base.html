@@ -18,7 +18,7 @@
 
   <body>
 
-    <nav class="navbar navbar-default">
+    <nav id='navbar' class="navbar navbar-default">
       <div class="container">
         <div class="navbar-header">
           <a class="navbar-brand" href="/">
@@ -49,9 +49,20 @@
       </div>
     </nav>
 
-    <div class="container">
-      {% block content %}{% endblock %}
+    <div id="main-content">
+      <div class="container">
+        {% block content %}{% endblock %}
+      </div>
     </div>
+
+    <footer id='footer'>
+      <div class="container">
+        <a href="https://github.com/Linaro/squad">SQUAD</a> is free software,
+        developed by <a href="https://www.linaro.org/">Linaro</a>.
+        It is distributed under the terms of the
+        <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License version 3</a>.
+      </div>
+    </footer>
 
     <script type="text/javascript" src="{% static "angularjs/angular.js" %}"></script>
 
@@ -59,6 +70,15 @@
 
     <script type="text/javascript" src="{% static "chartjs/Chart.bundle.js" %}"></script>
 
+    <script type="text/javascript">
+      var navbar = document.getElementById('navbar')
+      var main = document.getElementById('main-content')
+      var footer = document.getElementById('footer')
+      if (navbar.clientHeight + main.clientHeight + footer.clientHeight < window.innerHeight) {
+        footer.style.position = 'absolute'
+        footer.style.bottom = 0;
+      }
+    </script>
     {% block javascript %}{% endblock %}
   </body>
 </html>

@@ -204,7 +204,7 @@ How to support multiple use cases
 License
 -------
 
-Copyright © 2016 Linaro Limited
+Copyright © 2016-2017 Linaro Limited
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
