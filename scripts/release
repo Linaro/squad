@@ -2,6 +2,12 @@
 
 set -eu
 
+v=$(python3 -c 'from squad.version import __version__ as v; print(v)')
+if git rev-parse --verify --quiet "${v}^{tag}" >/dev/null; then
+    echo "It seems version ${v} has already been released. Aborting"
+    exit 1
+fi
+
 ./manage.py test
 
 # TODO: require all changes committed to git
@@ -17,8 +23,6 @@ if ! ./scripts/check-ci; then
         exit 1
     fi
 fi
-
-v=$(python3 -c 'from squad.version import __version__ as v; print(v)')
 
 # build
 rm -rf dist/ *.egg-info/
