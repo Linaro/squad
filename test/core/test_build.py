@@ -24,3 +24,13 @@ class BuildTest(TestCase):
         Build.objects.create(project=self.project, version='1.0')
 
         self.assertEqual(newer, Build.objects.last())
+
+    def test_test_summary(self):
+        build = Build.objects.create(project=self.project, version='1.1')
+        env = self.project.environments.create(slug='env')
+        suite = self.project.suites.create(slug='tests')
+        test_run = build.test_runs.create(environment=env)
+        test_run.tests.create(name='foo', suite=suite, result=True)
+        test_run.tests.create(name='bar', suite=suite, result=False)
+
+        self.assertEqual({'total': 2, 'pass': 1, 'fail': 1}, build.test_summary)

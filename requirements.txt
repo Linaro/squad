@@ -8,3 +8,4 @@ django-celery
 PyYAML
 pyzmq
 msgpack-python
+tabulate

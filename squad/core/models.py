@@ -1,10 +1,13 @@
 import re
+from collections import OrderedDict
 
 
+from dateutil.relativedelta import relativedelta
 from django.db import models
 from django.db.models import Q
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import Group as UserGroup
+from django.core.validators import EmailValidator
 from django.core.validators import RegexValidator
 from django.utils import timezone
 
@@ -38,6 +41,7 @@ class Project(models.Model):
     slug = models.CharField(max_length=100, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
     is_public = models.BooleanField(default=True)
+    build_completion_threshold = models.IntegerField(default=120)
 
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
@@ -116,6 +120,19 @@ class Build(models.Model):
             'test_runs__tests',
             'test_runs__tests__suite',
         )
+
+    @property
+    def test_summary(self):
+        summary = OrderedDict()
+        summary['total'] = 0
+        summary['pass'] = 0
+        summary['fail'] = 0
+        mapping = {True: 'pass', False: 'fail'}
+        for run in self.test_runs.all():
+            for test in run.tests.all():
+                summary[mapping[test.result]] += 1
+                summary['total'] += 1
+        return summary
 
 
 class Environment(models.Model):
@@ -303,3 +320,35 @@ class Status(models.Model):
         else:
             name = self.environment.slug
         return '%s: %f, %d%% pass' % (name, self.metrics_summary, self.pass_percentage)
+
+
+class ProjectStatus(models.Model):
+    """
+    Represents a "checkpoint" of a project status in time. It is used by the
+    notification system to know what was the project status at the time of the
+    last notification.
+    """
+    build = models.ForeignKey('Build', null=True)
+    previous = models.ForeignKey('ProjectStatus', null=True, related_name='next')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @classmethod
+    def create(cls, project):
+        completion_window = relativedelta(minutes=project.build_completion_threshold)
+        completed_by = timezone.now() - completion_window
+        builds = project.builds.filter(datetime__lt=completed_by)
+
+        build = builds.last()
+        previous = cls.objects.filter(build__project=project).last()
+        if build and (not previous or (previous.build != build)):
+            return cls.objects.create(build=build, previous=previous)
+        else:
+            return None
+
+    def __str__(self):
+        return 'Build %s; created at %s' % (self.build, self.created_at)
+
+
+class Subscription(models.Model):
+    project = models.ForeignKey(Project, related_name='subscriptions')
+    email = models.CharField(max_length=1024, validators=[EmailValidator()])

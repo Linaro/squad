@@ -1,0 +1,105 @@
+{% load squad %}
+<html>
+  <head>
+    <style type='text/css'>
+body {
+  font-family: sans-serif;
+  font-size: 12px;
+}
+h1 {
+  border-bottom: 1px solid #babdb6;
+}
+table.table-bordered {
+  border-collapse: collapse;
+}
+table.table-bordered td,
+table.table-bordered th {
+  border: 1px solid #2e3436;
+  padding: 0.25em;
+}
+table.table-bordered td.pass {
+  background: #8ae234;
+  color: #214203;
+}
+table.table-bordered td.fail {
+  background: #ef2929;
+  color: #260000;
+}
+.footer {
+  padding: 0.25em;
+  margin-top: 2em;
+}
+.footer, .footer a:link, .footer a:visited {
+  color: #babdb6;
+}
+    </style>
+  </head>
+  <body>
+    <h1>Test status change</h1>
+    <p>
+    The following changes were detected in the test results between builds
+    {{notification.previous_build.version}} and {{notification.build.version}}:
+    </p>
+
+    {% with comparison=notification.comparison %}
+    <table class='table table-bordered test-results'>
+      <tr>
+        <td rowspan='2'></td>
+        {% for build, environments in comparison.environments.items %}
+        <th colspan={{environments|length}}>
+          {{build.project}}, build {{build.name}}
+        </th>
+        {% endfor %}
+      </tr>
+      <tr>
+        {% for build, environments in comparison.environments.items %}
+        {% for environment in environments %}
+        <th>
+          {{environment}}
+        </th>
+        {% endfor %}
+        {% endfor %}
+      </tr>
+      {% for test, results in comparison.diff.items %}
+      <tr>
+        <th>{{test}}</th>
+        {% for build, environments in comparison.environments.items %}
+        {% for environment in environments %}
+        {% with result=results|test_result_by_build:build|test_result_by_env:environment %}
+        <td class='{{result}}'>
+          {% if result %}
+          <strong>{{result}}</strong>
+          {% else %}
+          <i>n/a</i>
+          {% endif %}
+        </td>
+        {% endwith %}
+        {% endfor %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
+    {% endwith %}
+
+    {% for build in notification.comparison.builds %}
+    {% with summary=build.test_summary %}
+    <h1><a href="{{settings.BASE_URL}}/{{build.project}}/build/{{notification.build.version}}">Build {{build.version}}</a></h1>
+    <table class='table-bordered'>
+      <tr>
+        <th colspan='2'>Test count</th>
+      </tr>
+      {% for k, v in summary.items %}
+      <tr>
+        <th>{{k|title}}</th>
+        <td>{{v}}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endwith %}
+    {% endfor %}
+
+    <div class='footer'>
+    Sent by <a href="{{settings.BASE_URL}}">{{settings.SITE_NAME}}</a>
+    </div>
+  </body>
+</html>

@@ -10,8 +10,8 @@ class TestComparison(object):
     Data structure:
 
     builds: [Build]
-    environments: Build → Environment
-    results: str → (Environment → TestResults)
+    environments: Build → [EnvironmentName(str)]
+    results: TestName(str) → ((Build,EnvironmentName(str)) → TestResults)
 
     The best way to think about this is to think of the table you want as
     result:
@@ -63,13 +63,14 @@ class TestComparison(object):
         for build in self.builds:
             test_runs = list(build.test_runs.all())
             environments = [t.environment for t in test_runs]
-            self.environments[build] = sorted(set(environments), key=lambda e: e.id)
+            self.environments[build] = sorted([e.slug for e in set(environments)])
             for test_run in test_runs:
                 self.__extract_test_results__(test_run)
 
     def __extract_test_results__(self, test_run):
         for test in test_run.tests.all():
-            self.results[test.full_name][test_run.environment] = test.status
+            key = (test_run.build, test_run.environment.slug)
+            self.results[test.full_name][key] = test.status
 
     def __all_tests__(self):
         data = Test.objects.filter(
@@ -81,4 +82,28 @@ class TestComparison(object):
             'suite__slug',
             'name',
         ).distinct()
-        return [join_name(item['suite__slug'], item['name']) for item in data]
+        return sorted([join_name(item['suite__slug'], item['name']) for item in data])
+
+    __diff__ = None
+
+    @property
+    def diff(self):
+        """
+        Returns a subset of the rows, containing only the rows where results
+        differ between the builds.
+        """
+        if self.__diff__ is not None:
+            return self.__diff__
+
+        d = OrderedDict()
+        for test, results in self.results.items():
+            previous = None
+            for build in self.builds:
+                current = [results.get((build, e)) for e in self.environments[build]]
+                if previous and previous != current:
+                    d[test] = results
+                    break
+                previous = current
+
+        self.__diff__ = d
+        return self.__diff__

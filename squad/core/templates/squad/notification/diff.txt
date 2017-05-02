@@ -1,0 +1,20 @@
+{% load squad_notification %}
+The following changes were detected in the test results between builds
+{{notification.previous_build.version}} and {{notification.build.version}}:
+
+{% tabulate_test_comparison notification.comparison notification.comparison.diff %}
+
+{% for build in notification.comparison.builds %}
+{% with summary=build.test_summary %}Build {{build.version}}
+------------------------------------------------------------------------
+
+Test count:
+  {% for k, v in summary.items %}{{k|upper}}={{v}}
+  {% endfor %}
+More information: {{settings.BASE_URL}}/{{build.project}}/build/{{notification.build.version}}
+
+{% endwith %}{% endfor %}
+
+--
+{{settings.SITE_NAME}}
+{{settings.BASE_URL}}
