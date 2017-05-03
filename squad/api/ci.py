@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -14,14 +14,29 @@ from squad.core.models import Project
 @csrf_exempt
 @auth
 def submit_job(request, group_slug, project_slug, version, environment_slug):
-    backend = Backend.objects.get(name=request.POST.get('backend'))
+    backend_name = request.POST.get('backend')
+    if backend_name is None:
+        return HttpResponseBadRequest("backend field is required")
+    backend = None
+    try:
+        backend = Backend.objects.get(name=request.POST.get('backend'))
+    except Backend.DoesNotExist:
+        return HttpResponseBadRequest("requested backend does not exist")
+
+    # project has to exist or request will result with 404
     project = Project.objects.get(slug=project_slug, group__slug=group_slug)
+    if backend is None or project is None:
+        return HttpResponseBadRequest("malformed request")
 
     # definition can be received as a file upload or as a POST parameter
+    definition = None
     if 'definition' in request.FILES:
         definition = read_file_upload(request.FILES['definition'])
     else:
         definition = request.POST.get('definition')
+
+    if definition is None:
+        return HttpResponseBadRequest("test job definition is required")
 
     # create TestJob object
     test_job = TestJob.objects.create(
@@ -34,4 +49,5 @@ def submit_job(request, group_slug, project_slug, version, environment_slug):
     # schedule submission
     submit.delay(test_job.id)
 
-    return HttpResponse('', status=201)
+    # return ID of test job
+    return HttpResponse(test_job.id, status=201)

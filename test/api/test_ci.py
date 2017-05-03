@@ -38,6 +38,21 @@ class CiApiTest(TestCase):
             ).count()
         )
 
+    def test_invalid_backend_test_run(self):
+        args = {
+            'backend': 'lava.foo',
+            'definition': 'foo: 1',
+        }
+        r = self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
+        self.assertEqual(400, r.status_code)
+
+    def test_missing_definition_test_run(self):
+        args = {
+            'backend': 'lava'
+        }
+        r = self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
+        self.assertEqual(400, r.status_code)
+
     def test_accepts_definition_as_file_upload(self):
         args = {
             'backend': 'lava',
