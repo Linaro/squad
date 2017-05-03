@@ -6,6 +6,10 @@ from django.http import HttpResponse
 import logging
 
 
+# an architecture violation
+from squad.frontend import views
+
+
 from squad.http import read_file_upload
 
 
