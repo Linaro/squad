@@ -83,7 +83,7 @@ table.table-bordered td.fail {
 
     {% for build in notification.comparison.builds %}
     {% with summary=build.test_summary %}
-    <h1><a href="{{settings.BASE_URL}}/{{build.project}}/build/{{notification.build.version}}">Build {{build.version}}</a></h1>
+    <h1><a href="{{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}">Build {{build.version}}</a></h1>
     <table class='table-bordered'>
       <tr>
         <th colspan='2'>Test count</th>

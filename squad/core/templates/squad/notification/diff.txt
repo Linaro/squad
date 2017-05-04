@@ -11,7 +11,7 @@ The following changes were detected in the test results between builds
 Test count:
   {% for k, v in summary.items %}{{k|upper}}={{v}}
   {% endfor %}
-More information: {{settings.BASE_URL}}/{{build.project}}/build/{{notification.build.version}}
+More information: {{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}
 
 {% endwith %}{% endfor %}
 
