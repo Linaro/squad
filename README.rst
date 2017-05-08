@@ -37,22 +37,22 @@ To run the application locally::
 
     python3 manage.py runserver
 
-Data model
-----------
+Core data model
+---------------
 
 ::
 
     +----+  * +-------+  * +-----+  * +-------+  * +----+ *   1 +-----+
     |Team|--->|Project|--->|Build|--->|TestRun|--->|Test|------>|Suite|
-    +----+    +-------+    +-----+    +-------+    +----+       +-----+
-                                        | *   |                    ^ 1
-                                        |     |  * +------+ *      |
-                                        |     +--->|Metric|--------+
-                                        |          +------+
-                                        v 1
-                                      +-----------+
-                                      |Environment|
-                                      +-----------+
+    +----+    +---+---+    +-----+    +-------+    +----+       +-----+
+                  ^ *         ^         | *   |                    ^ 1
+                  |           |         |     |  * +------+ *      |
+              +---+--------+  |         |     +--->|Metric|--------+
+              |Subscription|  |         |          +------+
+              +------------+  |         v 1
+              +-------------+ |       +-----------+
+              |ProjectStatus|-+       |Environment|
+              +-------------+         +-----------+
 
 SQUAD is multi-team and multi-project. Each team can have multiple
 projects. For each project, you can have multiple builds, and for each
@@ -65,6 +65,11 @@ describes the environment in which the tests were executed, such as
 hardware platform, hardware configuration, OS, build settings (e.g.
 regular compilers vcs optimized compilers), etc. Results are always
 organized by environments, so we can compare apples to apples.
+
+Projects can have subscriptions, which are email address that should be
+notified about important events such as changing test results. ProjectStatus
+records the most recent build of a project, against which future results should
+be compared in search for important events to notify subscribers about.
 
 Submitting results
 ------------------
@@ -193,13 +198,74 @@ strings. The following fields are recognized:
 Other fields must be submitted. They will be stored, but will not be
 handled in any specific way.
 
+CI loop integration (optional)
+------------------------------
 
-How to support multiple use cases
----------------------------------
+SQUAD can integrate with existing automation systems to participate in a
+Continuous Integration (CI) loop through its CI subsystem. This
+subsystem has the following features:
 
--  Branches: use separate projects, one per branch. e.g. ``foo-master``
-   and ``foo-stable``.
--  ...
+* receiving test job requests
+* submitting test job requests to test execution backends
+* pulling test job results from test execution backends
+
+The data model for the CI subsystem looks like this::
+
+   +---------+    +---------+    +------------------------+
+   | TestJob |--->| Backend |--->| Backend implementation |
+   +---------+    +---------+    +------------------------+
+        |
+        |         +---------------------+
+        +-------->| TestRun (from core) |
+                  +---------------------+
+
+
+TestJob holds the data related to a test job request. This test job is going to
+be submitted to a Backend, and after SQUAD gets results back from that backend,
+it will create a TestRun object with the results data. A Backend is a
+representation of a given test execution system, such as a LAVA server, or
+Jenkins. ``Backend`` contains the necessary data to access the backend, such as
+URL, username and password, etc, while ``Backend implementation`` encapsulates
+the details on how to interact with that type of system (e.g. API calls, etc).
+So for example you can have multiple backends of the same type (e.g. different
+2 LAVA servers).
+
+For the CI loop integration to work, you need to run a few extra
+processes beyond the web interface. See ``INSTALL.rst`` for details.
+
+Submitting test job requests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The API is the following
+
+**POST** /api/submitjob/:team/:project/:build/:environment
+
+* ``team``, ``project``, ``build`` and ``environment`` are used to
+  identify which project/build/environment will be used to record the
+  results of the test job.
+* The following data must be submitted as POST parameters:
+  * ``backend``: name of a registered backend, to which this test job
+    will be submitted.
+  * ``definition``: test job definition. The contents and format are
+    backend-specific. If it is more convenient, the definition can also
+    be submitted as a file upload instead of as a POST parameter.
+
+Example (with test job definition as POST parameter)::
+
+    $ DEFINITION="$(cat /path/to/definition.txt)"
+    $ curl \
+        --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+        --form backend=lava \
+        --form definition="$DEFINITION" \
+        https://squad.example.com/api/submitjob/my-team/my-project/x.y.z/my-ci-env
+
+Example (with test job definition as file upload)::
+
+    $ curl \
+        --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+        --form backend=lava \
+        --form definition=@/path/to/definition.txt \
+        https://squad.example.com/api/submitjob/my-team/my-project/x.y.z/my-ci-env
 
 License
 -------

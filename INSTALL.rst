@@ -14,6 +14,19 @@ Install squad::
     pip3 install squad
 
 
+Processes
+---------
+
+SQUAD is composed of 3 different process:
+
+* web application server
+* background worker (celery worker)
+* periodic task scheduler (celery beat)
+
+The only mandatory process if the web interface. The others are optional and
+are only needed if you need features like email notification and CI loop
+integration.
+
 To run the web interface, run as a dedicated user (i.e. don't run the
 application as ``root``!)::
 
@@ -34,6 +47,42 @@ After starting SQUAD, but before acessing it, you will need a user. To create
 an admin user for yourself, use::
 
     squad-admin createsuperuser
+
+These are the command lines to run the other processes, for the CI loop
+integration:
+
++-----------+----------------------------
+| Process   | Command                   |
++-----------+---------------------------+
+| worker    | squad-admin celery worker |
++-----------+---------------------------+
+| scheduler | squad-admin celery beat   |
++-----------+---------------------------+
+
+You most probably want all the processes (including the web interface) being
+managed by a system manager such as systemd__, or a process manager such as
+supervisor__.
+
+__ https://www.freedesktop.org/wiki/Software/systemd/
+__ http://supervisord.org/
+
+For an example deployment, check the configuration management repository for
+`Linaro's qa-reports`__ (using ansible).
+
+__ https://github.com/Linaro/qa-reports.linaro.org
+
+After having the necessary processes running, there are a few extra setup steps
+needed:
+
+* Create ``Backend`` instances for your test execution backends. Go to the
+  administration web UI, and under "CI", choose "Backends".
+* For each project, create authentication tokens and subscriptions
+* Under "Djcelery", create "Periodic tasks":
+  * ``squad.ci.tasks.poll``: this is that task to  poll results from the
+    backends from time to time. You can schedule this for every 5 minutes;
+  * ``squad.core.tasks.notification.notify_all_projects``: this is the task
+    that sends email notifications about changes in test status. You probably
+    want to schedule this for once or twice a day.
 
 Further configuration
 ---------------------
@@ -61,3 +110,20 @@ The following environment variables affect the behavior of SQUAD:
 
 * ``SECRET_KEY_FILE``: file to store encryption key for user sessions. Defaults
   to ``${XDG_DATA_HOME}/squad/secret.dat``
+
+* ``DJANGO_LOG_LEVEL``: the logging level used for Django-related logging.
+  Default: ``INFO``.
+
+* ``SQUAD_LOG_LEVEL``: the logging level for SQUAD-specific logging. Default:
+  ``INFO``.
+
+* ``SQUAD_HOSTNAME``: hostname used to compose links in asynchronous
+  notifications (e.g. emails). Defaults to the FQDN of the host where SQUAD is
+  running.
+
+* ``SQUAD_BASE_URL``: Base URL to the SQUAD web interface, used when composing
+  links in notifications (e.g. emails). Defaults to
+  ``https://$SQUAD_HOSTNAME``.
+
+* ``SQUAD_EMAIL_FROM``: e-mail used as sender of email notifications. Defaults
+  to ``noreply@$SQUAD_HOSTNAME``.
