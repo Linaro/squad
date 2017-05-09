@@ -1,3 +1,9 @@
+import logging
+
+
+logger = logging.getLogger('squad.ci.backend')
+
+
 description = "None"
 
 
@@ -50,3 +56,18 @@ class Backend(object):
         Returns the URL of the test job in the backend
         """
         pass
+
+    def format_message(self, msg):
+        return self.data.name + ': ' + msg
+
+    def log_info(self, msg):
+        logger.info(self.format_message(msg))
+
+    def log_debug(self, msg):
+        logger.debug(self.format_message(msg))
+
+    def log_warn(self, msg):
+        logger.warn(self.format_message(msg))
+
+    def log_error(self, msg):
+        logger.error(self.format_message(msg))
