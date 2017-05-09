@@ -77,6 +77,7 @@ class Backend(BaseBackend):
                 message = self.socket.recv_multipart()
                 self.log_debug("message received: %r" % message)
                 (topic, uuid, dt, username, data) = (u(m) for m in message[:])
+                data = json.loads(data)
                 lava_id = data['job']
                 if 'sub_id' in data.keys():
                     lava_id = data['sub_id']
