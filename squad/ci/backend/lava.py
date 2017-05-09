@@ -1,4 +1,5 @@
 import json
+import traceback
 import yaml
 import xmlrpc
 import zmq
@@ -62,14 +63,19 @@ class Backend(BaseBackend):
     def listen(self):
         listener_url = self.get_listener_url()
 
+        self.log_debug("connecting to %s" % listener_url)
+
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.SUB)
         self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
         self.socket.connect(listener_url)
 
+        self.log_debug("connected to %s" % listener_url)
+
         while True:
             try:
                 message = self.socket.recv_multipart()
+                self.log_debug("message received: %r" % message)
                 (topic, uuid, dt, username, data) = (u(m) for m in message[:])
                 lava_id = data['job']
                 if 'sub_id' in data.keys():
@@ -82,10 +88,11 @@ class Backend(BaseBackend):
                         job_id=lava_id)
                     if db_test_job_list.exists() and \
                             len(db_test_job_list) == 1:
-                        self.data.fetch(db_test_job_list[0])
+                        job = db_test_job_list[0]
+                        self.log_info("fetching data for job %s" % job.job_id)
+                        self.data.fetch(job)
             except Exception as e:
-                # TODO: at least log error
-                pass
+                self.log_error(str(e) + "\n" + traceback.format_exc())
 
     def job_url(self, test_job):
         url = urlsplit(self.data.url)
