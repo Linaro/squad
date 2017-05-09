@@ -1,5 +1,5 @@
 from django.test import TestCase
-from mock import patch
+from mock import patch, MagicMock
 import yaml
 import xmlrpc
 
@@ -151,3 +151,14 @@ class LavaTest(TestCase):
         testjob = TestJob(job_id='1234')
         with self.assertRaises(TemporarySubmissionIssue):
             lava.submit(testjob)
+
+    def test_get_listen_url(self):
+        backend = MagicMock()
+        backend.url = 'https://foo.tld/RPC2'
+        lava = LAVABackend(backend)
+
+        lava.__get_publisher_event_socket__ = MagicMock(return_value='tcp://bar.tld:9999')
+        self.assertEqual('tcp://bar.tld:9999', lava.get_listener_url())
+
+        lava.__get_publisher_event_socket__ = MagicMock(return_value='tcp://*:9999')
+        self.assertEqual('tcp://foo.tld:9999', lava.get_listener_url())

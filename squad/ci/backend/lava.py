@@ -60,19 +60,12 @@ class Backend(BaseBackend):
             return self.__parse_results__(data)
 
     def listen(self):
-        if not self.data.listener_url:
-            self.log_debug("no listener_url, cannot listen for events")
-            return
+        listener_url = self.get_listener_url()
 
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.SUB)
-        # TODO: there might be an issue with setsockopt_string depending on
-        # python version. This might need refactoring
-        socket_filter = ""
-        if self.data.listener_filter:
-            socket_filter = self.data.listener_filter
-        self.socket.setsockopt_string(zmq.SUBSCRIBE, socket_filter)
-        self.socket.connect(self.data.listener_url)
+        self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        self.socket.connect(listener_url)
 
         while True:
             try:
@@ -125,6 +118,18 @@ class Backend(BaseBackend):
             self.__proxy__ = xmlrpclib.ServerProxy(endpoint)
         return self.__proxy__
 
+    def get_listener_url(self):
+        url = urlsplit(self.data.url)
+        hostname = url.netloc
+
+        socket = self.__get_publisher_event_socket__()
+        socket_url = urlsplit(socket)
+        port = socket_url.port
+        if socket_url.hostname != '*':
+            hostname = socket_url.hostname
+        scheme = socket_url.scheme
+        return '%s://%s:%s' % (scheme, hostname, port)
+
     def __submit__(self, definition):
         return self.proxy.scheduler.submit_job(definition)
 
@@ -133,6 +138,9 @@ class Backend(BaseBackend):
 
     def __get_testjob_results_yaml__(self, job_id):
         return self.proxy.results.get_testjob_results_yaml(job_id)
+
+    def __get_publisher_event_socket__(self):
+        return self.proxy.scheduler.get_publisher_event_socket()
 
     def __parse_results__(self, data):
         if data['is_pipeline'] is False:
