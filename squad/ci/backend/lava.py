@@ -69,6 +69,9 @@ class Backend(BaseBackend):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.SUB)
         self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        self.socket.setsockopt(zmq.HEARTBEAT_IVL, 1000)  # 1 s
+        self.socket.setsockopt(zmq.HEARTBEAT_TIMEOUT, 10000)  # 10 s
+
         self.socket.connect(listener_url)
 
         self.log_debug("connected to %s" % listener_url)
