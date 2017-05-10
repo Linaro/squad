@@ -56,6 +56,7 @@ class Backend(BaseBackend):
 
     def fetch(self, test_job):
         data = self.__get_job_details__(test_job.job_id)
+
         if data['status'] in self.complete_statuses:
             yamldata = self.__get_testjob_results_yaml__(test_job.job_id)
             data['results'] = yaml.load(yamldata)
