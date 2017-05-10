@@ -44,3 +44,9 @@ class Backend(object):
         the received data is up to each specific backend implementation.
         """
         pass
+
+    def job_url(selt, test_job):
+        """
+        Returns the URL of the test job in the backend
+        """
+        pass

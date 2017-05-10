@@ -90,6 +90,15 @@ class Backend(BaseBackend):
                     # TODO: at least log error
                     pass
 
+    def job_url(self, test_job):
+        url = urlsplit(self.data.url)
+        joburl = '%s://%s/scheduler/job/%s' % (
+            url.scheme,
+            url.netloc,
+            test_job.job_id
+        )
+        return joburl
+
     # ------------------------------------------------------------------------
     # implementation details
     # ------------------------------------------------------------------------
