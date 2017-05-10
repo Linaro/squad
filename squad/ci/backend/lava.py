@@ -53,6 +53,13 @@ class Backend(BaseBackend):
 
     def fetch(self, test_job):
         data = self.__get_job_details__(test_job.job_id)
+        if test_job.definition is None:
+            if 'definition' in data.keys():
+                test_job.definition = data['definition']
+            elif 'multinode_definition' in data.keys():
+                test_job.definition = data['multinode_definition']
+            test_job.save()
+
         if data['status'] in self.complete_statuses:
             yamldata = self.__get_testjob_results_yaml__(test_job.job_id)
             data['results'] = yaml.load(yamldata)
