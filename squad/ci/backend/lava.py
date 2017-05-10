@@ -10,6 +10,7 @@ from xmlrpc import client as xmlrpclib
 from urllib.parse import urlsplit
 
 
+from squad.ci.tasks import fetch
 from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue
 from squad.ci.backend.null import Backend as BaseBackend
 
@@ -90,8 +91,8 @@ class Backend(BaseBackend):
                     if db_test_job_list.exists() and \
                             len(db_test_job_list) == 1:
                         job = db_test_job_list[0]
-                        self.log_info("fetching data for job %s" % job.job_id)
-                        self.data.fetch(job)
+                        self.log_info("scheduling fetch for job %s" % job.job_id)
+                        fetch.delay(job.id)
             except Exception as e:
                 self.log_error(str(e) + "\n" + traceback.format_exc())
 
