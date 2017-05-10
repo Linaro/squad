@@ -69,3 +69,22 @@ class CiApiTest(TestCase):
         self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
         job_id = models.TestJob.objects.last().id
         submit.assert_called_with(job_id)
+
+    @patch("squad.ci.tasks.fetch.delay")
+    def test_watch_testjob(self, fetch):
+        testjob_id = 1234
+        args = {
+            'backend': 'lava',
+            'testjob_id': testjob_id,
+        }
+        self.client.post('/api/watchjob/mygroup/myproject/1/myenv', args)
+        job_id = models.TestJob.objects.last().id
+        fetch.assert_called_with(job_id)
+
+    @patch("squad.ci.tasks.fetch.delay")
+    def test_watch_testjob_mising_id(self, fetch):
+        args = {
+            'backend': 'lava'
+        }
+        r = self.client.post('/api/watchjob/mygroup/myproject/1/myenv', args)
+        self.assertEqual(400, r.status_code)

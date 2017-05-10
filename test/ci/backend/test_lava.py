@@ -94,16 +94,20 @@ class LavaTest(TestCase):
 
     @patch("squad.ci.backend.lava.Backend.__submit__", return_value='1234')
     def test_submit(self, __submit__):
-        testjob = TestJob(definition="foo: 1\n")
         lava = LAVABackend(None)
+        testjob = TestJob(
+            definition="foo: 1\n",
+            backend=self.backend)
         self.assertEqual('1234', lava.submit(testjob))
         __submit__.assert_called_with("foo: 1\n")
 
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
     def test_fetch_basics(self, get_results, get_details):
-        testjob = TestJob(job_id='9999')
         lava = LAVABackend(None)
+        testjob = TestJob(
+            job_id='9999',
+            backend=self.backend)
         results = lava.fetch(testjob)
 
         get_details.assert_called_with('9999')
@@ -113,8 +117,10 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_RUNNING)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__")
     def test_fetch_not_finished(self, get_results, get_details):
-        testjob = TestJob(job_id='9999')
         lava = LAVABackend(None)
+        testjob = TestJob(
+            job_id='9999',
+            backend=self.backend)
         lava.fetch(testjob)
 
         get_results.assert_not_called()
@@ -122,8 +128,10 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
     def test_parse_results_metadata(self, get_results, get_details):
-        testjob = TestJob(job_id='1234')
         lava = LAVABackend(None)
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend)
         status, metadata, results, metrics = lava.fetch(testjob)
 
         self.assertEqual(JOB_METADATA, metadata)
@@ -131,8 +139,10 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
     def test_parse_results(self, get_results, get_details):
-        testjob = TestJob(job_id='1234')
         lava = LAVABackend(None)
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend)
         status, metadata, results, metrics = lava.fetch(testjob)
 
         self.assertEqual(len(results), 1)
@@ -141,13 +151,17 @@ class LavaTest(TestCase):
     @patch('squad.ci.backend.lava.Backend.__submit__', side_effect=HTTP_400)
     def test_submit_400(self, __submit__):
         lava = LAVABackend(None)
-        testjob = TestJob(job_id='1234')
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend)
         with self.assertRaises(SubmissionIssue):
             lava.submit(testjob)
 
     @patch('squad.ci.backend.lava.Backend.__submit__', side_effect=HTTP_503)
     def test_submit_503(self, __submit__):
         lava = LAVABackend(None)
-        testjob = TestJob(job_id='1234')
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend)
         with self.assertRaises(TemporarySubmissionIssue):
             lava.submit(testjob)

@@ -52,6 +52,7 @@ def submit_job(request, group_slug, project_slug, version, environment_slug):
     # return ID of test job
     return HttpResponse(test_job.id, status=201)
 
+
 @require_http_methods(["POST"])
 @csrf_exempt
 @auth
@@ -85,7 +86,7 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
         job_id=testjob_id
     )
     # schedule test job check
-    submit.fetch(test_job.id)
+    fetch.delay(test_job.id)
 
     # return ID of test job
     return HttpResponse(test_job.id, status=201)
