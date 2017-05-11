@@ -66,7 +66,7 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
     except Backend.DoesNotExist:
         return HttpResponseBadRequest("requested backend does not exist")
 
-    # project has to exist or request will result with 404
+    # project has to exist or request will result with 400
     project = Project.objects.get(slug=project_slug, group__slug=group_slug)
     if backend is None or project is None:
         return HttpResponseBadRequest("malformed request")
