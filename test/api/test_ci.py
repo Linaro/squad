@@ -77,9 +77,18 @@ class CiApiTest(TestCase):
             'backend': 'lava',
             'testjob_id': testjob_id,
         }
-        self.client.post('/api/watchjob/mygroup/myproject/1/myenv', args)
-        job_id = models.TestJob.objects.last().id
-        fetch.assert_called_with(job_id)
+        r = self.client.post('/api/watchjob/mygroup/myproject/1/myenv', args)
+        self.assertEqual(201, r.status_code)
+        self.assertEqual(
+            1,
+            models.TestJob.objects.filter(
+                target=self.project,
+                environment='myenv',
+                build='1',
+                backend=self.backend,
+                job_id=testjob_id
+            ).count()
+        )
 
     @patch("squad.ci.tasks.fetch.delay")
     def test_watch_testjob_mising_id(self, fetch):
