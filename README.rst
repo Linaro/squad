@@ -283,7 +283,7 @@ the results and do post processing. The API is following:
   results of the test job.
 * The following data must be submitted as POST parameters:
   * ``backend``: name of a registered backend, to which this test job
-    will be submitted.
+    was be submitted.
   * ``testjob_id``: test job ID. The contents and format are
     backend-specific.
 
