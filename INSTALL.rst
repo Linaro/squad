@@ -17,11 +17,12 @@ Install squad::
 Processes
 ---------
 
-SQUAD is composed of 3 different process:
+SQUAD is composed of 4 different process:
 
 * web application server
 * background worker (celery worker)
 * periodic task scheduler (celery beat)
+* CI backend listener
 
 The only mandatory process if the web interface. The others are optional and
 are only needed if you need features like email notification and CI loop
@@ -57,6 +58,8 @@ integration:
 | worker    | squad-admin celery worker |
 +-----------+---------------------------+
 | scheduler | squad-admin celery beat   |
++-----------+---------------------------+
+| listener  | squad-admin listen        |
 +-----------+---------------------------+
 
 You most probably want all the processes (including the web interface) being
