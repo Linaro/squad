@@ -20,7 +20,7 @@ def poll(backend_id=None):
 @celery.task
 def fetch(job_id):
     test_job = TestJob.objects.get(pk=job_id)
-    test_job.backend.really_fetch(test_job)
+    test_job.backend.fetch(test_job)
 
 
 @celery.task(bind=True)

@@ -43,21 +43,21 @@ class BackendTestBase(TestCase):
 
 class BackendPollTest(BackendTestBase):
 
-    @patch('squad.ci.models.Backend.fetch')
+    @patch('squad.ci.models.Backend.fetch_on_poll')
     def test_poll(self, fetch_method):
         test_job = self.create_test_job(submitted=True)
         self.backend.poll()
 
         fetch_method.assert_called_with(test_job)
 
-    @patch('squad.ci.models.Backend.fetch')
+    @patch('squad.ci.models.Backend.fetch_on_poll')
     def test_poll_wont_fetch_non_submitted_job(self, fetch_method):
         self.create_test_job(submitted=False)
         self.backend.poll()
 
         fetch_method.assert_not_called()
 
-    @patch('squad.ci.models.Backend.fetch')
+    @patch('squad.ci.models.Backend.fetch_on_poll')
     def test_poll_wont_fetch_job_previouly_fetched(self, fetch_method):
         self.create_test_job(submitted=True, fetched=True)
         self.backend.poll()
@@ -67,20 +67,27 @@ class BackendPollTest(BackendTestBase):
 
 class BackendFetchTest(BackendTestBase):
 
-    @patch('squad.ci.models.Backend.really_fetch')
+    @patch('squad.ci.models.Backend.fetch')
     def test_poll_wont_fetch_before_poll_interval(self, fetch_method):
         test_job = self.create_test_job(submitted=True, last_fetch_attempt=NOW)
-        self.backend.fetch(test_job)
+        self.backend.fetch_on_poll(test_job)
 
         fetch_method.assert_not_called()
 
-    @patch('squad.ci.models.Backend.really_fetch')
+    @patch('squad.ci.models.Backend.fetch')
     def test_poll_will_fetch_after_poll_interval(self, fetch_method):
         past = timezone.now() - relativedelta(minutes=self.backend.poll_interval + 1)
         test_job = self.create_test_job(submitted=True, last_fetch_attempt=past)
-        self.backend.fetch(test_job)
+        self.backend.fetch_on_poll(test_job)
 
         fetch_method.assert_called_with(test_job)
+
+    @patch("squad.ci.models.Backend.really_fetch")
+    def test_fetch_skips_already_fetched(self, really_fetch):
+        test_job = self.create_test_job(submitted=True, fetched=True)
+        self.backend.fetch(test_job)
+
+        really_fetch.assert_not_called()
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
