@@ -5,8 +5,9 @@ import os
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 
+from squad.ci.models import TestJob
 from squad.core.models import Group, Project, Metric
 from squad.core.queries import get_metric_data
 from squad.core.utils import join_name
@@ -185,3 +186,16 @@ def metrics(request, group_slug, project_slug):
         "data": data,
     }
     return render(request, 'squad/metrics.html', context)
+
+
+def test_job(request, testjob_id):
+    testjob = get_object_or_404(TestJob, pk=testjob_id)
+    if testjob.url is not None:
+        # redirect to target executor
+        return redirect(testjob.url)
+    else:
+        # display some description page
+        context = {
+            'testjob_id': testjob_id
+        }
+        return render(request, 'squad/testjob.html', context)

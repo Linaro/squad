@@ -110,3 +110,9 @@ class TestJob(models.Model):
     # output
     job_id = models.CharField(null=True, max_length=128, blank=True)
     job_status = models.CharField(null=True, max_length=128, blank=True)
+
+    @property
+    def url(self):
+        if self.job_id is not None:
+            return self.backend.get_implementation().job_url(self)
+        return None
