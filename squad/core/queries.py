@@ -37,9 +37,9 @@ def get_tests_series(project, environments):
         series = models.Status.objects.overall().filter(
             test_run__build__project=project,
             test_run__environment__slug=environment,
-        ).order_by('test_run__datetime').prefetch_related('test_run', 'test_run__environment')
+        ).order_by('test_run__datetime').prefetch_related('test_run', 'test_run__build')
         results[environment] = [
-            [s.test_run.datetime.timestamp(), s.pass_percentage]
+            [s.test_run.datetime.timestamp(), s.pass_percentage, s.test_run.build.version]
             for s in series
         ]
     return results

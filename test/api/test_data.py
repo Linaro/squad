@@ -72,8 +72,8 @@ class ApiDataTest(TestCase):
         first = json[':tests:']['env1'][0]
         second = json[':tests:']['env1'][1]
 
-        self.assertEqual([1483228800, 50], first)
-        self.assertEqual([1483315200, 100], second)
+        self.assertEqual([1483228800, 50, '2017-01-01'], first)
+        self.assertEqual([1483315200, 100, '2017-01-02'], second)
 
     def test_no_auth_on_non_public_project(self):
         self.project.is_public = False
