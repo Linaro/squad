@@ -130,3 +130,7 @@ The following environment variables affect the behavior of SQUAD:
 
 * ``SQUAD_EMAIL_FROM``: e-mail used as sender of email notifications. Defaults
   to ``noreply@$SQUAD_HOSTNAME``.
+
+* ``SQUAD_LOGIN_MESSAGE``: a message to be displayed to users right above the
+  login form. Use for example to provide instructions on what credentials to
+  use. Defaults no message.

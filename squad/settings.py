@@ -168,6 +168,7 @@ SHELL_PLUS = "ipython"
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
+SQUAD_LOGIN_MESSAGE = os.getenv("SQUAD_LOGIN_MESSAGE")
 
 SITE_NAME = os.getenv('SQUAD_SITE_NAME', 'SQUAD')
 

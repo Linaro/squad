@@ -73,3 +73,12 @@ def active(context, name):
         return 'active'
     else:
         return None
+
+
+@register.simple_tag(takes_context=True)
+def login_message(context, tag, classes):
+    msg = settings.SQUAD_LOGIN_MESSAGE
+    if msg:
+        return '<%s class="%s">%s</%s>' % (tag, classes, msg, tag)
+    else:
+        return ''
