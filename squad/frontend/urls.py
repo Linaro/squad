@@ -1,4 +1,7 @@
+from django.conf import settings
 from django.conf.urls import url
+from django.http import HttpResponse
+from django.shortcuts import redirect
 
 from . import views
 from . import comparison
@@ -6,6 +9,8 @@ from . import tests
 
 slug_pattern = '[a-z0-9_.-]+'
 urlpatterns = [
+    url(r'^favicon.ico$', lambda _: redirect(settings.MEDIA_URL + '/static/favicon.ico')),
+    url(r'^robots.txt$', lambda _: HttpResponse("User-agent: *\nDisallow: /\n", content_type='text/plain')),
     url(r'^$', views.home, name='home'),
     url(r'^_/compare/$', comparison.compare_projects, name='compare_projects'),
     url(r'^(%s)/$' % slug_pattern, views.group, name='group'),
