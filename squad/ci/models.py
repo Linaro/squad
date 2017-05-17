@@ -20,11 +20,6 @@ def list_backends():
 class Backend(models.Model):
     name = models.CharField(max_length=128, unique=True)
     url = models.URLField()
-    # listener_url is used by backend's listen() method
-    listener_url = models.URLField(null=True, blank=True)
-    # listener_filter might be used by backend to filter out
-    # unwanted messages
-    listener_filter = models.CharField(max_length=1024, null=True, blank=True)
     username = models.CharField(max_length=128)
     token = models.CharField(max_length=1024)
     implementation_type = models.CharField(

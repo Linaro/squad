@@ -1,4 +1,5 @@
 import json
+import traceback
 import yaml
 import xmlrpc
 import zmq
@@ -9,8 +10,10 @@ from xmlrpc import client as xmlrpclib
 from urllib.parse import urlsplit
 
 
+from squad.ci.tasks import fetch
 from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue
 from squad.ci.backend.null import Backend as BaseBackend
+
 
 description = "LAVA"
 
@@ -59,36 +62,42 @@ class Backend(BaseBackend):
             return self.__parse_results__(data)
 
     def listen(self):
-        if self.data.listener_url:
-            self.context = zmq.Context()
-            self.socket = self.context.socket(zmq.SUB)
-            # TODO: there might be an issue with setsockopt_string depending on
-            # python version. This might need refactoring
-            socket_filter = ""
-            if self.data.listener_filter:
-                socket_filter = self.data.listener_filter
-            self.socket.setsockopt_string(zmq.SUBSCRIBE, socket_filter)
-            self.socket.connect(self.data.listener_url)
+        listener_url = self.get_listener_url()
 
-            while True:
-                try:
-                    message = self.socket.recv_multipart()
-                    (topic, uuid, dt, username, data) = (u(m) for m in message[:])
-                    lava_id = data['job']
-                    if 'sub_id' in data.keys():
-                        lava_id = data['sub_id']
-                    lava_status = data['status']
-                    if lava_status in self.complete_statuses:
-                        db_test_job_list = self.data.test_jobs.filter(
-                            submitted=True,
-                            fetched=False,
-                            job_id=lava_id)
-                        if db_test_job_list.exists() and \
-                                len(db_test_job_list) == 1:
-                            self.data.fetch(db_test_job_list[0])
-                except Exception as e:
-                    # TODO: at least log error
-                    pass
+        self.log_debug("connecting to %s" % listener_url)
+
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.SUB)
+        self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        self.socket.setsockopt(zmq.HEARTBEAT_IVL, 1000)  # 1 s
+        self.socket.setsockopt(zmq.HEARTBEAT_TIMEOUT, 10000)  # 10 s
+
+        self.socket.connect(listener_url)
+
+        self.log_debug("connected to %s" % listener_url)
+
+        while True:
+            try:
+                message = self.socket.recv_multipart()
+                self.log_debug("message received: %r" % message)
+                (topic, uuid, dt, username, data) = (u(m) for m in message[:])
+                data = json.loads(data)
+                lava_id = data['job']
+                if 'sub_id' in data.keys():
+                    lava_id = data['sub_id']
+                lava_status = data['status']
+                if lava_status in self.complete_statuses:
+                    db_test_job_list = self.data.test_jobs.filter(
+                        submitted=True,
+                        fetched=False,
+                        job_id=lava_id)
+                    if db_test_job_list.exists() and \
+                            len(db_test_job_list) == 1:
+                        job = db_test_job_list[0]
+                        self.log_info("scheduling fetch for job %s" % job.job_id)
+                        fetch.delay(job.id)
+            except Exception as e:
+                self.log_error(str(e) + "\n" + traceback.format_exc())
 
     def job_url(self, test_job):
         url = urlsplit(self.data.url)
@@ -121,6 +130,18 @@ class Backend(BaseBackend):
             self.__proxy__ = xmlrpclib.ServerProxy(endpoint)
         return self.__proxy__
 
+    def get_listener_url(self):
+        url = urlsplit(self.data.url)
+        hostname = url.netloc
+
+        socket = self.__get_publisher_event_socket__()
+        socket_url = urlsplit(socket)
+        port = socket_url.port
+        if socket_url.hostname != '*':
+            hostname = socket_url.hostname
+        scheme = socket_url.scheme
+        return '%s://%s:%s' % (scheme, hostname, port)
+
     def __submit__(self, definition):
         return self.proxy.scheduler.submit_job(definition)
 
@@ -129,6 +150,9 @@ class Backend(BaseBackend):
 
     def __get_testjob_results_yaml__(self, job_id):
         return self.proxy.results.get_testjob_results_yaml(job_id)
+
+    def __get_publisher_event_socket__(self):
+        return self.proxy.scheduler.get_publisher_event_socket()
 
     def __parse_results__(self, data):
         if data['is_pipeline'] is False:
