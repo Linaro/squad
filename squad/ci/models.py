@@ -85,7 +85,9 @@ class Backend(models.Model):
 class TestJob(models.Model):
     # input - internal
     backend = models.ForeignKey(Backend, related_name='test_jobs')
-    definition = models.TextField()
+    # definition can only be empty if the job already exists
+    # in the executor.
+    definition = models.TextField(null=True, blank=True)
 
     # input - for TestRun later
     target = models.ForeignKey(Project)

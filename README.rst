@@ -267,6 +267,34 @@ Example (with test job definition as file upload)::
         --form definition=@/path/to/definition.txt \
         https://squad.example.com/api/submitjob/my-team/my-project/x.y.z/my-ci-env
 
+
+Submitting test job watch requests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Test job watch request are similar to test job requests. The only difference is
+that some other service submitted the test job for execution and SQAD is
+requested to track the progress. After test job is finished SQUAD will retrieve
+the results and do post processing. The API is following:
+
+**POST** /api/submitjob/:team/:project/:build/:environment
+
+* ``team``, ``project``, ``build`` and ``environment`` are used to
+  identify which project/build/environment will be used to record the
+  results of the test job.
+* The following data must be submitted as POST parameters:
+  * ``backend``: name of a registered backend, to which this test job
+    was be submitted.
+  * ``testjob_id``: test job ID. The contents and format are
+    backend-specific.
+
+Example (with test job definition as POST parameter)::
+
+    $ curl \
+        --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+        --form backend=lava \
+        --form testjob_id=123456 \
+        https://squad.example.com/api/watchjob/my-team/my-project/x.y.z/my-ci-env
+
 License
 -------
 
