@@ -167,6 +167,9 @@ class TestRun(models.Model):
     data_processed = models.BooleanField(default=False)
     status_recorded = models.BooleanField(default=False)
 
+    class Meta:
+        unique_together = ('build', 'job_id')
+
     def save(self, *args, **kwargs):
         if not self.datetime:
             self.datetime = timezone.now()
