@@ -78,21 +78,22 @@ The API is the following
 
 **POST** /api/submit/:team/:project/:build/:environment
 
--  ``:team`` is the team identifier. It must exist previously.
--  ``:project`` is the project identifier. It must exist previously.
--  ``:build`` is the build identifier. It can be a git commit hash, a
-   Android manifest hash, or anything really. Extra information on the
-   build can be submitted as an attachment. If a build timestamp is not
-   informed there, the time of submission is assumed.
--  ``:environment`` is the environmenr identitifer. It will be created
-   automatically if does not exist before.
+- ``:team`` is the team identifier. It must exist previously.
+- ``:project`` is the project identifier. It must exist previously.
+- ``:build`` is the build identifier. It needs to be a proper version
+  number, and later builds need to have build identitifers greater than
+  the ones before it. Good build identifiers: sequential numbers,
+  version numbers, version numbers produced by ``git describe``. Bad
+  build identifiers: commit hashes, as they don't sort properly.
+- ``:environment`` is the environmenr identitifer. It will be created
+  automatically if does not exist before.
 
 The test data must be submitted as file attachments in the ``POST``
 request. The following files are supported:
 
--  ``tests``: test results data
--  ``metrics``: metrics data
--  ``metadata``: metadata about the test run
+- ``tests``: test results data
+- ``metrics``: metrics data
+- ``metadata``: metadata about the test run
 - ``attachment``: arbitrary file attachments. Multiple attachments can
   be submitted by providing this parameter multiple times.
 
