@@ -47,6 +47,8 @@ class Backend(BaseBackend):
         try:
             job_id = self.__submit__(test_job.definition)
             return job_id
+        except xmlrpc.client.ProtocolError as error:
+            raise TemporarySubmissionIssue(str(error))
         except xmlrpc.client.Fault as fault:
             if fault.faultCode // 100 == 5:
                 # assume HTTP errors 5xx are temporary issues

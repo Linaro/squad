@@ -76,6 +76,7 @@ TEST_RESULTS_YAML = yaml.dump(TEST_RESULTS)
 
 HTTP_400 = xmlrpc.client.Fault(400, 'Problem with submitted job data')
 HTTP_503 = xmlrpc.client.Fault(503, 'Service Unavailable')
+HTTP_401 = xmlrpc.client.ProtocolError('http://example.com', 401, 'Unauthorized', {})
 
 
 class LavaTest(TestCase):
@@ -159,6 +160,15 @@ class LavaTest(TestCase):
 
     @patch('squad.ci.backend.lava.Backend.__submit__', side_effect=HTTP_503)
     def test_submit_503(self, __submit__):
+        lava = LAVABackend(None)
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend)
+        with self.assertRaises(TemporarySubmissionIssue):
+            lava.submit(testjob)
+
+    @patch('squad.ci.backend.lava.Backend.__submit__', side_effect=HTTP_401)
+    def test_submit_unauthorized(self, __submit__):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
