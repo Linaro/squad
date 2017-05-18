@@ -29,6 +29,7 @@ def submit(self, job_id):
     try:
         test_job.backend.submit(test_job)
     except SubmissionIssue as issue:
+        logger.error("submitting job %s to %s: %s" % (test_job.id, test_job.backend.name, str(issue)))
         test_job.failure = str(issue)
         test_job.save()
         if issue.retry:
