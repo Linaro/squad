@@ -92,7 +92,7 @@ class Build(models.Model):
 
     class Meta:
         unique_together = ('project', 'version',)
-        ordering = ['version']
+        ordering = ['datetime']
 
     def save(self, *args, **kwargs):
         if not self.datetime:

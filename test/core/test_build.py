@@ -1,4 +1,6 @@
+from dateutil.relativedelta import relativedelta
 from django.test import TestCase
+from django.utils import timezone
 
 
 from squad.core.models import Group, Build
@@ -20,8 +22,10 @@ class BuildTest(TestCase):
         self.assertEqual('1.0~rc1', b.version)
 
     def test_default_ordering(self):
-        newer = Build.objects.create(project=self.project, version='1.1')
-        Build.objects.create(project=self.project, version='1.0')
+        now = timezone.now()
+        before = now - relativedelta(hours=1)
+        newer = Build.objects.create(project=self.project, version='1.1', datetime=now)
+        Build.objects.create(project=self.project, version='1.0', datetime=before)
 
         self.assertEqual(newer, Build.objects.last())
 
