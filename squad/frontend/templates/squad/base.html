@@ -18,6 +18,7 @@
 
   <body>
 
+    <div id='wrapper'>
     <nav id='navbar' class="navbar navbar-default">
       <div class="container">
         <div class="navbar-header">
@@ -63,6 +64,7 @@
         <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License version 3</a>.
       </div>
     </footer>
+    </div><!-- id="wrapper" -->
 
     <script type="text/javascript" src="{% static "angularjs/angular.js" %}"></script>
 
@@ -70,15 +72,6 @@
 
     <script type="text/javascript" src="{% static "chartjs/Chart.bundle.js" %}"></script>
 
-    <script type="text/javascript">
-      var navbar = document.getElementById('navbar')
-      var main = document.getElementById('main-content')
-      var footer = document.getElementById('footer')
-      if (navbar.clientHeight + main.clientHeight + footer.clientHeight < window.innerHeight) {
-        footer.style.position = 'absolute'
-        footer.style.bottom = 0;
-      }
-    </script>
     {% block javascript %}{% endblock %}
   </body>
 </html>

@@ -28,6 +28,14 @@ table.test-results th:hover {
   background-color: rgb(221,221,221);
 }
 
+body {
+  background: #f9f9f9;
+}
+
+#wrapper {
+  background: white
+}
+
 footer {
   width: 100%;
 
@@ -41,4 +49,5 @@ footer {
 footer a:visited, footer a:link {
   color: #777777;
   font-weight: bold;
+
 }
