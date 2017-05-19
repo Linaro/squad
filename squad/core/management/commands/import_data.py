@@ -10,6 +10,14 @@ from squad.core.models import Group
 from squad.core.tasks import ReceiveTestRun
 
 
+def build_key(path):
+    name = os.path.basename(path)
+    if re.match('^[0-9]+$', name):
+        return int(name)
+    else:
+        return 0
+
+
 class Command(BaseCommand):
 
     help = """Import data from DIRECTORY into PROJECT. See
@@ -44,7 +52,8 @@ class Command(BaseCommand):
             print('-' * len(msg))
             print()
 
-        for directory in glob(os.path.join(options['DIRECTORY'], '*')):
+        builds = sorted(glob(os.path.join(options['DIRECTORY'], '*')), key=build_key)
+        for directory in builds:
             self.import_build(directory)
 
     def import_build(self, directory):
