@@ -3,7 +3,7 @@ import os
 
 from django.test import TestCase
 
-from squad.core.models import Build, Group, TestRun, Metric, Test
+from squad.core.models import Build, Group, Project, TestRun, Metric, Test
 from squad.core.management.commands.import_data import Command
 
 
@@ -41,3 +41,16 @@ class ImportTest(TestCase):
     def test_import_attachments(self):
         t = Build.objects.get(version='2').test_runs.last()
         self.assertIsNotNone(t.attachments.get(filename='screenshot.png'))
+
+
+class TestDryRun(TestCase):
+
+    def test_dry_run(self):
+        self.importer = Command()
+        self.importer.silent = True
+        d = os.path.join(os.path.dirname(__file__), 'test_import_data_input')
+        self.importer.handle(PROJECT='foo/bar', DIRECTORY=d, dry_run=True)
+        self.assertEqual(0, Group.objects.count())
+        self.assertEqual(0, Project.objects.count())
+        self.assertEqual(0, Build.objects.count())
+        self.assertEqual(0, TestRun.objects.count())

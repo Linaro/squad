@@ -47,7 +47,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.options = options
 
-        if not self.options['dry_run']:
+        if 'dry_run' not in self.options:
             group_id, project_id = options['PROJECT'].split('/')
             self.group, _ = Group.objects.get_or_create(slug=group_id)
             self.project, _ = self.group.projects.get_or_create(slug=project_id)
@@ -98,7 +98,7 @@ class Command(BaseCommand):
 
         if not self.silent:
             print("Importing test run: %s" % directory)
-        if self.options['dry_run']:
+        if 'dry_run' in self.options:
             return
         self.receive_test_run(
             version=build_id,
