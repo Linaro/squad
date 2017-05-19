@@ -26,6 +26,13 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
+            '--dry-run', '-d',
+            action='store_true',
+            dest='dry_run',
+            help='Dry run (i.e. don\'t really do the importing)',
+        )
+
+        parser.add_argument(
             'PROJECT',
             help='Target project, on the form $group/$project',
         )
@@ -40,10 +47,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.options = options
 
-        group_id, project_id = options['PROJECT'].split('/')
-        self.group, _ = Group.objects.get_or_create(slug=group_id)
-        self.project, _ = self.group.projects.get_or_create(slug=project_id)
-        self.receive_test_run = ReceiveTestRun(self.project)
+        if not self.options['dry_run']:
+            group_id, project_id = options['PROJECT'].split('/')
+            self.group, _ = Group.objects.get_or_create(slug=group_id)
+            self.project, _ = self.group.projects.get_or_create(slug=project_id)
+            self.receive_test_run = ReceiveTestRun(self.project)
 
         if not self.silent:
             print()
@@ -90,6 +98,8 @@ class Command(BaseCommand):
 
         if not self.silent:
             print("Importing test run: %s" % directory)
+        if self.options['dry_run']:
+            return
         self.receive_test_run(
             version=build_id,
             environment_slug=environment_slug,
