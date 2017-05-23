@@ -14,6 +14,8 @@ def build_key(path):
     name = os.path.basename(path)
     if re.match('^[0-9]+$', name):
         return int(name)
+    elif re.match('^[0-9a-f]+$', name):
+        return int(name, 16)
     else:
         return 0
 
