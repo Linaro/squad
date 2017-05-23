@@ -29,7 +29,14 @@ class Command(BaseCommand):
             '--dry-run', '-d',
             action='store_true',
             dest='dry_run',
-            help='Dry run (i.e. don\'t really do the importing)',
+            help='dry run (i.e. don\'t really do the importing)',
+        )
+
+        parser.add_argument(
+            '--silent', '-s',
+            action='store_true',
+            dest='silent',
+            help='operate silently (i.e. don\'t output anything)',
         )
 
         parser.add_argument(
@@ -42,18 +49,16 @@ class Command(BaseCommand):
             help='Input directory with the files to import',
         )
 
-    silent = False
-
     def handle(self, *args, **options):
         self.options = options
 
-        if 'dry_run' not in self.options:
+        if not self.options['dry_run']:
             group_id, project_id = options['PROJECT'].split('/')
             self.group, _ = Group.objects.get_or_create(slug=group_id)
             self.project, _ = self.group.projects.get_or_create(slug=project_id)
             self.receive_test_run = ReceiveTestRun(self.project)
 
-        if not self.silent:
+        if not self.options['silent']:
             print()
             msg = "Importing project: %s" % options["DIRECTORY"]
             print(msg)
@@ -96,9 +101,9 @@ class Command(BaseCommand):
             if name not in ['metrics.json', 'metadata.json', 'tests.json']:
                 attachments[name] = open(f, 'rb').read()
 
-        if not self.silent:
+        if not self.options['silent']:
             print("Importing test run: %s" % directory)
-        if 'dry_run' in self.options:
+        if self.options['dry_run']:
             return
         self.receive_test_run(
             version=build_id,

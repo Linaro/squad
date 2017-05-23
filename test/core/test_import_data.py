@@ -1,6 +1,7 @@
 import os
 
 
+from django.core.management import call_command
 from django.test import TestCase
 
 from squad.core.models import Build, Group, Project, TestRun, Metric, Test
@@ -10,11 +11,8 @@ from squad.core.management.commands.import_data import Command
 class ImportTest(TestCase):
 
     def setUp(self):
-        self.importer = Command()
-        self.importer.silent = True
-
         d = os.path.join(os.path.dirname(__file__), 'test_import_data_input')
-        self.importer.handle(PROJECT='foo/bar', DIRECTORY=d)
+        call_command('import_data', '--silent', 'foo/bar', d)
 
     def test_import_basics(self):
         group = Group.objects.get(slug='foo')
@@ -49,7 +47,7 @@ class TestDryRun(TestCase):
         self.importer = Command()
         self.importer.silent = True
         d = os.path.join(os.path.dirname(__file__), 'test_import_data_input')
-        self.importer.handle(PROJECT='foo/bar', DIRECTORY=d, dry_run=True)
+        call_command('import_data', '--silent', '--dry-run', 'foo/bar', d)
         self.assertEqual(0, Group.objects.count())
         self.assertEqual(0, Project.objects.count())
         self.assertEqual(0, Build.objects.count())
