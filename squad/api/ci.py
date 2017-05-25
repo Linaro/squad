@@ -88,3 +88,13 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
 
     # return ID of test job
     return HttpResponse(test_job.id, status=201)
+
+
+def resubmit_job(request, test_job_id):
+    try:
+        testjob = TestJob.objects.get(pk=test_job_id)
+        testjob.resubmit()
+    except TestJob.DoesNotExist:
+        return HttpResponseBadRequest("requested test job does not exist")
+
+    return HttpResponse(status=201)

@@ -26,5 +26,5 @@ urlpatterns = [
     url(r'^(%s)/(%s)/metrics/$' % ((slug_pattern,) * 2), views.metrics, name='metrics'),
     url(r'^(%s)/(%s)/tests/$' % ((slug_pattern,) * 2), tests.tests, name='tests'),
     url(r'^(%s)/(%s)/tests/(.*)$' % ((slug_pattern,) * 2), tests.test_history, name='test_history'),
-    url(r'^testjob/(.*)$', views.test_job, name='test_job'),
+    url(r'^testjob/([^/]+)$', views.test_job, name='test_job'),
 ]

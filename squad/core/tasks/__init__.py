@@ -122,6 +122,7 @@ class ReceiveTestRun(object):
 
         processor = ProcessTestRun()
         processor(testrun)
+        return testrun
 
 
 class ParseTestRunData(object):

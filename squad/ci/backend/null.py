@@ -33,6 +33,22 @@ class Backend(object):
         """
         pass
 
+    def resubmit(self, test_job):
+        """
+        Re-submits given test job to the backend service
+
+        The return value must be the re-submitted job id as provided by the
+        backend.
+
+        On errors, implementations can raise two classes of exceptions:
+            * squad.ci.exceptions.SubmissionIssue, when there is an unrecoverable
+              issue with the job (such as invalid data).
+            * squad.ci.exceptions.TemporarySubmission, when there is a temporary
+              condition that stopped the submission from happening that could
+              be gone in the future (e.g. a server-side issue or a maintainance
+              window).
+        """
+
     def fetch(self, test_job):
         """
         Fetches data from a given test job from the backend service. It can be
