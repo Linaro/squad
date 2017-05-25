@@ -24,7 +24,7 @@ class ApiDataTest(TestCase):
         receive(
             version=datestr,
             environment_slug="env1",
-            metadata=json.dumps({"datetime": datestr + "T00:00:00+00:00", "job_id": '1'}),
+            metadata_file=json.dumps({"datetime": datestr + "T00:00:00+00:00", "job_id": '1'}),
             metrics_file=json.dumps(metrics),
             tests_file=json.dumps(tests),
         )

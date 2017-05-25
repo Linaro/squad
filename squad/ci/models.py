@@ -64,7 +64,7 @@ class Backend(models.Model):
             receive(
                 version=test_job.build,
                 environment_slug=test_job.environment,
-                metadata=json.dumps(metadata),
+                metadata_file=json.dumps(metadata),
                 tests_file=json.dumps(tests),
                 metrics_file=json.dumps(metrics),
             )

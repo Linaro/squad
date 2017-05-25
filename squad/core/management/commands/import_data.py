@@ -110,7 +110,7 @@ class Command(BaseCommand):
         self.receive_test_run(
             version=build_id,
             environment_slug=environment_slug,
-            metadata=metadata,
+            metadata_file=metadata,
             metrics_file=metrics,
             tests_file=tests,
             attachments=attachments,

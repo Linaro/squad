@@ -107,7 +107,7 @@ class ReceiveTestRunTest(TestCase):
             "build_url": 'https://example/com/builds/777',
         }
 
-        receive('199', 'myenv', metadata=json.dumps(metadata))
+        receive('199', 'myenv', metadata_file=json.dumps(metadata))
         testrun = TestRun.objects.last()
 
         self.assertEqual(today, testrun.datetime)
@@ -130,7 +130,7 @@ class ReceiveTestRunTest(TestCase):
             "build_url": 'https://example/com/builds/777',
         }
 
-        receive('199', 'myenv', metadata=json.dumps(metadata))
+        receive('199', 'myenv', metadata_file=json.dumps(metadata))
         build = Build.objects.get(version='199')
 
         self.assertEqual(yesterday, build.datetime)
@@ -149,7 +149,7 @@ class TestValidateTestRun(TestCase):
     def assertInvalidMetadata(self, metadata, exception=exceptions.InvalidMetadata):
         validate = ValidateTestRun()
         with self.assertRaises(exception):
-            validate(metadata=metadata)
+            validate(metadata_file=metadata)
 
     def test_invalid_metadata_json(self):
         self.assertInvalidMetadata('{', exceptions.InvalidMetadataJSON)

@@ -53,7 +53,7 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
         'tests_file': 'tests',
         'metrics_file': 'metrics',
         'log_file': 'log',
-        'metadata': 'metadata',
+        'metadata_file': 'metadata',
     }
     for key, field in uploads.items():
         if field in request.FILES:

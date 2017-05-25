@@ -21,9 +21,9 @@ metric_parser = JSONMetricDataParser
 
 class ValidateTestRun(object):
 
-    def __call__(self, metadata=None, metrics_file=None, tests_file=None):
-        if metadata:
-            self.__validate_metadata__(metadata)
+    def __call__(self, metadata_file=None, metrics_file=None, tests_file=None):
+        if metadata_file:
+            self.__validate_metadata__(metadata_file)
 
         if metrics_file:
             self.__validate_metrics(metrics_file)
@@ -83,15 +83,15 @@ class ReceiveTestRun(object):
     def __init__(self, project):
         self.project = project
 
-    def __call__(self, version, environment_slug, metadata=None, metrics_file=None, tests_file=None, log_file=None, attachments={}):
+    def __call__(self, version, environment_slug, metadata_file=None, metrics_file=None, tests_file=None, log_file=None, attachments={}):
         build, _ = self.project.builds.get_or_create(version=version)
         environment, _ = self.project.environments.get_or_create(slug=environment_slug)
 
         validate = ValidateTestRun()
-        validate(metadata, metrics_file, tests_file)
+        validate(metadata_file, metrics_file, tests_file)
 
-        if metadata:
-            data = json.loads(metadata)
+        if metadata_file:
+            data = json.loads(metadata_file)
 
             fields = (
                 "build_url",
@@ -115,7 +115,7 @@ class ReceiveTestRun(object):
             tests_file=tests_file,
             metrics_file=metrics_file,
             log_file=log_file,
-            metadata_file=metadata,
+            metadata_file=metadata_file,
             **metadata_fields
         )
 

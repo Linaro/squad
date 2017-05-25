@@ -23,7 +23,7 @@ class FrontendTest(TestCase):
             log_file='log file contents ...',
             tests_file='{}',
             metrics_file='{}',
-            metadata='{ "job_id" : "1" }',
+            metadata_file='{ "job_id" : "1" }',
         )
         self.test_run = models.TestRun.objects.last()
 
