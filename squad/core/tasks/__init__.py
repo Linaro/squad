@@ -43,10 +43,6 @@ class ValidateTestRun(object):
         if "job_id" not in metadata.keys():
             raise exceptions.InvalidMetadata("job_id is mandatory in metadata")
 
-        for key, value in metadata.items():
-            if not isinstance(value, str):
-                raise exceptions.InvalidMetadata("value \"%r\" is not as string" % value)
-
     def __validate_metrics(self, metrics_file):
         try:
             metrics = json.loads(metrics_file)

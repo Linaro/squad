@@ -117,6 +117,22 @@ class ReceiveTestRunTest(TestCase):
         self.assertEqual(metadata['resubmit_url'], testrun.resubmit_url)
         self.assertEqual(metadata['build_url'], testrun.build_url)
 
+    def test_metadata_non_string_values(self):
+        receive = ReceiveTestRun(self.project)
+        metadata_in = {
+            'job_id': '12345',
+            'number': 999,
+            'version': 4.4,
+            'list': [1, 2, 3],
+            'object': {'1': 2},
+        }
+
+        receive('199', 'myenv', metadata_file=json.dumps(metadata_in))
+        testrun = TestRun.objects.last()
+
+        metadata = json.loads(testrun.metadata_file)
+        self.assertEqual(metadata_in, metadata)
+
     def test_build_datetime(self):
         receive = ReceiveTestRun(self.project)
 
@@ -156,9 +172,6 @@ class TestValidateTestRun(TestCase):
 
     def test_invalid_metadata_type(self):
         self.assertInvalidMetadata('[]')
-
-    def test_invalid_metadata_value(self):
-        self.assertInvalidMetadata('{"foo" : [1,2,3]}')
 
     # ~~~~~~~~~~~~ TESTS FOR METRICS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def assertInvalidMetrics(self, metrics, exception=exceptions.InvalidMetricsData):
