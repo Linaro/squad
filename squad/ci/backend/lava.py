@@ -72,8 +72,13 @@ class Backend(BaseBackend):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.SUB)
         self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
-        self.socket.setsockopt(zmq.HEARTBEAT_IVL, 1000)  # 1 s
-        self.socket.setsockopt(zmq.HEARTBEAT_TIMEOUT, 10000)  # 10 s
+        try:
+            # requires PyZMQ to be built against ZeroMQ 4.2+
+            self.socket.setsockopt(zmq.HEARTBEAT_IVL, 1000)  # 1 s
+            self.socket.setsockopt(zmq.HEARTBEAT_TIMEOUT, 10000)  # 10 s
+        except AttributeError:
+            self.log_warn('PyZMQ has no support for heartbeat (requires ZeroMQ library 4.2+), connection may be unstable')
+            pass
 
         self.socket.connect(listener_url)
 
