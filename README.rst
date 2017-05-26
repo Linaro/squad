@@ -126,7 +126,10 @@ Test results
 
 Test results must be posted as JSON, encoded in UTF-8. The JSON data
 must be a hash (an object, strictly speaking). Test names go in the
-keys, and values must be either ``"pass"`` or ``"fail"``.
+keys, and values must be either ``"pass"`` or ``"fail"``. Case does not
+matter, so ``"PASS"``/``"FAIL"`` will work just fine. Any value that
+when downcased is not either ``"pass"`` or ``"fail"`` will be mapped to
+``None``/``NULL`` and displayed in the UI as *skip/unknown*.
 
 Tests can be grouped in test suites. For that, the test name must be
 prefixed with the suite name and a slash (``/``). Therefore, slashes are

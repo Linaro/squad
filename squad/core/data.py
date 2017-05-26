@@ -6,6 +6,14 @@ from statistics import mean
 from squad.core.utils import parse_name
 
 
+test_result_mapping = {'pass': True, 'fail': False}
+
+
+def parse_test_result(value):
+    v = value.lower()
+    return test_result_mapping.get(v, None)
+
+
 class JSONTestDataParser(object):
     """
     Parser for test data as JSON string
@@ -23,7 +31,7 @@ class JSONTestDataParser(object):
             data.append({
                 "group_name": group_name,
                 "test_name": test_name,
-                "pass": value == 'pass',
+                "pass": parse_test_result(value),
             })
         return data
 

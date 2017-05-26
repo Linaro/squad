@@ -69,10 +69,6 @@ class ValidateTestRun(object):
         if type(tests) != dict:
             raise exceptions.InvalidTestsData.type(tests)
 
-        for key, value in tests.items():
-            if value not in ["pass", "fail"]:
-                raise exceptions.InvalidTestsData.value(value)
-
 
 class ReceiveTestRun(object):
 

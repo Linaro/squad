@@ -206,14 +206,14 @@ class Test(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='tests')
     suite = models.ForeignKey(Suite)
     name = models.CharField(max_length=100)
-    result = models.BooleanField()
+    result = models.NullBooleanField()
 
     def __str__(self):
         return "%s: %s" % (self.name, self.status)
 
     @property
     def status(self):
-        return self.result and 'pass' or 'fail'
+        return {True: 'pass', False: 'fail', None: 'skip/unknown'}[self.result]
 
     @property
     def full_name(self):

@@ -25,7 +25,7 @@
       {% for build, environments in comparison.environments.items %}
         {% for environment in environments %}
           {% with result=results|test_result_by_build:build|test_result_by_env:environment %}
-            <td class='{{result}}'>
+            <td class='{{result|slugify}}'>
               {% if result %}
               <a href="{% url 'test_history' build.project.group.slug build.project.slug test %}">
                 <strong>{{result}}</strong>

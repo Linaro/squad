@@ -101,12 +101,8 @@
             {% for test in status.tests %}
             <tr>
                 <td>{{test.name}}</td>
-                <td>
-                    {% if test.result %}
-                        <strong class='pass'>pass</strong>
-                    {% else %}
-                        <strong class='fail'>fail</strong>
-                    {% endif %}
+                <td class='{{test.status|slugify}}'>
+                    <a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{test.status}}</a>
                 </td>
             </tr>
             {% endfor %}

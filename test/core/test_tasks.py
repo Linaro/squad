@@ -158,6 +158,22 @@ class ReceiveTestRunTest(TestCase):
             receive = ReceiveTestRun(self.project)
             receive('199', 'myenv')
 
+    def test_test_result_is_not_pass_or_fail(self):
+        receive = ReceiveTestRun(self.project)
+        metadata = {
+            "job_id": '999',
+        }
+        tests = {
+            "test1": "pass",
+            "test2": "fail",
+            "test3": "skip",
+        }
+
+        receive('199', 'myenv', metadata_file=json.dumps(metadata), tests_file=json.dumps(tests))
+        testrun = TestRun.objects.last()
+        values = [t.result for t in testrun.tests.order_by('name')]
+        self.assertEqual([True, False, None], values)
+
 
 class TestValidateTestRun(TestCase):
 
@@ -202,9 +218,3 @@ class TestValidateTestRun(TestCase):
 
     def test_invalid_tests_type(self):
         self.assertInvalidTests('[]')
-
-    def test_invalid_tests_value_type(self):
-        self.assertInvalidTests('{"foo": 1}')
-
-    def test_invalid_tests_string(self):
-        self.assertInvalidTests('{"foo": "bar"}')

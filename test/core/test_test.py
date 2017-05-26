@@ -11,3 +11,15 @@ class TestTest(TestCase):
         s = Suite()
         t = Test(suite=s)
         self.assertEqual('woooops', t.full_name)
+
+    def test_status_na(self):
+        t = Test(result=None)
+        self.assertEqual('skip/unknown', t.status)
+
+    def test_status_pass(self):
+        t = Test(result=True)
+        self.assertEqual('pass', t.status)
+
+    def test_status_fail(self):
+        t = Test(result=False)
+        self.assertEqual('fail', t.status)
