@@ -356,6 +356,18 @@ class ProjectStatus(models.Model):
         else:
             return None
 
+    @property
+    def builds(self):
+        """
+        Returns a list of builds that happened between the previous
+        ProjectStatus and this one. Can be more than one.
+        """
+        previous = self.previous.build
+        return self.build.project.builds.filter(
+            datetime__gt=previous.datetime,
+            datetime__lte=self.build.datetime,
+        ).order_by('datetime')
+
     def __str__(self):
         return 'Build %s; created at %s' % (self.build, self.created_at)
 
