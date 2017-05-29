@@ -115,7 +115,7 @@ class Build(models.Model):
         super(Build, self).save(*args, **kwargs)
 
     def __str__(self):
-        return '%s (%s)' % (self.version, self.created_at)
+        return '%s (%s)' % (self.version, self.datetime)
 
     @staticmethod
     def prefetch_related(builds):
