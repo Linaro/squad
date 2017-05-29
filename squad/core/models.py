@@ -43,6 +43,14 @@ class Project(models.Model):
     is_public = models.BooleanField(default=True)
     build_completion_threshold = models.IntegerField(default=120)
 
+    NOTIFY_ALL_BUILDS = 'all'
+    NOTIFY_ON_CHANGE = 'change'
+    notification_strategy = models.CharField(
+        max_length=32,
+        choices=((NOTIFY_ALL_BUILDS, 'All builds'), (NOTIFY_ON_CHANGE, 'Only on change')),
+        default='all'
+    )
+
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
         self.__status__ = None
