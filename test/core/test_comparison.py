@@ -109,3 +109,14 @@ class TestComparisonTest(TestCase):
         new_project = self.group.projects.create(slug='new')
         comparison = TestComparison.compare_projects(new_project)
         self.assertFalse(comparison.diff)
+
+    def test_regressions(self):
+        """
+        This test is using builds from different projects because the relevant
+        test data is already prepared in setUp(), but usually regressions is
+        only used when comparing subsequent builds from the same project.
+        """
+        comparison = TestComparison.compare_builds(self.build1, self.build2)
+        regressions = comparison.regressions
+        self.assertEqual(['a'], regressions['myenv'])
+        self.assertEqual(['a'], regressions['otherenv'])

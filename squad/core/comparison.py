@@ -107,3 +107,24 @@ class TestComparison(object):
 
         self.__diff__ = d
         return self.__diff__
+
+    __regressions__ = None
+
+    @property
+    def regressions(self):
+        if self.__regressions__ is not None:
+            return self.__regressions__
+
+        regressions = OrderedDict()
+        after = self.builds[-1]  # last
+        before = self.builds[-2]  # second to last
+        for env in self.environments[after]:
+            regressions[env] = []
+            for test, results in self.diff.items():
+                results_after = results.get((after, env))
+                results_before = results.get((before, env))
+                if (results_before, results_after) == ('pass', 'fail'):
+                    regressions[env].append(test)
+
+        self.__regressions__ = regressions
+        return self.__regressions__
