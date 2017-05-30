@@ -86,7 +86,7 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
         'project': project,
         'build': build,
         'test_run': test_run,
-        'metadata': json.loads(test_run.metadata_file or '{}'),
+        'metadata': sorted(json.loads(test_run.metadata_file).items() or dict().items()),
         'attachments': attachments,
         'tests_status': tests_status,
         'metrics_status': metrics_status,
