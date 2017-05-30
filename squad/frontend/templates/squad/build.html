@@ -6,6 +6,15 @@
   <h2>Build <u>{{build.name}}</u></h2>
 
   <table class='table table-hover table-condensed'>
+    <tr>
+        <td colspan='4'><h3>Metadata</h3></td>
+    </tr>
+    {% for key, value in metadata %}
+    <tr>
+        <th>{{key}}</th>
+        <td colspan='3'>{{value}}</td>
+    </tr>
+    {% endfor %}
     {% for test_run in build.test_runs.all %}
     <tr class='warning'>
       <th colspan='4'>
@@ -30,6 +39,9 @@
           </small>
         </h3>
       </th>
+    </tr>
+    <tr>
+        <td colspan='4'><h3>Results</h3></td>
     </tr>
     <tr>
       <th>Suite</th>
