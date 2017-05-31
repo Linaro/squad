@@ -49,12 +49,12 @@ class TestComparison(object):
 
     @classmethod
     def compare_builds(cls, *builds):
+        builds = [b for b in builds if b]
         return cls(*builds)
 
     @classmethod
     def compare_projects(cls, *projects):
         builds = [p.builds.last() for p in projects]
-        builds = [b for b in builds if b]
         return cls.compare_builds(*builds)
 
     def __extract_results__(self):

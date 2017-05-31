@@ -362,6 +362,8 @@ class ProjectStatus(models.Model):
         Returns a list of builds that happened between the previous
         ProjectStatus and this one. Can be more than one.
         """
+        if not self.previous:
+            return self.build.project.builds.all()
         previous = self.previous.build
         return self.build.project.builds.filter(
             datetime__gt=previous.datetime,
