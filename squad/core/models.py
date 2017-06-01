@@ -135,11 +135,18 @@ class Build(models.Model):
         summary['total'] = 0
         summary['pass'] = 0
         summary['fail'] = 0
-        mapping = {True: 'pass', False: 'fail'}
+        summary['missing'] = 0
+        summary['failures'] = OrderedDict()
+        mapping = {True: 'pass', False: 'fail', None: 'missing'}
         for run in self.test_runs.all():
             for test in run.tests.all():
                 summary[mapping[test.result]] += 1
                 summary['total'] += 1
+                if not test.result and test.result is not None:
+                    env = test.test_run.environment.slug
+                    if env not in summary['failures']:
+                        summary['failures'][env] = []
+                        summary['failures'][env].append(test)
         return summary
 
 

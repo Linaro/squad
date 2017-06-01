@@ -36,5 +36,11 @@ class BuildTest(TestCase):
         test_run = build.test_runs.create(environment=env)
         test_run.tests.create(name='foo', suite=suite, result=True)
         test_run.tests.create(name='bar', suite=suite, result=False)
+        test_run.tests.create(name='baz', suite=suite, result=None)
 
-        self.assertEqual({'total': 2, 'pass': 1, 'fail': 1}, build.test_summary)
+        summary = build.test_summary
+        self.assertEqual(3, summary['total'])
+        self.assertEqual(1, summary['pass'])
+        self.assertEqual(1, summary['fail'])
+        self.assertEqual(1, summary['missing'])
+        self.assertEqual('tests/bar', summary['failures']['env'][0].full_name)
