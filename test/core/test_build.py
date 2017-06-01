@@ -44,3 +44,11 @@ class BuildTest(TestCase):
         self.assertEqual(1, summary['fail'])
         self.assertEqual(1, summary['missing'])
         self.assertEqual('tests/bar', summary['failures']['env'][0].full_name)
+
+    def test_metadata(self):
+        build = Build.objects.create(project=self.project, version='1.1')
+        env = self.project.environments.create(slug='env')
+        build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": "qux"}')
+        build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": "fox"}')
+
+        self.assertEqual({"foo": "bar"}, build.metadata)

@@ -1,4 +1,5 @@
 import re
+import json
 from collections import OrderedDict
 
 
@@ -149,6 +150,20 @@ class Build(models.Model):
                         summary['failures'][env].append(test)
         return summary
 
+    @property
+    def metadata(self):
+        """
+        The build metadata is the intersection of the metadata in its test
+        runs.
+        """
+        metadata = None
+        for test_run in self.test_runs.all():
+            if metadata:
+                metadata = dict(metadata.items() & test_run.metadata.items())
+            else:
+                metadata = test_run.metadata
+        return metadata
+
 
 class Environment(models.Model):
     project = models.ForeignKey(Project, related_name='environments')
@@ -193,6 +208,13 @@ class TestRun(models.Model):
     @property
     def project(self):
         return self.build.project
+
+    @property
+    def metadata(self):
+        if self.metadata_file:
+            return json.loads(self.metadata_file)
+        else:
+            return None
 
     def __str__(self):
         return self.job_id and ('#%s' % self.job_id) or ('(%s)' % self.id)
