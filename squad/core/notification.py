@@ -86,6 +86,11 @@ def __send_notification__(project, notification):
     message = render_to_string(
         'squad/notification/diff.txt',
         context={
+            'build': build,
+            'previous_build': notification.previous_build,
+            'regressions': notification.comparison.regressions,
+            'subject': subject,
+            'summary': summary,
             'notification': notification,
             'settings': settings,
         },
@@ -94,6 +99,11 @@ def __send_notification__(project, notification):
     html_message = render_to_string(
         'squad/notification/diff.html',
         context={
+            'build': build,
+            'previous_build': notification.previous_build,
+            'regressions': notification.comparison.regressions,
+            'subject': subject,
+            'summary': summary,
             'notification': notification,
             'settings': settings,
         },
