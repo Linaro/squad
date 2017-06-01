@@ -1,5 +1,6 @@
 from django.contrib import admin
 from . import models
+from .tasks import notify_project
 
 
 class TokenAdmin(admin.ModelAdmin):
@@ -30,8 +31,17 @@ class SubscriptionInline(admin.StackedInline):
     extra = 0
 
 
+def force_notify_project(modeladmin, request, queryset):
+    for project in queryset:
+        notify_project.delay(project.pk)
+
+
+force_notify_project.short_description = "Force sending email notification for selected projects"
+
+
 class ProjectAdmin(admin.ModelAdmin):
     inlines = [TokenInline, SubscriptionInline]
+    actions = [force_notify_project]
 
 
 admin.site.register(models.Group)
