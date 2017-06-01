@@ -58,9 +58,18 @@ def build(request, group_slug, project_slug, version):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
     build = project.builds.prefetch_related('test_runs', 'test_runs__status', 'test_runs__status__suite', 'test_runs__status__test_run__environment').get(version=version)
+    metadata_dict = {}
+    for testrun in build.test_runs.all():
+        testrun_metadata = json.loads(testrun.metadata_file)
+        if not metadata_dict:
+            metadata_dict.update(testrun_metadata)
+        else:
+            metadata_dict = dict(metadata_dict.items() & testrun_metadata.items())
+
     context = {
         'project': project,
         'build': build,
+        'metadata': sorted(metadata_dict.items() or dict().items()),
     }
     return render(request, 'squad/build.html', context)
 
