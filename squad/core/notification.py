@@ -81,12 +81,14 @@ def __send_notification__(project, notification):
     if not recipients:
         return
     build = notification.build
+    metadata = build.metadata
     summary = notification.build.test_summary
     subject = '%s, build %s: %d tests, %d failed, %d passed' % (project, build.version, summary['total'], summary['fail'], summary['pass'])
     message = render_to_string(
         'squad/notification/diff.txt',
         context={
             'build': build,
+            'metadata': metadata,
             'previous_build': notification.previous_build,
             'regressions': notification.comparison.regressions,
             'subject': subject,
@@ -100,6 +102,7 @@ def __send_notification__(project, notification):
         'squad/notification/diff.html',
         context={
             'build': build,
+            'metadata': metadata,
             'previous_build': notification.previous_build,
             'regressions': notification.comparison.regressions,
             'subject': subject,

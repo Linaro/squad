@@ -5,6 +5,9 @@ Passed:  {{summary.pass}}
 Build:   {{build.version}}
 Details: {{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}
 
+{% for key, value in metadata.items %}{{key}}: {{value}}
+{% endfor %}
+
 Regressions{%if previous_build %} (compared to build {{previous_build.version}}){% endif %}
 ------------------------------------------------------------------------
 {% if regressions %}

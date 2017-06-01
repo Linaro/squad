@@ -37,12 +37,19 @@ table.table-bordered td.fail {
   <body>
     <h1>Summary</h1>
     <ul>
-      <li>Tests:   {{summary.total}}</li>
-      <li>Failed:  {{summary.fail}}</li>
-      <li>Passed:  {{summary.pass}}</li>
-      <li>Build:   {{build.version}}</li>
+      <li><strong>Tests:</strong>   {{summary.total}}</li>
+      <li><strong>Failed:</strong>  {{summary.fail}}</li>
+      <li><strong>Passed:</strong>  {{summary.pass}}</li>
+      <li><strong>Build:</strong>   {{build.version}}</li>
       <li><a href="{{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}">See details</a></li>
     </ul>
+    {% if metadata %}
+    <ul>
+      {% for key, value in metadata.items %}
+      <li><strong>{{key}}:</strong> {{value|urlize}}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
 
     <h1>Regressions{%if previous_build %} (compared to build {{previous_build.version}}){% endif %}</h1>
     <ul>
