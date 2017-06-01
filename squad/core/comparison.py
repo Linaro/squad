@@ -115,6 +115,10 @@ class TestComparison(object):
         if self.__regressions__ is not None:
             return self.__regressions__
 
+        if len(self.builds) < 2:
+            self.__regressions__ = {}
+            return self.__regressions__
+
         regressions = OrderedDict()
         after = self.builds[-1]  # last
         before = self.builds[-2]  # second to last

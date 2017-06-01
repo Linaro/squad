@@ -120,3 +120,8 @@ class TestComparisonTest(TestCase):
         regressions = comparison.regressions
         self.assertEqual(['a'], regressions['myenv'])
         self.assertEqual(['a'], regressions['otherenv'])
+
+    def test_regressions_no_previous_build(self):
+        comparison = TestComparison.compare_builds(self.build1, None)
+        regressions = comparison.regressions
+        self.assertEqual({}, regressions)
