@@ -4,7 +4,7 @@ import mimetypes
 import os
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
@@ -119,6 +119,9 @@ def test_run_log(request, group_slug, project_slug, build_version, job_id):
     project = group.projects.get(slug=project_slug)
     build = project.builds.get(version=build_version)
     test_run = build.test_runs.get(job_id=job_id)
+
+    if not test_run.log_file:
+        raise Http404("No log file available for this test run")
 
     filename = '%s_%s_%s_%s.log' % (group.slug, project.slug, build.version, test_run.job_id)
     return __download__(filename, test_run.log_file, 'text/plain')
