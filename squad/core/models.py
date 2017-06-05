@@ -266,6 +266,39 @@ class Test(models.Model):
             'test_run__build',
         )
 
+    class History(object):
+        def __init__(self, since, count, last_different):
+            self.since = since
+            self.count = count
+            self.last_different = last_different
+
+    __history__ = None
+
+    @property
+    def history(self):
+        if self.__history__:
+            return self.__history__
+
+        date = self.test_run.build.datetime
+        previous_tests = Test.objects.filter(
+            suite=self.suite,
+            name=self.name,
+            test_run__build__datetime__lt=date,
+            test_run__environment=self.test_run.environment,
+        ).exclude(id=self.id).order_by("-test_run__build__datetime")
+        since = None
+        count = 0
+        last_different = None
+        for test in list(previous_tests):
+            if test.result == self.result:
+                since = test
+                count += 1
+            else:
+                last_different = test
+                break
+        self.__history__ = Test.History(since, count, last_different)
+        return self.__history__
+
 
 class MetricManager(models.Manager):
 
