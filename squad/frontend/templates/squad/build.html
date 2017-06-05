@@ -12,7 +12,7 @@
     {% for key, value in metadata %}
     <tr>
         <th>{{key}}</th>
-        <td colspan='3'>{{value}}</td>
+        <td colspan='3'>{{value|urlize}}</td>
     </tr>
     {% endfor %}
     {% for test_run in build.test_runs.all %}
