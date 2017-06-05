@@ -36,5 +36,19 @@ class BuildTest(TestCase):
         test_run = build.test_runs.create(environment=env)
         test_run.tests.create(name='foo', suite=suite, result=True)
         test_run.tests.create(name='bar', suite=suite, result=False)
+        test_run.tests.create(name='baz', suite=suite, result=None)
 
-        self.assertEqual({'total': 2, 'pass': 1, 'fail': 1}, build.test_summary)
+        summary = build.test_summary
+        self.assertEqual(3, summary['total'])
+        self.assertEqual(1, summary['pass'])
+        self.assertEqual(1, summary['fail'])
+        self.assertEqual(1, summary['missing'])
+        self.assertEqual('tests/bar', summary['failures']['env'][0].full_name)
+
+    def test_metadata(self):
+        build = Build.objects.create(project=self.project, version='1.1')
+        env = self.project.environments.create(slug='env')
+        build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": "qux"}')
+        build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": "fox"}')
+
+        self.assertEqual({"foo": "bar"}, build.metadata)

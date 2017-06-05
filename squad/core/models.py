@@ -1,4 +1,5 @@
 import re
+import json
 from collections import OrderedDict
 
 
@@ -42,6 +43,14 @@ class Project(models.Model):
     name = models.CharField(max_length=100, null=True)
     is_public = models.BooleanField(default=True)
     build_completion_threshold = models.IntegerField(default=120)
+
+    NOTIFY_ALL_BUILDS = 'all'
+    NOTIFY_ON_CHANGE = 'change'
+    notification_strategy = models.CharField(
+        max_length=32,
+        choices=((NOTIFY_ALL_BUILDS, 'All builds'), (NOTIFY_ON_CHANGE, 'Only on change')),
+        default='all'
+    )
 
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
@@ -107,7 +116,7 @@ class Build(models.Model):
         super(Build, self).save(*args, **kwargs)
 
     def __str__(self):
-        return '%s (%s)' % (self.version, self.created_at)
+        return '%s (%s)' % (self.version, self.datetime)
 
     @staticmethod
     def prefetch_related(builds):
@@ -127,12 +136,33 @@ class Build(models.Model):
         summary['total'] = 0
         summary['pass'] = 0
         summary['fail'] = 0
-        mapping = {True: 'pass', False: 'fail'}
+        summary['missing'] = 0
+        summary['failures'] = OrderedDict()
+        mapping = {True: 'pass', False: 'fail', None: 'missing'}
         for run in self.test_runs.all():
             for test in run.tests.all():
                 summary[mapping[test.result]] += 1
                 summary['total'] += 1
+                if not test.result and test.result is not None:
+                    env = test.test_run.environment.slug
+                    if env not in summary['failures']:
+                        summary['failures'][env] = []
+                        summary['failures'][env].append(test)
         return summary
+
+    @property
+    def metadata(self):
+        """
+        The build metadata is the intersection of the metadata in its test
+        runs.
+        """
+        metadata = None
+        for test_run in self.test_runs.all():
+            if metadata:
+                metadata = dict(metadata.items() & test_run.metadata.items())
+            else:
+                metadata = test_run.metadata
+        return metadata
 
 
 class Environment(models.Model):
@@ -178,6 +208,13 @@ class TestRun(models.Model):
     @property
     def project(self):
         return self.build.project
+
+    @property
+    def metadata(self):
+        if self.metadata_file:
+            return json.loads(self.metadata_file)
+        else:
+            return None
 
     def __str__(self):
         return self.job_id and ('#%s' % self.job_id) or ('(%s)' % self.id)
@@ -347,6 +384,20 @@ class ProjectStatus(models.Model):
             return cls.objects.create(build=build, previous=previous)
         else:
             return None
+
+    @property
+    def builds(self):
+        """
+        Returns a list of builds that happened between the previous
+        ProjectStatus and this one. Can be more than one.
+        """
+        if not self.previous:
+            return self.build.project.builds.all()
+        previous = self.previous.build
+        return self.build.project.builds.filter(
+            datetime__gt=previous.datetime,
+            datetime__lte=self.build.datetime,
+        ).order_by('datetime')
 
     def __str__(self):
         return 'Build %s; created at %s' % (self.build, self.created_at)

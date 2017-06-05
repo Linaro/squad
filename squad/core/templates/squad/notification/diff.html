@@ -35,12 +35,65 @@ table.table-bordered td.fail {
     </style>
   </head>
   <body>
-    <h1>Test status change</h1>
-    <p>
-    The following changes were detected in the test results between builds
-    {{notification.previous_build.version}} and {{notification.build.version}}:
-    </p>
+    <h1>Summary</h1>
+    <ul>
+      <li><strong>Tests:</strong>   {{summary.total}}</li>
+      <li><strong>Failed:</strong>  {{summary.fail}}</li>
+      <li><strong>Passed:</strong>  {{summary.pass}}</li>
+      <li><strong>Build:</strong>   {{build.version}}</li>
+      <li><a href="{{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}">See details</a></li>
+    </ul>
+    {% if metadata %}
+    <ul>
+      {% for key, value in metadata.items %}
+      <li><strong>{{key}}:</strong> {{value|urlize}}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
 
+    <h1>Regressions{%if previous_build %} (compared to build {{previous_build.version}}){% endif %}</h1>
+    <ul>
+      {% if regressions %}
+      {% for env, tests in regressions.items %}
+      <li><strong>{{env}}:</strong>
+        <ul>
+          {% for test in tests %}
+          <li>{{test}}</li>
+          {% endfor %}
+        </ul>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <em>(none)</em>
+    {% endif %}
+
+
+    <h1>Failures</h1>
+    {% if summary.failures %}
+    <ul>
+      {% for env, tests in summary.failures.items %}
+      <li>
+        <strong>{{env}}:</strong>
+        <ul>
+          {% for test in tests %}
+          <li>
+            <a href="{{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}/testrun/{{test.test_run.job_id}}">{{test.full_name}}</a>
+            {% if test.test_run.log_file %}
+            <a href="{{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}/testrun/{{test.test_run.job_id}}/log">(log)</a>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <em>(none)</em>
+    {% endif %}
+
+
+    <h1>All changes detected{%if previous_build %} (compared to build {{previous_build.version}}){% endif %}</h1>
     {% with comparison=notification.comparison %}
     <table class='table table-bordered test-results'>
       <tr>
@@ -80,23 +133,6 @@ table.table-bordered td.fail {
       {% endfor %}
     </table>
     {% endwith %}
-
-    {% for build in notification.comparison.builds %}
-    {% with summary=build.test_summary %}
-    <h1><a href="{{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}">Build {{build.version}}</a></h1>
-    <table class='table-bordered'>
-      <tr>
-        <th colspan='2'>Test count</th>
-      </tr>
-      {% for k, v in summary.items %}
-      <tr>
-        <th>{{k|title}}</th>
-        <td>{{v}}</td>
-      </tr>
-      {% endfor %}
-    </table>
-    {% endwith %}
-    {% endfor %}
 
     <div class='footer'>
     Sent by <a href="{{settings.BASE_URL}}">{{settings.SITE_NAME}}</a>

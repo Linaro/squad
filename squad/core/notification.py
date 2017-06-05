@@ -4,7 +4,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 
 
-from squad.core.models import ProjectStatus
+from squad.core.models import Project, ProjectStatus, Build
 from squad.core.comparison import TestComparison
 
 
@@ -14,17 +14,9 @@ class Notification(object):
     not need to be sent.
     """
 
-    def __init__(self, status):
-        self.status = status
-
-    @property
-    def build(self):
-        return self.status.build
-
-    @property
-    def previous_build(self):
-        if self.status.previous:
-            return self.status.previous.build
+    def __init__(self, build, previous_build):
+        self.build = build
+        self.previous_build = previous_build
 
     __comparison__ = None
 
@@ -41,10 +33,27 @@ class Notification(object):
     def diff(self):
         return self.comparison.diff
 
-    @property
-    def must_be_sent(self):
-        needed = self.build and self.previous_build and self.diff
-        return bool(needed)
+
+def get_notifications(status):
+    __notifications__ = []
+    strategy = status.build.project.notification_strategy
+    if strategy == Project.NOTIFY_ALL_BUILDS:
+        previous = status.previous and status.previous.build or None
+        for build in status.builds:
+            build_copy = Build.objects.get(pk=build.id)
+            previous_copy = previous and Build.objects.get(pk=previous.id) or None
+            notif = Notification(build_copy, previous_copy)
+            __notifications__.append(notif)
+            previous = build
+    elif strategy == Project.NOTIFY_ON_CHANGE:
+        if status.previous:
+            notification = Notification(status.build, status.previous.build)
+            if notification.diff:
+                __notifications__.append(notification)
+    else:
+        raise RuntimeError("Invalid notification strategy: \"%s\"" % strategy)
+
+    return __notifications__
 
 
 def send_notification(project):
@@ -56,32 +65,58 @@ def send_notification(project):
     if not project_status:
         return
 
-    notification = Notification(project_status)
-    if notification.must_be_sent:
-        recipients = project.subscriptions.all()
-        if not recipients:
-            return
-        subject = '%s: test status changed' % project
-        message = render_to_string(
-            'squad/notification/diff.txt',
-            context={
-                'notification': notification,
-                'settings': settings,
-            },
+    for notification in get_notifications(project_status):
+        __send_notification__(project, notification)
+
+
+def notify_build(build):
+    project = build.project
+    previous_build = project.builds.filter(datetime__lt=build.datetime).last()
+    notification = Notification(build, previous_build)
+    __send_notification__(project, notification)
+
+
+def __send_notification__(project, notification):
+    recipients = project.subscriptions.all()
+    if not recipients:
+        return
+    build = notification.build
+    metadata = build.metadata
+    summary = notification.build.test_summary
+    subject = '%s, build %s: %d tests, %d failed, %d passed' % (project, build.version, summary['total'], summary['fail'], summary['pass'])
+    message = render_to_string(
+        'squad/notification/diff.txt',
+        context={
+            'build': build,
+            'metadata': metadata,
+            'previous_build': notification.previous_build,
+            'regressions': notification.comparison.regressions,
+            'subject': subject,
+            'summary': summary,
+            'notification': notification,
+            'settings': settings,
+        },
+    )
+    html_message = ''
+    html_message = render_to_string(
+        'squad/notification/diff.html',
+        context={
+            'build': build,
+            'metadata': metadata,
+            'previous_build': notification.previous_build,
+            'regressions': notification.comparison.regressions,
+            'subject': subject,
+            'summary': summary,
+            'notification': notification,
+            'settings': settings,
+        },
+    )
+    sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
+    for r in recipients:
+        send_mail(
+            subject,
+            message,
+            sender,
+            [r.email],
+            html_message=html_message,
         )
-        html_message = render_to_string(
-            'squad/notification/diff.html',
-            context={
-                'notification': notification,
-                'settings': settings,
-            },
-        )
-        sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
-        for r in recipients:
-            send_mail(
-                subject,
-                message,
-                sender,
-                [r.email],
-                html_message=html_message,
-            )

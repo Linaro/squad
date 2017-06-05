@@ -4,7 +4,7 @@ import mimetypes
 import os
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
@@ -58,18 +58,11 @@ def build(request, group_slug, project_slug, version):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
     build = project.builds.prefetch_related('test_runs', 'test_runs__status', 'test_runs__status__suite', 'test_runs__status__test_run__environment').get(version=version)
-    metadata_dict = {}
-    for testrun in build.test_runs.all():
-        testrun_metadata = json.loads(testrun.metadata_file)
-        if not metadata_dict:
-            metadata_dict.update(testrun_metadata)
-        else:
-            metadata_dict = dict(metadata_dict.items() & testrun_metadata.items())
 
     context = {
         'project': project,
         'build': build,
-        'metadata': sorted(metadata_dict.items() or dict().items()),
+        'metadata': sorted(build.metadata.items() or dict().items()),
     }
     return render(request, 'squad/build.html', context)
 
@@ -119,6 +112,9 @@ def test_run_log(request, group_slug, project_slug, build_version, job_id):
     project = group.projects.get(slug=project_slug)
     build = project.builds.get(version=build_version)
     test_run = build.test_runs.get(job_id=job_id)
+
+    if not test_run.log_file:
+        raise Http404("No log file available for this test run")
 
     filename = '%s_%s_%s_%s.log' % (group.slug, project.slug, build.version, test_run.job_id)
     return __download__(filename, test_run.log_file, 'text/plain')

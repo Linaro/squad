@@ -54,6 +54,13 @@ class FrontendTest(TestCase):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/1/log')
         self.assertEqual('text/plain', response['Content-Type'])
 
+    def test_no_log(self):
+        self.test_run.log_file = None
+        self.test_run.save()
+
+        response = self.client.get('/mygroup/myproject/build/1.0/testrun/1/log')
+        self.assertEqual(404, response.status_code)
+
     def test_tests(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/1/tests')
         self.assertEqual('application/json', response['Content-Type'])
