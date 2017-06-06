@@ -44,6 +44,11 @@ class ProjectAdmin(admin.ModelAdmin):
     actions = [force_notify_project]
 
 
+class ProjectStatusAdmin(admin.ModelAdmin):
+    model = models.ProjectStatus
+
+
 admin.site.register(models.Group)
 admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.Token, TokenAdmin)
+admin.site.register(models.ProjectStatus, ProjectStatusAdmin)

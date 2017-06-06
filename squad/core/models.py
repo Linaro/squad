@@ -401,7 +401,7 @@ class ProjectStatus(models.Model):
         ).order_by('datetime')
 
     def __str__(self):
-        return 'Build %s; created at %s' % (self.build, self.created_at)
+        return 'Project: %s; Build %s; created at %s' % (self.build.project, self.build, self.created_at)
 
 
 class Subscription(models.Model):
