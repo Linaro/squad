@@ -40,6 +40,7 @@ force_notify_project.short_description = "Force sending email notification for s
 
 
 class ProjectAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'is_public', 'build_completion_threshold', 'notification_strategy']
     inlines = [TokenInline, SubscriptionInline]
     actions = [force_notify_project]
 
