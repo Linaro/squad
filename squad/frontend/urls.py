@@ -6,8 +6,8 @@ from django.shortcuts import redirect
 from . import views
 from . import comparison
 from . import tests
+from squad.core.models import slug_pattern
 
-slug_pattern = '[a-z0-9_.-]+'
 urlpatterns = [
     url(r'^favicon.ico$', lambda _: redirect(settings.MEDIA_URL + '/static/favicon.ico')),
     url(r'^robots.txt$', lambda _: HttpResponse("User-agent: *\nDisallow: /\n", content_type='text/plain')),

@@ -7,7 +7,7 @@ from . import data
 from . import ci
 
 
-slug_pattern = '[a-z0-9_.-]+'
+from squad.core.models import slug_pattern
 
 
 urlpatterns = [

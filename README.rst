@@ -87,6 +87,10 @@ The API is the following
 -  ``:environment`` is the environmenr identitifer. It will be created
    automatically if does not exist before.
 
+All of the above identifiers (``:team``, ``:project``, ``:build``, and
+``:environment``) must match the regular expression
+``[a-zA-Z0-9][a-zA-Z0-9_.-]*``.
+
 The test data must be submitted as file attachments in the ``POST``
 request. The following files are supported:
 

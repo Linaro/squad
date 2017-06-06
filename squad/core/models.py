@@ -17,7 +17,8 @@ from squad.core.fields import VersionField
 from squad.core.utils import random_token, parse_name, join_name
 
 
-slug_validator = RegexValidator(regex='^[a-zA-Z0-9][a-zA-Z0-9_-]+')
+slug_pattern = '[a-zA-Z0-9][a-zA-Z0-9_.-]*'
+slug_validator = RegexValidator(regex='^' + slug_pattern)
 
 
 class Group(models.Model):

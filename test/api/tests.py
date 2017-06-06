@@ -200,3 +200,16 @@ class ApiTest(TestCase):
 
         self.assertEqual(201, first.status_code)
         self.assertEqual(400, second.status_code)
+
+
+class TestApiUpperCaseSlug(TestCase):
+
+    def setUp(self):
+        self.group = models.Group.objects.create(slug='MyGroup')
+        self.project = self.group.projects.create(slug='MyProject')
+        self.project.tokens.create(key='thekey')
+        self.client = APIClient('thekey')
+
+    def test_accepts_uppercase_in_slug(self):
+        response = self.client.post('/api/submit/MyGroup/MyProject/1.0.0/MyEnvironment')
+        self.assertEqual(response.status_code, 201)
