@@ -230,8 +230,8 @@ class Attachment(models.Model):
 
 class Suite(models.Model):
     project = models.ForeignKey(Project, related_name='suites')
-    slug = models.CharField(max_length=100, validators=[slug_validator])
-    name = models.CharField(max_length=100, null=True)
+    slug = models.CharField(max_length=256, validators=[slug_validator])
+    name = models.CharField(max_length=256, null=True)
 
     class Meta:
         unique_together = ('project', 'slug',)
@@ -243,7 +243,7 @@ class Suite(models.Model):
 class Test(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='tests')
     suite = models.ForeignKey(Suite)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=256)
     result = models.NullBooleanField()
 
     def __str__(self):
