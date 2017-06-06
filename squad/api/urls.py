@@ -7,7 +7,7 @@ from . import data
 from . import ci
 
 
-slug_pattern = '[a-z0-9_.-]+'
+slug_pattern = '[A-Za-z0-9_.-]+'
 
 
 urlpatterns = [
