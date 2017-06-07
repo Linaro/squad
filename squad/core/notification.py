@@ -81,7 +81,7 @@ def __send_notification__(project, notification):
     if not recipients:
         return
     build = notification.build
-    metadata = build.metadata
+    metadata = dict(sorted(build.metadata.items())) if build.metadata is not None else dict()
     summary = notification.build.test_summary
     subject = '%s, build %s: %d tests, %d failed, %d passed' % (project, build.version, summary['total'], summary['fail'], summary['pass'])
     message = render_to_string(
