@@ -82,6 +82,11 @@ table.table-bordered td.fail {
             {% if test.test_run.log_file %}
             <a href="{{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}/testrun/{{test.test_run.job_id}}/log">(log)</a>
             {% endif %}
+            {% if test.history.since %}
+              {% with build=test.history.since.test_run.build %}
+              &mdash; failing since build {{build.version}}, from {{build.datetime}}
+              {% endwith %}
+            {% endif %}
           </li>
           {% endfor %}
         </ul>
