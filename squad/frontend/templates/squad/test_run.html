@@ -102,7 +102,7 @@
             <tr>
                 <td>{{test.name}}</td>
                 <td class='{{test.status|slugify}}'>
-                    <a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{test.status}}</a>
+                    <a href="{% url 'test_history' build.project.group.slug build.project.slug test.full_name %}">{{test.status}}</a>
                 </td>
             </tr>
             {% endfor %}
