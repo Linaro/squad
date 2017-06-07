@@ -125,3 +125,8 @@ class TestComparisonTest(TestCase):
         comparison = TestComparison.compare_builds(self.build1, None)
         regressions = comparison.regressions
         self.assertEqual({}, regressions)
+
+    def test_regressions_no_regressions(self):
+        # same build! so no regressions, by definition
+        comparison = TestComparison.compare_builds(self.build1, self.build1)
+        self.assertEqual({}, comparison.regressions)

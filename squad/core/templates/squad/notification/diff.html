@@ -52,8 +52,8 @@ table.table-bordered td.fail {
     {% endif %}
 
     <h1>Regressions{%if previous_build %} (compared to build {{previous_build.version}}){% endif %}</h1>
+    {% if regressions %}
     <ul>
-      {% if regressions %}
       {% for env, tests in regressions.items %}
       <li><strong>{{env}}:</strong>
         <ul>

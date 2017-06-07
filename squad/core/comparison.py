@@ -123,12 +123,14 @@ class TestComparison(object):
         after = self.builds[-1]  # last
         before = self.builds[-2]  # second to last
         for env in self.environments[after]:
-            regressions[env] = []
+            regression_list = []
             for test, results in self.diff.items():
                 results_after = results.get((after, env))
                 results_before = results.get((before, env))
                 if (results_before, results_after) == ('pass', 'fail'):
-                    regressions[env].append(test)
+                    regression_list.append(test)
+            if regression_list:
+                regressions[env] = regression_list
 
         self.__regressions__ = regressions
         return self.__regressions__
