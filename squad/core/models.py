@@ -148,7 +148,7 @@ class Build(models.Model):
                     env = test.test_run.environment.slug
                     if env not in summary['failures']:
                         summary['failures'][env] = []
-                        summary['failures'][env].append(test)
+                    summary['failures'][env].append(test)
         return summary
 
     @property
