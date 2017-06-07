@@ -27,7 +27,7 @@ class TestHistory(object):
 
         environments = OrderedDict()
         results = OrderedDict()
-        for build in project.builds.order_by('-version').all():
+        for build in project.builds.reverse():
             results[build] = {}
 
         for test in tests:
