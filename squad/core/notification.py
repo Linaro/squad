@@ -84,32 +84,26 @@ def __send_notification__(project, notification):
     metadata = dict(sorted(build.metadata.items())) if build.metadata is not None else dict()
     summary = notification.build.test_summary
     subject = '%s, build %s: %d tests, %d failed, %d passed' % (project, build.version, summary['total'], summary['fail'], summary['pass'])
+
+    context = {
+        'build': build,
+        'metadata': metadata,
+        'previous_build': notification.previous_build,
+        'regressions': notification.comparison.regressions,
+        'subject': subject,
+        'summary': summary,
+        'notification': notification,
+        'settings': settings,
+    }
+
     message = render_to_string(
         'squad/notification/diff.txt',
-        context={
-            'build': build,
-            'metadata': metadata,
-            'previous_build': notification.previous_build,
-            'regressions': notification.comparison.regressions,
-            'subject': subject,
-            'summary': summary,
-            'notification': notification,
-            'settings': settings,
-        },
+        context=context,
     )
     html_message = ''
     html_message = render_to_string(
         'squad/notification/diff.html',
-        context={
-            'build': build,
-            'metadata': metadata,
-            'previous_build': notification.previous_build,
-            'regressions': notification.comparison.regressions,
-            'subject': subject,
-            'summary': summary,
-            'notification': notification,
-            'settings': settings,
-        },
+        context=context,
     )
     sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
     for r in recipients:
