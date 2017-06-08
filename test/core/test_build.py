@@ -37,13 +37,14 @@ class BuildTest(TestCase):
         test_run.tests.create(name='foo', suite=suite, result=True)
         test_run.tests.create(name='bar', suite=suite, result=False)
         test_run.tests.create(name='baz', suite=suite, result=None)
+        test_run.tests.create(name='qux', suite=suite, result=False)
 
         summary = build.test_summary
-        self.assertEqual(3, summary['total'])
+        self.assertEqual(4, summary['total'])
         self.assertEqual(1, summary['pass'])
-        self.assertEqual(1, summary['fail'])
+        self.assertEqual(2, summary['fail'])
         self.assertEqual(1, summary['missing'])
-        self.assertEqual('tests/bar', summary['failures']['env'][0].full_name)
+        self.assertEqual(['tests/bar', 'tests/qux'], sorted([t.full_name for t in summary['failures']['env']]))
 
     def test_metadata(self):
         build = Build.objects.create(project=self.project, version='1.1')
