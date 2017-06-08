@@ -1,7 +1,7 @@
 import os
 from django.test import TestCase
 from test.api import APIClient
-from mock import patch
+from mock import patch, MagicMock
 
 
 from squad.core import models as core_models
@@ -96,4 +96,23 @@ class CiApiTest(TestCase):
             'backend': 'lava'
         }
         r = self.client.post('/api/watchjob/mygroup/myproject/1/myenv', args)
+        self.assertEqual(400, r.status_code)
+
+    @patch('squad.ci.models.Backend.get_implementation')
+    def test_resubmit(self, get_implementation):
+        impl = MagicMock()
+        impl.resubmit = MagicMock()
+        get_implementation.return_value = impl
+
+        t = self.backend.test_jobs.create(
+            target=self.project,
+            can_resubmit=True
+        )
+        r = self.client.get('/api/resubmit/%s' % t.pk)
+        impl.resubmit.assert_called()
+        t.refresh_from_db()
+        self.assertEqual(False, t.can_resubmit)
+
+    def test_resubmit_invalid_id(self):
+        r = self.client.get('/api/resubmit/999')
         self.assertEqual(400, r.status_code)
