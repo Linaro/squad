@@ -109,6 +109,7 @@ class CiApiTest(TestCase):
             can_resubmit=True
         )
         r = self.client.get('/api/resubmit/%s' % t.pk)
+        self.assertEqual(201, r.status_code)
         impl.resubmit.assert_called()
         t.refresh_from_db()
         self.assertEqual(False, t.can_resubmit)
