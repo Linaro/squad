@@ -1,5 +1,6 @@
 {% extends "squad/base.html" %}
 {% load squad %}
+{% load static %}
 
 {% block content %}
   {% include "squad/project-nav.html" %}
@@ -27,10 +28,15 @@
             Status: {{test_run.job_status}}
             {% endif %}
 
-            <div class='pull-right'>
+            <div class='pull-right' ng-app='SquadResubmit' ng-controller='ResubmitController'>
               {% if test_run.resubmit_url %}
               <a href="{{test_run.resubmit_url}}" class='btn btn-info '><span class='fa fa-recycle'></span> resubmit</a>
               {% endif %}
+              {% for test_job in test_run.test_jobs.all %}
+                  {% if test_job.can_resubmit %}
+                  <a ng-click='done || resubmit({{test_job.id}})' ng-class='{"btn": true, "btn-info": !done, "btn-success": done}' ng-disabled="done" ><span ng-class='{"fa":true, "fa-recycle":!done, "fa-check": done, "fa-spin": loading}' ng-disabled="done"></span>{{test_job.job_id}} - resubmit</a>
+                  {% endif %}
+              {% endfor %}
               {% if test_run.job_url %}
               <a href="{{test_run.job_url}}" class='btn btn-info '><span class='fa fa-info-circle'></span> origin</a>
               {% endif %}
@@ -74,5 +80,9 @@
     </tr>
     {% endfor %}
   </table>
+{% endblock %}
 
+
+{% block javascript %}
+<script type="text/javascript" src='{% static "squad/resubmit.js" %}'></script>
 {% endblock %}

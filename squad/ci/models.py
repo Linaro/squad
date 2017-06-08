@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 
 
 from squad.core.tasks import ReceiveTestRun
-from squad.core.models import Project, slug_validator
+from squad.core.models import Project, TestRun, slug_validator
 from squad.core.fields import VersionField
 
 
@@ -61,13 +61,14 @@ class Backend(models.Model):
             metadata['job_status'] = test_job.job_status
 
             receive = ReceiveTestRun(test_job.target)
-            receive(
+            testrun = receive(
                 version=test_job.build,
                 environment_slug=test_job.environment,
                 metadata_file=json.dumps(metadata),
                 tests_file=json.dumps(tests),
                 metrics_file=json.dumps(metrics),
             )
+            test_job.testrun = testrun
             test_job.fetched = True
 
         # save test job
@@ -89,6 +90,8 @@ class Backend(models.Model):
 class TestJob(models.Model):
     # input - internal
     backend = models.ForeignKey(Backend, related_name='test_jobs')
+    # TestRun object once it's created
+    testrun = models.ForeignKey(TestRun, related_name='test_jobs', null=True, blank=True)
     # definition can only be empty if the job already exists
     # in the executor.
     definition = models.TextField(null=True, blank=True)
@@ -104,6 +107,8 @@ class TestJob(models.Model):
     last_fetch_attempt = models.DateTimeField(null=True, default=None, blank=True)
     failure = models.TextField(null=True, blank=True)
 
+    can_resubmit = models.BooleanField(default=False)
+
     def success(self):
         return not self.failure
     success.boolean = True
@@ -117,3 +122,9 @@ class TestJob(models.Model):
         if self.job_id is not None:
             return self.backend.get_implementation().job_url(self)
         return None
+
+    def resubmit(self):
+        if self.can_resubmit:
+            self.backend.get_implementation().resubmit(self)
+            self.can_resubmit = False
+            self.save()

@@ -10,6 +10,7 @@ from xmlrpc import client as xmlrpclib
 from urllib.parse import urlsplit
 
 
+from squad.ci.models import TestJob
 from squad.ci.tasks import fetch
 from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue
 from squad.ci.backend.null import Backend as BaseBackend
@@ -62,7 +63,7 @@ class Backend(BaseBackend):
         if data['status'] in self.complete_statuses:
             yamldata = self.__get_testjob_results_yaml__(test_job.job_id)
             data['results'] = yaml.load(yamldata)
-            return self.__parse_results__(data)
+            return self.__parse_results__(data, test_job)
 
     def listen(self):
         listener_url = self.get_listener_url()
@@ -150,6 +151,24 @@ class Backend(BaseBackend):
         scheme = socket_url.scheme
         return '%s://%s:%s' % (scheme, hostname, port)
 
+    def resubmit(self, test_job):
+        if test_job.job_id is not None:
+            new_job_id = self.__resubmit__(test_job.job_id)
+            new_test_job = TestJob(
+                backend=self.data,
+                testrun=test_job.testrun,
+                definition=test_job.definition,
+                target=test_job.target,
+                build=test_job.build,
+                environment=test_job.environment,
+                submitted=True,
+                job_id=new_job_id
+            )
+            new_test_job.save()
+
+    def __resubmit__(self, job_id):
+        return self.proxy.scheduler.resubmit_job(job_id)
+
     def __submit__(self, definition):
         return self.proxy.scheduler.submit_job(definition)
 
@@ -162,7 +181,7 @@ class Backend(BaseBackend):
     def __get_publisher_event_socket__(self):
         return self.proxy.scheduler.get_publisher_event_socket()
 
-    def __parse_results__(self, data):
+    def __parse_results__(self, data, test_job):
         if data['is_pipeline'] is False:
             # in case of v1 job, return empty data
             return (data['status'], {}, {}, {})
@@ -183,4 +202,12 @@ class Backend(BaseBackend):
                 else:
                     res_value = result['measurement']
                     metrics.update({res_name: res_value})
+            else:
+                if result['name'] == 'job' and result['result'] == 'fail':
+                    metadata = result['metadata']
+                    # only allow to resubmit jobs failed because of infrastructure
+                    if metadata['error_type'] in ['Infrastructure', 'Lava']:
+                        test_job.can_resubmit = True
+                        test_job.save()
+
         return (data['status'], mp.metadata, results, metrics)
