@@ -11,12 +11,14 @@ def tests(request, group_slug, project_slug):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
 
-    build = project.builds.last()
-    comparison = TestComparison(build)
     context = {
         "project": project,
-        "comparison": comparison,
     }
+    build = project.builds.last()
+    if build:
+        comparison = TestComparison(build)
+        context["comparison"] = comparison
+
     return render(request, 'squad/tests.html', context)
 
 

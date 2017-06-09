@@ -5,6 +5,10 @@
   {% include "squad/project-nav.html" %}
   <h2>Test results</h2>
 
+  {% if comparison %}
   {% include "squad/_test_results_table.html" %}
+  {% else %}
+  <em>(this project has no builds yet</em>)
+  {% endif %}
 
 {% endblock %}
