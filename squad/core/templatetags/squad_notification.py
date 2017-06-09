@@ -9,6 +9,8 @@ register = template.Library()
 def tabulate_test_comparison(comparison, test_results=None):
     if test_results is None:
         test_results = comparison.results
+    if not test_results:
+        return '(none)'
 
     header = ["Test"]
     for build in comparison.builds:
