@@ -42,6 +42,7 @@ class TestComparison(object):
     def __init__(self, *builds):
         self.builds = list(builds)
         self.environments = OrderedDict()
+        self.all_environments = set()
         self.results = OrderedDict()
 
         Build.prefetch_related(self.builds)
@@ -63,6 +64,8 @@ class TestComparison(object):
         for build in self.builds:
             test_runs = list(build.test_runs.all())
             environments = [t.environment for t in test_runs]
+            for e in environments:
+                self.all_environments.add(e.slug)
             self.environments[build] = sorted([e.slug for e in set(environments)])
             for test_run in test_runs:
                 self.__extract_test_results__(test_run)

@@ -1,5 +1,4 @@
 from django import template
-from tabulate import tabulate
 
 
 register = template.Library()
@@ -9,18 +8,30 @@ register = template.Library()
 def tabulate_test_comparison(comparison, test_results=None):
     if test_results is None:
         test_results = comparison.results
+    if not test_results:
+        return '(none)'
 
-    header = ["Test"]
-    for build in comparison.builds:
-        for env in comparison.environments[build]:
-            header.append("%s (%s)" % (build.version, env))
-
-    data = []
-    for test, results in test_results.items():
-        row = [test]
+    text = []
+    header = []
+    indent = 0
+    header_sep = ''
+    row_format = ''
+    for env in comparison.all_environments:
         for build in comparison.builds:
-            for env in comparison.environments[build]:
-                row.append(results.get((build, env)))
-        data.append(row)
+            header.append((build, env))
+            text.append("%s+--- %s, %s" % ('|    ' * indent, build.version, env))
+            indent += 1
+            row_format += '%-4s '
+            header_sep += '|    '
+    row_format += '%s'  # for the test name
 
-    return tabulate(data, header, 'grid')
+    text.append(header_sep)
+
+    for test, results in test_results.items():
+        row = []
+        for build, env in header:
+            row.append(results.get((build, env), 'n/a'))
+        row.append(test)
+        text.append(row_format % tuple(row))
+
+    return "\n".join(text)
