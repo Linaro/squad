@@ -174,6 +174,12 @@ class ReceiveTestRunTest(TestCase):
         values = [t.result for t in testrun.tests.order_by('name')]
         self.assertEqual([True, False, None], values)
 
+    def test_generate_job_id_when_not_present(self):
+        receive = ReceiveTestRun(self.project)
+        receive('199', 'myenv')
+        testrun = TestRun.objects.last()
+        self.assertIsNotNone(testrun.job_id)
+
 
 class TestValidateTestRun(TestCase):
 

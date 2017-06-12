@@ -1,6 +1,7 @@
 from collections import defaultdict
 import json
 import logging
+import uuid
 
 
 from django.db import transaction
@@ -103,6 +104,9 @@ class ReceiveTestRun(object):
 
         else:
             metadata_fields = {}
+
+        if 'job_id' not in metadata_fields:
+            metadata_fields['job_id'] = uuid.uuid4()
 
         testrun = build.test_runs.create(
             environment=environment,
