@@ -59,6 +59,8 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
         if field in request.FILES:
             f = request.FILES[field]
             test_run_data[key] = read_file_upload(f).decode('utf-8')
+        elif field in request.POST:
+            test_run_data[key] = request.POST[field]
 
     if 'attachment' in request.FILES:
         attachments = {}

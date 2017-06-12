@@ -91,8 +91,8 @@ All of the above identifiers (``:team``, ``:project``, ``:build``, and
 ``:environment``) must match the regular expression
 ``[a-zA-Z0-9][a-zA-Z0-9_.-]*``.
 
-The test data must be submitted as file attachments in the ``POST``
-request. The following files are supported:
+The test data files must be submitted as either file attachments, or as
+regular ``POST`` parameters.  . The following files are supported:
 
 -  ``tests``: test results data
 -  ``metrics``: metrics data
@@ -103,15 +103,24 @@ request. The following files are supported:
 See `Input file formats <#input-file-formats>`__ below for details on
 the format of the data files.
 
-Example:
-
-::
+Example with test data as file uploads::
 
     $ curl \
         --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
         --form tests=@/path/to/test-rsults.json \
         --form metrics=@/path/to/metrics.json \
         --form metadata=@/path/to/metadata.json \
+        --form attachment=@/path/to/screenshot.png \
+        --form attachment=@/path/to/extra-info.txt \
+        https://squad.example.com/api/submit/my-team/my-project/x.y.z/my-ci-env
+
+Example with test data as regular ``POST`` parameters::
+
+    $ curl \
+        --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+        --form tests='{"test1": "pass", "test2": "fail"}' \
+        --form metrics='{"metric1": 21, "metric2": 4}' \
+        --form metadata'{"foo": "bar", "baz": "qux"}' \
         --form attachment=@/path/to/screenshot.png \
         --form attachment=@/path/to/extra-info.txt \
         https://squad.example.com/api/submit/my-team/my-project/x.y.z/my-ci-env
