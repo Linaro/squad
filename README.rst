@@ -211,8 +211,13 @@ strings. The following fields are recognized:
 * ``job_url``: URL pointing to the original test run.
 * ``resubmit_url``: URL that can be used to resubmit the test run.
 
-Other fields must be submitted. They will be stored, but will not be
-handled in any specific way.
+If a metadata JSON file is not submitted, the above fields can be
+submitted as POST parameters. If a metadata JSON file is submitted, no
+POST parameters will be considered to be used as metadata.
+
+When sending a proper metadata JSON file, other fields may also be
+submitted. They will be stored, but will not be handled in any specific
+way.
 
 CI loop integration (optional)
 ------------------------------

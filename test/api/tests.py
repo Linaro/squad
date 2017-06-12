@@ -119,6 +119,27 @@ class ApiTest(TestCase):
         t = models.TestRun.objects.last()
         self.assertEqual("2016-09-01T00:00:00+00:00", t.datetime.isoformat())
 
+    def test_receives_metadata_fields_as_POST_params(self):
+        self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {
+                "build_url": "http://example.com/build/1",
+                "datetime": "2016-09-01T00:00:00+00:00",
+                "job_id": "123",
+                "job_status": "Complete",
+                "job_url": "http://example.com/build/1/jobs/1",
+                "resubmit_url": "http://example.com/build/1/jobs/1/resubmit",
+            }
+        )
+
+        t = models.TestRun.objects.last()
+        self.assertEqual("2016-09-01T00:00:00+00:00", t.datetime.isoformat())
+        self.assertIsNotNone(t.build_url)
+        self.assertIsNotNone(t.job_id)
+        self.assertIsNotNone(t.job_status)
+        self.assertIsNotNone(t.job_url)
+        self.assertIsNotNone(t.resubmit_url)
+
     def test_stores_metadata_file(self):
         self.client.post(
             '/api/submit/mygroup/myproject/1.0.0/myenvironment',

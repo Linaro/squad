@@ -75,6 +75,15 @@ class ReceiveTestRun(object):
     def __init__(self, project):
         self.project = project
 
+    SPECIAL_METADATA_FIELDS = (
+        "build_url",
+        "datetime",
+        "job_id",
+        "job_status",
+        "job_url",
+        "resubmit_url",
+    )
+
     def __call__(self, version, environment_slug, metadata_file=None, metrics_file=None, tests_file=None, log_file=None, attachments={}):
         build, _ = self.project.builds.get_or_create(version=version)
         environment, _ = self.project.environments.get_or_create(slug=environment_slug)
@@ -85,14 +94,7 @@ class ReceiveTestRun(object):
         if metadata_file:
             data = json.loads(metadata_file)
 
-            fields = (
-                "build_url",
-                "datetime",
-                "job_id",
-                "job_status",
-                "job_url",
-                "resubmit_url",
-            )
+            fields = self.SPECIAL_METADATA_FIELDS
             metadata_fields = {k: data[k] for k in fields if data.get(k)}
 
             job_id = metadata_fields['job_id']
