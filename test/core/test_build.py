@@ -53,3 +53,21 @@ class BuildTest(TestCase):
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": "fox"}')
 
         self.assertEqual({"foo": "bar"}, build.metadata)
+
+    def test_metadata_empty(self):
+        build = Build.objects.create(project=self.project, version='1.1')
+        env = self.project.environments.create(slug='env')
+        build.test_runs.create(environment=env, metadata_file='{"foo": "bar"}')
+        build.test_runs.create(environment=env, metadata_file='{"baz": "qux"}')
+
+        self.assertEqual({}, build.metadata)
+
+    def test_metadata_no_testruns(self):
+        build = Build.objects.create(project=self.project, version='1.1')
+        self.assertEqual({}, build.metadata)
+
+    def test_metadata_with_testruns_with_empty_metadata(self):
+        build = Build.objects.create(project=self.project, version='1.1')
+        env = self.project.environments.create(slug='env')
+        build.test_runs.create(environment=env)
+        self.assertEqual({}, build.metadata)
