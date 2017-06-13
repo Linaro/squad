@@ -3,6 +3,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseForbidden
 from django.http import HttpResponse
+import json
 import logging
 
 
@@ -59,6 +60,16 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
         if field in request.FILES:
             f = request.FILES[field]
             test_run_data[key] = read_file_upload(f).decode('utf-8')
+        elif field in request.POST:
+            test_run_data[key] = request.POST[field]
+
+    if 'metadata_file' not in test_run_data:
+        metadata = {}
+        for field in ReceiveTestRun.SPECIAL_METADATA_FIELDS:
+            if field in request.POST:
+                metadata[field] = request.POST[field]
+        if metadata:
+            test_run_data['metadata_file'] = json.dumps(metadata)
 
     if 'attachment' in request.FILES:
         attachments = {}

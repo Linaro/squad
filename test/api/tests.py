@@ -51,6 +51,14 @@ class ApiTest(TestCase):
         self.assertIsNotNone(models.TestRun.objects.last().tests_file)
         self.assertNotEqual(0, models.Test.objects.count())
 
+    def test_receives_tests_file_as_POST_param(self):
+        self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {'tests': '{"test1": "pass"}'}
+        )
+        self.assertIsNotNone(models.TestRun.objects.last().tests_file)
+        self.assertNotEqual(0, models.Test.objects.count())
+
     def test_receives_metrics_file(self):
         with open(metrics_file) as f:
             self.client.post(
@@ -60,10 +68,23 @@ class ApiTest(TestCase):
         self.assertIsNotNone(models.TestRun.objects.last().metrics_file)
         self.assertNotEqual(0, models.Metric.objects.count())
 
+    def test_receives_metrics_file_as_POST_param(self):
+        self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {'metrics': '{"metric1": 10}'}
+        )
+        self.assertIsNotNone(models.TestRun.objects.last().metrics_file)
+        self.assertNotEqual(0, models.Metric.objects.count())
+
     def test_receives_log_file(self):
         with open(log_file) as f:
             self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment',
                              {'log': f})
+        self.assertIsNotNone(models.TestRun.objects.last().log_file)
+
+    def test_receives_log_file_as_POST_param(self):
+        self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment',
+                         {'log': "THIS IS THE LOG"})
         self.assertIsNotNone(models.TestRun.objects.last().log_file)
 
     def test_process_data_on_submission(self):
@@ -87,6 +108,37 @@ class ApiTest(TestCase):
         )
         t = models.TestRun.objects.last()
         self.assertEqual("2016-09-01T00:00:00+00:00", t.datetime.isoformat())
+
+    def test_receives_metadata_file_as_POST_param(self):
+        self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {
+                'metadata': '{"job_id": "123", "datetime": "2016-09-01T00:00:00+00:00"}',
+            }
+        )
+        t = models.TestRun.objects.last()
+        self.assertEqual("2016-09-01T00:00:00+00:00", t.datetime.isoformat())
+
+    def test_receives_metadata_fields_as_POST_params(self):
+        self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {
+                "build_url": "http://example.com/build/1",
+                "datetime": "2016-09-01T00:00:00+00:00",
+                "job_id": "123",
+                "job_status": "Complete",
+                "job_url": "http://example.com/build/1/jobs/1",
+                "resubmit_url": "http://example.com/build/1/jobs/1/resubmit",
+            }
+        )
+
+        t = models.TestRun.objects.last()
+        self.assertEqual("2016-09-01T00:00:00+00:00", t.datetime.isoformat())
+        self.assertIsNotNone(t.build_url)
+        self.assertIsNotNone(t.job_id)
+        self.assertIsNotNone(t.job_status)
+        self.assertIsNotNone(t.job_url)
+        self.assertIsNotNone(t.resubmit_url)
 
     def test_stores_metadata_file(self):
         self.client.post(

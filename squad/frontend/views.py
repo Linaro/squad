@@ -62,7 +62,7 @@ def build(request, group_slug, project_slug, version):
     context = {
         'project': project,
         'build': build,
-        'metadata': sorted(build.metadata.items() or dict().items()),
+        'metadata': sorted(build.metadata.items()),
     }
     return render(request, 'squad/build.html', context)
 
@@ -88,7 +88,7 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
         'project': project,
         'build': build,
         'test_run': test_run,
-        'metadata': sorted(json.loads(test_run.metadata_file).items() or dict().items()),
+        'metadata': sorted(test_run.metadata.items()),
         'attachments': attachments,
         'tests_status': tests_status,
         'metrics_status': metrics_status,

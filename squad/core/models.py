@@ -157,7 +157,7 @@ class Build(models.Model):
         The build metadata is the intersection of the metadata in its test
         runs.
         """
-        metadata = None
+        metadata = {}
         for test_run in self.test_runs.all():
             if metadata:
                 metadata = dict(metadata.items() & test_run.metadata.items())
@@ -215,7 +215,7 @@ class TestRun(models.Model):
         if self.metadata_file:
             return json.loads(self.metadata_file)
         else:
-            return None
+            return {}
 
     def __str__(self):
         return self.job_id and ('#%s' % self.job_id) or ('(%s)' % self.id)
