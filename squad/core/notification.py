@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.template.loader import render_to_string
 
@@ -96,7 +96,7 @@ def __send_notification__(project, notification):
         'settings': settings,
     }
 
-    message = render_to_string(
+    text_message = render_to_string(
         'squad/notification/diff.txt',
         context=context,
     )
@@ -107,10 +107,6 @@ def __send_notification__(project, notification):
     )
     sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
     for r in recipients:
-        send_mail(
-            subject,
-            message,
-            sender,
-            [r.email],
-            html_message=html_message,
-        )
+        message = EmailMultiAlternatives(subject, text_message, sender, [r.email])
+        message.attach_alternative(html_message, "text/html")
+        message.send()
