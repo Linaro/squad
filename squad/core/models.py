@@ -160,10 +160,14 @@ class Build(models.Model):
         metadata = {}
         for test_run in self.test_runs.all():
             if metadata:
-                metadata = dict(metadata.items() & test_run.metadata.items())
+                metadata = dict_intersection(metadata, test_run.metadata)
             else:
                 metadata = test_run.metadata
         return metadata
+
+
+def dict_intersection(d1, d2):
+    return {k: d1[k] for k in d1 if (k in d2 and d2[k] == d1[k])}
 
 
 class Environment(models.Model):
