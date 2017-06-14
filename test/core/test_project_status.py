@@ -5,6 +5,13 @@ from dateutil.relativedelta import relativedelta
 from squad.core.models import Group, ProjectStatus
 
 
+def h(n):
+    """
+    h(n) = n hours ago
+    """
+    return timezone.now() - relativedelta(hours=n)
+
+
 class ProjectStatusTest(TestCase):
 
     def setUp(self):
@@ -45,16 +52,16 @@ class ProjectStatusTest(TestCase):
         self.assertEqual(1, ProjectStatus.objects.count())
 
     def test_wait_for_build_completion(self):
-        self.create_build('1', datetime=timezone.now() - relativedelta(hours=1))
+        self.create_build('1', datetime=h(1))
         status = ProjectStatus.create(self.project)
         self.assertIsNone(status)
 
     def test_status_with_multiple_builds(self):
-        self.create_build('1', datetime=timezone.now() - relativedelta(hours=10))
+        self.create_build('1', datetime=h(10))
         ProjectStatus.create(self.project)
 
-        b1 = self.create_build('2', datetime=timezone.now() - relativedelta(hours=5))
-        b2 = self.create_build('3', datetime=timezone.now() - relativedelta(hours=4))
+        b1 = self.create_build('2', datetime=h(5))
+        b2 = self.create_build('3', datetime=h(4))
 
         status = ProjectStatus.create(self.project)
         self.assertEqual([b1, b2], list(status.builds))
