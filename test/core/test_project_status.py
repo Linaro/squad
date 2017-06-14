@@ -16,13 +16,14 @@ class ProjectStatusTest(TestCase):
 
     def setUp(self):
         group = Group.objects.create(slug='mygroup')
-        self.project = group.projects.create(slug='myproject', build_completion_threshold=120)
+        self.project = group.projects.create(slug='myproject')
+        self.environment = self.project.environments.create(slug='theenvironment')
 
-    def create_build(self, v, **kwargs):
-        two_hours_ago = timezone.now() - relativedelta(hours=2)
-        args = {'datetime': two_hours_ago}
-        args.update(kwargs)
-        return self.project.builds.create(version=v, **args)
+    def create_build(self, v, datetime=None, create_test_run=True):
+        build = self.project.builds.create(version=v, datetime=datetime)
+        if create_test_run:
+            build.test_runs.create(environment=self.environment)
+        return build
 
     def test_status_without_builds(self):
         status = ProjectStatus.create(self.project)
@@ -52,9 +53,22 @@ class ProjectStatusTest(TestCase):
         self.assertEqual(1, ProjectStatus.objects.count())
 
     def test_wait_for_build_completion(self):
-        self.create_build('1', datetime=h(1))
+        self.create_build('1', datetime=h(1), create_test_run=False)
         status = ProjectStatus.create(self.project)
         self.assertIsNone(status)
+
+    def test_first_build(self):
+        build = self.create_build('1')
+        status = ProjectStatus.create(self.project)
+        self.assertEqual(build, status.build)
+
+    def test_last_build_not_finished(self):
+        self.create_build('0', datetime=h(10))
+        ProjectStatus.create(self.project)
+        b1 = self.create_build('1', datetime=h(5))
+        self.create_build('2', datetime=h(4), create_test_run=False)
+        status = ProjectStatus.create(self.project)
+        self.assertEqual(b1, status.build)
 
     def test_status_with_multiple_builds(self):
         self.create_build('1', datetime=h(10))

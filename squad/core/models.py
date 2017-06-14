@@ -422,16 +422,25 @@ class ProjectStatus(models.Model):
 
     @classmethod
     def create(cls, project):
-        completion_window = relativedelta(minutes=project.build_completion_threshold)
-        completed_by = timezone.now() - completion_window
-        builds = project.builds.filter(datetime__lt=completed_by)
+        """
+        Creates a new ProjectStatus, pointing to the latest finished build of
+        the given project. Returns the new ProjectStatus objects.
 
-        build = builds.last()
+        If there is no such build, does nothing and returns None.
+        """
         previous = cls.objects.filter(build__project=project).last()
-        if build and (not previous or (previous.build != build)):
-            return cls.objects.create(build=build, previous=previous)
-        else:
-            return None
+
+        builds = project.builds.order_by('datetime')
+        if previous and previous.build:
+            builds = builds.filter(datetime__gt=previous.build.datetime)
+
+        build_list = list(builds)
+        while len(build_list) > 0:
+            build = build_list.pop()
+            if build.finished and (not previous or (previous.build != build)):
+                return cls.objects.create(build=build, previous=previous)
+
+        return None
 
     @property
     def builds(self):
