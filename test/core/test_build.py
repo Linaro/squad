@@ -71,3 +71,10 @@ class BuildTest(TestCase):
         env = self.project.environments.create(slug='env')
         build.test_runs.create(environment=env)
         self.assertEqual({}, build.metadata)
+
+    def test_metadata_list_value(self):
+        build = Build.objects.create(project=self.project, version='1.1')
+        env = self.project.environments.create(slug='env')
+        build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": ["qux"]}')
+        build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": ["qux"]}')
+        self.assertEqual({"foo": "bar", "baz": ["qux"]}, build.metadata)
