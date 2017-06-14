@@ -165,6 +165,16 @@ class Build(models.Model):
                 metadata = test_run.metadata
         return metadata
 
+    @property
+    def finished(self):
+        """
+        A finished build is a build that has at least one test run for each of
+        the project environments.
+        """
+        required = sorted([e.id for e in self.project.environments.all()])
+        got = sorted(set([t.environment_id for t in self.test_runs.all()]))
+        return required == got
+
 
 def dict_intersection(d1, d2):
     return {k: d1[k] for k in d1 if (k in d2 and d2[k] == d1[k])}

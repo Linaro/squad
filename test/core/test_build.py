@@ -78,3 +78,27 @@ class BuildTest(TestCase):
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": ["qux"]}')
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": ["qux"]}')
         self.assertEqual({"foo": "bar", "baz": ["qux"]}, build.metadata)
+
+    def test_not_finished(self):
+        env1 = self.project.environments.create(slug='env1')
+        self.project.environments.create(slug='env2')
+        build = self.project.builds.create(version='1')
+        build.test_runs.create(environment=env1)
+        self.assertFalse(build.finished)
+
+    def test_finished(self):
+        env1 = self.project.environments.create(slug='env1')
+        env2 = self.project.environments.create(slug='env2')
+        build = self.project.builds.create(version='1')
+        build.test_runs.create(environment=env1)
+        build.test_runs.create(environment=env2)
+        self.assertTrue(build.finished)
+
+    def test_finished_multiple_test_runs(self):
+        env1 = self.project.environments.create(slug='env1')
+        env2 = self.project.environments.create(slug='env2')
+        build = self.project.builds.create(version='1')
+        build.test_runs.create(environment=env1)
+        build.test_runs.create(environment=env2)
+        build.test_runs.create(environment=env2)
+        self.assertTrue(build.finished)
