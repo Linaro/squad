@@ -43,7 +43,6 @@ class Project(models.Model):
     slug = models.CharField(max_length=100, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
     is_public = models.BooleanField(default=True)
-    build_completion_threshold = models.IntegerField(default=120)
 
     NOTIFY_ALL_BUILDS = 'all'
     NOTIFY_ON_CHANGE = 'change'
