@@ -19,26 +19,6 @@ from squad.ci.backend.null import Backend as BaseBackend
 description = "LAVA"
 
 
-class MetadataParser(object):
-
-    def __init__(self, definition):
-        self.definition = definition
-        self.metadata = {}
-        self.__extract_metadata_recursively__(self.definition)
-
-    def __extract_metadata_recursively__(self, data):
-        if isinstance(data, dict):
-            for key in data:
-                if key == 'metadata':
-                    for k in data[key]:
-                        self.metadata[k] = data[key][k]
-                else:
-                    self.__extract_metadata_recursively__(data[key])
-        elif isinstance(data, list):
-            for item in data:
-                self.__extract_metadata_recursively__(item)
-
-
 class Backend(BaseBackend):
 
     # ------------------------------------------------------------------------
@@ -188,7 +168,7 @@ class Backend(BaseBackend):
         definition = yaml.load(data['definition'])
         if data['multinode_definition']:
             definition = yaml.load(data['multinode_definition'])
-        mp = MetadataParser(definition)
+        job_metadata = definition['metadata']
         results = {}
         metrics = {}
         for result in data['results']:
@@ -210,4 +190,4 @@ class Backend(BaseBackend):
                         test_job.can_resubmit = True
                         test_job.save()
 
-        return (data['status'], mp.metadata, results, metrics)
+        return (data['status'], job_metadata, results, metrics)
