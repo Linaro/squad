@@ -106,3 +106,9 @@ class TestSendNotification(TestCase):
         diff.return_value = fake_diff()
         send_notification(self.project)
         self.assertEqual(0, len(mail.outbox))
+
+    def test_send_notification_without_html(self):
+        self.project.subscriptions.create(email='foo@example.com', html=False)
+        send_notification(self.project)
+        message = mail.outbox[0]
+        self.assertEqual(0, len(message.alternatives))
