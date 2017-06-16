@@ -63,7 +63,11 @@ class Backend(BaseBackend):
         if data['status'] in self.complete_statuses:
             yamldata = self.__get_testjob_results_yaml__(test_job.job_id)
             data['results'] = yaml.load(yamldata)
-            return self.__parse_results__(data, test_job)
+
+            # fetch logs
+            logs = self.__get_job_logs__(test_job.job_id)
+
+            return self.__parse_results__(data, test_job) + (logs,)
 
     def listen(self):
         listener_url = self.get_listener_url()
@@ -174,6 +178,10 @@ class Backend(BaseBackend):
 
     def __get_job_details__(self, job_id):
         return self.proxy.scheduler.job_details(job_id)
+
+    def __get_job_logs__(self, job_id):
+        job_finished, data = self.proxy.scheduler.job_output(job_id)
+        return data
 
     def __get_testjob_results_yaml__(self, job_id):
         return self.proxy.results.get_testjob_results_yaml(job_id)

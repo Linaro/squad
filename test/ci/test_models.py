@@ -112,7 +112,7 @@ class BackendFetchTest(BackendTestBase):
         metadata = {"foo": "bar"}
         tests = {"foo": "pass"}
         metrics = {"bar": 1}
-        results = ('Complete', metadata, tests, metrics)
+        results = ('Complete', metadata, tests, metrics, "abc")
 
         impl = MagicMock()
         impl.fetch = MagicMock(return_value=results)

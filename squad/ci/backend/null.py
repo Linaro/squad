@@ -55,8 +55,8 @@ class Backend(object):
         assumed that the job has been properly submited before, i.e. it has a
         proper id.
 
-        The return value must be a tuple (status, metadata, tests, metrics),
-        where status is a string, all other elements are dictionaries.
+        The return value must be a tuple (status, metadata, tests, metrics, logs),
+        where status and logs are strings, metadata, tests and metrics are dictionaries.
         """
         pass
 

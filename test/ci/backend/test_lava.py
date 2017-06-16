@@ -102,9 +102,10 @@ class LavaTest(TestCase):
         self.assertEqual('1234', lava.submit(testjob))
         __submit__.assert_called_with("foo: 1\n")
 
+    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value=(True, "abc"))
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
-    def test_fetch_basics(self, get_results, get_details):
+    def test_fetch_basics(self, get_results, get_details, get_logs):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='9999',
@@ -126,25 +127,27 @@ class LavaTest(TestCase):
 
         get_results.assert_not_called()
 
+    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value=(True, "abc"))
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
-    def test_parse_results_metadata(self, get_results, get_details):
+    def test_parse_results_metadata(self, get_results, get_details, get_logs):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
             backend=self.backend)
-        status, metadata, results, metrics = lava.fetch(testjob)
+        status, metadata, results, metrics, logs = lava.fetch(testjob)
 
         self.assertEqual(JOB_METADATA, metadata)
 
+    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value=(True, "abc"))
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
-    def test_parse_results(self, get_results, get_details):
+    def test_parse_results(self, get_results, get_details, get_logs):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
             backend=self.backend)
-        status, metadata, results, metrics = lava.fetch(testjob)
+        status, metadata, results, metrics, logs = lava.fetch(testjob)
 
         self.assertEqual(len(results), 1)
         self.assertEqual(len(metrics), 1)
