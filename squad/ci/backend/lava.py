@@ -206,7 +206,7 @@ class Backend(BaseBackend):
                 if result['name'] == 'job' and result['result'] == 'fail':
                     metadata = result['metadata']
                     # only allow to resubmit jobs failed because of infrastructure
-                    if metadata['error_type'] in ['Infrastructure', 'Lava']:
+                    if metadata['error_type'] in ['Infrastructure', 'Lava', 'Job']:
                         test_job.can_resubmit = True
                         test_job.save()
 
