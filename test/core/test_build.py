@@ -102,3 +102,16 @@ class BuildTest(TestCase):
         build.test_runs.create(environment=env2)
         build.test_runs.create(environment=env2)
         self.assertTrue(build.finished)
+
+    def test_unfinished_with_expected_test_runs(self):
+        build = self.project.builds.create(version='1')
+        env1 = self.project.environments.create(slug='env1', expected_test_runs=2)
+        build.test_runs.create(environment=env1)
+        self.assertFalse(build.finished)
+
+    def test_finished_with_expected_test_runs(self):
+        build = self.project.builds.create(version='1')
+        env1 = self.project.environments.create(slug='env1', expected_test_runs=2)
+        build.test_runs.create(environment=env1)
+        build.test_runs.create(environment=env1)
+        self.assertTrue(build.finished)

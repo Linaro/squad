@@ -167,12 +167,27 @@ class Build(models.Model):
     @property
     def finished(self):
         """
-        A finished build is a build that has at least one test run for each of
-        the project environments.
+        A finished build is a build that has at least N test runs for each of
+        the project environments, where N is configured in
+        Environment.expected_test_runs.
+
+        If an environment does not have expected_test_runs set, or has it set to
+        0, then there must be at least one test run for that environment.
         """
-        required = sorted([e.id for e in self.project.environments.all()])
-        got = sorted(set([t.environment_id for t in self.test_runs.all()]))
-        return required == got
+        environments = self.project.environments.all()
+        expected = {e.id: e.expected_test_runs for e in environments}
+
+        received = {}
+        for t in self.test_runs.all():
+            received.setdefault(t.environment_id, 0)
+            received[t.environment_id] += 1
+
+        for env, n in expected.items():
+            if env not in received:
+                return False
+            if n and received[env] < n:
+                return False
+        return True
 
 
 def dict_intersection(d1, d2):
@@ -183,6 +198,7 @@ class Environment(models.Model):
     project = models.ForeignKey(Project, related_name='environments')
     slug = models.CharField(max_length=100, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
+    expected_test_runs = models.IntegerField(default=None, null=True)
 
     class Meta:
         unique_together = ('project', 'slug',)
