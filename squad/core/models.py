@@ -178,7 +178,7 @@ class Build(models.Model):
         expected = {e.id: e.expected_test_runs for e in environments}
 
         received = {}
-        for t in self.test_runs.all():
+        for t in self.test_runs.filter(completed=True).all():
             received.setdefault(t.environment_id, 0)
             received[t.environment_id] += 1
 

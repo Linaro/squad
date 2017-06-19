@@ -115,3 +115,9 @@ class BuildTest(TestCase):
         build.test_runs.create(environment=env1)
         build.test_runs.create(environment=env1)
         self.assertTrue(build.finished)
+
+    def test_not_finished_when_test_run_not_completed(self):
+        build = self.project.builds.create(version='1')
+        env1 = self.project.environments.create(slug='env1', expected_test_runs=1)
+        build.test_runs.create(environment=env1, completed=False)
+        self.assertFalse(build.finished)
