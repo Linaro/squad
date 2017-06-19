@@ -33,7 +33,10 @@ class Group(models.Model):
 class ProjectManager(models.Manager):
 
     def accessible_to(self, user):
-        return self.filter(Q(group__user_groups__in=user.groups.all()) | Q(is_public=True))
+        if user.is_superuser:
+            return self
+        else:
+            return self.filter(Q(group__user_groups__in=user.groups.all()) | Q(is_public=True))
 
 
 class Project(models.Model):
@@ -66,7 +69,7 @@ class Project(models.Model):
         return self.__status__
 
     def accessible_to(self, user):
-        return self.is_public or self.group.user_groups.filter(id__in=user.groups.all()).exists()
+        return self.is_public or user.is_superuser or self.group.user_groups.filter(id__in=user.groups.all()).exists()
 
     @property
     def full_name(self):
