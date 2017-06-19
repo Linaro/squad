@@ -179,6 +179,7 @@ class Backend(BaseBackend):
         job_metadata = definition['metadata']
         results = {}
         metrics = {}
+        completed = True
         for result in data['results']:
             if result['suite'] != 'lava':
                 suite = result['suite'].split("_", 1)[1]
@@ -193,9 +194,8 @@ class Backend(BaseBackend):
             else:
                 if result['name'] == 'job' and result['result'] == 'fail':
                     metadata = result['metadata']
-                    # only allow to resubmit jobs failed because of infrastructure
+                    # detect jobs failed because of infrastructure issues
                     if metadata['error_type'] in ['Infrastructure', 'Lava', 'Job']:
-                        test_job.can_resubmit = True
-                        test_job.save()
+                        completed = False
 
-        return (data['status'], job_metadata, results, metrics)
+        return (data['status'], completed, job_metadata, results, metrics)

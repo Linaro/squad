@@ -112,7 +112,7 @@ class BackendFetchTest(BackendTestBase):
         metadata = {"foo": "bar"}
         tests = {"foo": "pass"}
         metrics = {"bar": 1}
-        results = ('Complete', metadata, tests, metrics, "abc")
+        results = ('Complete', True, metadata, tests, metrics, "abc")
 
         impl = MagicMock()
         impl.fetch = MagicMock(return_value=results)
@@ -135,6 +135,7 @@ class BackendFetchTest(BackendTestBase):
             build__version='1',
             job_id='999',
             job_status='Complete',
+            completed=True,
         )
         self.assertEqual(
             1,
@@ -153,6 +154,40 @@ class BackendFetchTest(BackendTestBase):
             ).count()
         )
         self.assertTrue(test_job.fetched)
+
+    @patch('django.utils.timezone.now', return_value=NOW)
+    @patch('squad.ci.models.Backend.get_implementation')
+    def test_really_fetch_sets_testjob_can_resubmit_and_testrun_completed(self, get_implementation, __now__):
+        metadata = {"foo": "bar"}
+        tests = {"foo": "pass"}
+        metrics = {"bar": 1}
+        results = ('Incomplete', False, metadata, tests, metrics, "abc")
+        #                        ^^^^^ job resulted in an infra failure
+
+        impl = MagicMock()
+        impl.fetch = MagicMock(return_value=results)
+        get_implementation.return_value = impl
+
+        test_job = self.create_test_job(
+            backend=self.backend,
+            definition='foo: 1',
+            build='1',
+            environment='myenv',
+            job_id='999',
+        )
+
+        self.backend.really_fetch(test_job)
+        self.assertTrue(test_job.can_resubmit)
+
+        # should not crash
+        core_models.TestRun.objects.get(
+            build__project=self.project,
+            environment__slug='myenv',
+            build__version='1',
+            job_id='999',
+            job_status='Incomplete',
+            completed=False,
+        )
 
 
 class BackendSubmitTest(BackendTestBase):
