@@ -216,6 +216,8 @@ class TestRun(models.Model):
     log_file = models.TextField(null=True)
     metadata_file = models.TextField(null=True)
 
+    completed = models.BooleanField(default=True)
+
     # fields that should be provided in a submitted metadata JSON
     datetime = models.DateTimeField(null=False)
     build_url = models.CharField(null=True, max_length=2048)

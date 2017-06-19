@@ -87,7 +87,7 @@ class ReceiveTestRun(object):
         "resubmit_url",
     )
 
-    def __call__(self, version, environment_slug, metadata_file=None, metrics_file=None, tests_file=None, log_file=None, attachments={}):
+    def __call__(self, version, environment_slug, metadata_file=None, metrics_file=None, tests_file=None, log_file=None, attachments={}, completed=True):
         build, _ = self.project.builds.get_or_create(version=version)
         environment, _ = self.project.environments.get_or_create(slug=environment_slug)
 
@@ -116,6 +116,7 @@ class ReceiveTestRun(object):
             metrics_file=metrics_file,
             log_file=log_file,
             metadata_file=metadata_file,
+            completed=completed,
             **metadata_fields
         )
 
