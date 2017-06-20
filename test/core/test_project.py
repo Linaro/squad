@@ -43,8 +43,8 @@ class ProjectTest(TestCase):
 
     def test_accessible_manager_admin(self):
         self.assertEqual(
-            [self.public_project, self.private_project],
-            list(Project.objects.accessible_to(self.admin).order_by('id'))
+            [self.public_project.id, self.private_project.id],
+            sorted([p.id for p in Project.objects.accessible_to(self.admin)])
         )
 
     def test_accessible_instance_non_member(self):

@@ -34,7 +34,7 @@ class ProjectManager(models.Manager):
 
     def accessible_to(self, user):
         if user.is_superuser:
-            return self
+            return self.all()
         else:
             return self.filter(Q(group__user_groups__in=user.groups.all()) | Q(is_public=True))
 
