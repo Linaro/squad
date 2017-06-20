@@ -15,6 +15,8 @@ class ProjectTest(TestCase):
 
         self.user2 = User.objects.create(username='u2')
 
+        self.admin = User.objects.create(username='admin', is_superuser=True)
+
         self.group = Group.objects.create(slug='mygroup')
         self.group.user_groups.add(self.user_group)
 
@@ -39,6 +41,12 @@ class ProjectTest(TestCase):
             list(Project.objects.accessible_to(AnonymousUser()))
         )
 
+    def test_accessible_manager_admin(self):
+        self.assertEqual(
+            [self.public_project, self.private_project],
+            list(Project.objects.accessible_to(self.admin).order_by('id'))
+        )
+
     def test_accessible_instance_non_member(self):
         self.assertFalse(self.private_project.accessible_to(self.user2))
 
@@ -50,3 +58,6 @@ class ProjectTest(TestCase):
 
     def test_accessible_instance_public_project_anonymous_user(self):
         self.assertTrue(self.public_project.accessible_to(AnonymousUser()))
+
+    def test_accessible_instance_admin(self):
+        self.assertTrue(self.private_project.accessible_to(self.admin))
