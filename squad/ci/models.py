@@ -53,9 +53,11 @@ class Backend(models.Model):
 
         if results:
             # create TestRun
-            status, metadata, tests, metrics, logs = results
+            status, completed, metadata, tests, metrics, logs = results
 
             test_job.job_status = status
+            if not completed:
+                test_job.can_resubmit = True
 
             metadata['job_id'] = test_job.job_id
             metadata['job_status'] = test_job.job_status
@@ -68,6 +70,7 @@ class Backend(models.Model):
                 tests_file=json.dumps(tests),
                 metrics_file=json.dumps(metrics),
                 log_file=logs,
+                completed=completed,
             )
             test_job.testrun = testrun
             test_job.fetched = True

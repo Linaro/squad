@@ -1,8 +1,36 @@
 {% extends "squad/base.html" %}
+{% load humanize %}
 
 {% block content %}
-  {% include "squad/project-nav.html" %}
+{% include "squad/project-nav.html" %}
 
-  <em>contents of this page TDB</em>
-
+<table class='table table-striped'>
+  <tr>
+    <th>Last update</th>
+    <th>Tests</th>
+    <th>Metrics</th>
+  </tr>
+  <tr>
+    <td>
+      {{project.status.test_run.datetime|default:"(no data)"}}
+      <em>{{project.status.test_run.datetime|naturaltime}}</em>
+    </td>
+    <td>
+      {% if project.status %}
+      <div class="progress">
+        <div class="progress-bar progress-bar-success" style="width: {{project.status.pass_percentage}}%">
+          <span class="sr-only">Pass: {{project.status.pass_percentage}}% </span>
+        </div>
+        <div class="progress-bar progress-bar-danger" style="width: {{project.status.fail_percentage}}%">
+          <span class="sr-only">{{project.status.fail_percentage}}</span>
+        </div>
+      </div>
+      {% else %}
+      (no data)
+      {% endif %}
+    </td>
+    <td>
+      {{project.status.metrics_summary|default:"(no data)"}}
+    </td>
+</table>
 {% endblock %}

@@ -43,7 +43,6 @@ class Project(models.Model):
     slug = models.CharField(max_length=100, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
     is_public = models.BooleanField(default=True)
-    build_completion_threshold = models.IntegerField(default=120)
 
     NOTIFY_ALL_BUILDS = 'all'
     NOTIFY_ON_CHANGE = 'change'
@@ -165,6 +164,31 @@ class Build(models.Model):
                 metadata = test_run.metadata
         return metadata
 
+    @property
+    def finished(self):
+        """
+        A finished build is a build that has at least N test runs for each of
+        the project environments, where N is configured in
+        Environment.expected_test_runs.
+
+        If an environment does not have expected_test_runs set, or has it set to
+        0, then there must be at least one test run for that environment.
+        """
+        environments = self.project.environments.all()
+        expected = {e.id: e.expected_test_runs for e in environments}
+
+        received = {}
+        for t in self.test_runs.filter(completed=True).all():
+            received.setdefault(t.environment_id, 0)
+            received[t.environment_id] += 1
+
+        for env, n in expected.items():
+            if env not in received:
+                return False
+            if n and received[env] < n:
+                return False
+        return True
+
 
 def dict_intersection(d1, d2):
     return {k: d1[k] for k in d1 if (k in d2 and d2[k] == d1[k])}
@@ -174,6 +198,7 @@ class Environment(models.Model):
     project = models.ForeignKey(Project, related_name='environments')
     slug = models.CharField(max_length=100, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
+    expected_test_runs = models.IntegerField(default=None, null=True)
 
     class Meta:
         unique_together = ('project', 'slug',)
@@ -190,6 +215,8 @@ class TestRun(models.Model):
     metrics_file = models.TextField(null=True)
     log_file = models.TextField(null=True)
     metadata_file = models.TextField(null=True)
+
+    completed = models.BooleanField(default=True)
 
     # fields that should be provided in a submitted metadata JSON
     datetime = models.DateTimeField(null=False)
@@ -412,16 +439,25 @@ class ProjectStatus(models.Model):
 
     @classmethod
     def create(cls, project):
-        completion_window = relativedelta(minutes=project.build_completion_threshold)
-        completed_by = timezone.now() - completion_window
-        builds = project.builds.filter(datetime__lt=completed_by)
+        """
+        Creates a new ProjectStatus, pointing to the latest finished build of
+        the given project. Returns the new ProjectStatus objects.
 
-        build = builds.last()
+        If there is no such build, does nothing and returns None.
+        """
         previous = cls.objects.filter(build__project=project).last()
-        if build and (not previous or (previous.build != build)):
-            return cls.objects.create(build=build, previous=previous)
-        else:
-            return None
+
+        builds = project.builds.order_by('datetime')
+        if previous and previous.build:
+            builds = builds.filter(datetime__gt=previous.build.datetime)
+
+        build_list = list(builds)
+        while len(build_list) > 0:
+            build = build_list.pop()
+            if build.finished and (not previous or (previous.build != build)):
+                return cls.objects.create(build=build, previous=previous)
+
+        return None
 
     @property
     def builds(self):
