@@ -14,6 +14,7 @@ from django.utils import timezone
 
 
 from squad.core.utils import random_token, parse_name, join_name
+from squad.core.statistics import geomean
 
 
 slug_pattern = '[a-zA-Z0-9][a-zA-Z0-9_.-]*'
@@ -408,7 +409,7 @@ class Status(models.Model, TestSummaryBase):
         return '%s: %f, %d%% pass' % (name, self.metrics_summary, self.pass_percentage)
 
 
-class ProjectStatus(models.Model):
+class ProjectStatus(models.Model, TestSummaryBase):
     """
     Represents a "checkpoint" of a project status in time. It is used by the
     notification system to know what was the project status at the time of the
@@ -417,6 +418,12 @@ class ProjectStatus(models.Model):
     build = models.ForeignKey('Build', null=True)
     previous = models.ForeignKey('ProjectStatus', null=True, related_name='next')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    metrics_summary = models.FloatField()
+
+    tests_pass = models.IntegerField()
+    tests_fail = models.IntegerField()
+    tests_skip = models.IntegerField()
 
     @classmethod
     def create(cls, project):
@@ -436,7 +443,16 @@ class ProjectStatus(models.Model):
         while len(build_list) > 0:
             build = build_list.pop()
             if build.finished and (not previous or (previous.build != build)):
-                return cls.objects.create(build=build, previous=previous)
+                summary = build.test_summary
+                metrics_summary = MetricsSummary(build)
+                return cls.objects.create(
+                    build=build,
+                    previous=previous,
+                    tests_pass=summary.tests_pass,
+                    tests_fail=summary.tests_fail,
+                    tests_skip=summary.tests_skip,
+                    metrics_summary=metrics_summary.value,
+                )
 
         return None
 
@@ -477,6 +493,14 @@ class TestSummary(TestSummaryBase):
                     if env not in self.failures:
                         self.failures[env] = []
                     self.failures[env].append(test)
+
+
+class MetricsSummary(object):
+
+    def __init__(self, build):
+        metrics = Metric.objects.filter(test_run__build_id=build.id).all()
+        values = [m.result for m in metrics]
+        self.value = geomean(values)
 
 
 class Subscription(models.Model):
