@@ -20,6 +20,15 @@ class CiApiTest(TestCase):
         self.backend = models.Backend.objects.create(name='lava')
         self.client = APIClient('thekey')
 
+    def test_auth(self):
+        args = {
+            'backend': 'lava',
+            'definition': 'foo: 1',
+        }
+        self.client.token = 'invalid-token'
+        r = self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
+        self.assertEqual(401, r.status_code)
+
     def test_creates_test_run(self):
         args = {
             'backend': 'lava',
@@ -69,6 +78,17 @@ class CiApiTest(TestCase):
         self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
         job_id = models.TestJob.objects.last().id
         submit.assert_called_with(job_id)
+
+    @patch("squad.ci.tasks.fetch.delay")
+    def test_auth_on_watch_testjob(self, fetch):
+        testjob_id = 1234
+        args = {
+            'backend': 'lava',
+            'testjob_id': testjob_id,
+        }
+        self.client.token = 'invalid-token'
+        r = self.client.post('/api/watchjob/mygroup/myproject/1/myenv', args)
+        self.assertEqual(401, r.status_code)
 
     @patch("squad.ci.tasks.fetch.delay")
     def test_watch_testjob(self, fetch):
