@@ -371,6 +371,7 @@ class Status(models.Model):
 
     tests_pass = models.IntegerField(default=0)
     tests_fail = models.IntegerField(default=0)
+    tests_skip = models.IntegerField(default=0)
     metrics_summary = models.FloatField(default=0.0)
 
     objects = StatusManager()
@@ -407,7 +408,7 @@ class Status(models.Model):
 
     @property
     def has_tests(self):
-        return (self.tests_pass + self.tests_fail) > 0
+        return self.tests_total > 0
 
     @property
     def has_metrics(self):
