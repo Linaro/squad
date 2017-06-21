@@ -20,7 +20,10 @@ def auth(func):
         if not (project.is_public or user.is_authenticated or token):
             return HttpResponse('Authentication needed', status=401)
 
-        if project.is_public or project.tokens.filter(key=token).exists() or project.accessible_to(user):
+        if project.is_public or \
+                project.tokens.filter(key=token).exists() or \
+                project.accessible_to(user) or \
+                models.Token.objects.filter(key=token, project__isnull=True).exists():
             # authentication OK, call the original view
             return func(*args, **kwargs)
         else:
