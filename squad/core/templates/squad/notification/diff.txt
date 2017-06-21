@@ -1,7 +1,7 @@
 {% load squad_notification %}
-Tests:   {{summary.total}}
-Failed:  {{summary.fail}}
-Passed:  {{summary.pass}}
+Tests:   {{summary.tests_total}}
+Failed:  {{summary.tests_fail}}
+Passed:  {{summary.tests_pass}}
 Build:   {{build.version}}
 Details: {{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}
 

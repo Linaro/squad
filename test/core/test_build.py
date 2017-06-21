@@ -31,11 +31,11 @@ class BuildTest(TestCase):
         test_run.tests.create(name='qux', suite=suite, result=False)
 
         summary = build.test_summary
-        self.assertEqual(4, summary['total'])
-        self.assertEqual(1, summary['pass'])
-        self.assertEqual(2, summary['fail'])
-        self.assertEqual(1, summary['missing'])
-        self.assertEqual(['tests/bar', 'tests/qux'], sorted([t.full_name for t in summary['failures']['env']]))
+        self.assertEqual(4, summary.tests_total)
+        self.assertEqual(1, summary.tests_pass)
+        self.assertEqual(2, summary.tests_fail)
+        self.assertEqual(1, summary.tests_skip)
+        self.assertEqual(['tests/bar', 'tests/qux'], sorted([t.full_name for t in summary.failures['env']]))
 
     def test_metadata(self):
         build = Build.objects.create(project=self.project, version='1.1')

@@ -126,23 +126,7 @@ class Build(models.Model):
 
     @property
     def test_summary(self):
-        summary = OrderedDict()
-        summary['total'] = 0
-        summary['pass'] = 0
-        summary['fail'] = 0
-        summary['missing'] = 0
-        summary['failures'] = OrderedDict()
-        mapping = {True: 'pass', False: 'fail', None: 'missing'}
-        for run in self.test_runs.all():
-            for test in run.tests.all():
-                summary[mapping[test.result]] += 1
-                summary['total'] += 1
-                if not test.result and test.result is not None:
-                    env = test.test_run.environment.slug
-                    if env not in summary['failures']:
-                        summary['failures'][env] = []
-                    summary['failures'][env].append(test)
-        return summary
+        return TestSummary(self)
 
     @property
     def metadata(self):
@@ -365,7 +349,28 @@ class StatusManager(models.Manager):
         return self.filter(suite=None)
 
 
-class Status(models.Model):
+class TestSummaryBase(object):
+    @property
+    def tests_total(self):
+        return self.tests_pass + self.tests_fail + self.tests_skip
+
+    @property
+    def pass_percentage(self):
+        if self.tests_pass > 0:
+            return 100 * (float(self.tests_pass) / float(self.tests_total))
+        else:
+            return 0
+
+    @property
+    def non_pass_percentage(self):
+        return 100 - self.pass_percentage
+
+    @property
+    def has_tests(self):
+        return self.tests_total > 0
+
+
+class Status(models.Model, TestSummaryBase):
     test_run = models.ForeignKey(TestRun, related_name='status')
     suite = models.ForeignKey(Suite, null=True)
 
@@ -380,21 +385,6 @@ class Status(models.Model):
         unique_together = ('test_run', 'suite',)
 
     @property
-    def total_tests(self):
-        return self.tests_pass + self.tests_fail
-
-    @property
-    def pass_percentage(self):
-        if self.tests_pass > 0:
-            return 100 * (float(self.tests_pass) / float(self.total_tests))
-        else:
-            return 0
-
-    @property
-    def fail_percentage(self):
-        return 100 - self.pass_percentage
-
-    @property
     def environment(self):
         return self.test_run.environment
 
@@ -405,10 +395,6 @@ class Status(models.Model):
     @property
     def metrics(self):
         return self.test_run.metrics.filter(suite=self.suite)
-
-    @property
-    def has_tests(self):
-        return self.tests_total > 0
 
     @property
     def has_metrics(self):
@@ -470,6 +456,27 @@ class ProjectStatus(models.Model):
 
     def __str__(self):
         return 'Project: %s; Build %s; created at %s' % (self.build.project, self.build, self.created_at)
+
+
+class TestSummary(TestSummaryBase):
+    def __init__(self, build):
+        self.tests_pass = 0
+        self.tests_fail = 0
+        self.tests_skip = 0
+        self.failures = OrderedDict()
+        for run in build.test_runs.all():
+            for test in run.tests.all():
+                if test.result is True:
+                    self.tests_pass += 1
+                elif test.result is False:
+                    self.tests_fail += 1
+                else:
+                    self.tests_skip += 1
+                if not test.result and test.result is not None:
+                    env = test.test_run.environment.slug
+                    if env not in self.failures:
+                        self.failures[env] = []
+                    self.failures[env].append(test)
 
 
 class Subscription(models.Model):

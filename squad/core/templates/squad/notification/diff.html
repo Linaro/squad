@@ -37,9 +37,9 @@ table.table-bordered td.fail {
   <body>
     <h1>Summary</h1>
     <ul>
-      <li><strong>Tests:</strong>   {{summary.total}}</li>
-      <li><strong>Failed:</strong>  {{summary.fail}}</li>
-      <li><strong>Passed:</strong>  {{summary.pass}}</li>
+      <li><strong>Tests:</strong>   {{summary.tests_total}}</li>
+      <li><strong>Failed:</strong>  {{summary.tests_fail}}</li>
+      <li><strong>Passed:</strong>  {{summary.tests_pass}}</li>
       <li><strong>Build:</strong>   {{build.version}}</li>
       <li><a href="{{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}">See details</a></li>
     </ul>
