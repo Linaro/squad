@@ -484,3 +484,6 @@ class Subscription(models.Model):
     project = models.ForeignKey(Project, related_name='subscriptions')
     email = models.CharField(max_length=1024, validators=[EmailValidator()])
     html = models.BooleanField(default=True, verbose_name='Send HTML version')
+
+    def __str__(self):
+        return '%s on %s' % (self.email, self.project)
