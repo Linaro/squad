@@ -18,6 +18,8 @@ class ApiDataTest(TestCase):
         self.project = self.group.projects.create(slug='myproject')
         self.project.tokens.create(key='thekey')
         self.client = APIClient('thekey')
+        self.global_token = models.Token.objects.create(key='globalkey')
+        self.global_client = APIClient('globalkey')
 
     def receive(self, datestr, metrics={}, tests={}):
         receive = ReceiveTestRun(self.project)
@@ -74,6 +76,13 @@ class ApiDataTest(TestCase):
 
         self.assertEqual([1483228800, 50, '2017-01-01'], first)
         self.assertEqual([1483315200, 100, '2017-01-02'], second)
+
+    def test_global_token_on_non_public_project(self):
+        self.project.is_public = False
+        self.project.save()
+
+        resp = self.global_client.get('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')
+        self.assertEqual(200, resp.status_code)
 
     def test_no_auth_on_non_public_project(self):
         self.project.is_public = False
