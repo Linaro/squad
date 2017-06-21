@@ -8,6 +8,7 @@ import logging
 
 
 from squad.http import read_file_upload
+from squad.http import auth_write
 
 
 from squad.core.models import Group
@@ -25,25 +26,12 @@ from squad.core.tasks import exceptions
 logger = logging.getLogger()
 
 
-def valid_token(token, project):
-    return project.tokens.filter(key=token).exists() or Token.objects.filter(project=None).exists()
-
-
 @csrf_exempt
 @require_http_methods(["POST"])
+@auth_write
 def add_test_run(request, group_slug, project_slug, version, environment_slug):
     group = get_object_or_404(Group, slug=group_slug)
     project = get_object_or_404(group.projects, slug=project_slug)
-
-    # authenticate token X project
-    token = request.META.get('HTTP_AUTH_TOKEN', None)
-    if token:
-        if valid_token(token, project):
-            pass
-        else:
-            return HttpResponseForbidden()
-    else:
-        return HttpResponse('Authentication needed', status=401)
 
     test_run_data = {
         'version': version,

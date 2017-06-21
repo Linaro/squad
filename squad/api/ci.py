@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 
-from squad.http import auth, read_file_upload
+from squad.http import auth_write, read_file_upload
 from squad.ci import models
 from squad.ci.tasks import submit
 from squad.ci.models import Backend, TestJob
@@ -12,7 +12,7 @@ from squad.core.models import Project
 
 @require_http_methods(["POST"])
 @csrf_exempt
-@auth
+@auth_write
 def submit_job(request, group_slug, project_slug, version, environment_slug):
     backend_name = request.POST.get('backend')
     if backend_name is None:
@@ -55,7 +55,7 @@ def submit_job(request, group_slug, project_slug, version, environment_slug):
 
 @require_http_methods(["POST"])
 @csrf_exempt
-@auth
+@auth_write
 def watch_job(request, group_slug, project_slug, version, environment_slug):
     backend_name = request.POST.get('backend')
     if backend_name is None:

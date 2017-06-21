@@ -181,10 +181,10 @@ class ApiTest(TestCase):
         self.assertEqual(response.status_code, 401)
         self.assertEqual(models.TestRun.objects.count(), 0)
 
-    def test_forbidden(self):
+    def test_wrong_token(self):
         self.client.token = 'wrongtoken'
         response = self.client.post('/api/submit/mygroup/myproject/1.0.0/myenv')
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         self.assertEqual(models.TestRun.objects.count(), 0)
 
     def test_auth_with_global_token(self):

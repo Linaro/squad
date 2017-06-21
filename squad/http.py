@@ -1,11 +1,25 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from enum import Enum
 
 
 from squad.core import models
 
 
-def auth(func):
+def valid_token(token, project):
+    return project.tokens.filter(key=token).exists() or models.Token.objects.filter(project=None).exists()
+
+
+class AuthMode(Enum):
+    READ = 0
+    WRITE = 1
+
+
+def auth_write(func):
+    return auth(func, AuthMode.WRITE)
+
+
+def auth(func, mode=AuthMode.READ):
     def auth_wrapper(*args, **kwargs):
         request = args[0]
         group_slug = args[1]
@@ -20,7 +34,7 @@ def auth(func):
         if not (project.is_public or user.is_authenticated or token):
             return HttpResponse('Authentication needed', status=401)
 
-        if project.is_public or project.tokens.filter(key=token).exists() or project.accessible_to(user):
+        if (mode == AuthMode.READ and (project.is_public or project.accessible_to(user))) or valid_token(token, project):
             # authentication OK, call the original view
             return func(*args, **kwargs)
         else:
