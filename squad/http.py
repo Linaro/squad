@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from enum import Enum
@@ -7,7 +8,9 @@ from squad.core import models
 
 
 def valid_token(token, project):
-    return project.tokens.filter(key=token).exists() or models.Token.objects.filter(project=None).exists()
+    return models.Token.objects.filter(key=token).filter(
+        Q(project=project) | Q(project=None)
+    ).exists()
 
 
 class AuthMode(Enum):
