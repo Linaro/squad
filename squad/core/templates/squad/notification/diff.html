@@ -103,17 +103,17 @@ table.table-bordered td.fail {
     <table class='table table-bordered test-results'>
       <tr>
         <td rowspan='2'></td>
-        {% for build, environments in comparison.environments.items %}
-        <th colspan={{environments|length}}>
-          {{build.project}}, build {{build.version}}
+        {% for environment in comparison.all_environments %}
+        <th colspan='{{comparison.builds|length}}'>
+          {{environment}}
         </th>
         {% endfor %}
       </tr>
       <tr>
-        {% for build, environments in comparison.environments.items %}
-        {% for environment in environments %}
+        {% for environment in comparison.all_environments %}
+        {% for build in comparison.builds %}
         <th>
-          {{environment}}
+          {{build.version}}
         </th>
         {% endfor %}
         {% endfor %}
@@ -121,8 +121,8 @@ table.table-bordered td.fail {
       {% for test, results in comparison.diff.items %}
       <tr>
         <th>{{test}}</th>
-        {% for build, environments in comparison.environments.items %}
-        {% for environment in environments %}
+        {% for environment in comparison.all_environments %}
+        {% for build in comparison.builds %}
         {% with result=results|test_result_by_build:build|test_result_by_env:environment %}
         <td class='{{result}}'>
           {% if result %}
