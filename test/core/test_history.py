@@ -44,7 +44,7 @@ class TestHistoryTest(TestCase):
         history = TestHistory(self.project1, 'foo/bar')
         env1 = self.project1.environments.get(slug='env1')
         env2 = self.project1.environments.get(slug='env2')
-        self.assertEqual([env1, env2], history.environments)
+        self.assertEqual([env1.id, env2.id], sorted([e.id for e in history.environments]))
 
     def test_results(self):
         history = TestHistory(self.project1, 'foo/bar')
