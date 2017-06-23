@@ -193,7 +193,7 @@ class Backend(BaseBackend):
                     results.update({res_name: res_value})
                 else:
                     res_value = result['measurement']
-                    metrics.update({res_name: res_value})
+                    metrics.update({res_name: float(res_value)})
             else:
                 if result['name'] == 'job' and result['result'] == 'fail':
                     metadata = result['metadata']
