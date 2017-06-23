@@ -45,7 +45,11 @@ class Backend(BaseBackend):
             data['results'] = yaml.load(yamldata)
 
             # fetch logs
-            logs = self.__get_job_logs__(test_job.job_id)
+            logs = ""
+            try:
+                logs = self.__get_job_logs__(test_job.job_id)
+            except:
+                self.log_warn("Logs for job %s are not available" % test_job.job_id)
 
             return self.__parse_results__(data, test_job) + (logs,)
 
@@ -160,8 +164,7 @@ class Backend(BaseBackend):
         return self.proxy.scheduler.job_details(job_id)
 
     def __get_job_logs__(self, job_id):
-        job_finished, data = self.proxy.scheduler.job_output(job_id)
-        return data
+        return self.proxy.scheduler.job_output(job_id).data.decode('utf-8')
 
     def __get_testjob_results_yaml__(self, job_id):
         return self.proxy.results.get_testjob_results_yaml(job_id)
