@@ -40,6 +40,7 @@ def parse_metric(value):
     if isinstance(value, list):
         return mean(value), value
     else:
+        value = float(value)
         return value, [value]
 
 
