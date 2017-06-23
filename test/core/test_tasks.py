@@ -28,7 +28,7 @@ class CommonTestCase(TestCase):
             build=build,
             environment=env,
             tests_file='{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass"}',
-            metrics_file='{"metric0": 1, "foobar/metric1": 10}',
+            metrics_file='{"metric0": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}',
         )
 
 
@@ -37,14 +37,14 @@ class ParseTestRunDataTest(CommonTestCase):
         ParseTestRunData()(self.testrun)
 
         self.assertEqual(3, self.testrun.tests.count())
-        self.assertEqual(2, self.testrun.metrics.count())
+        self.assertEqual(3, self.testrun.metrics.count())
 
     def test_does_not_process_twice(self):
         ParseTestRunData()(self.testrun)
         ParseTestRunData()(self.testrun)
 
         self.assertEqual(3, self.testrun.tests.count())
-        self.assertEqual(2, self.testrun.metrics.count())
+        self.assertEqual(3, self.testrun.metrics.count())
 
 
 class ProcessAllTestRunsTest(CommonTestCase):
@@ -215,6 +215,13 @@ class TestValidateTestRun(TestCase):
 
     def test_invalid_metrics_list_of_str_as_values(self):
         self.assertInvalidMetrics('{ "foo" : ["bar"]}')
+
+    def assertValidMetrics(self, metrics):
+        validate = ValidateTestRun()
+        validate(metrics_file=metrics)
+
+    def test_number_as_string(self):
+        self.assertValidMetrics('{"foo": "1.00000"}')
 
     # ~~~~~~~~~~~~ TESTS FOR TESTS DATA ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def assertInvalidTests(self, tests, exception=exceptions.InvalidTestsData):

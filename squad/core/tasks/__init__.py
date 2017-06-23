@@ -56,6 +56,11 @@ class ValidateTestRun(object):
             raise exceptions.InvalidMetricsData.type(metrics)
 
         for key, value in metrics.items():
+            if type(value) is str:
+                try:
+                    value = float(value)
+                except:
+                    raise exceptions.InvalidMetricsData.value(value)
             if type(value) not in [int, float, list]:
                 raise exceptions.InvalidMetricsData.value(value)
             if type(value) is list:

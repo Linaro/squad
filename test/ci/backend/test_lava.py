@@ -163,6 +163,7 @@ class LavaTest(TestCase):
 
         self.assertEqual(len(results), 1)
         self.assertEqual(len(metrics), 1)
+        self.assertEqual(10, metrics['DefinitionFoo/case_foo'])
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value=(True, "abc"))
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
