@@ -8,19 +8,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0032_testrun_completed'),
+        ('core', '0034_prepare_to_remove_build_name'),
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='build',
-            name='version',
-            field=models.CharField(max_length=100),
-        ),
-        migrations.RunSQL(
-            sql="UPDATE core_build SET version = name WHERE name != ''",
-            reverse_sql=migrations.RunSQL.noop,
-        ),
         migrations.AlterField(
             model_name='build',
             name='name',
