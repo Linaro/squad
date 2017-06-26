@@ -105,7 +105,7 @@ table.table-bordered td.fail {
         <td rowspan='2'></td>
         {% for build, environments in comparison.environments.items %}
         <th colspan={{environments|length}}>
-          {{build.project}}, build {{build.name}}
+          {{build.project}}, build {{build.version}}
         </th>
         {% endfor %}
       </tr>

@@ -12,15 +12,6 @@ class BuildTest(TestCase):
         self.group = Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
 
-    def test_version_from_name(self):
-        b = Build.objects.create(project=self.project, name='1.0-rc1')
-        self.assertEqual('1.0~rc1', b.version)
-
-    def test_name_from_version(self):
-        b = Build.objects.create(project=self.project, version='1.0-rc1')
-        self.assertEqual('1.0-rc1', b.name)
-        self.assertEqual('1.0~rc1', b.version)
-
     def test_default_ordering(self):
         now = timezone.now()
         before = now - relativedelta(hours=1)
@@ -121,3 +112,7 @@ class BuildTest(TestCase):
         env1 = self.project.environments.create(slug='env1', expected_test_runs=1)
         build.test_runs.create(environment=env1, completed=False)
         self.assertFalse(build.finished)
+
+    def test_get_or_create_with_version_twice(self):
+        self.project.builds.get_or_create(version='1.0-rc1')
+        self.project.builds.get_or_create(version='1.0-rc1')

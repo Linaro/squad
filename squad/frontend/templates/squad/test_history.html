@@ -23,7 +23,7 @@
 
     {% for build, results in history.results.items %}
     <tr>
-      <td><a href="{% project_url build %}">{{build.name}}</a></td>
+      <td><a href="{% project_url build %}">{{build.version}}</a></td>
       <td>{{build.datetime}}</td>
       {% for environment in history.environments %}
       {% with result=results|get_value:environment%}
