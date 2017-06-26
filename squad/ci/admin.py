@@ -33,7 +33,7 @@ fetch_job.short_description = 'Fetch results of the selected test jobs'
 
 
 class TestJobAdmin(admin.ModelAdmin):
-    list_display = ('backend', 'target', 'submitted', 'fetched', 'success', 'job_id',)
+    list_display = ('backend', 'target', 'submitted', 'fetched', 'success', 'last_fetch_attempt', 'job_id',)
     list_filter = ('backend', 'target', 'submitted', 'fetched')
     actions = [submit_job, fetch_job]
 
