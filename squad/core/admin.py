@@ -15,6 +15,16 @@ class TokenAdmin(admin.ModelAdmin):
         return super(TokenAdmin, self).get_queryset(request).filter(project=None)
 
 
+class EnvironmentInline(admin.StackedInline):
+    """
+    Handles environments when editing a project.
+    """
+    model = models.Environment
+    fields = ['slug', 'name', 'expected_test_runs']
+    readonly_fields = ['slug']
+    extra = 0
+
+
 class TokenInline(admin.StackedInline):
     """
     Handles project-specific tokens inline when editing the project.
@@ -41,7 +51,7 @@ force_notify_project.short_description = "Force sending email notification for s
 
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'is_public', 'notification_strategy']
-    inlines = [TokenInline, SubscriptionInline]
+    inlines = [EnvironmentInline, TokenInline, SubscriptionInline]
     actions = [force_notify_project]
 
 
