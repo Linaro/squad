@@ -28,6 +28,9 @@ class Group(models.Model):
     def __str__(self):
         return self.slug
 
+    class Meta:
+        ordering = ['slug']
+
 
 class ProjectManager(models.Manager):
 
@@ -78,6 +81,7 @@ class Project(models.Model):
 
     class Meta:
         unique_together = ('group', 'slug',)
+        ordering = ['group', 'slug']
 
 
 class Token(models.Model):
