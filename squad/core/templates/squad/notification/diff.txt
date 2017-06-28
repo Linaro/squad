@@ -12,8 +12,8 @@ Regressions{%if previous_build %} (compared to build {{previous_build.version}})
 ------------------------------------------------------------------------
 {% if regressions %}
 {% for env, tests in regressions.items %}{{env}}:
-{% for test in tests %}  * {{test}}
-{% endfor %}
+{% for test in tests %}
+  * {{test}}{% endfor %}
 {% endfor %}
 {% else %}
 (none)
@@ -24,8 +24,7 @@ Failures
 {% if summary.failures %}
 {% for env, tests in summary.failures.items %}{{env}}:
 {% for test in tests %}
-  * {{test.full_name}} {% if test.history.since %}{% with build=test.history.since.test_run.build %}-- failing since build {{build.version}}, from {{build.datetime}} {% endwith %}{% endif %}
-{% endfor %}
+  * {{test.full_name}} {% if test.history.since %}{% with build=test.history.since.test_run.build %}-- failing since build {{build.version}}, from {{build.datetime}} {% endwith %}{% endif %}{% endfor %}
 {% endfor %}
 {% else %}
 (none)
