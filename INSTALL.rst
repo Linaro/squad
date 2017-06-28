@@ -134,3 +134,7 @@ The following environment variables affect the behavior of SQUAD:
 * ``SQUAD_LOGIN_MESSAGE``: a message to be displayed to users right above the
   login form. Use for example to provide instructions on what credentials to
   use. Defaults no message.
+
+* ``SQUAD_ADMINS``: Comma-separated list of administrator email addresses, for
+  use in exception notifications. Each address must be formatted as
+  ``First Last <first.last@example.com>``.

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
+from email.utils import parseaddr
 import os
 import sys
 
@@ -172,6 +173,13 @@ SQUAD_LOGIN_MESSAGE = os.getenv("SQUAD_LOGIN_MESSAGE")
 
 SITE_NAME = os.getenv('SQUAD_SITE_NAME', 'SQUAD')
 
+SQUAD_ADMINS = os.getenv('SQUAD_ADMINS')
+ADMINS = SQUAD_ADMINS and [parseaddr(s.strip()) for s in SQUAD_ADMINS.split(',')] or []
+
+logging_handlers = ['console']
+if not DEBUG and ADMINS:
+    logging_handlers += ['mail_admins']
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -186,16 +194,20 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'myformatter',
-        }
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+        },
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': logging_handlers,
             'propagate': False,
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
         },
         '': {
-            'handlers': ['console'],
+            'handlers': logging_handlers,
             'propagate': False,
             'level': os.getenv('SQUAD_LOG_LEVEL', DEBUG and 'DEBUG' or 'INFO'),
         }
