@@ -9,7 +9,7 @@
             Build {{build.version}}
         </a>
         »
-        Test run <u>{{test_run.job_id}}</u>
+        Test run {% if test_run.job_url %}<a href="{{ test_run.job_url }}">{% endif %}<u>{{test_run.job_id}}</u>{% if test_run.job_url %}</a>{% endif %}
 
         <small>Environment: <em>{{test_run.environment.slug}}</em></small>
     </h2>
