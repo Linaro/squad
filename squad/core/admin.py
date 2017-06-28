@@ -21,7 +21,6 @@ class EnvironmentInline(admin.StackedInline):
     """
     model = models.Environment
     fields = ['slug', 'name', 'expected_test_runs']
-    readonly_fields = ['slug']
     extra = 0
 
 
