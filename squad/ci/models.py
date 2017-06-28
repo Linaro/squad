@@ -61,6 +61,8 @@ class Backend(models.Model):
 
             metadata['job_id'] = test_job.job_id
             metadata['job_status'] = test_job.job_status
+            if test_job.url is not None:
+                metadata['job_url'] = test_job.url
 
             receive = ReceiveTestRun(test_job.target)
             testrun = receive(
