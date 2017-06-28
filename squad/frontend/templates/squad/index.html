@@ -11,6 +11,7 @@
         <th>Metrics</th>
     </tr>
     {% for project in projects %}
+    {% with status=project.status %}
     <tr>
         <td>
             <a href="/{{project.group.slug}}/{{project.slug}}">
@@ -18,22 +19,25 @@
             </a>
         </td>
         <td>
-            {{project.status.test_run.datetime}}
-            <em>{{project.status.test_run.datetime|naturaltime}}</em>
+            {{status.build.datetime}}
+            <em>{{status.build.datetime|naturaltime}}</em>
         </td>
         <td>
-            <div class="progress">
-                <div class="progress-bar progress-bar-success" style="width: {{project.status.pass_percentage}}%">
-                    <span class="sr-only">Pass: {{project.status.pass_percentage}}% </span>
+            {% if status.has_tests %}
+            <div class="progress" title="Pass: {{status.pass_percentage|stringformat:"d"}}%">
+                <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%">
+                    <span class="sr-only">Pass: {{status.pass_percentage}}% </span>
                 </div>
-                <div class="progress-bar progress-bar-danger" style="width: {{project.status.fail_percentage}}%">
-                    <span class="sr-only">{{project.status.fail_percentage}}</span>
+                <div class="progress-bar progress-bar-danger" style="width: {{status.non_pass_percentage}}%">
                 </div>
             </div>
+            {% endif %}
         </td>
         <td>
-            {{project.status.metrics_summary}}
+            {{status.metrics_summary}}
         </td>
-        {% endfor %}
+        {% endwith %}
+    </tr>
+    {% endfor %}
 </table>
 {% endblock %}

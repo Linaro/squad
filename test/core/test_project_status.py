@@ -18,6 +18,7 @@ class ProjectStatusTest(TestCase):
         group = Group.objects.create(slug='mygroup')
         self.project = group.projects.create(slug='myproject')
         self.environment = self.project.environments.create(slug='theenvironment')
+        self.suite = self.project.suites.create(slug='/')
 
     def create_build(self, v, datetime=None, create_test_run=True):
         build = self.project.builds.create(version=v, datetime=datetime)
@@ -79,3 +80,25 @@ class ProjectStatusTest(TestCase):
 
         status = ProjectStatus.create(self.project)
         self.assertEqual([b1, b2], list(status.builds))
+
+    def test_test_summary(self):
+        build = self.create_build('1', datetime=h(10))
+        test_run = build.test_runs.first()
+        test_run.tests.create(name='foo', suite=self.suite, result=True)
+        test_run.tests.create(name='foo', suite=self.suite, result=False)
+        test_run.tests.create(name='foo', suite=self.suite, result=None)
+
+        status = ProjectStatus.create(self.project)
+        self.assertEqual(1, status.tests_pass)
+        self.assertEqual(1, status.tests_fail)
+        self.assertEqual(1, status.tests_skip)
+        self.assertEqual(3, status.tests_total)
+
+    def test_metrics_summary(self):
+        build = self.create_build('1', datetime=h(10))
+        test_run = build.test_runs.first()
+        test_run.metrics.create(name='foo', suite=self.suite, result=2)
+        test_run.metrics.create(name='bar', suite=self.suite, result=2)
+
+        status = ProjectStatus.create(self.project)
+        self.assertEqual(2.0, status.metrics_summary)

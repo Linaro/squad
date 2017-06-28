@@ -14,6 +14,7 @@ from django.utils import timezone
 
 
 from squad.core.utils import random_token, parse_name, join_name
+from squad.core.statistics import geomean
 
 
 slug_pattern = '[a-zA-Z0-9][a-zA-Z0-9_.-]*'
@@ -64,9 +65,9 @@ class Project(models.Model):
     @property
     def status(self):
         if not self.__status__:
-            self.__status__ = Status.objects.filter(
-                test_run__build__project=self, suite=None
-            ).latest('test_run__datetime')
+            self.__status__ = ProjectStatus.objects.filter(
+                build__project=self
+            ).latest('created_at')
         return self.__status__
 
     def accessible_to(self, user):
@@ -130,23 +131,7 @@ class Build(models.Model):
 
     @property
     def test_summary(self):
-        summary = OrderedDict()
-        summary['total'] = 0
-        summary['pass'] = 0
-        summary['fail'] = 0
-        summary['missing'] = 0
-        summary['failures'] = OrderedDict()
-        mapping = {True: 'pass', False: 'fail', None: 'missing'}
-        for run in self.test_runs.all():
-            for test in run.tests.all():
-                summary[mapping[test.result]] += 1
-                summary['total'] += 1
-                if not test.result and test.result is not None:
-                    env = test.test_run.environment.slug
-                    if env not in summary['failures']:
-                        summary['failures'][env] = []
-                    summary['failures'][env].append(test)
-        return summary
+        return TestSummary(self)
 
     @property
     def metadata(self):
@@ -369,33 +354,40 @@ class StatusManager(models.Manager):
         return self.filter(suite=None)
 
 
-class Status(models.Model):
+class TestSummaryBase(object):
+    @property
+    def tests_total(self):
+        return self.tests_pass + self.tests_fail + self.tests_skip
+
+    @property
+    def pass_percentage(self):
+        if self.tests_pass > 0:
+            return 100 * (float(self.tests_pass) / float(self.tests_total))
+        else:
+            return 0
+
+    @property
+    def non_pass_percentage(self):
+        return 100 - self.pass_percentage
+
+    @property
+    def has_tests(self):
+        return self.tests_total > 0
+
+
+class Status(models.Model, TestSummaryBase):
     test_run = models.ForeignKey(TestRun, related_name='status')
     suite = models.ForeignKey(Suite, null=True)
 
     tests_pass = models.IntegerField(default=0)
     tests_fail = models.IntegerField(default=0)
+    tests_skip = models.IntegerField(default=0)
     metrics_summary = models.FloatField(default=0.0)
 
     objects = StatusManager()
 
     class Meta:
         unique_together = ('test_run', 'suite',)
-
-    @property
-    def total_tests(self):
-        return self.tests_pass + self.tests_fail
-
-    @property
-    def pass_percentage(self):
-        if self.tests_pass > 0:
-            return 100 * (float(self.tests_pass) / float(self.total_tests))
-        else:
-            return 0
-
-    @property
-    def fail_percentage(self):
-        return 100 - self.pass_percentage
 
     @property
     def environment(self):
@@ -410,10 +402,6 @@ class Status(models.Model):
         return self.test_run.metrics.filter(suite=self.suite)
 
     @property
-    def has_tests(self):
-        return (self.tests_pass + self.tests_fail) > 0
-
-    @property
     def has_metrics(self):
         return len(self.metrics) > 0
 
@@ -425,7 +413,7 @@ class Status(models.Model):
         return '%s: %f, %d%% pass' % (name, self.metrics_summary, self.pass_percentage)
 
 
-class ProjectStatus(models.Model):
+class ProjectStatus(models.Model, TestSummaryBase):
     """
     Represents a "checkpoint" of a project status in time. It is used by the
     notification system to know what was the project status at the time of the
@@ -434,6 +422,12 @@ class ProjectStatus(models.Model):
     build = models.ForeignKey('Build', null=True)
     previous = models.ForeignKey('ProjectStatus', null=True, related_name='next')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    metrics_summary = models.FloatField()
+
+    tests_pass = models.IntegerField()
+    tests_fail = models.IntegerField()
+    tests_skip = models.IntegerField()
 
     @classmethod
     def create(cls, project):
@@ -453,7 +447,16 @@ class ProjectStatus(models.Model):
         while len(build_list) > 0:
             build = build_list.pop()
             if build.finished and (not previous or (previous.build != build)):
-                return cls.objects.create(build=build, previous=previous)
+                summary = build.test_summary
+                metrics_summary = MetricsSummary(build)
+                return cls.objects.create(
+                    build=build,
+                    previous=previous,
+                    tests_pass=summary.tests_pass,
+                    tests_fail=summary.tests_fail,
+                    tests_skip=summary.tests_skip,
+                    metrics_summary=metrics_summary.value,
+                )
 
         return None
 
@@ -473,6 +476,35 @@ class ProjectStatus(models.Model):
 
     def __str__(self):
         return 'Project: %s; Build %s; created at %s' % (self.build.project, self.build, self.created_at)
+
+
+class TestSummary(TestSummaryBase):
+    def __init__(self, build):
+        self.tests_pass = 0
+        self.tests_fail = 0
+        self.tests_skip = 0
+        self.failures = OrderedDict()
+        for run in build.test_runs.all():
+            for test in run.tests.all():
+                if test.result is True:
+                    self.tests_pass += 1
+                elif test.result is False:
+                    self.tests_fail += 1
+                else:
+                    self.tests_skip += 1
+                if not test.result and test.result is not None:
+                    env = test.test_run.environment.slug
+                    if env not in self.failures:
+                        self.failures[env] = []
+                    self.failures[env].append(test)
+
+
+class MetricsSummary(object):
+
+    def __init__(self, build):
+        metrics = Metric.objects.filter(test_run__build_id=build.id).all()
+        values = [m.result for m in metrics]
+        self.value = geomean(values)
 
 
 class Subscription(models.Model):

@@ -83,7 +83,14 @@ def __send_notification__(project, notification):
     build = notification.build
     metadata = dict(sorted(build.metadata.items())) if build.metadata is not None else dict()
     summary = notification.build.test_summary
-    subject = '%s: %d tests, %d failed, %d passed (build %s)' % (project, summary['total'], summary['fail'], summary['pass'], build.version)
+    subject_data = (
+        project,
+        summary.tests_total,
+        summary.tests_fail,
+        summary.tests_pass,
+        build.version
+    )
+    subject = '%s: %d tests, %d failed, %d passed (build %s)' % subject_data
 
     context = {
         'build': build,
