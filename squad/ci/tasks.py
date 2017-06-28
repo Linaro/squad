@@ -1,10 +1,10 @@
 from squad.celery import app as celery
 from squad.ci.models import Backend, TestJob
 from squad.ci.exceptions import SubmissionIssue
-import logging
+from celery.utils.log import get_task_logger
 
 
-logger = logging.getLogger()
+logger = get_task_logger(__name__)
 
 
 @celery.task
@@ -20,6 +20,7 @@ def poll(backend_id=None):
 @celery.task
 def fetch(job_id):
     test_job = TestJob.objects.get(pk=job_id)
+    logger.info("fetching %s" % test_job)
     test_job.backend.fetch(test_job)
 
 
