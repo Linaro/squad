@@ -328,6 +328,9 @@ class Test(models.Model):
         self.__history__ = Test.History(since, count, last_different)
         return self.__history__
 
+    class Meta:
+        ordering = ['name']
+
 
 class MetricManager(models.Manager):
 
