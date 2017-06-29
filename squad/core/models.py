@@ -422,7 +422,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
     notification system to know what was the project status at the time of the
     last notification.
     """
-    build = models.ForeignKey('Build', null=True)
+    build = models.OneToOneField('Build')
     previous = models.ForeignKey('ProjectStatus', null=True, related_name='next')
     created_at = models.DateTimeField(auto_now_add=True)
     notified = models.BooleanField(default=False)
