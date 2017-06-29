@@ -113,8 +113,9 @@ def __send_notification__(project, notification):
         context=context,
     )
     sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
-    for r in recipients:
-        message = EmailMultiAlternatives(subject, text_message, sender, [r.email])
-        if r.html:
-            message.attach_alternative(html_message, "text/html")
-        message.send()
+
+    emails = [r.email for r in recipients]
+
+    message = EmailMultiAlternatives(subject, text_message, sender, emails)
+    message.attach_alternative(html_message, "text/html")
+    message.send()
