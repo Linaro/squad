@@ -71,16 +71,6 @@ class ProjectStatusTest(TestCase):
         status = ProjectStatus.create(self.project)
         self.assertEqual(b1, status.build)
 
-    def test_status_with_multiple_builds(self):
-        self.create_build('1', datetime=h(10))
-        ProjectStatus.create(self.project)
-
-        b1 = self.create_build('2', datetime=h(5))
-        b2 = self.create_build('3', datetime=h(4))
-
-        status = ProjectStatus.create(self.project)
-        self.assertEqual([b1, b2], list(status.builds))
-
     def test_test_summary(self):
         build = self.create_build('1', datetime=h(10))
         test_run = build.test_runs.first()
