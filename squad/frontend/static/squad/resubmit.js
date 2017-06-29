@@ -5,6 +5,7 @@ function ResubmitController($scope, $http, $location, $timeout) {
     $scope.loading = false
     $scope.done = false
     $scope.resubmit = function(test_job_id) {
+        if ($scope.done) return
         $scope.loading = true
 
         $http.get("/api/resubmit/" + test_job_id).then(
@@ -17,7 +18,7 @@ function ResubmitController($scope, $http, $location, $timeout) {
         $timeout(function() {
             $scope.loading = false
             $scope.done = true
-        }, 2000);
+        }, 2000).apply();
 
     }
 }
