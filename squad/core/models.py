@@ -434,35 +434,38 @@ class ProjectStatus(models.Model, TestSummaryBase):
     tests_skip = models.IntegerField()
 
     @classmethod
-    def create(cls, project):
+    def create_or_update(cls, build):
         """
-        Creates a new ProjectStatus, pointing to the latest finished build of
-        the given project. Returns the new ProjectStatus objects.
+        Creates (or updates) a new ProjectStatus for the given build and
+        returns it.
 
-        If there is no such build, does nothing and returns None.
+        If the build is not finished yet, does nothing and returns None.
         """
-        previous = cls.objects.filter(build__project=project).last()
+        if not build.finished:
+            return None
 
-        builds = project.builds.order_by('datetime')
-        if previous and previous.build:
-            builds = builds.filter(datetime__gt=previous.build.datetime)
+        previous = cls.objects.filter(
+            build__project=build.project,
+            build__datetime__lt=build.datetime,
+        ).last()
 
-        build_list = list(builds)
-        while len(build_list) > 0:
-            build = build_list.pop()
-            if build.finished and (not previous or (previous.build != build)):
-                summary = build.test_summary
-                metrics_summary = MetricsSummary(build)
-                return cls.objects.create(
-                    build=build,
-                    previous=previous,
-                    tests_pass=summary.tests_pass,
-                    tests_fail=summary.tests_fail,
-                    tests_skip=summary.tests_skip,
-                    metrics_summary=metrics_summary.value,
-                )
+        test_summary = build.test_summary
+        metrics_summary = MetricsSummary(build)
+        data = {
+            'previous': previous,
+            'tests_pass': test_summary.tests_pass,
+            'tests_fail': test_summary.tests_fail,
+            'tests_skip': test_summary.tests_skip,
+            'metrics_summary': metrics_summary.value,
+        }
 
-        return None
+        status, created = cls.objects.get_or_create(build=build, defaults=data)
+        if not created:
+            status.tests_pass = test_summary.tests_pass
+            status.tests_fail = test_summary.tests_fail
+            status.tests_skip = test_summary.tests_skip
+            status.metrics_summary = metrics_summary.value
+        return status
 
 
 class TestSummary(TestSummaryBase):

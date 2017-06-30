@@ -7,7 +7,7 @@ import uuid
 from django.db import transaction
 
 
-from squad.core.models import TestRun, Suite, Test, Metric, Status
+from squad.core.models import TestRun, Suite, Test, Metric, Status, ProjectStatus
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
 from squad.core.statistics import geomean
 from . import exceptions
@@ -218,6 +218,8 @@ class RecordTestRunStatus(object):
 
         testrun.status_recorded = True
         testrun.save()
+
+        ProjectStatus.create_or_update(testrun.build)
 
 
 class ProcessTestRun(object):
