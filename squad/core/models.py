@@ -49,6 +49,7 @@ class Project(models.Model):
     slug = models.CharField(max_length=100, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
     is_public = models.BooleanField(default=True)
+    html_mail = models.BooleanField(default=True)
 
     NOTIFY_ALL_BUILDS = 'all'
     NOTIFY_ON_CHANGE = 'change'
