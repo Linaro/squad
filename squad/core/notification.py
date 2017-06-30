@@ -39,10 +39,16 @@ def send_notification(project):
     E-mails a project status change notification to all subscribed email
     addresses. This should almost always be invoked in a background process.
     """
-    status = project.status
-    if not status or status.notified:
-        return
+    statuses_pending_notification = ProjectStatus.objects.filter(
+        build__project=project,
+        notified=False,
+    )
+    for status in statuses_pending_notification:
+        send_status_notification(status, project)
 
+
+def send_status_notification(status, project=None):
+    project = project or status.build.project
     previous_build = status.previous and status.previous.build or None
     notification = Notification(status.build, previous_build)
 

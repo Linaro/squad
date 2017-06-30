@@ -68,7 +68,9 @@ class TestSendNotification(TestCase):
         self.group = Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
         self.build1 = self.project.builds.create(version='1', datetime=t0)
-        ProjectStatus.create_or_update(self.build1)
+        status = ProjectStatus.create_or_update(self.build1)
+        status.notified = True
+        status.save()
         self.build2 = self.project.builds.create(version='2', datetime=t)
 
     @patch("squad.core.comparison.TestComparison.diff", new_callable=PropertyMock)
@@ -137,3 +139,13 @@ class TestSendNotification(TestCase):
         ProjectStatus.create_or_update(self.build2)
         send_notification(self.project)
         self.assertEqual(1, len(mail.outbox))
+
+    def test_send_all_pending_notifications(self):
+        self.project.subscriptions.create(email='foo@example.com')
+        ProjectStatus.create_or_update(self.build2)
+        t = timezone.now() - relativedelta(hours=2.5)
+        build3 = self.project.builds.create(version='3', datetime=t)
+        ProjectStatus.create_or_update(build3)
+
+        send_notification(self.project)
+        self.assertEqual(2, len(mail.outbox))
