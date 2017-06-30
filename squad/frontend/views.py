@@ -116,8 +116,7 @@ def test_run_log(request, group_slug, project_slug, build_version, job_id):
     if not test_run.log_file:
         raise Http404("No log file available for this test run")
 
-    filename = '%s_%s_%s_%s.log' % (group.slug, project.slug, build.version, test_run.job_id)
-    return __download__(filename, test_run.log_file, 'text/plain')
+    return HttpResponse(test_run.log_file, content_type="text/plain")
 
 
 @auth
