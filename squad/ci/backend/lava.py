@@ -164,7 +164,24 @@ class Backend(BaseBackend):
         return self.proxy.scheduler.job_details(job_id)
 
     def __get_job_logs__(self, job_id):
-        return self.proxy.scheduler.job_output(job_id).data.decode('utf-8')
+        log_data = self.proxy.scheduler.job_output(job_id).data.decode('utf-8')
+        log_data_yaml = yaml.load(log_data)
+        returned_log = ""
+        for log_entry in log_data_yaml:
+            if log_entry['lvl'] == 'target':
+                if isinstance(log_entry['msg'], bytes):
+                    try:
+                        # seems like latin-1 is the encoding used by serial
+                        # this might not be true in all cases
+                        returned_log += log_entry["msg"].decode('latin-1', 'ignore')
+                    except ValueError:
+                        # despite ignoring errors, they are still raised sometimes
+                        pass
+                else:
+                    # this should be string in all other cases
+                    returned_log += log_entry["msg"]
+                returned_log += "\n"
+        return returned_log
 
     def __get_testjob_results_yaml__(self, job_id):
         return self.proxy.results.get_testjob_results_yaml(job_id)
