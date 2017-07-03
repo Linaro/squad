@@ -8,6 +8,11 @@ if git rev-parse --verify --quiet "${v}^{tag}" >/dev/null; then
     exit 1
 fi
 
+if ! grep -q "^# $v" CHANGELOG.md; then
+    echo "E: Version $v is not documented in CHANGELOG.md. Please do that before releasing"
+    exit 1
+fi
+
 ./manage.py test
 
 # TODO: require all changes committed to git
