@@ -149,3 +149,13 @@ class TestSendNotification(TestCase):
 
         send_notification(self.project)
         self.assertEqual(2, len(mail.outbox))
+
+    def test_send_plain_text_only(self):
+        self.project.subscriptions.create(email='foo@example.com')
+        self.project.html_mail = False
+        self.project.save()
+        ProjectStatus.create_or_update(self.build2)
+
+        send_notification(self.project)
+        msg = mail.outbox[0]
+        self.assertEqual(0, len(msg.alternatives))
