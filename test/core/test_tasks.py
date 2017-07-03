@@ -7,7 +7,7 @@ from django.utils import timezone
 from unittest.mock import patch
 
 
-from squad.core.models import Group, TestRun, Status, Build
+from squad.core.models import Group, TestRun, Status, Build, ProjectStatus
 from squad.core.tasks import ParseTestRunData
 from squad.core.tasks import RecordTestRunStatus
 from squad.core.tasks import ProcessTestRun
@@ -67,6 +67,7 @@ class RecordTestRunStatusTest(CommonTestCase):
         self.assertEqual(1, Status.objects.filter(suite__slug='foobar').count())
         self.assertEqual(1, Status.objects.filter(suite__slug='onlytests').count())
         self.assertEqual(1, Status.objects.filter(suite__slug='missing').count())
+        self.assertEqual(1, ProjectStatus.objects.filter(build=self.testrun.build).count())
 
         status = Status.objects.filter(suite=None).last()
         self.assertEqual(status.tests_pass, 2)
@@ -79,6 +80,7 @@ class RecordTestRunStatusTest(CommonTestCase):
         RecordTestRunStatus()(self.testrun)
         RecordTestRunStatus()(self.testrun)
         self.assertEqual(1, Status.objects.filter(suite=None).count())
+        self.assertEqual(1, ProjectStatus.objects.filter(build=self.testrun.build).count())
 
 
 class ProcessTestRunTest(CommonTestCase):

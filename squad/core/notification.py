@@ -34,39 +34,31 @@ class Notification(object):
         return self.comparison.diff
 
 
-def get_notifications(status):
-    __notifications__ = []
-    strategy = status.build.project.notification_strategy
-    if strategy == Project.NOTIFY_ALL_BUILDS:
-        previous = status.previous and status.previous.build or None
-        for build in status.builds:
-            build_copy = Build.objects.get(pk=build.id)
-            previous_copy = previous and Build.objects.get(pk=previous.id) or None
-            notif = Notification(build_copy, previous_copy)
-            __notifications__.append(notif)
-            previous = build
-    elif strategy == Project.NOTIFY_ON_CHANGE:
-        if status.previous:
-            notification = Notification(status.build, status.previous.build)
-            if notification.diff:
-                __notifications__.append(notification)
-    else:
-        raise RuntimeError("Invalid notification strategy: \"%s\"" % strategy)
-
-    return __notifications__
-
-
 def send_notification(project):
     """
     E-mails a project status change notification to all subscribed email
     addresses. This should almost always be invoked in a background process.
     """
-    project_status = ProjectStatus.create(project)
-    if not project_status:
-        return
+    statuses_pending_notification = ProjectStatus.objects.filter(
+        build__project=project,
+        notified=False,
+    )
+    for status in statuses_pending_notification:
+        send_status_notification(status, project)
 
-    for notification in get_notifications(project_status):
-        __send_notification__(project, notification)
+
+def send_status_notification(status, project=None):
+    project = project or status.build.project
+    previous_build = status.previous and status.previous.build or None
+    notification = Notification(status.build, previous_build)
+
+    if project.notification_strategy == Project.NOTIFY_ON_CHANGE:
+        if not notification.diff or not previous_build:
+            return
+
+    __send_notification__(project, notification)
+    status.notified = True
+    status.save()
 
 
 def notify_build(build):

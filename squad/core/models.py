@@ -422,9 +422,10 @@ class ProjectStatus(models.Model, TestSummaryBase):
     notification system to know what was the project status at the time of the
     last notification.
     """
-    build = models.ForeignKey('Build', null=True)
+    build = models.OneToOneField('Build')
     previous = models.ForeignKey('ProjectStatus', null=True, related_name='next')
     created_at = models.DateTimeField(auto_now_add=True)
+    notified = models.BooleanField(default=False)
 
     metrics_summary = models.FloatField()
 
@@ -433,52 +434,38 @@ class ProjectStatus(models.Model, TestSummaryBase):
     tests_skip = models.IntegerField()
 
     @classmethod
-    def create(cls, project):
+    def create_or_update(cls, build):
         """
-        Creates a new ProjectStatus, pointing to the latest finished build of
-        the given project. Returns the new ProjectStatus objects.
+        Creates (or updates) a new ProjectStatus for the given build and
+        returns it.
 
-        If there is no such build, does nothing and returns None.
+        If the build is not finished yet, does nothing and returns None.
         """
-        previous = cls.objects.filter(build__project=project).last()
+        if not build.finished:
+            return None
 
-        builds = project.builds.order_by('datetime')
-        if previous and previous.build:
-            builds = builds.filter(datetime__gt=previous.build.datetime)
+        previous = cls.objects.filter(
+            build__project=build.project,
+            build__datetime__lt=build.datetime,
+        ).last()
 
-        build_list = list(builds)
-        while len(build_list) > 0:
-            build = build_list.pop()
-            if build.finished and (not previous or (previous.build != build)):
-                summary = build.test_summary
-                metrics_summary = MetricsSummary(build)
-                return cls.objects.create(
-                    build=build,
-                    previous=previous,
-                    tests_pass=summary.tests_pass,
-                    tests_fail=summary.tests_fail,
-                    tests_skip=summary.tests_skip,
-                    metrics_summary=metrics_summary.value,
-                )
+        test_summary = build.test_summary
+        metrics_summary = MetricsSummary(build)
+        data = {
+            'previous': previous,
+            'tests_pass': test_summary.tests_pass,
+            'tests_fail': test_summary.tests_fail,
+            'tests_skip': test_summary.tests_skip,
+            'metrics_summary': metrics_summary.value,
+        }
 
-        return None
-
-    @property
-    def builds(self):
-        """
-        Returns a list of builds that happened between the previous
-        ProjectStatus and this one. Can be more than one.
-        """
-        if not self.previous:
-            return self.build.project.builds.all()
-        previous = self.previous.build
-        return self.build.project.builds.filter(
-            datetime__gt=previous.datetime,
-            datetime__lte=self.build.datetime,
-        ).order_by('datetime')
-
-    def __str__(self):
-        return 'Project: %s; Build %s; created at %s' % (self.build.project, self.build, self.created_at)
+        status, created = cls.objects.get_or_create(build=build, defaults=data)
+        if not created:
+            status.tests_pass = test_summary.tests_pass
+            status.tests_fail = test_summary.tests_fail
+            status.tests_skip = test_summary.tests_skip
+            status.metrics_summary = metrics_summary.value
+        return status
 
 
 class TestSummary(TestSummaryBase):
