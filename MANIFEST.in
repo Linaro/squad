@@ -1,5 +1,6 @@
 include Dockerfile
 include Procfile
+include CHANGELOG.md
 include COPYING
 include requirements*.txt
 include manage.py
