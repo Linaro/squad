@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 
 
 from squad.ci.models import TestJob
-from squad.ci.tasks import fetch
+from squad.ci.tasks import fetch, send_admin_email
 from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue
 from squad.ci.backend.null import Backend as BaseBackend
 
@@ -214,8 +214,11 @@ class Backend(BaseBackend):
             else:
                 if result['name'] == 'job' and result['result'] == 'fail':
                     metadata = result['metadata']
+                    test_job.failure = str(metadata)
+                    test_job.save()
                     # detect jobs failed because of infrastructure issues
                     if metadata['error_type'] in ['Infrastructure', 'Lava', 'Job']:
                         completed = False
+                    send_admin_email.delay(test_job.pk)
 
         return (data['status'], completed, job_metadata, results, metrics)
