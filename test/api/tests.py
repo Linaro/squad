@@ -1,3 +1,4 @@
+import json
 import os
 from io import StringIO
 
@@ -149,7 +150,7 @@ class ApiTest(TestCase):
             }
         )
         t = models.TestRun.objects.last()
-        self.assertEqual(open(metadata_file).read(), t.metadata_file)
+        self.assertEqual(json.loads(open(metadata_file).read()), json.loads(t.metadata_file))
 
     def test_attachment(self):
         self.client.post(
