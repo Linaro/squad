@@ -40,6 +40,12 @@ class SubscriptionInline(admin.StackedInline):
     extra = 0
 
 
+class AdminSubscriptionInline(admin.StackedInline):
+    model = models.AdminSubscription
+    fields = ['email']
+    extra = 0
+
+
 def force_notify_project(modeladmin, request, queryset):
     for project in queryset:
         notify_project.delay(project.pk)
@@ -50,7 +56,7 @@ force_notify_project.short_description = "Force sending email notification for s
 
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'is_public', 'notification_strategy']
-    inlines = [EnvironmentInline, TokenInline, SubscriptionInline]
+    inlines = [EnvironmentInline, TokenInline, SubscriptionInline, AdminSubscriptionInline]
     actions = [force_notify_project]
 
 

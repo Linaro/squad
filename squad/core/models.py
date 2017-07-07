@@ -504,3 +504,11 @@ class Subscription(models.Model):
 
     def __str__(self):
         return '%s on %s' % (self.email, self.project)
+
+
+class AdminSubscription(models.Model):
+    project = models.ForeignKey(Project, related_name='admin_subscriptions')
+    email = models.CharField(max_length=1024, validators=[EmailValidator()])
+
+    def __str__(self):
+        return '%s on %s' % (self.email, self.project)
