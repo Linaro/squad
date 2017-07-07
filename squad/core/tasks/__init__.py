@@ -99,16 +99,8 @@ class ReceiveTestRun(object):
         validate = ValidateTestRun()
         validate(metadata_file, metrics_file, tests_file)
 
-        metadata_fields = {}
-        data = {}
         if metadata_file:
-            tmp_data = json.loads(metadata_file)
-            for k, v in tmp_data.items():
-                if isinstance(k, str):
-                    k = k.replace("\x00", "")
-                if isinstance(v, str):
-                    v = v.replace("\x00", "")
-                data.update({k: v})
+            data = json.loads(metadata_file)
 
             fields = self.SPECIAL_METADATA_FIELDS
             metadata_fields = {k: data[k] for k in fields if data.get(k)}
@@ -117,15 +109,21 @@ class ReceiveTestRun(object):
             if build.test_runs.filter(job_id=job_id).exists():
                 raise exceptions.InvalidMetadata("There is already a test run with job_id %s" % job_id)
 
+        else:
+            metadata_fields = {}
+
         if 'job_id' not in metadata_fields:
             metadata_fields['job_id'] = uuid.uuid4()
+
+        if log_file:
+            log_file = log_file.replace("\x00", "")
 
         testrun = build.test_runs.create(
             environment=environment,
             tests_file=tests_file,
             metrics_file=metrics_file,
             log_file=log_file,
-            metadata_file=json.dumps(data),
+            metadata_file=metadata_file,
             completed=completed,
             **metadata_fields
         )

@@ -59,10 +59,6 @@ JOB_METADATA = {
     'key_bar': 'value_bar'
 }
 
-JOB_NULL_METADATA = {
-    '\x00key_foo': '\x00value_foo',
-    'key_bar\x00': 'value_bar\x00'
-}
 
 JOB_DEFINITION = {
     'job_name': 'job_foo',
