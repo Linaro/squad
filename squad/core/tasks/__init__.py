@@ -115,6 +115,9 @@ class ReceiveTestRun(object):
         if 'job_id' not in metadata_fields:
             metadata_fields['job_id'] = uuid.uuid4()
 
+        if log_file:
+            log_file = log_file.replace("\x00", "")
+
         testrun = build.test_runs.create(
             environment=environment,
             tests_file=tests_file,
