@@ -137,25 +137,6 @@ class ReceiveTestRunTest(TestCase):
         metadata = json.loads(testrun.metadata_file)
         self.assertEqual(metadata_in, metadata)
 
-    def test_metadata_null_string_values(self):
-        receive = ReceiveTestRun(self.project)
-        metadata_in = {
-            "job_id": "\x008765",
-            "foo": "bar\x00",
-            "ba\x00z": "x\x00yz"
-        }
-        metadata_expected = {
-            "job_id": "8765",
-            "foo": "bar",
-            "baz": "xyz"
-        }
-
-        receive('199', 'myenv', metadata_file=json.dumps(metadata_in))
-        testrun = TestRun.objects.last()
-
-        metadata = json.loads(testrun.metadata_file)
-        self.assertEqual(metadata_expected, metadata)
-
     def test_build_datetime(self):
         receive = ReceiveTestRun(self.project)
 
