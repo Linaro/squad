@@ -1,3 +1,4 @@
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -35,7 +36,7 @@ def auth(func, mode=AuthMode.READ):
         user = request.user
 
         if not (project.is_public or user.is_authenticated or token):
-            return HttpResponse('Authentication needed', status=401)
+            raise PermissionDenied()
 
         if (mode == AuthMode.READ and (project.is_public or project.accessible_to(user))) or valid_token(token, project):
             # authentication OK, call the original view
@@ -44,7 +45,7 @@ def auth(func, mode=AuthMode.READ):
             # `401 Authentication needed` on purpose, and not `403 Forbidden`.
             # If you don't have credentials, you are not allowed to know
             # whether that given team/project exists at all
-            return HttpResponse('Authentication needed', status=401)
+            raise PermissionDenied()
 
     return auth_wrapper
 
