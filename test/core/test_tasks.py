@@ -137,6 +137,31 @@ class ReceiveTestRunTest(TestCase):
         metadata = json.loads(testrun.metadata_file)
         self.assertEqual(metadata_in, metadata)
 
+    def test_logfile(self):
+        receive = ReceiveTestRun(self.project)
+        metadata_in = {
+            'job_id': '12345'
+        }
+        LOG_FILE_CONTENT = "abc"
+
+        receive('199', 'myenv', metadata_file=json.dumps(metadata_in), log_file=LOG_FILE_CONTENT)
+        testrun = TestRun.objects.last()
+
+        self.assertEqual(LOG_FILE_CONTENT, testrun.log_file)
+
+    def test_logfile_with_null_bytes(self):
+        receive = ReceiveTestRun(self.project)
+        metadata_in = {
+            'job_id': '12345'
+        }
+        LOG_FILE_CONTENT = "ab\x00c"
+        LOG_FILE_PROPER_CONTENT = "abc"
+
+        receive('199', 'myenv', metadata_file=json.dumps(metadata_in), log_file=LOG_FILE_CONTENT)
+        testrun = TestRun.objects.last()
+
+        self.assertEqual(LOG_FILE_PROPER_CONTENT, testrun.log_file)
+
     def test_build_datetime(self):
         receive = ReceiveTestRun(self.project)
 
