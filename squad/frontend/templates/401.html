@@ -1,0 +1,7 @@
+{% extends "squad/base.html" %}
+{% load squad %}
+
+{% block content %}
+<h1>Authentication needed!</h1>
+<a href="/login?next={{request.path}}">Go to login page</a>
+{% endblock %}

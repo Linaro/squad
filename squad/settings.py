@@ -78,6 +78,7 @@ __apps__ = [
 INSTALLED_APPS = [app for app in __apps__ if app]
 
 MIDDLEWARE_CLASSES = [
+    'squad.core.middleware.Custom401Middleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
