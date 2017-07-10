@@ -426,6 +426,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
     build = models.OneToOneField('Build')
     previous = models.ForeignKey('ProjectStatus', null=True, related_name='next')
     created_at = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(null=True)
     notified = models.BooleanField(default=False)
 
     metrics_summary = models.FloatField()
