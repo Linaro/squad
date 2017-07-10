@@ -57,6 +57,10 @@ class Backend(models.Model):
 
             test_job.job_status = status
             if not completed:
+                if tests or metrics:
+                    # this means the job produced 'some' results
+                    # and can be reported on
+                    completed = True
                 test_job.can_resubmit = True
 
             metadata['job_id'] = test_job.job_id
