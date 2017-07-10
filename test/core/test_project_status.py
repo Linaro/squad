@@ -93,7 +93,7 @@ class ProjectStatusTest(TestCase):
         test_run1.tests.create(name='foo', suite=self.suite, result=True)
         ProjectStatus.create_or_update(build)
 
-        test_run2 = build.test_runs.first()
+        test_run2 = build.test_runs.create(environment=self.environment)
         test_run2.tests.create(name='bar', suite=self.suite, result=True)
         test_run2.tests.create(name='baz', suite=self.suite, result=False)
         test_run2.tests.create(name='qux', suite=self.suite, result=None)
