@@ -13,8 +13,8 @@
   </tr>
   <tr>
     <td>
-      {{build.datetime|default:"(no data)"}}
-      <em>{{build.datetime|naturaltime}}</em>
+      {{status.last_updated|default:"(no data)"}}
+      <em>{{status.last_updated|naturaltime}}</em>
     </td>
     <td>
       {% if status.has_tests %}

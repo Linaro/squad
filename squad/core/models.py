@@ -426,6 +426,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
     build = models.OneToOneField('Build')
     previous = models.ForeignKey('ProjectStatus', null=True, related_name='next')
     created_at = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(null=True)
     notified = models.BooleanField(default=False)
 
     metrics_summary = models.FloatField()
@@ -452,12 +453,14 @@ class ProjectStatus(models.Model, TestSummaryBase):
 
         test_summary = build.test_summary
         metrics_summary = MetricsSummary(build)
+        now = timezone.now()
         data = {
             'previous': previous,
             'tests_pass': test_summary.tests_pass,
             'tests_fail': test_summary.tests_fail,
             'tests_skip': test_summary.tests_skip,
             'metrics_summary': metrics_summary.value,
+            'last_updated': now,
         }
 
         status, created = cls.objects.get_or_create(build=build, defaults=data)
@@ -466,6 +469,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.tests_fail = test_summary.tests_fail
             status.tests_skip = test_summary.tests_skip
             status.metrics_summary = metrics_summary.value
+            status.last_updated = now
         return status
 
 

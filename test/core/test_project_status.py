@@ -104,3 +104,20 @@ class ProjectStatusTest(TestCase):
         self.assertEqual(1, status.tests_fail)
         self.assertEqual(1, status.tests_skip)
         self.assertAlmostEqual(5.0, status.metrics_summary)
+
+    def test_populates_last_updated(self):
+        build = self.create_build('1', datetime=h(10))
+        status = ProjectStatus.create_or_update(build)
+        self.assertIsNotNone(status.last_updated)
+
+    def test_updates_last_updated(self):
+        build = self.create_build('1', datetime=h(10))
+        test_run1 = build.test_runs.first()
+        test_run1.tests.create(name='foo', suite=self.suite, result=True)
+        status = ProjectStatus.create_or_update(build)
+        old_date = status.last_updated
+
+        build.test_runs.create(environment=self.environment)
+        status = ProjectStatus.create_or_update(build)
+
+        self.assertNotEqual(status.last_updated, old_date)
