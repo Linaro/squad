@@ -19,8 +19,8 @@
             </a>
         </td>
         <td>
-            {{status.build.datetime}}
-            <em>{{status.build.datetime|naturaltime}}</em>
+            {{status.last_updated}}
+            <em>{{status.last_updated|naturaltime}}</em>
         </td>
         <td>
             {% if status.has_tests %}
