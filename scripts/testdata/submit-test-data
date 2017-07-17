@@ -31,6 +31,10 @@ rand() {
 
 # generates a pass with 75% chance
 rand_pass_fail() {
+  if [ -n "${SQUAD_RESULT:-}" ]; then
+    echo "$SQUAD_RESULT"
+    return
+  fi
   if [ "$(rand 4)" -eq 1 ]; then
     echo "fail"
   else
