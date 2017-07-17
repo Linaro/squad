@@ -83,6 +83,14 @@ JOB_DETAILS_RUNNING = {
     'multinode_definition': ''
 }
 
+JOB_DETAILS_CANCELED = {
+    'is_pipeline': True,
+    'status': 'Canceled',
+    'id': 1234,
+    'definition': yaml.dump(JOB_DEFINITION),
+    'multinode_definition': ''
+}
+
 TEST_RESULTS_YAML = yaml.dump(TEST_RESULTS)
 TEST_RESULTS_INFRA_FAILURE_YAML = yaml.dump(TEST_RESULTS_INFRA_FAILURE)
 
@@ -177,6 +185,18 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_YAML)
     def test_completed(self, get_results, get_details, get_logs):
+        lava = LAVABackend(None)
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend,
+            target=self.project)
+        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+        self.assertFalse(completed)
+
+    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_CANCELED)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
+    def test_canceled(self, get_results, get_details, get_logs):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',

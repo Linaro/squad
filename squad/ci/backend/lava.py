@@ -200,25 +200,29 @@ class Backend(BaseBackend):
         results = {}
         metrics = {}
         completed = True
-        for result in data['results']:
-            if result['suite'] != 'lava':
-                suite = result['suite'].split("_", 1)[1]
-                res_name = "%s/%s" % (suite, result['name'])
-                # YAML from LAVA has all values serialized to strings
-                if result['measurement'] == 'None':
-                    res_value = result['result']
-                    results.update({res_name: res_value})
+        if data['status'] == 'Canceled':
+            # consider all canceled jobs as incomplete and discard any results
+            completed = False
+        else:
+            for result in data['results']:
+                if result['suite'] != 'lava':
+                    suite = result['suite'].split("_", 1)[1]
+                    res_name = "%s/%s" % (suite, result['name'])
+                    # YAML from LAVA has all values serialized to strings
+                    if result['measurement'] == 'None':
+                        res_value = result['result']
+                        results.update({res_name: res_value})
+                    else:
+                        res_value = result['measurement']
+                        metrics.update({res_name: float(res_value)})
                 else:
-                    res_value = result['measurement']
-                    metrics.update({res_name: float(res_value)})
-            else:
-                if result['name'] == 'job' and result['result'] == 'fail':
-                    metadata = result['metadata']
-                    test_job.failure = str(metadata)
-                    test_job.save()
-                    # detect jobs failed because of infrastructure issues
-                    if metadata['error_type'] in ['Infrastructure', 'Lava', 'Job']:
-                        completed = False
-                    send_admin_email.delay(test_job.pk)
+                    if result['name'] == 'job' and result['result'] == 'fail':
+                        metadata = result['metadata']
+                        test_job.failure = str(metadata)
+                        test_job.save()
+                        # detect jobs failed because of infrastructure issues
+                        if metadata['error_type'] in ['Infrastructure', 'Lava', 'Job']:
+                            completed = False
+                        send_admin_email.delay(test_job.pk)
 
         return (data['status'], completed, job_metadata, results, metrics)
