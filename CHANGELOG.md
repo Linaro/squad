@@ -1,3 +1,13 @@
+# 0.17
+
+* core:
+  * update "last updated" data every time new results arrive for a given build
+  * notification: clearly identify tests that never passed as such
+* ci:
+  * lava: report incomplete TestRun when TestJob is canceled
+* frontend:
+  * fix group page to use correct status data (pass/fail counts, metric summary)
+
 # 0.15
 
 * core:
