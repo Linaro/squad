@@ -1,9 +1,10 @@
 from unittest.mock import patch, MagicMock, call
 from django.test import TestCase
+from django.utils import timezone
 
 
-from squad.core.models import Group
-from squad.core.tasks.notification import notify_project
+from squad.core.models import Group, ProjectStatus
+from squad.core.tasks.notification import notify_project, notify_project_status
 
 
 class TestNotificationTasks(TestCase):
@@ -17,3 +18,14 @@ class TestNotificationTasks(TestCase):
     def test_notify_project(self, send_notification):
         notify_project.apply(args=[self.project1.id])
         send_notification.assert_called_with(self.project1)
+
+    @patch("squad.core.tasks.notification.send_status_notification")
+    def test_notify_project_status(self, send_status_notification):
+        build = self.project1.builds.create(datetime=timezone.now())
+        environment = self.project1.environments.create(slug='env')
+        build.test_runs.create(environment=environment)
+
+        status = ProjectStatus.create_or_update(build)
+        notify_project_status(status.id)
+
+        send_status_notification.assert_called_with(status)
