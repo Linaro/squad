@@ -158,6 +158,108 @@ class BackendFetchTest(BackendTestBase):
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
+    def test_really_fetch_with_empty_results(self, get_implementation, __now__):
+        metadata = {"foo": "bar"}
+        tests = {}
+        metrics = {}
+        results = ('Complete', True, metadata, tests, metrics, "abc")
+
+        impl = MagicMock()
+        impl.fetch = MagicMock(return_value=results)
+        impl.job_url = MagicMock(return_value="http://www.example.com")
+        get_implementation.return_value = impl
+
+        test_job = self.create_test_job(
+            backend=self.backend,
+            definition='foo: 1',
+            build='1',
+            environment='myenv',
+            job_id='999',
+        )
+
+        self.backend.really_fetch(test_job)
+
+        # should not crash
+        test_run = core_models.TestRun.objects.get(
+            build__project=self.project,
+            environment__slug='myenv',
+            build__version='1',
+            job_id='999',
+            job_status='Complete',
+        )
+        self.assertTrue(test_job.can_resubmit)
+        self.assertFalse(test_run.completed)
+
+    @patch('django.utils.timezone.now', return_value=NOW)
+    @patch('squad.ci.models.Backend.get_implementation')
+    def test_really_fetch_with_only_results(self, get_implementation, __now__):
+        metadata = {"foo": "bar"}
+        tests = {"foo": "pass"}
+        metrics = {}
+        results = ('Complete', True, metadata, tests, metrics, "abc")
+
+        impl = MagicMock()
+        impl.fetch = MagicMock(return_value=results)
+        impl.job_url = MagicMock(return_value="http://www.example.com")
+        get_implementation.return_value = impl
+
+        test_job = self.create_test_job(
+            backend=self.backend,
+            definition='foo: 1',
+            build='1',
+            environment='myenv',
+            job_id='999',
+        )
+
+        self.backend.really_fetch(test_job)
+
+        # should not crash
+        test_run = core_models.TestRun.objects.get(
+            build__project=self.project,
+            environment__slug='myenv',
+            build__version='1',
+            job_id='999',
+            job_status='Complete',
+        )
+        self.assertFalse(test_job.can_resubmit)
+        self.assertTrue(test_run.completed)
+
+    @patch('django.utils.timezone.now', return_value=NOW)
+    @patch('squad.ci.models.Backend.get_implementation')
+    def test_really_fetch_with_only_metrics(self, get_implementation, __now__):
+        metadata = {"foo": "bar"}
+        tests = {}
+        metrics = {"foo": 10}
+        results = ('Complete', True, metadata, tests, metrics, "abc")
+
+        impl = MagicMock()
+        impl.fetch = MagicMock(return_value=results)
+        impl.job_url = MagicMock(return_value="http://www.example.com")
+        get_implementation.return_value = impl
+
+        test_job = self.create_test_job(
+            backend=self.backend,
+            definition='foo: 1',
+            build='1',
+            environment='myenv',
+            job_id='999',
+        )
+
+        self.backend.really_fetch(test_job)
+
+        # should not crash
+        test_run = core_models.TestRun.objects.get(
+            build__project=self.project,
+            environment__slug='myenv',
+            build__version='1',
+            job_id='999',
+            job_status='Complete',
+        )
+        self.assertFalse(test_job.can_resubmit)
+        self.assertTrue(test_run.completed)
+
+    @patch('django.utils.timezone.now', return_value=NOW)
+    @patch('squad.ci.models.Backend.get_implementation')
     def test_create_testrun_job_url(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {"foo": "pass"}
