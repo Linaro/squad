@@ -82,6 +82,14 @@ class RecordTestRunStatusTest(CommonTestCase):
         self.assertEqual(1, Status.objects.filter(suite=None).count())
         self.assertEqual(1, ProjectStatus.objects.filter(build=self.testrun.build).count())
 
+    @patch('squad.core.tasks.notify_project_status')
+    def test_sends_notification(self, notify_project_status):
+        ParseTestRunData()(self.testrun)
+        RecordTestRunStatus()(self.testrun)
+
+        status = ProjectStatus.objects.last()
+        notify_project_status.delay.assert_called_with(status.id)
+
 
 class ProcessTestRunTest(CommonTestCase):
 
