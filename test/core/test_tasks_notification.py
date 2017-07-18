@@ -3,7 +3,7 @@ from django.test import TestCase
 
 
 from squad.core.models import Group
-from squad.core.tasks.notification import notify_project, notify_all_projects
+from squad.core.tasks.notification import notify_project
 
 
 class TestNotificationTasks(TestCase):
@@ -17,11 +17,3 @@ class TestNotificationTasks(TestCase):
     def test_notify_project(self, send_notification):
         notify_project.apply(args=[self.project1.id])
         send_notification.assert_called_with(self.project1)
-
-    @patch("squad.core.tasks.notification.notify_project.delay")
-    def test_notify_all_projects(self, notify_project):
-        notify_all_projects.apply()
-        notify_project.assert_has_calls([
-            call(self.project1.id),
-            call(self.project2.id),
-        ])

@@ -83,9 +83,6 @@ needed:
 * Under "Djcelery", create "Periodic tasks":
   * ``squad.ci.tasks.poll``: this is that task to  poll results from the
     backends from time to time. You can schedule this for every 5 minutes;
-  * ``squad.core.tasks.notification.notify_all_projects``: this is the task
-    that sends email notifications about changes in test status. You probably
-    want to schedule this for once or twice a day.
 
 Further configuration
 ---------------------
