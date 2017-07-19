@@ -63,6 +63,12 @@ class Backend(models.Model):
                     completed = True
                 test_job.can_resubmit = True
 
+            if completed and not tests and not metrics:
+                # test job produced no results
+                # mark it incomplete
+                completed = False
+                test_job.can_resubmit = True
+
             metadata['job_id'] = test_job.job_id
             metadata['job_status'] = test_job.job_status
             if test_job.url is not None:
