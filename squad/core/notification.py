@@ -61,13 +61,6 @@ def send_status_notification(status, project=None):
     status.save()
 
 
-def notify_build(build):
-    project = build.project
-    previous_build = project.builds.filter(datetime__lt=build.datetime).last()
-    notification = Notification(build, previous_build)
-    __send_notification__(project, notification)
-
-
 def __send_notification__(project, notification):
     recipients = project.subscriptions.all()
     if not recipients:
