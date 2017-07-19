@@ -50,6 +50,7 @@ class Project(models.Model):
     name = models.CharField(max_length=100, null=True)
     is_public = models.BooleanField(default=True)
     html_mail = models.BooleanField(default=True)
+    moderate_notifications = models.BooleanField(default=False)
 
     NOTIFY_ALL_BUILDS = 'all'
     NOTIFY_ON_CHANGE = 'change'
@@ -428,6 +429,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(null=True)
     notified = models.BooleanField(default=False)
+    approved = models.BooleanField(default=False)
 
     metrics_summary = models.FloatField()
 
