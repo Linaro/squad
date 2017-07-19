@@ -2,6 +2,8 @@ from django import template
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
+from squad import version
+
 
 register = template.Library()
 
@@ -82,3 +84,8 @@ def login_message(context, tag, classes):
         return '<%s class="%s">%s</%s>' % (tag, classes, msg, tag)
     else:
         return ''
+
+
+@register.simple_tag
+def squad_version():
+    return version.__version__
