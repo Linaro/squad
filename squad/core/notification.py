@@ -2,6 +2,7 @@ from django.db import models
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.template.loader import render_to_string
+from re import sub
 
 
 from squad.core.models import Project, ProjectStatus, Build
@@ -106,8 +107,44 @@ class Notification(object):
             message.attach_alternative(html, "text/html")
         message.send()
 
+        self.mark_as_notified()
+
+    def mark_as_notified(self):
         self.status.notified = True
         self.status.save()
+
+
+class PreviewNotification(Notification):
+
+    @property
+    def recipients(self):
+        return [r.email for r in self.project.admin_subscriptions.all()]
+
+    @property
+    def subject(self):
+        return '[PREVIEW] %s' % super(PreviewNotification, self).subject
+
+    @property
+    def message(self):
+        txt, html = super(PreviewNotification, self).message
+        txt_banner = render_to_string(
+            'squad/notification/moderation.txt',
+            {
+                "settings": settings,
+            }
+        )
+        html_banner = render_to_string(
+            'squad/notification/moderation.html',
+            {
+                "settings": settings,
+            }
+        )
+        txt = txt_banner + txt
+        html = sub("<body>", "<body>\n" + html_banner, html)
+        return (txt, html)
+
+    def mark_as_notified(self):
+        pass
 
 
 def send_notification(project):
@@ -125,7 +162,11 @@ def send_notification(project):
 
 def send_status_notification(status, project=None):
     project = project or status.build.project
-    notification = Notification(status)
+
+    if project.moderate_notifications and not status.approved:
+        notification = PreviewNotification(status)
+    else:
+        notification = Notification(status)
 
     if project.notification_strategy == Project.NOTIFY_ON_CHANGE:
         if not notification.diff or not notification.previous_build:
