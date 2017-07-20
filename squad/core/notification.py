@@ -38,33 +38,45 @@ class Notification(object):
     def project(self):
         return self.build.project
 
-    def send(self):
-        project = self.project
-        notification = self
+    @property
+    def metadata(self):
+        if self.build.metadata is not None:
+            return dict(sorted(self.build.metadata.items()))
+        else:
+            return dict()
 
-        recipients = project.subscriptions.all()
-        if not recipients:
-            return
-        build = notification.build
-        metadata = dict(sorted(build.metadata.items())) if build.metadata is not None else dict()
-        summary = notification.build.test_summary
+    @property
+    def summary(self):
+        return self.build.test_summary
+
+    @property
+    def recipients(self):
+        return [r.email for r in self.project.subscriptions.all()]
+
+    @property
+    def subject(self):
+        summary = self.summary
         subject_data = (
-            project,
+            self.project,
             summary.tests_total,
             summary.tests_fail,
             summary.tests_pass,
-            build.version
+            self.build.version
         )
-        subject = '%s: %d tests, %d failed, %d passed (build %s)' % subject_data
+        return '%s: %d tests, %d failed, %d passed (build %s)' % subject_data
 
+    @property
+    def message(self):
+        """
+        Returns a tuple with (text_message,html_message)
+        """
         context = {
-            'build': build,
-            'metadata': metadata,
-            'previous_build': notification.previous_build,
-            'regressions': notification.comparison.regressions,
-            'subject': subject,
-            'summary': summary,
-            'notification': notification,
+            'build': self.build,
+            'metadata': self.metadata,
+            'previous_build': self.previous_build,
+            'regressions': self.comparison.regressions,
+            'summary': self.summary,
+            'notification': self,
             'settings': settings,
         }
 
@@ -77,17 +89,25 @@ class Notification(object):
             'squad/notification/diff.html',
             context=context,
         )
+
+        return (text_message, html_message)
+
+    def send(self):
+        recipients = self.recipients
+        if not recipients:
+            return
+
         sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
+        subject = self.subject
+        txt, html = self.message
 
-        emails = [r.email for r in recipients]
-
-        message = EmailMultiAlternatives(subject, text_message, sender, emails)
-        if project.html_mail:
-            message.attach_alternative(html_message, "text/html")
+        message = EmailMultiAlternatives(subject, txt, sender, recipients)
+        if self.project.html_mail:
+            message.attach_alternative(html, "text/html")
         message.send()
 
-        notification.status.notified = True
-        notification.status.save()
+        self.status.notified = True
+        self.status.save()
 
 
 def send_notification(project):
