@@ -474,6 +474,9 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.last_updated = now
         return status
 
+    def __str__(self):
+        return "%s, build %s" % (self.build.project, self.build.version)
+
 
 class TestSummary(TestSummaryBase):
     def __init__(self, build):
