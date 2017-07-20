@@ -34,6 +34,61 @@ class Notification(object):
     def diff(self):
         return self.comparison.diff
 
+    @property
+    def project(self):
+        return self.build.project
+
+    def send(self):
+        project = self.project
+        notification = self
+
+        recipients = project.subscriptions.all()
+        if not recipients:
+            return
+        build = notification.build
+        metadata = dict(sorted(build.metadata.items())) if build.metadata is not None else dict()
+        summary = notification.build.test_summary
+        subject_data = (
+            project,
+            summary.tests_total,
+            summary.tests_fail,
+            summary.tests_pass,
+            build.version
+        )
+        subject = '%s: %d tests, %d failed, %d passed (build %s)' % subject_data
+
+        context = {
+            'build': build,
+            'metadata': metadata,
+            'previous_build': notification.previous_build,
+            'regressions': notification.comparison.regressions,
+            'subject': subject,
+            'summary': summary,
+            'notification': notification,
+            'settings': settings,
+        }
+
+        text_message = render_to_string(
+            'squad/notification/diff.txt',
+            context=context,
+        )
+        html_message = ''
+        html_message = render_to_string(
+            'squad/notification/diff.html',
+            context=context,
+        )
+        sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
+
+        emails = [r.email for r in recipients]
+
+        message = EmailMultiAlternatives(subject, text_message, sender, emails)
+        if project.html_mail:
+            message.attach_alternative(html_message, "text/html")
+        message.send()
+
+        notification.status.notified = True
+        notification.status.save()
+
 
 def send_notification(project):
     """
@@ -56,52 +111,4 @@ def send_status_notification(status, project=None):
         if not notification.diff or not notification.previous_build:
             return
 
-    __send_notification__(project, notification)
-    status.notified = True
-    status.save()
-
-
-def __send_notification__(project, notification):
-    recipients = project.subscriptions.all()
-    if not recipients:
-        return
-    build = notification.build
-    metadata = dict(sorted(build.metadata.items())) if build.metadata is not None else dict()
-    summary = notification.build.test_summary
-    subject_data = (
-        project,
-        summary.tests_total,
-        summary.tests_fail,
-        summary.tests_pass,
-        build.version
-    )
-    subject = '%s: %d tests, %d failed, %d passed (build %s)' % subject_data
-
-    context = {
-        'build': build,
-        'metadata': metadata,
-        'previous_build': notification.previous_build,
-        'regressions': notification.comparison.regressions,
-        'subject': subject,
-        'summary': summary,
-        'notification': notification,
-        'settings': settings,
-    }
-
-    text_message = render_to_string(
-        'squad/notification/diff.txt',
-        context=context,
-    )
-    html_message = ''
-    html_message = render_to_string(
-        'squad/notification/diff.html',
-        context=context,
-    )
-    sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
-
-    emails = [r.email for r in recipients]
-
-    message = EmailMultiAlternatives(subject, text_message, sender, emails)
-    if project.html_mail:
-        message.attach_alternative(html_message, "text/html")
-    message.send()
+    notification.send()
