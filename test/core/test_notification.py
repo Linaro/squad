@@ -20,9 +20,11 @@ class NotificationTest(TestCase):
         group = Group.objects.create(slug='mygroup')
         project = group.projects.create(slug='myproject')
         build1 = project.builds.create(version='1')
+        ProjectStatus.create_or_update(build1)
         build2 = project.builds.create(version='2')
+        status = ProjectStatus.create_or_update(build2)
 
-        notification = Notification(build2, build1)
+        notification = Notification(status)
 
         self.assertIs(the_diff, notification.diff)
 

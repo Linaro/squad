@@ -14,9 +14,10 @@ class Notification(object):
     not need to be sent.
     """
 
-    def __init__(self, build, previous_build):
-        self.build = build
-        self.previous_build = previous_build
+    def __init__(self, status):
+        self.status = status
+        self.build = status.build
+        self.previous_build = status.previous and status.previous.build or None
 
     __comparison__ = None
 
@@ -49,11 +50,10 @@ def send_notification(project):
 
 def send_status_notification(status, project=None):
     project = project or status.build.project
-    previous_build = status.previous and status.previous.build or None
-    notification = Notification(status.build, previous_build)
+    notification = Notification(status)
 
     if project.notification_strategy == Project.NOTIFY_ON_CHANGE:
-        if not notification.diff or not previous_build:
+        if not notification.diff or not notification.previous_build:
             return
 
     __send_notification__(project, notification)
