@@ -437,6 +437,9 @@ class ProjectStatus(models.Model, TestSummaryBase):
     tests_fail = models.IntegerField()
     tests_skip = models.IntegerField()
 
+    class Meta:
+        verbose_name_plural = "Project statuses"
+
     @classmethod
     def create_or_update(cls, build):
         """
