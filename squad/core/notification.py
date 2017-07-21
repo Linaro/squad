@@ -131,12 +131,14 @@ class PreviewNotification(Notification):
             'squad/notification/moderation.txt',
             {
                 "settings": settings,
+                "status": self.status,
             }
         )
         html_banner = render_to_string(
             'squad/notification/moderation.html',
             {
                 "settings": settings,
+                "status": self.status,
             }
         )
         txt = txt_banner + txt
