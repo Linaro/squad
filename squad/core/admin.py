@@ -62,6 +62,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
 class ProjectStatusAdmin(admin.ModelAdmin):
     model = models.ProjectStatus
+    list_display = ['__str__', 'approved', 'notified']
 
 
 admin.site.register(models.Group)
