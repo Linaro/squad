@@ -1,0 +1,15 @@
+{% load squad %}
+<h1> <a href="{% group_url project.group %}">{{project.group.slug}}</a>/<a href="{% project_url project %}">{{project.slug}}</a>/<a href="{% build_url build %}">{{build.version}}</a></h1>
+  <ul class="nav nav-tabs">
+    {% with url_name=request.resolver_match.url_name %}
+
+    <li role="presentation" {% if url_name == 'tests' or url_name == 'test_history' %}class="active"{% endif %}>
+      <a href="{% build_section_url build 'tests' %}">
+        Tests
+      </a>
+    </li>
+
+
+    {% endwith %}
+  </ul>
+

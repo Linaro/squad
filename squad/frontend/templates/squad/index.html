@@ -1,5 +1,6 @@
 {% extends "squad/base.html" %}
 {% load humanize %}
+{% load squad %}
 
 
 {% block content %}
@@ -14,9 +15,7 @@
     {% with status=project.status %}
     <tr>
         <td>
-            <a href="/{{project.group.slug}}/{{project.slug}}">
-                {{project.group.slug}}/{{project.slug}}
-            </a>
+            <a href="{% group_url project.group %}">{{project.group.slug}}</a>/<a href="{% project_url project %}">{{project.slug}}</a>
         </td>
         <td>
             {{status.last_updated}}
