@@ -1,0 +1,7 @@
+------------------------------------------------------------------------
+ATTENTION: This notification is a preview and needs to be approved
+           before being sent to users.
+
+           You can approve this notification at
+           {{settings.BASE_URL}}/admin/core/projectstatus/?id={{status.id}}
+------------------------------------------------------------------------

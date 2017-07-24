@@ -1,6 +1,6 @@
 from django.contrib import admin
 from . import models
-from .tasks import notify_project
+from .tasks import notify_project, notify_project_status
 
 
 class TokenAdmin(admin.ModelAdmin):
@@ -60,8 +60,28 @@ class ProjectAdmin(admin.ModelAdmin):
     actions = [force_notify_project]
 
 
+def approve_project_status(modeladmin, request, queryset):
+    for status in queryset:
+        status.approved = True
+        status.save()
+        notify_project_status.delay(status.id)
+
+
+approve_project_status.short_description = "Approve and send notifications"
+
+
 class ProjectStatusAdmin(admin.ModelAdmin):
     model = models.ProjectStatus
+    list_display = ['__str__', 'approved', 'notified']
+    list_filter = ['approved', 'notified']
+    actions = [approve_project_status]
+
+    def get_queryset(self, request):
+        return super(ProjectStatusAdmin, self).get_queryset(request).prefetch_related(
+            'build',
+            'build__project',
+            'build__project__group',
+        )
 
 
 admin.site.register(models.Group)

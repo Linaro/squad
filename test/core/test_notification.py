@@ -7,7 +7,7 @@ from unittest.mock import patch, MagicMock, PropertyMock
 
 
 from squad.core.models import Group, Project, Build, ProjectStatus
-from squad.core.notification import Notification, send_notification
+from squad.core.notification import Notification, send_notification, send_status_notification
 
 
 class NotificationTest(TestCase):
@@ -20,9 +20,11 @@ class NotificationTest(TestCase):
         group = Group.objects.create(slug='mygroup')
         project = group.projects.create(slug='myproject')
         build1 = project.builds.create(version='1')
+        ProjectStatus.create_or_update(build1)
         build2 = project.builds.create(version='2')
+        status = ProjectStatus.create_or_update(build2)
 
-        notification = Notification(build2, build1)
+        notification = Notification(status)
 
         self.assertIs(the_diff, notification.diff)
 
@@ -159,3 +161,62 @@ class TestSendNotification(TestCase):
         send_notification(self.project)
         msg = mail.outbox[0]
         self.assertEqual(0, len(msg.alternatives))
+
+
+class TestModeratedNotifications(TestCase):
+
+    def setUp(self):
+        t0 = timezone.now() - relativedelta(hours=3)
+        t = timezone.now() - relativedelta(hours=2.75)
+
+        self.group = Group.objects.create(slug='mygroup')
+        self.project = self.group.projects.create(slug='myproject')
+        self.build1 = self.project.builds.create(version='1', datetime=t0)
+        status = ProjectStatus.create_or_update(self.build1)
+        status.notified = True
+        status.save()
+        self.build2 = self.project.builds.create(version='2', datetime=t)
+        self.project.subscriptions.create(email='user@example.com')
+        self.project.admin_subscriptions.create(email='admin@example.com')
+        self.project.moderate_notifications = True
+        self.project.save()
+        self.status = ProjectStatus.create_or_update(self.build2)
+
+
+class TestSendUnmoderatedNotification(TestModeratedNotifications):
+
+    def setUp(self):
+        super(TestSendUnmoderatedNotification, self).setUp()
+        send_status_notification(self.status)
+
+    def test_mails_admins(self):
+        self.assertEqual(['admin@example.com'], mail.outbox[0].recipients())
+
+    def test_subject(self):
+        self.assertTrue(mail.outbox[0].subject.startswith("[PREVIEW]"))
+
+    def test_txt_banner(self):
+        txt = mail.outbox[0].body
+        self.assertTrue(txt.find('needs to be approved') >= 0)
+
+    def test_html_banner(self):
+        html = mail.outbox[0].alternatives[0][0]
+        self.assertTrue(html.find('needs to be approved') >= 0)
+
+    def test_does_not_mark_as_notified(self):
+        self.assertFalse(self.status.notified)
+
+
+class TestSendApprovedNotification(TestModeratedNotifications):
+
+    def setUp(self):
+        super(TestSendApprovedNotification, self).setUp()
+        self.status.approved = True
+        self.status.save()
+        send_status_notification(self.status)
+
+    def test_mails_users(self):
+        self.assertEqual(['user@example.com'], mail.outbox[0].recipients())
+
+    def test_marks_as_notified(self):
+        self.assertTrue(self.status.notified)

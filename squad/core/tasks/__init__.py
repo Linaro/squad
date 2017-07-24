@@ -1,6 +1,7 @@
 from collections import defaultdict
 import json
 import logging
+import traceback
 import uuid
 
 
@@ -13,11 +14,14 @@ from squad.core.statistics import geomean
 from . import exceptions
 
 
-from .notification import notify_project, notify_all_projects
+from .notification import notify_project, notify_project_status
 
 
 test_parser = JSONTestDataParser
 metric_parser = JSONMetricDataParser
+
+
+logger = logging.getLogger()
 
 
 class ValidateTestRun(object):
@@ -222,7 +226,20 @@ class RecordTestRunStatus(object):
         testrun.status_recorded = True
         testrun.save()
 
-        ProjectStatus.create_or_update(testrun.build)
+        status = ProjectStatus.create_or_update(testrun.build)
+        if status:
+            try:
+                notify_project_status.delay(status.id)
+            except OSError as e:
+                # can't request background task for some reason; log the error
+                # and continue.
+                #
+                # This will happen as "OSError: [Errno 111] Connection refused"
+                # in development environments without a running AMQP server,
+                # but also on production setups that are not running the
+                # background job processes because they don't need email
+                # notifications or CI integration
+                logger.error("Cannot schedule notification: " + str(e) + "\n" + traceback.format_exc())
 
 
 class ProcessTestRun(object):

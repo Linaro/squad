@@ -50,6 +50,7 @@ class Project(models.Model):
     name = models.CharField(max_length=100, null=True)
     is_public = models.BooleanField(default=True)
     html_mail = models.BooleanField(default=True)
+    moderate_notifications = models.BooleanField(default=False)
 
     NOTIFY_ALL_BUILDS = 'all'
     NOTIFY_ON_CHANGE = 'change'
@@ -428,12 +429,16 @@ class ProjectStatus(models.Model, TestSummaryBase):
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(null=True)
     notified = models.BooleanField(default=False)
+    approved = models.BooleanField(default=False)
 
     metrics_summary = models.FloatField()
 
     tests_pass = models.IntegerField()
     tests_fail = models.IntegerField()
     tests_skip = models.IntegerField()
+
+    class Meta:
+        verbose_name_plural = "Project statuses"
 
     @classmethod
     def create_or_update(cls, build):
@@ -471,6 +476,9 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.metrics_summary = metrics_summary.value
             status.last_updated = now
         return status
+
+    def __str__(self):
+        return "%s, build %s" % (self.build.project, self.build.version)
 
 
 class TestSummary(TestSummaryBase):
