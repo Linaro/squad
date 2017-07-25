@@ -175,12 +175,16 @@ class Build(models.Model):
         return True
 
     @property
+    def test_runs_total(self):
+        return len(self.test_runs.all())
+
+    @property
     def test_runs_completed(self):
-        return len(self.test_runs.filter(completed=True))
+        return sum([1 for t in self.test_runs.all() if t.completed])
 
     @property
     def test_runs_incomplete(self):
-        return len(self.test_runs.filter(completed=False))
+        return sum([1 for t in self.test_runs.all() if not t.completed])
 
 
 def dict_intersection(d1, d2):
@@ -432,7 +436,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
     notification system to know what was the project status at the time of the
     last notification.
     """
-    build = models.OneToOneField('Build')
+    build = models.OneToOneField('Build', related_name='status')
     previous = models.ForeignKey('ProjectStatus', null=True, related_name='next')
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(null=True)

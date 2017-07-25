@@ -45,14 +45,14 @@
       <a href="{% project_url build %}">{{build.datetime}}</a>
       <em>{{build.datetime|naturaltime}}</em>
     </td>
-    <td><span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.test_runs.count}}</span>
+    <td><span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.test_runs_total}}</span>
       <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Completed">{{build.test_runs_completed}}</span>
       <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Incomplete">{{build.test_runs_incomplete}}</span>
     </td>
-    <td><span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.test_summary.tests_total}}</span>
-      <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{build.test_summary.tests_pass}}</span>
-      <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{build.test_summary.tests_skip}}</span>
-      <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{build.test_summary.tests_fail}}</span>
+    <td><span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.status.tests_total}}</span>
+      <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{build.status.tests_pass}}</span>
+      <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{build.status.tests_skip}}</span>
+      <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{build.status.tests_fail}}</span>
     </td>
   </tr>
   {% endfor %}
