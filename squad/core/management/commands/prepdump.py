@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from squad.core import models
 import os
 
+
 class Command(BaseCommand):
 
     def handle_subscriptions(self, collection):
