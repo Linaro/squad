@@ -227,7 +227,7 @@ class RecordTestRunStatus(object):
         testrun.save()
 
         status = ProjectStatus.create_or_update(testrun.build)
-        if status:
+        if status.finished:
             try:
                 notify_project_status.delay(status.id)
             except OSError as e:

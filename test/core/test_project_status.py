@@ -52,7 +52,7 @@ class ProjectStatusTest(TestCase):
     def test_wait_for_build_completion(self):
         build = self.create_build('1', datetime=h(1), create_test_run=False)
         status = ProjectStatus.create_or_update(build)
-        self.assertIsNone(status)
+        self.assertFalse(status.finished)
 
     def test_first_build(self):
         build = self.create_build('1')
@@ -62,8 +62,7 @@ class ProjectStatusTest(TestCase):
     def test_build_not_finished(self):
         build = self.create_build('2', datetime=h(4), create_test_run=False)
         status = ProjectStatus.create_or_update(build)
-        self.assertIsNone(status)
-        self.assertEqual(0, ProjectStatus.objects.count())
+        self.assertFalse(status.finished)
 
     def test_test_summary(self):
         build = self.create_build('1', datetime=h(10))
