@@ -174,6 +174,14 @@ class Build(models.Model):
                 return False
         return True
 
+    @property
+    def test_runs_completed(self):
+        return len(self.test_runs.filter(completed=True))
+
+    @property
+    def test_runs_incomplete(self):
+        return len(self.test_runs.filter(completed=False))
+
 
 def dict_intersection(d1, d2):
     return {k: d1[k] for k in d1 if (k in d2 and d2[k] == d1[k])}

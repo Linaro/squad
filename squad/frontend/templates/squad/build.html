@@ -3,9 +3,7 @@
 {% load static %}
 
 {% block content %}
-  {% include "squad/project-nav.html" %}
-  <h2>Build <u>{{build.version}}</u></h2>
-
+{% include "squad/build-nav.html" %}
   <table class='table table-hover table-condensed' ng-app='SquadResubmit'>
     <tr>
         <td colspan='4'><h3>Metadata</h3></td>
@@ -19,7 +17,7 @@
     {% for test_run in build.test_runs.all %}
     <tr class='warning'>
       <th colspan='4'>
-        <h3>
+        <h4>
           <a href="{% project_url test_run %}">Test run #{{test_run.job_id}}</a>
           <small>
             Environment: <em>{{test_run.environment.slug}}</em>
@@ -43,11 +41,8 @@
             </div>
 
           </small>
-        </h3>
+        </h4>
       </th>
-    </tr>
-    <tr>
-        <td colspan='4'><h3>Results</h3></td>
     </tr>
     <tr>
       <th>Suite</th>

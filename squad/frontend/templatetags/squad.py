@@ -43,8 +43,18 @@ def project_url(the_object):
 
 
 @register.simple_tag
+def build_url(build):
+    return reverse("build", args=(build.project.group.slug, build.project.slug, build.version))
+
+
+@register.simple_tag
 def project_section_url(project, name):
     return reverse(name, args=(project.group.slug, project.slug))
+
+
+@register.simple_tag
+def build_section_url(build, name):
+    return reverse(name, args=(build.project.group.slug, build.project.slug, build.version))
 
 
 @register.simple_tag

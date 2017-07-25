@@ -3,6 +3,7 @@
 {% load squad %}
 
 {% block content %}
+<h1> <a href="{% group_url project.group %}">{{project.group.slug}}</a>/<a href="{% project_url project %}">{{project.slug}}</a></h1>
   {% include "squad/project-nav.html" %}
 
   <table class='table table-striped'>

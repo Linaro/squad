@@ -7,14 +7,15 @@ from squad.core.history import TestHistory
 
 
 @auth
-def tests(request, group_slug, project_slug):
+def tests(request, group_slug, project_slug, build_version):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
+    build = project.builds.filter(version=build_version).last()
 
     context = {
         "project": project,
+        "build": build,
     }
-    build = project.builds.last()
     if build:
         comparison = TestComparison(build)
         context["comparison"] = comparison
