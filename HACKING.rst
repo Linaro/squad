@@ -11,6 +11,8 @@ on the server:
 
 locally:
 
+* backup local DB:   mv db.sqlite3 db.sqlite3.old
+* create empty DB:   ./manage.py migrate
 * copy dump:         scp SERVER:/tmp/data.json.gz /tmp/
 * decompress dump:   gunzip /tmp/data.json.gz
 * load dump:         ./manage.py loaddata /tmp/data.json
