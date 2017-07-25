@@ -1,3 +1,16 @@
+# 0.18
+
+* ci:
+  * mark proper TestRun status on awkward LAVA failure
+* frontend:
+  * display squad version in the base template
+  * several improvements to the UI to make browsing data more effective
+* core:
+  * notitifications are now sent immeditately after there is enough data for
+    each build, instead of on pre-scheduled times.
+  * notifications can now be moderated by admins before being sent out to
+    users.
+
 # 0.17
 
 * core:
