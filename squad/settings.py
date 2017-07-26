@@ -227,6 +227,7 @@ if not BASE_URL:
 EMAIL_FROM = os.getenv('SQUAD_EMAIL_FROM')
 if not EMAIL_FROM:
     EMAIL_FROM = 'noreply@%s' % HOSTNAME
+SERVER_EMAIL = EMAIL_FROM
 
 # Celery settings
 CELERYD_HIJACK_ROOT_LOGGER = False
