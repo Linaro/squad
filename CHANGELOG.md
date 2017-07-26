@@ -1,3 +1,11 @@
+# 0.18.1
+
+* core/admin:
+  * display "moderate notifications" in project listing
+  * filter ProjectStatus by project
+  * add several filters for the project listing
+* settings: set `SERVER_EMAIL`
+
 # 0.18
 
 * ci:
