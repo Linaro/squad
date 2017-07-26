@@ -1,4 +1,5 @@
 from unittest.mock import patch, MagicMock, call
+from celery.exceptions import Retry
 from django.test import TestCase
 from django.utils import timezone
 
@@ -29,3 +30,10 @@ class TestNotificationTasks(TestCase):
         notify_project_status(status.id)
 
         send_status_notification.assert_called_with(status)
+
+    @patch('squad.core.tasks.notification.notify_project_status.retry')
+    def test_retry_if_project_status_does_not_exist(self, retry):
+        retry.return_value = Retry()
+
+        with self.assertRaises(Retry):
+            notify_project_status(666)
