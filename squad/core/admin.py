@@ -73,7 +73,7 @@ approve_project_status.short_description = "Approve and send notifications"
 class ProjectStatusAdmin(admin.ModelAdmin):
     model = models.ProjectStatus
     list_display = ['__str__', 'approved', 'notified']
-    list_filter = ['approved', 'notified']
+    list_filter = ['build__project', 'approved', 'notified']
     actions = [approve_project_status]
 
     def get_queryset(self, request):
