@@ -124,6 +124,9 @@ class TestJob(models.Model):
     failure = models.TextField(null=True, blank=True)
 
     can_resubmit = models.BooleanField(default=False)
+    # this field should be set to "previous job + 1" whenever
+    # resubmitting
+    resubmitted_count = models.IntegerField(default=0)
 
     def success(self):
         return not self.failure
@@ -142,8 +145,11 @@ class TestJob(models.Model):
     def resubmit(self):
         if self.can_resubmit:
             self.backend.get_implementation().resubmit(self)
-            self.can_resubmit = False
-            self.save()
+            if self.can_resubmit:
+                # in case the backend doesn't set the can_resubmit=False
+                # or the resubmit call comes from api
+                self.can_resubmit = False
+                self.save()
 
     def __str__(self):
         return "%s/%s" % (self.backend.name, self.job_id)

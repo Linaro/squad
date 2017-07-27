@@ -1,0 +1,13 @@
+Failed to retrieve test results or test job finished with error.
+ * URL: {{test_job.url}}
+ * Build: {{settings.BASE_URL}}/{{test_job.target}}/build/{{test_job.build}}
+
+Reason
+{{test_job.failure|safe}}
+
+Failed test job was automatically resubmitted as: {{resubmitted_job.url}}.
+Original test job was resubmitted {{resubmitted_job.resubmitted_count}} time(s).
+
+--
+{{settings.SITE_NAME}}
+{{settings.BASE_URL}}
