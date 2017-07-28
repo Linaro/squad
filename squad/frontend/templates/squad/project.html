@@ -7,56 +7,56 @@
 {% with status=project.status %}
 <h1> <a href="{% group_url project.group %}">{{project.group.slug}}</a>/<a href="{% project_url project %}">{{project.slug}}</a></h1>
 <h3>Last build - <a href="{% project_url last_build %}">{{last_build.version}}</a> {{last_build.datetime}} {{last_build.datetime|naturaltime}}</h3>
-  <table class='table table-hover table-striped table-condensed'>
-    <tr>
-        <td colspan='4'><h3>Metadata</h3></td>
-    </tr>
-    {% for key, value in metadata %}
-    <tr>
-        <th>{{key}}</th>
-        <td>{{value|urlize}}<td/>
-    </tr>
-    {% endfor %}
-  </table>
+<table class='table table-hover table-striped table-condensed'>
+  <tr>
+    <td colspan='4'><h3>Metadata</h3></td>
+  </tr>
+  {% for key, value in metadata %}
+  <tr>
+    <th>{{key}}</th>
+    <td>{{value|urlize}}<td/>
+  </tr>
+  {% endfor %}
+</table>
 
 {% include "squad/project-nav.html" %}
 
 <h3>Latest builds</h3>
-  <table class='table table-striped'>
-    <tr>
-      <th>Build</th>
-      <th>Date</th>
-      <th>Testjobs<br/>
-          <span class="label label-default">Total</span>
-		  <span class="label label-success">Completed</span>
-		  <span class="label label-danger">Incomplete</span>
-      </th>
-	  <th>Summary<br/>
-          <span class="label label-default">Total</span>
-		  <span class="label label-success">Pass</span>
-		  <span class="label label-warning">Skip</span>
-		  <span class="label label-danger">Fail</span>
-	  </th>
-    </tr>
-    {% for build in builds %}
-      <tr>
-        <td><a href="{% project_url build %}">{{build.version}}</a></td>
-        <td>
-          <a href="{% project_url build %}">{{build.datetime}}</a>
-          <em>{{build.datetime|naturaltime}}</em>
-        </td>
-        <td><span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.test_runs.count}}</span>
-            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Completed">{{build.test_runs_completed}}</span>
-            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Incomplete">{{build.test_runs_incomplete}}</span>
-        </td>
-        <td><span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.test_summary.tests_total}}</span>
-            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{build.test_summary.tests_pass}}</span>
-            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{build.test_summary.tests_skip}}</span>
-            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{build.test_summary.tests_fail}}</span>
-        </td>
-      </tr>
-    {% endfor %}
-  </table>
+<table class='table table-striped'>
+  <tr>
+    <th>Build</th>
+    <th>Date</th>
+    <th>Testjobs<br/>
+      <span class="badge alert-default">Total</span>
+      <span class="badge alert-success">Completed</span>
+      <span class="badge alert-danger">Incomplete</span>
+    </th>
+    <th>Summary<br/>
+      <span class="badge alert-default">Total</span>
+      <span class="badge alert-success">Pass</span>
+      <span class="badge alert-warning">Skip</span>
+      <span class="badge alert-danger">Fail</span>
+    </th>
+  </tr>
+  {% for build in builds %}
+  <tr>
+    <td><a href="{% project_url build %}">{{build.version}}</a></td>
+    <td>
+      <a href="{% project_url build %}">{{build.datetime}}</a>
+      <em>{{build.datetime|naturaltime}}</em>
+    </td>
+    <td><span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.test_runs_total}}</span>
+      <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Completed">{{build.test_runs_completed}}</span>
+      <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Incomplete">{{build.test_runs_incomplete}}</span>
+    </td>
+    <td><span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.status.tests_total}}</span>
+      <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{build.status.tests_pass}}</span>
+      <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{build.status.tests_skip}}</span>
+      <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{build.status.tests_fail}}</span>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
 
 {% endwith %}
 {% endblock %}
@@ -64,7 +64,7 @@
 {% block javascript %}
 <script>
 $(document).ready(function(){
-    $('[data-toggle="tooltip"]').tooltip();
+  $('[data-toggle="tooltip"]').tooltip();
 });
 </script>
 {% endblock %}

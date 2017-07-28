@@ -35,7 +35,7 @@ def group(request, group_slug):
 def project(request, group_slug, project_slug):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    builds = project.builds.prefetch_related('test_runs').reverse().all()[:11]
+    builds = project.builds.prefetch_related('status', 'test_runs').reverse().all()[:11]
     context = {
         'project': project,
         'builds': builds[1:],

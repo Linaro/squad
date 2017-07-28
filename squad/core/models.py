@@ -175,12 +175,16 @@ class Build(models.Model):
         return True
 
     @property
+    def test_runs_total(self):
+        return len(self.test_runs.all())
+
+    @property
     def test_runs_completed(self):
-        return len(self.test_runs.filter(completed=True))
+        return sum([1 for t in self.test_runs.all() if t.completed])
 
     @property
     def test_runs_incomplete(self):
-        return len(self.test_runs.filter(completed=False))
+        return sum([1 for t in self.test_runs.all() if not t.completed])
 
 
 def dict_intersection(d1, d2):
@@ -432,10 +436,11 @@ class ProjectStatus(models.Model, TestSummaryBase):
     notification system to know what was the project status at the time of the
     last notification.
     """
-    build = models.OneToOneField('Build')
+    build = models.OneToOneField('Build', related_name='status')
     previous = models.ForeignKey('ProjectStatus', null=True, related_name='next')
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(null=True)
+    finished = models.BooleanField(default=False)
     notified = models.BooleanField(default=False)
     approved = models.BooleanField(default=False)
 
@@ -453,12 +458,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
         """
         Creates (or updates) a new ProjectStatus for the given build and
         returns it.
-
-        If the build is not finished yet, does nothing and returns None.
         """
-        if not build.finished:
-            return None
-
         previous = cls.objects.filter(
             build__project=build.project,
             build__datetime__lt=build.datetime,
@@ -474,6 +474,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             'tests_skip': test_summary.tests_skip,
             'metrics_summary': metrics_summary.value,
             'last_updated': now,
+            'finished': build.finished,
         }
 
         status, created = cls.objects.get_or_create(build=build, defaults=data)
@@ -483,6 +484,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.tests_skip = test_summary.tests_skip
             status.metrics_summary = metrics_summary.value
             status.last_updated = now
+            status.finished = build.finished
         return status
 
     def __str__(self):
