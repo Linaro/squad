@@ -23,7 +23,7 @@ def home(request):
 
 
 def group(request, group_slug):
-    group = Group.objects.get(slug=group_slug)
+    group = get_object_or_404(Group, slug=group_slug)
     context = {
         'group': group,
         'projects': group.projects.accessible_to(request.user),

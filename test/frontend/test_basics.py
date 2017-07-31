@@ -27,9 +27,9 @@ class FrontendTest(TestCase):
         )
         self.test_run = models.TestRun.objects.last()
 
-    def hit(self, url):
+    def hit(self, url, expected_status=200):
         response = self.client.get(url)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected_status, response.status_code)
         return response
 
     def test_home(self):
@@ -37,6 +37,9 @@ class FrontendTest(TestCase):
 
     def test_group(self):
         self.hit('/mygroup/')
+
+    def test_group_404(self):
+        self.hit('/unexistinggroup/', 404)
 
     def test_project(self):
         self.hit('/mygroup/myproject/')
