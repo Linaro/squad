@@ -38,7 +38,7 @@ def project(request, group_slug, project_slug):
     builds = project.builds.prefetch_related('status', 'test_runs').reverse().all()[:11]
     context = {
         'project': project,
-        'builds': builds[1:],
+        'builds': builds,
         'last_build': builds.first(),
         'metadata': sorted(builds.first().metadata.items()),
     }
