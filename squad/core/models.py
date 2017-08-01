@@ -497,19 +497,30 @@ class TestSummary(TestSummaryBase):
         self.tests_fail = 0
         self.tests_skip = 0
         self.failures = OrderedDict()
-        for run in build.test_runs.all():
+
+        tests = {}
+        test_runs = build.test_runs.prefetch_related(
+            'environment',
+            'tests',
+            'tests__suite'
+        ).order_by('id')
+
+        for run in test_runs.all():
             for test in run.tests.all():
-                if test.result is True:
-                    self.tests_pass += 1
-                elif test.result is False:
-                    self.tests_fail += 1
-                else:
-                    self.tests_skip += 1
-                if not test.result and test.result is not None:
-                    env = test.test_run.environment.slug
-                    if env not in self.failures:
-                        self.failures[env] = []
-                    self.failures[env].append(test)
+                tests[(run.environment, test.suite, test.name)] = test
+
+        for context, test in tests.items():
+            if test.result is True:
+                self.tests_pass += 1
+            elif test.result is False:
+                self.tests_fail += 1
+            else:
+                self.tests_skip += 1
+            if not test.result and test.result is not None:
+                env = test.test_run.environment.slug
+                if env not in self.failures:
+                    self.failures[env] = []
+                self.failures[env].append(test)
 
 
 class MetricsSummary(object):
