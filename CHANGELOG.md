@@ -1,3 +1,28 @@
+# 0.19
+
+* core:
+  * notifications:
+    * retry if ProjectStatus id does not exist (yet). Handles race condition
+      when worker process tries to send a notification before the corresponding
+      data has been commited to the database by the process requesting the
+      notification.
+  * Build data:
+    * don't count tests that have been retried twice. e.g. if a test job is
+      resubmitted, the test results produced will override any corresponding
+      test results from previous test jobs.
+* frontend:
+  * optimize database queries used to compose build page. Data tested shows a
+    reduction of ~95% in the response time.
+  * avoid producing exceptions when users try to access an unexisting group
+    (not just returns an 404 error quietly).
+  * show all builds in the project front page (i.e. don't omit the last build,
+    that already has details displayed, from the full list of builds).
+  * hide resubmit button from unprivileged users (who should't be allowed to
+    resubmit in the first place).
+* ci/lava:
+  * automatically resubmit jobs that failed due to infrastructure problems that
+    we already know about.
+
 # 0.18.1
 
 * core/admin:
