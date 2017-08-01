@@ -30,11 +30,13 @@
               {% if test_run.resubmit_url %}
               <a href="{{test_run.resubmit_url}}" class='btn btn-info '><span class='fa fa-recycle'></span> resubmit</a>
               {% endif %}
-              {% for test_job in test_run.test_jobs.all %}
-                  {% if test_job.can_resubmit %}
-                  <a ng-controller='ResubmitController' class="btn" ng-click="done || resubmit({{test_job.id}})" ng-class="{'btn-info': !done, 'btn-success': done}" ng-disabled="done" ><span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done, 'fa-spin': loading}" ng-disabled="done">{{test_job.job_id}} - resubmit</span></a>
-                  {% endif %}
-              {% endfor %}
+              {% if user.is_staff or user.is_superuser %}
+                  {% for test_job in test_run.test_jobs.all %}
+                      {% if test_job.can_resubmit %}
+                      <a ng-controller='ResubmitController' class="btn" ng-click="done || resubmit({{test_job.id}})" ng-class="{'btn-info': !done, 'btn-success': done}" ng-disabled="done" ><span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done, 'fa-spin': loading}" ng-disabled="done">{{test_job.job_id}} - resubmit</span></a>
+                      {% endif %}
+                  {% endfor %}
+              {% endif %}
               {% if test_run.job_url %}
               <a href="{{test_run.job_url}}" class='btn btn-info '><span class='fa fa-info-circle'></span> origin</a>
               {% endif %}
