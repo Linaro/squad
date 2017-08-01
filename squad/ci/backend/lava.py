@@ -11,12 +11,13 @@ from urllib.parse import urlsplit
 
 
 from squad.ci.models import TestJob
-from squad.ci.tasks import fetch, send_admin_email
+from squad.ci.tasks import fetch, send_admin_email, send_testjob_resubmit_admin_email
 from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue
 from squad.ci.backend.null import Backend as BaseBackend
 
 
 description = "LAVA"
+LAVA_INFRA_ERROR_MESSAGES = ['Connection closed', 'lava_test_shell connection dropped.', 'fastboot-flash-action timed out']
 
 
 class Backend(BaseBackend):
@@ -150,9 +151,14 @@ class Backend(BaseBackend):
                 build=test_job.build,
                 environment=test_job.environment,
                 submitted=True,
-                job_id=new_job_id
+                job_id=new_job_id,
+                resubmitted_count=test_job.resubmitted_count + 1,
             )
             new_test_job.save()
+            test_job.can_resubmit = False
+            test_job.save()
+            return new_test_job
+        return None
 
     def __resubmit__(self, job_id):
         return self.proxy.scheduler.resubmit_job(job_id)
@@ -223,6 +229,15 @@ class Backend(BaseBackend):
                         # detect jobs failed because of infrastructure issues
                         if metadata['error_type'] in ['Infrastructure', 'Lava', 'Job']:
                             completed = False
+                        # automatically resubmit in some cases
+                        if metadata['error_type'] == 'Infrastructure' and \
+                                any(substring.lower() in metadata['error_msg'].lower() for substring in LAVA_INFRA_ERROR_MESSAGES):
+                            if test_job.resubmitted_count < 3:
+                                resubmitted_job = self.resubmit(test_job)
+                                send_testjob_resubmit_admin_email.delay(test_job.pk, resubmitted_job.pk)
+                                # don't send admin_email
+                                continue
+                        # notify about incomplete job
                         send_admin_email.delay(test_job.pk)
 
         return (data['status'], completed, job_metadata, results, metrics)
