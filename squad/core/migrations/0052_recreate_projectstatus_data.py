@@ -33,7 +33,6 @@ def create_or_update_projectstatus(apps, schema_editor):
         status.metrics_summary = metrics_summary
         status.last_updated = timezone.now()
         status.save()
-        print(build)
 
 
 class Migration(migrations.Migration):
