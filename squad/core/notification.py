@@ -18,7 +18,8 @@ class Notification(object):
     def __init__(self, status):
         self.status = status
         self.build = status.build
-        self.previous_build = status.previous and status.previous.build or None
+        previous = status.get_previous()
+        self.previous_build = previous and previous.build or None
 
     __comparison__ = None
 

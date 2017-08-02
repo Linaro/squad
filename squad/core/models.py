@@ -437,7 +437,6 @@ class ProjectStatus(models.Model, TestSummaryBase):
     last notification.
     """
     build = models.OneToOneField('Build', related_name='status')
-    previous = models.ForeignKey('ProjectStatus', null=True, related_name='next')
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(null=True)
     finished = models.BooleanField(default=False)
@@ -459,16 +458,11 @@ class ProjectStatus(models.Model, TestSummaryBase):
         Creates (or updates) a new ProjectStatus for the given build and
         returns it.
         """
-        previous = cls.objects.filter(
-            build__project=build.project,
-            build__datetime__lt=build.datetime,
-        ).last()
 
         test_summary = build.test_summary
         metrics_summary = MetricsSummary(build)
         now = timezone.now()
         data = {
-            'previous': previous,
             'tests_pass': test_summary.tests_pass,
             'tests_fail': test_summary.tests_fail,
             'tests_skip': test_summary.tests_skip,
@@ -489,6 +483,13 @@ class ProjectStatus(models.Model, TestSummaryBase):
 
     def __str__(self):
         return "%s, build %s" % (self.build.project, self.build.version)
+
+    def get_previous(self):
+        return ProjectStatus.objects.filter(
+            finished=True,
+            build__datetime__lt=self.build.datetime,
+            build__project=self.build.project,
+        ).order_by('build__datetime').last()
 
 
 class TestSummary(TestSummaryBase):
