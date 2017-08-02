@@ -16,7 +16,7 @@ class TestTest(TestCase):
 
     def test_status_na(self):
         t = Test(result=None)
-        self.assertEqual('skip/unknown', t.status)
+        self.assertEqual('skip', t.status)
 
     def test_status_pass(self):
         t = Test(result=True)

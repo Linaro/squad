@@ -279,7 +279,7 @@ class Test(models.Model):
 
     @property
     def status(self):
-        return {True: 'pass', False: 'fail', None: 'skip/unknown'}[self.result]
+        return {True: 'pass', False: 'fail', None: 'skip'}[self.result]
 
     @property
     def full_name(self):
