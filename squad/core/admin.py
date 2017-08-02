@@ -88,7 +88,15 @@ class ProjectStatusAdmin(admin.ModelAdmin):
         )
 
 
+class BuildAdmin(admin.ModelAdmin):
+    model = models.Build
+    ordering = ['-id']
+    list_display = ['__str__', 'project']
+    list_filter = ['project', 'datetime']
+
+
 admin.site.register(models.Group)
 admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.Token, TokenAdmin)
 admin.site.register(models.ProjectStatus, ProjectStatusAdmin)
+admin.site.register(models.Build, BuildAdmin)
