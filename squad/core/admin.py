@@ -1,6 +1,6 @@
 from django.contrib import admin
 from . import models
-from .tasks import notify_project, notify_project_status
+from .tasks import notify_project_status
 
 
 class TokenAdmin(admin.ModelAdmin):
@@ -46,36 +46,39 @@ class AdminSubscriptionInline(admin.StackedInline):
     extra = 0
 
 
-def force_notify_project(modeladmin, request, queryset):
-    for project in queryset:
-        notify_project.delay(project.pk)
-
-
-force_notify_project.short_description = "Force sending email notification for selected projects"
-
-
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'is_public', 'notification_strategy', 'moderate_notifications']
     list_filter = ['group', 'is_public', 'notification_strategy', 'moderate_notifications']
     inlines = [EnvironmentInline, TokenInline, SubscriptionInline, AdminSubscriptionInline]
-    actions = [force_notify_project]
 
 
-def approve_project_status(modeladmin, request, queryset):
+def __resend__notification__(queryset, approve):
     for status in queryset:
-        status.approved = True
-        status.save()
+        if approve:
+            status.approved = True
+            status.save()
         notify_project_status.delay(status.id)
 
 
+def approve_project_status(modeladmin, request, queryset):
+    __resend__notification__(queryset, True)
+
+
 approve_project_status.short_description = "Approve and send notifications"
+
+
+def resend_notification(modeladmin, request, queryset):
+    __resend__notification__(queryset, False)
+
+
+resend_notification.short_description = "Re-send notification"
 
 
 class ProjectStatusAdmin(admin.ModelAdmin):
     model = models.ProjectStatus
     list_display = ['__str__', 'approved', 'notified']
     list_filter = ['build__project', 'approved', 'notified']
-    actions = [approve_project_status]
+    actions = [approve_project_status, resend_notification]
 
     def get_queryset(self, request):
         return super(ProjectStatusAdmin, self).get_queryset(request).prefetch_related(

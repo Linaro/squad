@@ -5,7 +5,7 @@ from django.utils import timezone
 
 
 from squad.core.models import Group, ProjectStatus
-from squad.core.tasks.notification import notify_project, notify_project_status
+from squad.core.tasks.notification import notify_project_status
 
 
 class TestNotificationTasks(TestCase):
@@ -14,11 +14,6 @@ class TestNotificationTasks(TestCase):
         group = Group.objects.create(slug='mygroup')
         self.project1 = group.projects.create(slug='myproject1')
         self.project2 = group.projects.create(slug='myproject2')
-
-    @patch("squad.core.tasks.notification.send_notification")
-    def test_notify_project(self, send_notification):
-        notify_project.apply(args=[self.project1.id])
-        send_notification.assert_called_with(self.project1)
 
     @patch("squad.core.tasks.notification.send_status_notification")
     def test_notify_project_status(self, send_status_notification):
