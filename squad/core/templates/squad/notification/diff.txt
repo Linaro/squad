@@ -2,6 +2,7 @@
 Tests:   {{summary.tests_total}}
 Failed:  {{summary.tests_fail}}
 Passed:  {{summary.tests_pass}}
+Skipped: {{summary.tests_skip}}
 Build:   {{build.version}}
 Details: {{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}
 

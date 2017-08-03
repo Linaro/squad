@@ -15,8 +15,8 @@ def h(n):
 class ProjectStatusTest(TestCase):
 
     def setUp(self):
-        group = Group.objects.create(slug='mygroup')
-        self.project = group.projects.create(slug='myproject')
+        self.group = Group.objects.create(slug='mygroup')
+        self.project = self.group.projects.create(slug='myproject')
         self.environment = self.project.environments.create(slug='theenvironment')
         self.suite = self.project.suites.create(slug='/')
 
@@ -31,7 +31,7 @@ class ProjectStatusTest(TestCase):
         status = ProjectStatus.create_or_update(build)
 
         self.assertEqual(build, status.build)
-        self.assertIsNone(status.previous)
+        self.assertIsNone(status.get_previous())
 
     def test_status_of_second_build(self):
         build = self.create_build('1')
@@ -39,7 +39,7 @@ class ProjectStatusTest(TestCase):
 
         build2 = self.create_build('2')
         status2 = ProjectStatus.create_or_update(build2)
-        self.assertEqual(status1, status2.previous)
+        self.assertEqual(status1, status2.get_previous())
         self.assertEqual(build2, status2.build)
 
     def test_dont_record_the_same_status_twice(self):
@@ -120,3 +120,37 @@ class ProjectStatusTest(TestCase):
         status = ProjectStatus.create_or_update(build)
 
         self.assertNotEqual(status.last_updated, old_date)
+
+    def test_previous_must_be_finished(self):
+        self.environment.expected_test_runs = 2
+        self.environment.save()
+
+        # finished
+        build1 = self.create_build('1', datetime=h(10), create_test_run=False)
+        build1.test_runs.create(environment=self.environment)
+        build1.test_runs.create(environment=self.environment)
+        status1 = ProjectStatus.create_or_update(build1)
+
+        # not finished
+        build2 = self.create_build('2', datetime=h(5), create_test_run=False)
+        ProjectStatus.create_or_update(build2)
+
+        # current build
+        build = self.create_build('3', datetime=h(0), create_test_run=False)
+        status = ProjectStatus.create_or_update(build)
+
+        self.assertEqual(status1, status.get_previous())
+
+    def test_previous_must_be_from_the_same_project(self):
+        previous_build = self.create_build('1', datetime=h(10))
+        previous = ProjectStatus.create_or_update(previous_build)
+
+        other_project = self.group.projects.create(slug='other_project')
+        other_env = other_project.environments.create(slug='other_env')
+        other_build = other_project.builds.create(version='1', datetime=h(5))
+        other_build.test_runs.create(environment=other_env)
+        ProjectStatus.create_or_update(other_build)
+
+        build = self.create_build('2', datetime=h(0))
+        status = ProjectStatus.create_or_update(build)
+        self.assertEqual(previous, status.get_previous())
