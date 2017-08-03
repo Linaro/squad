@@ -1,6 +1,6 @@
 import logging
-import multiprocessing
 import signal
+import subprocess
 import sys
 import time
 from django.core.management.base import BaseCommand
@@ -13,12 +13,11 @@ from squad.ci.models import Backend
 logger = logging.getLogger()
 
 
-class Listener(multiprocessing.Process):
+class Listener(object):
 
     def __init__(self, backend):
         self.backend = backend
         self.implementation = backend.get_implementation()
-        super(Listener, self).__init__()
 
     def run(self):
         backend = self.backend
@@ -37,8 +36,10 @@ class Listener(multiprocessing.Process):
 
 class ListenerManager(object):
 
-    def __init__(self):
+    def __init__(self, argv):
+        self.argv = argv
         self.__processes__ = {}
+        self.__fields__ = {}
 
     def run(self):
         self.setup_signals()
@@ -56,7 +57,7 @@ class ListenerManager(object):
             process = self.__processes__.get(backend.id)
             if process:
                 # already running: restart if needed
-                if fields(backend) != fields(process.backend):
+                if fields(backend) != self.__fields__[backend.id]:
                     self.stop(backend.id)
                     self.start(backend)
             else:
@@ -70,9 +71,10 @@ class ListenerManager(object):
             self.stop(backend_id)
 
     def start(self, backend):
-        listener = Listener(backend)
-        listener.start()
+        argv = self.argv + [backend.name]
+        listener = subprocess.Popen(argv)
         self.__processes__[backend.id] = listener
+        self.__fields__[backend.id] = fields(backend)
 
     def loop(self):
         try:
@@ -92,9 +94,9 @@ class ListenerManager(object):
 
     def stop(self, backend_id):
         process = self.__processes__[backend_id]
-        if process.is_alive():
+        if not process.poll():
             process.terminate()
-            process.join()
+            process.wait()
         self.__processes__.pop(backend_id)
 
 
@@ -105,6 +107,18 @@ def fields(model):
 class Command(BaseCommand):
     help = """Listens for "live" test results from CI backends"""
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            'BACKEND',
+            nargs='?',
+            type=str,
+            help='Backend name to listen to. If ommited, start the master process.',
+        )
+
     def handle(self, *args, **options):
-        manager = ListenerManager()
-        manager.run()
+        backend_name = options.get("BACKEND")
+        if backend_name:
+            backend = Backend.objects.get(name=backend_name)
+            Listener(backend).run()
+        else:
+            ListenerManager(sys.argv).run()
