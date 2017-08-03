@@ -1,3 +1,20 @@
+# 0.20
+
+* core:
+  * admin:
+    * move "re-send notification" action to ProjectStatus
+    * expose Build data
+    * sort ProjectStatus by build date
+  * Test results:
+    * use just "skip" instead of "skip/unknown"
+  * ProjectStatus: determine `previous` (baseline for comparison in
+    notification) dinamically, by getting the previous build that has complete
+    data.
+  * Project: avoid duplicated projects in listing
+  * notification: list explicitly number of skipped tests
+* frontend: improve wording on project home page
+* ci/listen: spawn listener processes without fork()
+
 # 0.19
 
 * core:
