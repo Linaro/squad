@@ -481,6 +481,8 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.metrics_summary = metrics_summary.value
             status.last_updated = now
             status.finished = build.finished
+            status.build = build
+            status.save()
         return status
 
     def __str__(self):

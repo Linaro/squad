@@ -226,10 +226,10 @@ class RecordTestRunStatus(object):
         testrun.status_recorded = True
         testrun.save()
 
-        status = ProjectStatus.create_or_update(testrun.build)
-        if status.finished:
+        projectstatus = ProjectStatus.create_or_update(testrun.build)
+        if projectstatus.finished:
             try:
-                notify_project_status.delay(status.id)
+                notify_project_status.delay(projectstatus.id)
             except OSError as e:
                 # can't request background task for some reason; log the error
                 # and continue.
