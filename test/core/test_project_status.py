@@ -102,7 +102,11 @@ class ProjectStatusTest(TestCase):
         self.assertEqual(2, status.tests_pass)
         self.assertEqual(1, status.tests_fail)
         self.assertEqual(1, status.tests_skip)
+        self.assertEqual(status.tests_pass, build.status.tests_pass)
+        self.assertEqual(status.tests_fail, build.status.tests_fail)
+        self.assertEqual(status.tests_skip, build.status.tests_skip)
         self.assertAlmostEqual(5.0, status.metrics_summary)
+        self.assertEqual(status.metrics_summary, build.status.metrics_summary)
 
     def test_populates_last_updated(self):
         build = self.create_build('1', datetime=h(10))
