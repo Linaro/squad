@@ -230,7 +230,11 @@ class Backend(BaseBackend):
         return (data['status'], completed, job_metadata, results, metrics)
 
     def receive_event(self, topic, data):
-        lava_id = data['job']
+        if topic.split('.')[-1] != "testjob":
+            return
+        lava_id = data.get('job')
+        if not lava_id:
+            return
         if 'sub_id' in data.keys():
             lava_id = data['sub_id']
         lava_status = data['status']

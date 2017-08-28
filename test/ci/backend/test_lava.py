@@ -309,3 +309,35 @@ class LavaTest(TestCase):
 
         lava.__get_publisher_event_socket__ = MagicMock(return_value='tcp://*:9999')
         self.assertEqual('tcp://foo.tld:9999', lava.get_listener_url())
+
+    @patch('squad.ci.backend.lava.fetch')
+    def test_receive_event(self, fetch):
+        lava = LAVABackend(self.backend)
+        testjob = TestJob.objects.create(
+            backend=self.backend,
+            target=self.project,
+            build='1',
+            environment='myenv',
+            submitted=True,
+            fetched=False,
+            job_id='123',
+        )
+
+        lava.receive_event('foo.com.testjob', {"job": '123', 'status': 'Complete'})
+        fetch.delay.assert_called_with(testjob.id)
+
+    def test_receive_event_no_testjob(self):
+        backend = MagicMock()
+        backend.url = 'https://foo.tld/RPC2'
+        lava = LAVABackend(backend)
+
+        # just not crashing is OK
+        lava.receive_event('foo.com.testjob', {})
+
+    def test_receive_event_wrong_topic(self):
+        backend = MagicMock()
+        backend.url = 'https://foo.tld/RPC2'
+        lava = LAVABackend(backend)
+
+        # just not crashing is OK
+        lava.receive_event('foo.com.device', {'job': '123'})
