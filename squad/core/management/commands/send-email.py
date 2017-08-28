@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from squad.core.models import Group
 from squad.core.notification import send_status_notification
 
+
 class Command(BaseCommand):
 
     def add_arguments(self, parser):
