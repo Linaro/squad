@@ -36,11 +36,13 @@ def project(request, group_slug, project_slug):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
     builds = project.builds.prefetch_related('status', 'test_runs').reverse().all()[:11]
+    last_build = builds.first()
+    metadata = last_build and sorted(last_build.metadata.items()) or ()
     context = {
         'project': project,
         'builds': builds,
-        'last_build': builds.first(),
-        'metadata': sorted(builds.first().metadata.items()),
+        'last_build': last_build,
+        'metadata': metadata,
     }
     return render(request, 'squad/project.html', context)
 
