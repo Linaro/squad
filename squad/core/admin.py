@@ -98,6 +98,7 @@ class BuildAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Group)
 admin.site.register(models.Project, ProjectAdmin)
+admin.site.register(models.EmailTemplate)
 admin.site.register(models.Token, TokenAdmin)
 admin.site.register(models.ProjectStatus, ProjectStatusAdmin)
 admin.site.register(models.Build, BuildAdmin)

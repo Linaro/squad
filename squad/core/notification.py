@@ -1,12 +1,16 @@
 from django.db import models
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
+import django.template
 from django.template.loader import render_to_string
 from re import sub
 
 
 from squad.core.models import Project, ProjectStatus, Build
 from squad.core.comparison import TestComparison
+
+
+jinja2 = django.template.engines['jinja2']
 
 
 class Notification(object):
@@ -82,15 +86,23 @@ class Notification(object):
             'settings': settings,
         }
 
-        text_message = render_to_string(
-            'squad/notification/diff.txt',
-            context=context,
-        )
-        html_message = ''
-        html_message = render_to_string(
-            'squad/notification/diff.html',
-            context=context,
-        )
+        custom_email_template = self.project.custom_email_template
+        if custom_email_template:
+            text_template = jinja2.from_string(custom_email_template.plain_text)
+            text_message = text_template.render(context)
+
+            html_template = jinja2.from_string(custom_email_template.html)
+            html_message = html_template.render(context)
+        else:
+            text_message = render_to_string(
+                'squad/notification/diff.txt',
+                context=context,
+            )
+            html_message = ''
+            html_message = render_to_string(
+                'squad/notification/diff.html',
+                context=context,
+            )
 
         return (text_message, html_message)
 

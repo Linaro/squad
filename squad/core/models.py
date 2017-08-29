@@ -44,6 +44,15 @@ class ProjectManager(models.Manager):
             return self.filter(Q(group_id__in=group_ids) | Q(is_public=True))
 
 
+class EmailTemplate(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    plain_text = models.TextField(help_text='Jinja2 template for text/plain content')
+    html = models.TextField(blank=True, null=True, help_text='Jinja2 template for text/html content')
+
+    def __str__(self):
+        return self.name
+
+
 class Project(models.Model):
     objects = ProjectManager()
 
@@ -53,6 +62,7 @@ class Project(models.Model):
     is_public = models.BooleanField(default=True)
     html_mail = models.BooleanField(default=True)
     moderate_notifications = models.BooleanField(default=False)
+    custom_email_template = models.ForeignKey(EmailTemplate, null=True, blank=True)
 
     NOTIFY_ALL_BUILDS = 'all'
     NOTIFY_ON_CHANGE = 'change'
