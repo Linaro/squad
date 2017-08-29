@@ -1,3 +1,23 @@
+# 0.20.3
+
+* core:
+  * add management command to force sending an email report.
+    * This can be used for example to help local testing
+* ci/lava:
+  * filter events down do the ones we can (and want to) handle
+* frontend:
+  * fix crash when viewing projects with no data
+
+# 0.20.2
+
+* frontend:
+  * fix javascript error
+
+# 0.20.1
+
+* core:
+  * fix update of ProjectStatus objects
+
 # 0.20
 
 * core:
