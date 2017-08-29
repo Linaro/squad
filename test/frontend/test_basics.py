@@ -44,6 +44,10 @@ class FrontendTest(TestCase):
     def test_project(self):
         self.hit('/mygroup/myproject/')
 
+    def test_project_no_build(self):
+        self.project.builds.all().delete()
+        self.hit('/mygroup/myproject/')
+
     def test_builds(self):
         self.hit('/mygroup/myproject/builds/')
 
