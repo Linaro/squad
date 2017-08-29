@@ -80,20 +80,7 @@ class Backend(BaseBackend):
                 self.log_debug("message received: %r" % message)
                 (topic, uuid, dt, username, data) = (u(m) for m in message[:])
                 data = json.loads(data)
-                lava_id = data['job']
-                if 'sub_id' in data.keys():
-                    lava_id = data['sub_id']
-                lava_status = data['status']
-                if lava_status in self.complete_statuses:
-                    db_test_job_list = self.data.test_jobs.filter(
-                        submitted=True,
-                        fetched=False,
-                        job_id=lava_id)
-                    if db_test_job_list.exists() and \
-                            len(db_test_job_list) == 1:
-                        job = db_test_job_list[0]
-                        self.log_info("scheduling fetch for job %s" % job.job_id)
-                        fetch.delay(job.id)
+                self.receive_event(topic, data)
             except Exception as e:
                 self.log_error(str(e) + "\n" + traceback.format_exc())
 
@@ -241,3 +228,23 @@ class Backend(BaseBackend):
                         send_admin_email.delay(test_job.pk)
 
         return (data['status'], completed, job_metadata, results, metrics)
+
+    def receive_event(self, topic, data):
+        if topic.split('.')[-1] != "testjob":
+            return
+        lava_id = data.get('job')
+        if not lava_id:
+            return
+        if 'sub_id' in data.keys():
+            lava_id = data['sub_id']
+        lava_status = data['status']
+        if lava_status in self.complete_statuses:
+            db_test_job_list = self.data.test_jobs.filter(
+                submitted=True,
+                fetched=False,
+                job_id=lava_id)
+            if db_test_job_list.exists() and \
+                    len(db_test_job_list) == 1:
+                job = db_test_job_list[0]
+                self.log_info("scheduling fetch for job %s" % job.job_id)
+                fetch.delay(job.id)
