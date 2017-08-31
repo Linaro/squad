@@ -8,7 +8,7 @@ import uuid
 from django.db import transaction
 
 
-from squad.core.models import TestRun, Suite, Test, Metric, Status, ProjectStatus
+from squad.core.models import TestRun, Suite, SuiteVersion, Test, Metric, Status, ProjectStatus
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
 from squad.core.statistics import geomean
 from . import exceptions
@@ -146,6 +146,32 @@ class ReceiveTestRun(object):
         return testrun
 
 
+def extract_suite_version(test_run, suite):
+    suiteversion = None
+    project = test_run.project
+    suite_version_key = "%s__version" % suite.slug
+    suite_version_value = None
+    suite_url_key = "%s__url" % suite.slug
+    suite_url_value = None
+    suite_revision_key = "%s__revision" % suite.slug
+    suite_revision_value = None
+    if suite_version_key in test_run.metadata.keys():
+        suite_version_value = test_run.metadata[suite_version_key]
+    if suite_url_key in test_run.metadata.keys():
+        suite_url_value = test_run.metadata[suite_url_key]
+    if suite_revision_key in test_run.metadata.keys():
+        suite_revision_value = test_run.metadata[suite_revision_key]
+    if suite_version_value is not None or \
+            suite_url_value is not None or \
+            suite_revision_value is not None:
+        suiteversion, _ = SuiteVersion.objects.get_or_create(
+            project=project,
+            version=suite_version_value,
+            url=suite_url_value,
+            revision=suite_revision_value)
+    return suiteversion
+
+
 class ParseTestRunData(object):
 
     @staticmethod
@@ -160,11 +186,12 @@ class ParseTestRunData(object):
             if test['group_name']:
                 suite, _ = Suite.objects.get_or_create(
                     project=project,
-                    slug=test['group_name'],
+                    slug=test['group_name']
                 )
             Test.objects.create(
                 test_run=test_run,
                 suite=suite,
+                suiteversion=extract_suite_version(test_run, suite),
                 name=test['test_name'],
                 result=test['pass'],
             )
@@ -178,6 +205,7 @@ class ParseTestRunData(object):
             Metric.objects.create(
                 test_run=test_run,
                 suite=suite,
+                suiteversion=extract_suite_version(test_run, suite),
                 name=metric['name'],
                 result=metric['result'],
                 measurements=','.join([str(m) for m in metric['measurements']]),
