@@ -5,8 +5,9 @@ RUN apt-get update && \
     python3-dateutil \
     python3-django \
     python3-celery \
-    python3-djano-celery \
+    python3-django-celery \
     python3-whitenoise \
+    python3-pip \
     fonts-font-awesome \
     libjs-angularjs \
     libjs-bootstrap \
@@ -24,6 +25,8 @@ RUN env
 RUN python3 -m squad.frontend
 RUN ./manage.py collectstatic --noinput
 
+RUN chown -R www-data /app
+EXPOSE 8000
 
 USER www-data
 CMD sh -c "./manage.py migrate && exec gunicorn3 squad.wsgi --bind 0.0.0.0:${PORT:-8000}"

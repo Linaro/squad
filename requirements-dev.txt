@@ -4,3 +4,4 @@ pickleshare
 django_extensions
 Werkzeug
 flake8
+mock
