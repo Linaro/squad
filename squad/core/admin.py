@@ -47,8 +47,8 @@ class AdminSubscriptionInline(admin.StackedInline):
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'is_public', 'notification_strategy', 'moderate_notifications']
-    list_filter = ['group', 'is_public', 'notification_strategy', 'moderate_notifications']
+    list_display = ['__str__', 'is_public', 'notification_strategy', 'moderate_notifications', 'custom_email_template']
+    list_filter = ['group', 'is_public', 'notification_strategy', 'moderate_notifications', 'custom_email_template']
     inlines = [EnvironmentInline, TokenInline, SubscriptionInline, AdminSubscriptionInline]
 
 
