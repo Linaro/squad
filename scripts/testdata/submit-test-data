@@ -59,20 +59,28 @@ cat > "${metrics}" <<METRICS
 {
   "ungroupedmetric1": [$(rand 3),$(rand 3),$(rand 3)],
   "ungroupedmetric2": [$(rand 3),$(rand 3),$(rand 3)],
-  "bgroup1/metric1": [$(rand 3),$(rand 3),$(rand 3)],
-  "bgroup1/metric2": [$(rand 4),$(rand 4),$(rand 4)],
-  "bgroup2/metric3": [$(rand 4),$(rand 4),$(rand 4)]
+  "benchmarksuite1/metric1": [$(rand 3),$(rand 3),$(rand 3)],
+  "benchmarksuite1/metric2": [$(rand 4),$(rand 4),$(rand 4)],
+  "benchmarksuite1/metric3": [$(rand 4),$(rand 4),$(rand 4)],
+  "benchmarksuite2/metric1": [$(rand 3),$(rand 3),$(rand 3)],
+  "benchmarksuite2/metric2": [$(rand 4),$(rand 4),$(rand 4)],
+  "benchmarksuite2/metric3": [$(rand 4),$(rand 4),$(rand 4)]
 }
 METRICS
 
 tests=$(mktemp)
 cat > "${tests}" <<TESTS
 {
-  "tgroup1/test1": "$(rand_pass_fail)",
-  "tgroup1/test2": "$(rand_pass_fail)",
-  "tgroup1/test3": "$(rand_pass_fail)",
-  "tgroup1/test4": "$(rand_pass_fail)",
-  "tgroup1/test5": "$(rand_pass_fail)"
+  "testsuite1/test1": "$(rand_pass_fail)",
+  "testsuite1/test2": "$(rand_pass_fail)",
+  "testsuite1/test3": "$(rand_pass_fail)",
+  "testsuite1/test4": "$(rand_pass_fail)",
+  "testsuite1/test5": "$(rand_pass_fail)",
+  "testsuite2/test1": "$(rand_pass_fail)",
+  "testsuite2/test2": "$(rand_pass_fail)",
+  "testsuite2/test3": "$(rand_pass_fail)",
+  "testsuite2/test4": "$(rand_pass_fail)",
+  "testsuite2/test5": "$(rand_pass_fail)"
 }
 TESTS
 
