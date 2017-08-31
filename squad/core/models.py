@@ -270,9 +270,20 @@ class Suite(models.Model):
         return self.name or self.slug
 
 
+class SuiteVersion(models.Model):
+    project = models.ForeignKey(Project, related_name='suiteversions')
+    version = models.CharField(max_length=256, null=True, blank=True)
+    url = models.URLField(null=True, blank=True)  # url might be used for VCS repository
+    revision = models.CharField(max_length=128, null=True, blank=True)  # revision is used for VCS
+
+    def __str__(self):
+        return self.version or self.url or self.revision
+
+
 class Test(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='tests')
     suite = models.ForeignKey(Suite)
+    suiteversion = models.ForeignKey(SuiteVersion, null=True, blank=True)
     name = models.CharField(max_length=256)
     result = models.NullBooleanField()
 
@@ -343,6 +354,7 @@ class MetricManager(models.Manager):
 class Metric(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='metrics')
     suite = models.ForeignKey(Suite)
+    suiteversion = models.ForeignKey(SuiteVersion, null=True, blank=True)
     name = models.CharField(max_length=100)
     result = models.FloatField()
     measurements = models.TextField()  # comma-separated float numbers
