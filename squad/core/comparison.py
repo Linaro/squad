@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 
-from squad.core.utils import join_name
+from squad.core.utils import join_name, parse_name
 from squad.core.models import Build, Test
 
 
@@ -137,3 +137,17 @@ class TestComparison(object):
 
         self.__regressions__ = regressions
         return self.__regressions__
+
+    @property
+    def regressions_grouped_by_suite(self):
+        regressions = self.regressions
+        result = OrderedDict()
+        for env, tests in regressions.items():
+            this_env = OrderedDict()
+            for test in tests:
+                suite, testname = parse_name(test)
+                if suite not in this_env:
+                    this_env[suite] = []
+                this_env[suite].append(testname)
+            result[env] = this_env
+        return result

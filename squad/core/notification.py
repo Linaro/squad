@@ -81,6 +81,7 @@ class Notification(object):
             'metadata': self.metadata,
             'previous_build': self.previous_build,
             'regressions': self.comparison.regressions,
+            'regressions_grouped_by_suite': self.comparison.regressions_grouped_by_suite,
             'summary': self.summary,
             'notification': self,
             'settings': settings,
