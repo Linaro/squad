@@ -18,8 +18,8 @@ import sys
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DATA_DIR = BASE_DIR
-if not os.path.exists(os.path.join(BASE_DIR, 'manage.py')):
-    # not running from source, store data in $HOME
+if not os.access(DATA_DIR, os.W_OK):
+    # cannot write to source tree
     DATA_DIR = os.path.join(
         os.getenv('XDG_DATA_HOME', os.path.expanduser('~/.local/share')),
         'squad',
