@@ -65,14 +65,14 @@ class TestComparison(object):
             test_runs = list(build.test_runs.all())
             environments = [t.environment for t in test_runs]
             for e in environments:
-                self.all_environments.add(e.slug)
-            self.environments[build] = sorted([e.slug for e in set(environments)])
+                self.all_environments.add(str(e))
+            self.environments[build] = sorted([str(e) for e in set(environments)])
             for test_run in test_runs:
                 self.__extract_test_results__(test_run)
 
     def __extract_test_results__(self, test_run):
         for test in test_run.tests.all():
-            key = (test_run.build, test_run.environment.slug)
+            key = (test_run.build, str(test_run.environment))
             self.results[test.full_name][key] = test.status
 
     def __all_tests__(self):
