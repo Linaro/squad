@@ -244,18 +244,24 @@ class TestRun(models.Model):
     def save(self, *args, **kwargs):
         if not self.datetime:
             self.datetime = timezone.now()
+        if self.__metadata__:
+            self.metadata_file = json.dumps(self.__metadata__)
         super(TestRun, self).save(*args, **kwargs)
 
     @property
     def project(self):
         return self.build.project
 
+    __metadata__ = None
+
     @property
     def metadata(self):
-        if self.metadata_file:
-            return json.loads(self.metadata_file)
-        else:
-            return {}
+        if self.__metadata__ is None:
+            if self.metadata_file:
+                self.__metadata__ = json.loads(self.metadata_file)
+            else:
+                self.__metadata__ = {}
+        return self.__metadata__
 
     def __str__(self):
         return self.job_id and ('#%s' % self.job_id) or ('(%s)' % self.id)
