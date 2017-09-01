@@ -1,3 +1,12 @@
+# 0.21
+
+* frontend:
+  * Add missing red bar in group main page for test failures
+* core:
+  * add support for per-project custom email templates
+  * comparison: use environment name is available
+* Add script to run a development environment on docker
+
 # 0.20.3
 
 * core:
