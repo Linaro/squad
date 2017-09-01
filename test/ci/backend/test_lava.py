@@ -324,7 +324,11 @@ class LavaTest(TestCase):
         )
 
         lava.receive_event('foo.com.testjob', {"job": '123', 'status': 'Complete'})
-        fetch.delay.assert_called_with(testjob.id)
+        # this is workaround to LAVA issues
+        # it should be removed when LAVA bug is fixed
+        fetch.apply_async.assert_called_with(args=[testjob.id], countdown=120)
+        # proper solution below
+        # fetch.fetch.assert_called_with(testjob.id)
 
     def test_receive_event_no_testjob(self):
         backend = MagicMock()
