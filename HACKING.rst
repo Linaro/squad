@@ -1,6 +1,18 @@
 Development-related notes
 =========================
 
+Running a development environment under Docker
+----------------------------------------------
+
+To run tests, migrate database, and start the web server::
+
+    ./dev-docker
+
+To open a shell in the development environment::
+
+    ./dev-docker bash
+
+
 Checklist for loading a copy of a production database
 -----------------------------------------------------
 
