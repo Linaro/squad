@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 
-from squad.core.utils import join_name
+from squad.core.utils import join_name, parse_name
 from squad.core.models import Build, Test
 
 
@@ -65,14 +65,14 @@ class TestComparison(object):
             test_runs = list(build.test_runs.all())
             environments = [t.environment for t in test_runs]
             for e in environments:
-                self.all_environments.add(e.slug)
-            self.environments[build] = sorted([e.slug for e in set(environments)])
+                self.all_environments.add(str(e))
+            self.environments[build] = sorted([str(e) for e in set(environments)])
             for test_run in test_runs:
                 self.__extract_test_results__(test_run)
 
     def __extract_test_results__(self, test_run):
         for test in test_run.tests.all():
-            key = (test_run.build, test_run.environment.slug)
+            key = (test_run.build, str(test_run.environment))
             self.results[test.full_name][key] = test.status
 
     def __all_tests__(self):
@@ -137,3 +137,17 @@ class TestComparison(object):
 
         self.__regressions__ = regressions
         return self.__regressions__
+
+    @property
+    def regressions_grouped_by_suite(self):
+        regressions = self.regressions
+        result = OrderedDict()
+        for env, tests in regressions.items():
+            this_env = OrderedDict()
+            for test in tests:
+                suite, testname = parse_name(test)
+                if suite not in this_env:
+                    this_env[suite] = []
+                this_env[suite].append(testname)
+            result[env] = this_env
+        return result

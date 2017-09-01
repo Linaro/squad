@@ -44,6 +44,15 @@ class ProjectManager(models.Manager):
             return self.filter(Q(group_id__in=group_ids) | Q(is_public=True))
 
 
+class EmailTemplate(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    plain_text = models.TextField(help_text='Jinja2 template for text/plain content')
+    html = models.TextField(blank=True, null=True, help_text='Jinja2 template for text/html content')
+
+    def __str__(self):
+        return self.name
+
+
 class Project(models.Model):
     objects = ProjectManager()
 
@@ -53,6 +62,7 @@ class Project(models.Model):
     is_public = models.BooleanField(default=True)
     html_mail = models.BooleanField(default=True)
     moderate_notifications = models.BooleanField(default=False)
+    custom_email_template = models.ForeignKey(EmailTemplate, null=True, blank=True)
 
     NOTIFY_ALL_BUILDS = 'all'
     NOTIFY_ON_CHANGE = 'change'
@@ -234,18 +244,24 @@ class TestRun(models.Model):
     def save(self, *args, **kwargs):
         if not self.datetime:
             self.datetime = timezone.now()
+        if self.__metadata__:
+            self.metadata_file = json.dumps(self.__metadata__)
         super(TestRun, self).save(*args, **kwargs)
 
     @property
     def project(self):
         return self.build.project
 
+    __metadata__ = None
+
     @property
     def metadata(self):
-        if self.metadata_file:
-            return json.loads(self.metadata_file)
-        else:
-            return {}
+        if self.__metadata__ is None:
+            if self.metadata_file:
+                self.__metadata__ = json.loads(self.metadata_file)
+            else:
+                self.__metadata__ = {}
+        return self.__metadata__
 
     def __str__(self):
         return self.job_id and ('#%s' % self.job_id) or ('(%s)' % self.id)

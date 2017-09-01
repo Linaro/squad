@@ -47,8 +47,8 @@ class AdminSubscriptionInline(admin.StackedInline):
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'is_public', 'notification_strategy', 'moderate_notifications']
-    list_filter = ['group', 'is_public', 'notification_strategy', 'moderate_notifications']
+    list_display = ['__str__', 'is_public', 'notification_strategy', 'moderate_notifications', 'custom_email_template']
+    list_filter = ['group', 'is_public', 'notification_strategy', 'moderate_notifications', 'custom_email_template']
     inlines = [EnvironmentInline, TokenInline, SubscriptionInline, AdminSubscriptionInline]
 
 
@@ -98,6 +98,7 @@ class BuildAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Group)
 admin.site.register(models.Project, ProjectAdmin)
+admin.site.register(models.EmailTemplate)
 admin.site.register(models.Token, TokenAdmin)
 admin.site.register(models.ProjectStatus, ProjectStatusAdmin)
 admin.site.register(models.Build, BuildAdmin)

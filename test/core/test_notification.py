@@ -6,7 +6,7 @@ from django.test import TestCase
 from unittest.mock import patch, MagicMock, PropertyMock
 
 
-from squad.core.models import Group, Project, Build, ProjectStatus
+from squad.core.models import Group, Project, Build, ProjectStatus, EmailTemplate
 from squad.core.notification import Notification, send_status_notification
 
 
@@ -199,3 +199,36 @@ class TestSendApprovedNotification(TestModeratedNotifications):
 
     def test_marks_as_notified(self):
         self.assertTrue(self.status.notified)
+
+
+class TestCustomEmailTemplate(TestCase):
+
+    def setUp(self):
+        t0 = timezone.now() - relativedelta(hours=3)
+        t = timezone.now() - relativedelta(hours=2.75)
+
+        self.group = Group.objects.create(slug='mygroup')
+        self.project = self.group.projects.create(slug='myproject')
+        self.build1 = self.project.builds.create(version='1', datetime=t0)
+        status = ProjectStatus.create_or_update(self.build1)
+        status.notified = True
+        status.save()
+        self.build2 = self.project.builds.create(version='2', datetime=t)
+        self.project.subscriptions.create(email='user@example.com')
+        self.project.admin_subscriptions.create(email='admin@example.com')
+
+    def test_custom_template(self):
+        template = EmailTemplate.objects.create(plain_text='foo', html='bar')
+        self.project.use_custom_email_template = True
+        self.project.custom_email_template = template
+        self.project.save()
+
+        status = ProjectStatus.create_or_update(self.build2)
+        send_status_notification(status)
+
+        msg = mail.outbox[0]
+        txt = msg.body
+        html = msg.alternatives[0][0]
+
+        self.assertEqual('foo', txt)
+        self.assertEqual('bar', html)
