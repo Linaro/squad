@@ -42,8 +42,16 @@ class Backend(BaseBackend):
         data = self.__get_job_details__(test_job.job_id)
 
         if data['status'] in self.complete_statuses:
-            yamldata = self.__get_testjob_results_yaml__(test_job.job_id)
-            data['results'] = yaml.load(yamldata)
+            try:
+                yamldata = self.__get_testjob_results_yaml__(test_job.job_id)
+                data['results'] = yaml.load(yamldata)
+            except xmlrpclib.Error as e:
+                self.log_error("Error during result fetching")
+                self.log_error(str(e) + "\n" + traceback.format_exc())
+                test_job.failure = str(e) + "\n" + traceback.format_exc()
+                test_job.save()
+                send_admin_email.delay(test_job.pk)
+                return None
 
             # fetch logs
             logs = ""
