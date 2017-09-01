@@ -255,4 +255,6 @@ class Backend(BaseBackend):
                     len(db_test_job_list) == 1:
                 job = db_test_job_list[0]
                 self.log_info("scheduling fetch for job %s" % job.job_id)
-                fetch.delay(job.id)
+                # introduce 2 min delay to allow LAVA for storing all results
+                # this workaround should be removed once LAVA issue is fixed
+                fetch.apply_async(args=[job.id], countdown=120)
