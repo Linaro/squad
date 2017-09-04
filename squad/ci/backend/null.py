@@ -24,12 +24,12 @@ class Backend(object):
         The return value must be the job id as provided by the backend.
 
         On errors, implementations can raise two classes of exceptions:
-            * squad.ci.exceptions.SubmissionIssue, when there is an unrecoverable
-              issue with the job (such as invalid data).
-            * squad.ci.exceptions.TemporarySubmission, when there is a temporary
-              condition that stopped the submission from happening that could
-              be gone in the future (e.g. a server-side issue or a maintainance
-              window).
+            * squad.ci.exceptions.SubmissionIssue, when there is an
+              unrecoverable issue with the job (such as invalid data).
+            * squad.ci.exceptions.TemporarySubmissionIssue, when there is a
+              temporary condition that stopped the submission from happening
+              that could be gone in the future (e.g. a server-side issue or a
+              maintainance window).
         """
         pass
 
@@ -41,12 +41,12 @@ class Backend(object):
         backend.
 
         On errors, implementations can raise two classes of exceptions:
-            * squad.ci.exceptions.SubmissionIssue, when there is an unrecoverable
-              issue with the job (such as invalid data).
-            * squad.ci.exceptions.TemporarySubmission, when there is a temporary
-              condition that stopped the submission from happening that could
-              be gone in the future (e.g. a server-side issue or a maintainance
-              window).
+            * squad.ci.exceptions.SubmissionIssue, when there is an
+              unrecoverable issue with the job (such as invalid data).
+            * squad.ci.exceptions.TemporarySubmissionIssue, when there is a
+              temporary condition that stopped the submission from happening
+              that could be gone in the future (e.g. a server-side issue or a
+              maintainance window).
         """
 
     def fetch(self, test_job):
