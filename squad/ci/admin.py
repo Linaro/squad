@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.translation import ugettext_lazy as _
 from squad.ci.models import Backend, TestJob
 from squad.ci.tasks import submit, fetch, poll
 
@@ -32,9 +33,29 @@ def fetch_job(modeladmin, request, queryset):
 fetch_job.short_description = 'Fetch results of the selected test jobs'
 
 
+class TestJobFailureFilter(admin.SimpleListFilter):
+
+    title = _('Failed')
+
+    parameter_name = 'failed'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', _('Yes')),
+            ('no', _('No')),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.exclude(failure=None)
+        if self.value() == 'no':
+            return queryset.filter(failure=None)
+        return queryset
+
+
 class TestJobAdmin(admin.ModelAdmin):
     list_display = ('backend', 'target', 'submitted', 'fetched', 'success', 'last_fetch_attempt', 'job_id',)
-    list_filter = ('backend', 'target', 'submitted', 'fetched')
+    list_filter = ('backend', 'target', 'submitted', 'fetched', TestJobFailureFilter)
     actions = [submit_job, fetch_job]
 
 
