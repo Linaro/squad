@@ -55,8 +55,18 @@ class Backend(object):
         assumed that the job has been properly submited before, i.e. it has a
         proper id.
 
-        The return value must be a tuple (status, completed, metadata, tests, metrics, logs),
-        where status and logs are strings, metadata, tests and metrics are dictionaries.
+        The return value must be a tuple (status, completed, metadata, tests,
+        metrics, logs), where status and logs are strings, metadata, tests and
+        metrics are dictionaries, and completed is a boolean.
+
+        On errors, implementations can raise two classes of exceptions:
+            * squad.ci.exceptions.FetchIssue, when there is an unrecoverable
+              issue with the job (such as an invalid job id, or something like
+              that).
+            * squad.ci.exceptions.TemporaryFetchIssue, when there is a
+              temporary condition that prevented the job to be fetched, but
+              is temporary so the test job can be fetched again in the future
+              (e.g. a server-side issue or a maintainance window).
         """
         pass
 
