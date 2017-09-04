@@ -1,6 +1,6 @@
 from squad.celery import app as celery
 from squad.ci.models import Backend, TestJob
-from squad.ci.exceptions import SubmissionIssue
+from squad.ci.exceptions import SubmissionIssue, FetchIssue
 from celery.utils.log import get_task_logger
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
@@ -24,7 +24,13 @@ def poll(backend_id=None):
 def fetch(job_id):
     test_job = TestJob.objects.get(pk=job_id)
     logger.info("fetching %s" % test_job)
-    test_job.backend.fetch(test_job)
+    try:
+        test_job.backend.fetch(test_job)
+    except FetchIssue as issue:
+        logger.warn("error fetching job %s: %s" % (test_job.id, str(issue)))
+        test_job.failure = str(issue)
+        test_job.fetched = not issue.retry
+        test_job.save()
 
 
 @celery.task(bind=True)
