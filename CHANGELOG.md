@@ -1,3 +1,13 @@
+# 0.22
+
+* ci
+  * handle fetching failures with less noise, and in a way that is independent
+    of the test job backend. This reverts the LAVA-specific handling added in
+    0.21.
+* ci/lava
+  * add support for using boot information from LAVA as an articial boot test
+    and as a boot time metric.
+
 # 0.21
 
 * frontend:
@@ -6,6 +16,8 @@
   * add support for per-project custom email templates
   * comparison: use environment name is available
 * Add script to run a development environment on docker
+* ci/lava
+  * log and notify by email any errors when fetching test jobs
 
 # 0.20.3
 
