@@ -9,6 +9,7 @@ from squad.ci import models
 from squad.core import models as core_models
 from squad.ci.tasks import poll, fetch, submit
 from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue
+from squad.ci.exceptions import FetchIssue, TemporaryFetchIssue
 
 
 class PollTest(TestCase):
@@ -34,27 +35,42 @@ class PollTest(TestCase):
 
 class FetchTest(TestCase):
 
-    @patch('squad.ci.models.Backend.fetch')
-    def test_fetch(self, fetch_method):
+    def setUp(self):
         group = core_models.Group.objects.create(slug='test')
         project = group.projects.create(slug='test')
-
         backend = models.Backend.objects.create()
-        test_job = models.TestJob.objects.create(backend=backend, target=project)
+        self.test_job = models.TestJob.objects.create(
+            backend=backend,
+            target=project,
+        )
 
-        fetch.apply(args=[test_job.id])
-        fetch_method.assert_called_with(test_job)
+    @patch('squad.ci.models.Backend.fetch')
+    def test_fetch(self, fetch_method):
+        fetch.apply(args=[self.test_job.id])
+        fetch_method.assert_called_with(self.test_job)
 
     @patch('squad.ci.models.Backend.really_fetch')
     def test_really_fetch(self, really_fetch_method):
-        group = core_models.Group.objects.create(slug='test')
-        project = group.projects.create(slug='test')
+        fetch.apply(args=[self.test_job.id])
+        really_fetch_method.assert_called_with(self.test_job)
 
-        backend = models.Backend.objects.create()
-        test_job = models.TestJob.objects.create(backend=backend, target=project)
+    @patch('squad.ci.models.Backend.fetch')
+    def test_exception_when_fetching(self, fetch_method):
+        fetch_method.side_effect = FetchIssue("ERROR")
+        fetch.apply(args=[self.test_job.id])
 
-        fetch.apply(args=[test_job.id])
-        really_fetch_method.assert_called_with(test_job)
+        self.test_job.refresh_from_db()
+        self.assertEqual("ERROR", self.test_job.failure)
+        self.assertTrue(self.test_job.fetched)
+
+    @patch('squad.ci.models.Backend.fetch')
+    def test_temporary_exception_when_fetching(self, fetch_method):
+        fetch_method.side_effect = TemporaryFetchIssue("ERROR")
+        fetch.apply(args=[self.test_job.id])
+
+        self.test_job.refresh_from_db()
+        self.assertEqual("ERROR", self.test_job.failure)
+        self.assertFalse(self.test_job.fetched)
 
 
 class SubmitTest(TestCase):

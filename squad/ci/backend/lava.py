@@ -13,6 +13,7 @@ from urllib.parse import urlsplit
 from squad.ci.models import TestJob
 from squad.ci.tasks import fetch, send_admin_email, send_testjob_resubmit_admin_email
 from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue
+from squad.ci.exceptions import FetchIssue, TemporaryFetchIssue
 from squad.ci.backend.null import Backend as BaseBackend
 
 
@@ -39,28 +40,29 @@ class Backend(BaseBackend):
                 raise SubmissionIssue(str(fault))
 
     def fetch(self, test_job):
-        data = self.__get_job_details__(test_job.job_id)
+        try:
+            data = self.__get_job_details__(test_job.job_id)
 
-        if data['status'] in self.complete_statuses:
-            try:
+            if data['status'] in self.complete_statuses:
                 yamldata = self.__get_testjob_results_yaml__(test_job.job_id)
                 data['results'] = yaml.load(yamldata)
-            except xmlrpclib.Error as e:
-                self.log_error("Error during result fetching")
-                self.log_error(str(e) + "\n" + traceback.format_exc())
-                test_job.failure = str(e) + "\n" + traceback.format_exc()
-                test_job.save()
-                send_admin_email.delay(test_job.pk)
-                return None
 
-            # fetch logs
-            logs = ""
-            try:
-                logs = self.__get_job_logs__(test_job.job_id)
-            except:
-                self.log_warn("Logs for job %s are not available" % test_job.job_id)
+                # fetch logs
+                logs = ""
+                try:
+                    logs = self.__get_job_logs__(test_job.job_id)
+                except:
+                    self.log_warn("Logs for job %s are not available" % test_job.job_id)
 
-            return self.__parse_results__(data, test_job) + (logs,)
+                return self.__parse_results__(data, test_job) + (logs,)
+        except xmlrpc.client.ProtocolError as error:
+            raise TemporaryFetchIssue(str(error))
+        except xmlrpc.client.Fault as fault:
+            if fault.faultCode // 100 == 5:
+                # assume HTTP errors 5xx are temporary issues
+                raise TemporaryFetchIssue(str(fault))
+            else:
+                raise FetchIssue(str(fault))
 
     def listen(self):
         listener_url = self.get_listener_url()
