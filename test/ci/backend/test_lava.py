@@ -13,6 +13,23 @@ from squad.core.models import Group, Project
 
 TEST_RESULTS = [
     {'duration': '',
+     'id': '5089687',
+     'job': '22505',
+     'level': 'None',
+     'logged': '2017-09-05 07:53:07.040871+00:00',
+     'measurement': '29.7200000000',
+     'metadata': {'case': 'auto-login-action',
+                  'definition': 'lava',
+                  'duration': '29.72',
+                  'level': '4.5',
+                  'result': 'pass'},
+     'name': 'auto-login-action',
+     'result': 'pass',
+     'suite': 'lava',
+     'timeout': '',
+     'unit': 'seconds',
+     'url': '/results/testcase/5089687'},
+    {'duration': '',
      'job': '1234',
      'level': 'None',
      'logged': '2017-02-15 11:31:21.973616+00:00',
@@ -77,7 +94,8 @@ JOB_METADATA = {
 
 JOB_DEFINITION = {
     'job_name': 'job_foo',
-    'metadata': JOB_METADATA
+    'metadata': JOB_METADATA,
+    'device_type': 'device_foo'
 }
 
 JOB_DETAILS = {
@@ -191,8 +209,8 @@ class LavaTest(TestCase):
             backend=self.backend)
         status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
 
-        self.assertEqual(len(results), 1)
-        self.assertEqual(len(metrics), 1)
+        self.assertEqual(len(results), 2)
+        self.assertEqual(len(metrics), 2)
         self.assertEqual(10, metrics['DefinitionFoo/case_foo'])
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")

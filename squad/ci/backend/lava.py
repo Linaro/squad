@@ -217,6 +217,18 @@ class Backend(BaseBackend):
                         res_value = result['measurement']
                         metrics.update({res_name: float(res_value)})
                 else:
+                    # add artificial 'boot' test result for each test job
+                    if result['name'] == 'auto-login-action':
+                        # by default the boot test is named after the device_type
+                        res_name = "boot/%s" % (definition['device_type'])
+                        res_time_name = "boot/time-%s" % (definition['device_type'])
+                        if 'testsuite' in job_metadata.keys():
+                            # If 'testsuite' metadata key is present in the job
+                            # it's appended to the test name. This way regressions can
+                            # be found with more granularity
+                            res_name = "%s-%s" % (res_name, job_metadata['testsuite'])
+                        results.update({res_name: result['result']})
+                        metrics.update({res_time_name: float(result['measurement'])})
                     if result['name'] == 'job' and result['result'] == 'fail':
                         metadata = result['metadata']
                         test_job.failure = str(metadata)
