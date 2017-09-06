@@ -46,6 +46,7 @@ class ProjectManager(models.Manager):
 
 class EmailTemplate(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    subject = models.CharField(max_length=1024, null=True, blank=True, help_text='Jinja2 template for subject (single line)')
     plain_text = models.TextField(help_text='Jinja2 template for text/plain content')
     html = models.TextField(blank=True, null=True, help_text='Jinja2 template for text/html content')
 
