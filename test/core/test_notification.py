@@ -232,3 +232,15 @@ class TestCustomEmailTemplate(TestCase):
 
         self.assertEqual('foo', txt)
         self.assertEqual('bar', html)
+
+    def test_subject_from_custom_template(self):
+        template = EmailTemplate.objects.create(subject='lalala', plain_text='foo', html='bar')
+        self.project.use_custom_email_template = True
+        self.project.custom_email_template = template
+        self.project.save()
+
+        status = ProjectStatus.create_or_update(self.build2)
+        send_status_notification(status)
+
+        msg = mail.outbox[0]
+        self.assertEqual('lalala', msg.subject)

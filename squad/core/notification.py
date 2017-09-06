@@ -62,14 +62,20 @@ class Notification(object):
     @property
     def subject(self):
         summary = self.summary
-        subject_data = (
-            self.project,
-            summary.tests_total,
-            summary.tests_fail,
-            summary.tests_pass,
-            self.build.version
-        )
-        return '%s: %d tests, %d failed, %d passed (build %s)' % subject_data
+        subject_data = {
+            'project': self.project,
+            'tests_total': summary.tests_total,
+            'tests_fail': summary.tests_fail,
+            'tests_pass': summary.tests_pass,
+            'regressions': len(self.comparison.regressions),
+            'build': self.build.version,
+        }
+        custom_email_template = self.project.custom_email_template
+        if custom_email_template and custom_email_template.subject:
+            template = custom_email_template.subject
+        else:
+            template = '{{project}}: {{tests_total}} tests, {{tests_fail}} failed, {{tests_pass}} passed (build {{build}})'
+        return jinja2.from_string(template).render(subject_data)
 
     @property
     def message(self):
