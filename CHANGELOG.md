@@ -1,3 +1,9 @@
+# 0.23
+
+* core/notification:
+  * add support for having a custom subject as part of an email notification
+    template.
+
 # 0.22
 
 * ci
