@@ -1,24 +1,24 @@
 {% load humanize %}
 {% load squad %}
 
-<div class="row">
-    <div class="col-md-4"><strong>Project</strong></div>
-    <div class="col-md-3"><strong>Last update</strong></div>
-    <div class="col-md-2"><strong>Tests</strong></div>
-    <div class="col-md-3"><strong>Metrics</strong></div>
+<div class="row hidden-xs">
+    <div class="col-md-4 col-sm-4"><strong>Project</strong></div>
+    <div class="col-md-3 col-sm-3"><strong>Last update</strong></div>
+    <div class="col-md-2 col-sm-2"><strong>Tests</strong></div>
+    <div class="col-md-3 col-sm-3"><strong>Metrics</strong></div>
 </div>
 {% for project in projects %}
 <div class="row top-line">
     {% with status=project.status %}
-    <div class="col-md-4">
+    <div class="col-md-4 col-sm-4">
         <a href="{% group_url project.group %}">{{project.group.slug}}</a>/<a href="{% project_url project %}">{{project.slug}}</a>
 
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-sm-3">
         {{status.last_updated}}
         <em>{{status.last_updated|naturaltime}}</em>
     </div>
-    <div class="col-md-2">
+    <div class="col-md-2 col-sm-2">
         {% if status.has_tests %}
         <div class="progress" title="Pass: {{status.pass_percentage|stringformat:"d"}}%">
             <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%">
@@ -29,10 +29,10 @@
         </div>
         {% endif %}
     </div>
-    <div class="col-md-2">
+    <div class="col-md-2 col-sm-2">
         {{status.metrics_summary}}
     </div>
-    <div class"col-md-1">
+    <div class"col-md-1 col-sm-1">
         {% if project.description %}
         <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-{{project.pk}}" aria-expanded="false" aria-controls="collapse-{{projecti.pk}}"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
         {% endif %}
@@ -40,6 +40,6 @@
     {% endwith %}
 </div>
 <div class="row collapse" id="collapse-{{project.pk}}">
-    <div class="col-md-12" >{{ project.description }}</div>
+    <div class="col-md-12 col-sm-12" >{{ project.description|safe }}</div>
 </div>
 {% endfor %}
