@@ -66,13 +66,12 @@
     </footer>
     </div><!-- id="wrapper" -->
 
+    {% block javascript-pre %}{% endblock %}
     <script type="text/javascript" src="{% static "angularjs/angular.js" %}"></script>
-
     <script type="text/javascript" src="{% static "lodash.js" %}"></script>
-
     <script type="text/javascript" src="{% static "chartjs/Chart.bundle.js" %}"></script>
+    {% block javascript-post %}{% endblock %}
 
-    {% block javascript %}{% endblock %}
   </body>
 </html>
 

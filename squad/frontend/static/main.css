@@ -1,3 +1,12 @@
+* {
+  font-size: 16px;
+}
+
+.top-line {
+  border-top: solid 1px #DDDDDD;
+  padding-top: 5px;
+}
+
 .pass, .pass a {
   color: #39aa56;
 }
@@ -38,7 +47,6 @@ body {
 
 footer {
   width: 100%;
-
   background: #f9f9f9;
   color: #777777;
   margin-top: 3em;
