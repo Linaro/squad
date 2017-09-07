@@ -64,6 +64,7 @@ class Project(models.Model):
     html_mail = models.BooleanField(default=True)
     moderate_notifications = models.BooleanField(default=False)
     custom_email_template = models.ForeignKey(EmailTemplate, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
 
     NOTIFY_ALL_BUILDS = 'all'
     NOTIFY_ON_CHANGE = 'change'

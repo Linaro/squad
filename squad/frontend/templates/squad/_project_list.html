@@ -1,0 +1,49 @@
+{% load humanize %}
+{% load squad %}
+
+<div class="row">
+    <div class="col-md-4"><strong>Project</strong></div>
+    <div class="col-md-3"><strong>Last update</strong></div>
+    <div class="col-md-2"><strong>Tests</strong></div>
+    <div class="col-md-3"><strong>Metrics</strong></div>
+</div>
+{% for project in projects %}
+<div class="row top-line">
+    {% with status=project.status %}
+    <div class="col-md-4">
+        <a href="{% group_url project.group %}">{{project.group.slug}}</a>/<a href="{% project_url project %}">{{project.slug}}</a>
+
+    </div>
+    <div class="col-md-3">
+        {{status.last_updated}}
+        <em>{{status.last_updated|naturaltime}}</em>
+    </div>
+    <div class="col-md-2">
+        {% if status.has_tests %}
+            <div class="progress">
+                <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%" title="Pass: {{project.status.pass_percentage|stringformat:"d"}}%">
+                    <span class="sr-only">Pass: {{status.pass_percentage}}% </span>
+                </div>
+                <div class="progress-bar progress-bar-warning" style="width: {{status.skip_percentage}}%" title="Skip: {{project.status.skip_percentage|stringformat:"d"}}%">
+                    <span class="sr-only">Skip: {{status.skip_percentage}}% </span>
+                </div>
+                <div class="progress-bar progress-bar-danger" style="width: {{status.fail_percentage}}%" title="Fail: {{project.status.fail_percentage|stringformat:"d"}}%">
+                    <span class="sr-only">Fail: {{status.fail_percentage}}% </span>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-2">
+        {{status.metrics_summary}}
+    </div>
+    <div class"col-md-1">
+        {% if project.description %}
+        <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-{{project.pk}}" aria-expanded="false" aria-controls="collapse-{{projecti.pk}}"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+        {% endif %}
+    </div>
+    {% endwith %}
+</div>
+<div class="row collapse" id="collapse-{{project.pk}}">
+    <div class="col-md-12" >{{ project.description }}</div>
+</div>
+{% endfor %}
