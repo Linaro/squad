@@ -29,8 +29,10 @@ To run the tests::
 
     python3 manage.py test
 
-Before running the application, create a admin user for yourself::
+Before running the application, create the database and an admin user
+for yourself::
 
+    python3 manage.py migrate
     python3 manage.py createsuperuser
 
 To run the application locally::
