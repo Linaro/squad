@@ -27,17 +27,17 @@ dependencies from the repository::
 
 To run the tests::
 
-    python3 manage.py test
+    ./manage.py test
 
 Before running the application, create the database and an admin user
 for yourself::
 
-    python3 manage.py migrate
-    python3 manage.py createsuperuser
+    ./manage.py migrate
+    ./manage.py createsuperuser
 
 To run the application locally::
 
-    python3 manage.py runserver
+    ./manage.py runserver
 
 Core data model
 ---------------
