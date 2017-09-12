@@ -199,6 +199,22 @@ class Build(models.Model):
     def test_runs_incomplete(self):
         return sum([1 for t in self.test_runs.all() if not t.completed])
 
+    @property
+    def test_suites_by_environment(self):
+        test_runs = self.test_runs.prefetch_related(
+            'tests',
+            'tests__suite',
+            'environment',
+        )
+        result = OrderedDict()
+        envlist = set([t.environment for t in test_runs])
+        for env in sorted(envlist, key=lambda env: env.slug):
+            result[env] = set()
+        for tr in test_runs:
+            for t in tr.tests.all():
+                result[tr.environment].add(t.suite)
+        return result
+
 
 def dict_intersection(d1, d2):
     return {k: d1[k] for k in d1 if (k in d2 and d2[k] == d1[k])}
