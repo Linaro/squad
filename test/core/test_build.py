@@ -109,3 +109,21 @@ class BuildTest(TestCase):
     def test_get_or_create_with_version_twice(self):
         self.project.builds.get_or_create(version='1.0-rc1')
         self.project.builds.get_or_create(version='1.0-rc1')
+
+    def test_test_suites_by_environment(self):
+        build = Build.objects.create(project=self.project, version='1.1')
+        env1 = self.project.environments.create(slug='env1')
+        env2 = self.project.environments.create(slug='env2')
+        foo = self.project.suites.create(slug="foo")
+        bar = self.project.suites.create(slug="bar")
+        testrun1 = build.test_runs.create(environment=env1)
+        testrun2 = build.test_runs.create(environment=env2)
+        testrun1.tests.create(suite=foo, name='test1', result=True)
+        testrun1.tests.create(suite=bar, name='test1', result=False)
+        testrun2.tests.create(suite=foo, name='test1', result=True)
+
+        test_suites = build.test_suites_by_environment
+
+        self.assertEqual([env1, env2], list(test_suites.keys()))
+        self.assertEqual(["foo", "bar"], [s.slug for s in test_suites[env1]])
+        self.assertEqual(["foo"], [s.slug for s in test_suites[env2]])
