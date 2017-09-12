@@ -213,6 +213,8 @@ class Build(models.Model):
         for tr in test_runs:
             for t in tr.tests.all():
                 result[tr.environment].add(t.suite)
+        for env in result.keys():
+            result[env] = sorted(result[env], key=lambda suite: suite.slug)
         return result
 
 
