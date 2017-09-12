@@ -211,7 +211,7 @@ class Build(models.Model):
         for env in sorted(envlist, key=lambda env: env.slug):
             result[env] = set()
         for tr in test_runs:
-            for t in tr.tests.all():
+            for t in sorted(tr.tests.all(), key=lambda suite: suite.__str__()):
                 result[tr.environment].add(t.suite)
         return result
 
