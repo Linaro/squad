@@ -1,3 +1,9 @@
+# 0.24
+
+* core
+  * provide test suites executed by environment
+* README updates
+
 # 0.23
 
 * core/notification:
