@@ -109,9 +109,10 @@ Example with test data as file uploads::
 
     $ curl \
         --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
-        --form tests=@/path/to/test-rsults.json \
+        --form tests=@/path/to/test-results.json \
         --form metrics=@/path/to/metrics.json \
         --form metadata=@/path/to/metadata.json \
+        --form log=@/path/to/log.txt \
         --form attachment=@/path/to/screenshot.png \
         --form attachment=@/path/to/extra-info.txt \
         https://squad.example.com/api/submit/my-team/my-project/x.y.z/my-ci-env
@@ -123,6 +124,7 @@ Example with test data as regular ``POST`` parameters::
         --form tests='{"test1": "pass", "test2": "fail"}' \
         --form metrics='{"metric1": 21, "metric2": 4}' \
         --form metadata'{"foo": "bar", "baz": "qux"}' \
+        --form log='log text ...' \
         --form attachment=@/path/to/screenshot.png \
         --form attachment=@/path/to/extra-info.txt \
         https://squad.example.com/api/submit/my-team/my-project/x.y.z/my-ci-env
@@ -159,10 +161,10 @@ Example:
     {
       "test1": "pass",
       "test2": "pass",
-      "group1/test1": "pass",
-      "group1/test2": "fail",
-      "group1/subgroup/test1": "pass",
-      "group1/subgroup/test2": "pass"
+      "testsuite1/test1": "pass",
+      "testsuite1/test2": "fail",
+      "testsuite2/subgroup1/testA": "pass",
+      "testsuite2/subgroup2/testA": "pass"
     }
 
 Metrics
