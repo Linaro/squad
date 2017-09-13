@@ -9,10 +9,6 @@ RUN apt-get update && \
     python3-jinja2 \
     python3-whitenoise \
     python3-zmq \
-    fonts-font-awesome \
-    libjs-angularjs \
-    libjs-bootstrap \
-    libjs-lodash \
     gunicorn3
 
 WORKDIR /app
@@ -22,10 +18,8 @@ COPY . ./
 RUN find
 RUN env
 
-# creates symlinks to packaged static assets
-RUN python3 -m squad.frontend
+# handle static assets
 RUN ./manage.py collectstatic --noinput
-
 
 USER www-data
 CMD sh -c "./manage.py migrate && exec gunicorn3 squad.wsgi --bind 0.0.0.0:${PORT:-8000}"

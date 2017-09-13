@@ -1,1 +1,0 @@
-import squad.frontend.setup
