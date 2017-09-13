@@ -1,0 +1,5 @@
+squad/frontend/static/angularjs/*     linguist-vendored
+squad/frontend/static/bootstrap/*     linguist-vendored
+squad/frontend/static/chartjs/*       linguist-vendored
+squad/frontend/static/font-awesome/*  linguist-vendored
+squad/frontend/static/lodash.js       linguist-vendored
