@@ -1,0 +1,90 @@
+#!/bin/sh
+
+set -eu
+
+cd "$(dirname $0)"
+
+tmpdir="$(mktemp -d)"
+trap "rm -rf $tmpdir" INT TERM EXIT
+
+status=download.status
+newstatus="$tmpdir/download.status"
+
+get_sha1() {
+  sha1sum "$1" | awk '{print($1)}'
+}
+
+download() {
+  local target url sha1 download_sha1
+  target="$1"
+  url="$2"
+  sha1="$3"
+  wget --quiet -O "$target" "$url"
+  if [ -n "$sha1" ]; then
+    download_sha1="$(get_sha1 "$target")"
+    if [ "$download_sha1" != "$sha1" ]; then
+      rm -rf "$target"
+      echo "E: $url does not match $sha1" >&2
+      exit 1
+    fi
+  fi
+}
+
+while read destination url sha1; do
+
+  # skip empty/commented lines
+  if [ -z "$destination" ] || [ "$(expr "$destination" : '^#')" -eq 1 ]; then
+    continue
+  fi
+  if [ -z "$url" ]; then
+    echo "W: missing URL for $destination (skipping)" >&2
+    continue
+  fi
+  if [ -z "$sha1" ]; then
+    echo "W: missing SHA1SUM for $destination, cannot verify the download" >&2
+  fi
+
+
+  action="installed"
+  if test -e "$destination"; then
+    cache="$(grep "$destination $url" "$status" 2>/dev/null || true)"
+    if [ -n "$cache" ]; then
+      echo "$cache" >> "$newstatus"
+      continue
+    else
+      action="updated"
+    fi
+  fi
+
+  rm -rf "$destination"
+  mkdir -p "$(dirname "$destination")"
+  name="$(basename "$destination")"
+  case "$url" in
+    *.js)
+      download "$destination" "$url" "$sha1"
+      if [ -z "$sha1" ]; then
+        sha1="$(get_sha1 "$destination")"
+      fi
+      ;;
+    *.zip)
+      zip="$(basename "$url")"
+      mkdir "$tmpdir/$name"
+      download "$tmpdir/$zip" "$url" "$sha1"
+      if [ -z "$sha1" ]; then
+        sha1="$(get_sha1 "$tmpdir/$zip")"
+      fi
+      (cd "$tmpdir/$name" && unzip -q "../$zip")
+      mv "$tmpdir/$name"/* "$destination"
+      ;;
+    *)
+      echo "E: URL not supported: $url" >&2
+      exit 1
+  esac
+
+  echo "$destination $url $sha1" >> "$newstatus"
+  echo "I: $destination $action from $url"
+done < download.conf
+
+if [ -f "$newstatus" ]; then
+  mv "$newstatus" "$status"
+fi

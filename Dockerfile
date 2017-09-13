@@ -9,10 +9,8 @@ RUN apt-get update && \
     python3-jinja2 \
     python3-whitenoise \
     python3-zmq \
-    fonts-font-awesome \
-    libjs-angularjs \
-    libjs-bootstrap \
-    libjs-lodash \
+    wget \
+    unzip \
     gunicorn3
 
 WORKDIR /app
@@ -22,7 +20,7 @@ COPY . ./
 RUN find
 RUN env
 
-# creates symlinks to packaged static assets
+# downloads and prepares static assets
 RUN python3 -m squad.frontend
 RUN ./manage.py collectstatic --noinput
 
