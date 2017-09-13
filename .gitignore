@@ -3,10 +3,6 @@
 /.git
 /.puzzle
 /secret.dat
-/squad/frontend/static/angularjs
-/squad/frontend/static/bootstrap
-/squad/frontend/static/font-awesome
-/squad/frontend/static/lodash.js
 /static
 /.tests
 /__pycache__
