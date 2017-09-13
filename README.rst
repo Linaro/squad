@@ -11,11 +11,6 @@ install SQUAD for production usage, see [INSTALL](INSTALL.rst) instead.
 
 Note that SQUAD is Python3-only, so it won't work with Python 2.
 
-If running from git, you need to install a few packages needed for the
-web frontend::
-
-    apt-get install fonts-font-awesome libjs-angularjs libjs-bootstrap libjs-lodash
-
 To install the dependencies::
 
     pip3 install -r requirements-dev.txt
