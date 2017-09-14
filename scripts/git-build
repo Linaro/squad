@@ -1,0 +1,24 @@
+#!/bin/sh
+
+set -eu
+
+cd "$(dirname "$0")/.."
+
+v="$(git describe --tag)"
+if [ -f dist/LASTBUILD ]; then
+    v0="$(cat dist/LASTBUILD)"
+else
+    v0=
+fi
+
+if [ "$v" = "$v0" ]; then
+    exit 1
+fi
+
+echo "__version__ = '$v'" > squad/version.py
+trap 'git checkout -- squad/version.py' INT TERM EXIT
+rm -rf dist/squad*.wheel
+python3 -m squad.frontend
+chronic python3 setup.py bdist_wheel
+
+echo "$v" > dist/LASTBUILD
