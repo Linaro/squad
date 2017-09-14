@@ -3,18 +3,15 @@
 set -exu
 
 ./manage.py migrate
-./manage.py shell --no-color --plain  -c "exec(open('$(dirname $0)/setup.py').read())"
 
 ./manage.py runserver &
 trap 'pkill -f runserver' INT TERM EXIT
 
 sleep 3
 
-AUTH_TOKEN=key1 ./scripts/testdata/gen-test-data team1 project1 board1
-AUTH_TOKEN=key1 ./scripts/testdata/gen-test-data team1 project1 board2
-
-AUTH_TOKEN=key2 ./scripts/testdata/gen-test-data team2 project2 board1
-AUTH_TOKEN=key2 ./scripts/testdata/gen-test-data team2 project2 board2
-
-AUTH_TOKEN=key3 ./scripts/testdata/gen-test-data team3 project3 board1
-AUTH_TOKEN=key3 ./scripts/testdata/gen-test-data team3 project3 board2
+./scripts/testdata/gen-test-data team1 project1 board1
+./scripts/testdata/gen-test-data team1 project1 board2
+./scripts/testdata/gen-test-data team2 project2 board1
+./scripts/testdata/gen-test-data team2 project2 board2
+./scripts/testdata/gen-test-data team3 project3 board1
+./scripts/testdata/gen-test-data team3 project3 board2
