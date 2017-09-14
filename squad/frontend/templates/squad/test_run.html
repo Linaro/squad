@@ -89,10 +89,13 @@
             </td>
             <td style='vertical-align: middle'>
                 <div class="progress" style='margin-bottom: 0px'>
-                    <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%">
+                    <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%" title="Pass: {{status.pass_percentage|stringformat:"d"}}%">
                         <span class="sr-only">Pass: {{status.pass_percentage}}% </span>
                     </div>
-                    <div class="progress-bar progress-bar-danger" style="width: {{status.fail_percentage}}%">
+                    <div class="progress-bar progress-bar-warning" style="width: {{status.skip_percentage}}%" title="Skip: {{status.skip_percentage|stringformat:"d"}}%">
+                        <span class="sr-only">Skip: {{status.skip_percentage}}%</span>
+                    </div>
+                    <div class="progress-bar progress-bar-danger" style="width: {{status.fail_percentage}}%" title="Fail: {{status.fail_percentage|stringformat:"d"}}%">
                         <span class="sr-only">Fail: {{status.fail_percentage}}%</span>
                     </div>
                 </div>
