@@ -85,6 +85,6 @@ while read destination url sha1; do
   echo "I: $destination $action from $url"
 done < download.conf
 
-if [ -f "$newstatus" ]; then
-  mv "$newstatus" "$status"
+if ! cmp --silent "$newstatus" "$status"; then
+  mv -f "$newstatus" "$status"
 fi
