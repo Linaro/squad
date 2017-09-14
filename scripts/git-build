@@ -17,7 +17,7 @@ fi
 
 echo "__version__ = '$v'" > squad/version.py
 trap 'git checkout -- squad/version.py' INT TERM EXIT
-rm -rf dist/squad*.wheel
+rm -rf dist/squad*.whl
 python3 -m squad.frontend
 chronic python3 setup.py bdist_wheel
 
