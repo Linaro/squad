@@ -11,11 +11,6 @@ install SQUAD for production usage, see [INSTALL](INSTALL.rst) instead.
 
 Note that SQUAD is Python3-only, so it won't work with Python 2.
 
-If running from git, you need to install a few packages needed for the
-web frontend::
-
-    apt-get install fonts-font-awesome libjs-angularjs libjs-bootstrap libjs-lodash
-
 To install the dependencies::
 
     pip3 install -r requirements-dev.txt
@@ -23,7 +18,8 @@ To install the dependencies::
 Alternatively to using pip, on Debian stretch or later you can install
 dependencies from the repository::
 
-    apt-get install python3-dateutil python3-django python3-whitenoise
+    apt-get install python3-dateutil python3-django python3-celery \
+      python3-django-celery python3-jinja2 python3-whitenoise python3-zmq
 
 To run the tests::
 

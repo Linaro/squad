@@ -7,6 +7,8 @@
 /squad/frontend/static/bootstrap
 /squad/frontend/static/font-awesome
 /squad/frontend/static/lodash.js
+/squad/frontend/static/chartjs
+/squad/frontend/static/download.status
 /static
 /.tests
 /__pycache__

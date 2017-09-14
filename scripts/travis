@@ -3,8 +3,7 @@
 set -eu
 set -o pipefail
 
-git fetch origin cache/static
-git archive FETCH_HEAD | tar xaf -
+python3 -m squad.frontend
 
 (./manage.py test --noinput -v 2 2>&1 || true) | tee .tests
 
