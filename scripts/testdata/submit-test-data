@@ -35,8 +35,12 @@ rand_pass_fail() {
     echo "$SQUAD_RESULT"
     return
   fi
-  if [ "$(rand 4)" -eq 1 ]; then
+  local rnd
+  rnd="$(rand 10)"
+  if [ "$rnd" -eq 1 -o "$rnd" -eq 2 ]; then
     echo "fail"
+  elif [ "$rnd" -eq 3 ]; then
+    echo "skip"
   else
     echo "pass"
   fi
