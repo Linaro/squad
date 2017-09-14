@@ -1,0 +1,39 @@
+{% load humanize %}
+{% load squad %}
+<table class='table table-striped'>
+    <tr>
+        <th>Build</th>
+        <th>Date</th>
+        <th>Test jobs<br/>
+            <span class="badge alert-default">Total</span>
+            <span class="badge alert-success">Completed</span>
+            <span class="badge alert-danger">Incomplete</span>
+        </th>
+        <th>Test results summary<br/>
+            <span class="badge alert-default">Total</span>
+            <span class="badge alert-success">Pass</span>
+            <span class="badge alert-warning">Skip</span>
+            <span class="badge alert-danger">Fail</span>
+        </th>
+    </tr>
+    {% for build in builds %}
+    <tr>
+        <td><a href="{% project_url build %}">{{build.version}}</a></td>
+        <td>
+            <a href="{% project_url build %}">{{build.datetime}}</a>
+            <em>{{build.datetime|naturaltime}}</em>
+        </td>
+        <td><span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.test_runs_total}}</span>
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Completed">{{build.test_runs_completed}}</span>
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Incomplete">{{build.test_runs_incomplete}}</span>
+        </td>
+        <td>
+            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.status.tests_total}}</span>
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{build.status.tests_pass}}</span>
+            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{build.status.tests_skip}}</span>
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{build.status.tests_fail}}</span>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+

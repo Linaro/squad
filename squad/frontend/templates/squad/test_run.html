@@ -2,143 +2,133 @@
 {% load squad %}
 
 {% block content %}
-    {% include "squad/project-nav.html" %}
 
-    <h2>
-        <a href="{% project_url build %}">
-            Build {{build.version}}
-        </a>
-        »
-        Test run {% if test_run.job_url %}<a href="{{ test_run.job_url }}">{% endif %}<u>{{test_run.job_id}}</u>{% if test_run.job_url %}</a>{% endif %}
+{% load squad %}
+<h1>
+    <a href="{% group_url project.group %}">{{project.group}}</a>
+    » <a href="{% project_url project %}">{{project.slug}}</a>
+    » <a href="{% build_url build %}">Build {{build.version}}</a>
+    »
+    Test run {% if test_run.job_url %}<a href="{{ test_run.job_url }}">{% endif %}<u>{{test_run.job_id}}</u>{% if test_run.job_url %}</a>{% endif %}
+    <small>Environment: <em>{{test_run.environment.slug}}</em></small>
+</h1>
 
-        <small>Environment: <em>{{test_run.environment.slug}}</em></small>
-    </h2>
 
-    <table class='table table-hover table-condensed'>
-        <tr>
-            <td colspan='2'><h3>Metadata</h3></td>
-        </tr>
-        {% for key, value in metadata %}
-        <tr>
-            <th>{{key}}</th>
-            <td>{{value|urlize}}</td>
-        </tr>
-        {% endfor %}
-        <tr>
-            <td><h3>Downloads</h3></td>
-            <td style='vertical-align: middle'>
-                {% if test_run.log_file|length > 0 %}
-                <a href="log" class='btn btn-default'>
-                    <i class='fa fa-file-text-o'></i>
-                    Log file
-                </a>
-                {% endif %}
-                {% if test_run.tests_file|length > 0 %}
-                <a href="tests" class='btn btn-default'>
-                    <i class='fa fa-file-code-o'></i>
-                    Tests file
-                </a>
-                {% endif %}
-                {% if test_run.metrics_file|length > 0 %}
-                <a href="metrics" class='btn btn-default'>
-                    <i class='fa fa-file-code-o'></i>
-                    Metrics file
-                </a>
-                {% endif %}
-                {% if test_run.metadata_file|length > 0 %}
-                <a href="metadata" class='btn btn-default'>
-                    <i class='fa fa-file-code-o'></i>
-                    Metadata file
-                </a>
-                {% endif %}
-            </td>
-        </tr>
-        {% if attachments|length > 0 %}
-        <tr>
-            <td><h3>Attachments</h3></td>
-            <td style='vertical-align: middle'>
-                {% for file, file_type, length in attachments %}
-                <a href="attachments/{{file}}" class='btn btn-default'>
-                    {% if file_type %}
-                    <i class='fa fa-file-{{file_type}}-o'></i>
-                    {% else %}
-                    <i class='fa fa-file-o'></i>
-                    {% endif %}
-                    {{file}}
-                    ({{length|filesizeformat}})
-                </a>
-                {% endfor %}
-            </td>
-        </tr>
-        {% endif %}
-    </table>
+<h2>Metadata</h2>
 
-    <table class='table table-hover table-condensed'>
+<table class='table table-hover table-condensed'>
+    {% for key, value in metadata %}
+    <tr>
+        <th>{{key}}</th>
+        <td>{{value|urlize}}</td>
+    </tr>
+    {% endfor %}
+</table>
 
-        {% if tests_status|length > 0 %}
-        <tr>
-            <td colspan='2'>
-                <h3>Tests</h3>
-            </td>
-        </tr>
-        {% endif %}
-        {% for status in tests_status %}
-        <tr class='warning'>
-            <td>
-                <h4>{{status.suite.slug}}</h4>
-            </td>
-            <td style='vertical-align: middle'>
-                <div class="progress" style='margin-bottom: 0px'>
-                    <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%" title="Pass: {{status.pass_percentage|stringformat:"d"}}%">
-                        <span class="sr-only">Pass: {{status.pass_percentage}}% </span>
-                    </div>
-                    <div class="progress-bar progress-bar-warning" style="width: {{status.skip_percentage}}%" title="Skip: {{status.skip_percentage|stringformat:"d"}}%">
-                        <span class="sr-only">Skip: {{status.skip_percentage}}%</span>
-                    </div>
-                    <div class="progress-bar progress-bar-danger" style="width: {{status.fail_percentage}}%" title="Fail: {{status.fail_percentage|stringformat:"d"}}%">
-                        <span class="sr-only">Fail: {{status.fail_percentage}}%</span>
-                    </div>
+<h2>Downloads</h2>
+
+{% if test_run.log_file|length > 0 %}
+<a href="log" class='btn btn-default'>
+    <i class='fa fa-file-text-o'></i>
+    Log file
+</a>
+{% endif %}
+
+{% if test_run.tests_file|length > 0 %}
+<a href="tests" class='btn btn-default'>
+    <i class='fa fa-file-code-o'></i>
+    Tests file
+</a>
+{% endif %}
+
+{% if test_run.metrics_file|length > 0 %}
+<a href="metrics" class='btn btn-default'>
+    <i class='fa fa-file-code-o'></i>
+    Metrics file
+</a>
+{% endif %}
+
+{% if test_run.metadata_file|length > 0 %}
+<a href="metadata" class='btn btn-default'>
+    <i class='fa fa-file-code-o'></i>
+    Metadata file
+</a>
+{% endif %}
+
+{% if attachments|length > 0 %}
+{% for file, file_type, length in attachments %}
+<a href="attachments/{{file}}" class='btn btn-default'>
+    {% if file_type %}
+    <i class='fa fa-file-{{file_type}}-o'></i>
+    {% else %}
+    <i class='fa fa-file-o'></i>
+    {% endif %}
+    {{file}}
+    ({{length|filesizeformat}})
+</a>
+{% endfor %}
+{% endif %}
+
+
+{% if tests_status|length > 0 %}
+<h2>Tests</h2>
+<table class='table table-hover table-condensed'>
+    {% for status in tests_status %}
+    <tr class='warning'>
+        <td>
+            <h4>{{status.suite.slug}}</h4>
+        </td>
+        <td style='vertical-align: middle'>
+            <div class="progress" style='margin-bottom: 0px'>
+                <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%" title="Pass: {{status.pass_percentage|stringformat:"d"}}%">
+                    <span class="sr-only">Pass: {{status.pass_percentage}}% </span>
                 </div>
-            </td>
-        </tr>
-            {% for test in status.tests %}
-            <tr>
-                <td>{{test.name}}</td>
-                <td class='{{test.status|slugify}}'>
-                    <a href="{% url 'test_history' build.project.group.slug build.project.slug test.full_name %}">{{test.status}}</a>
-                </td>
-            </tr>
-            {% endfor %}
-            <tr>
-                <td colspan='2'>&nbsp;</td>
-            </tr>
-        {% endfor %}
+                <div class="progress-bar progress-bar-warning" style="width: {{status.skip_percentage}}%" title="Skip: {{status.skip_percentage|stringformat:"d"}}%">
+                    <span class="sr-only">Skip: {{status.skip_percentage}}%</span>
+                </div>
+                <div class="progress-bar progress-bar-danger" style="width: {{status.fail_percentage}}%" title="Fail: {{status.fail_percentage|stringformat:"d"}}%">
+                    <span class="sr-only">Fail: {{status.fail_percentage}}%</span>
+                </div>
+            </div>
+        </td>
+    </tr>
+    {% for test in status.tests %}
+    <tr>
+        <td>{{test.name}}</td>
+        <td class='{{test.status|slugify}}'>
+            <a href="{% url 'test_history' build.project.group.slug build.project.slug test.full_name %}">{{test.status}}</a>
+        </td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td colspan='2'>&nbsp;</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
 
 
-        {% if metrics_status|length > 0 %}
-        <tr>
-            <td colspan='2'>
-                <h3>Metrics</h3>
-            </td>
-        </tr>
-        {% endif %}
-        {% for status in metrics_status %}
-            <tr class='warning'>
-                <td colspan='2'>
-                    <h4>{{status.suite.slug}}</h4>
-                </td>
-            </tr>
-            {% for metric in status.metrics %}
-                <tr>
-                    <td>{{metric.name}}</td>
-                    <td>{{metric.result}}</td>
-                </tr>
-            {% endfor %}
-            <tr>
-                <td colspan='2'>&nbsp;</td>
-            </tr>
-        {% endfor %}
+{% if metrics_status|length > 0 %}
+<h2>Metrics</h2>
+<table class='table table-hover table-condensed'>
+    {% for status in metrics_status %}
+    <tr class='warning'>
+        <td colspan='2'>
+            <h4>{{status.suite.slug}}</h4>
+        </td>
+    </tr>
+    {% for metric in status.metrics %}
+    <tr>
+        <td>{{metric.name}}</td>
+        <td>{{metric.result}}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td colspan='2'>&nbsp;</td>
+    </tr>
+    {% endfor %}
 
-    </table>
+</table>
+{% endif %}
 
 {% endblock %}

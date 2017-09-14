@@ -51,3 +51,10 @@ footer a:visited, footer a:link {
   font-weight: bold;
 
 }
+
+.navbar {
+  margin-bottom: 10px;
+}
+h1 {
+  margin-top: 0px;
+}
