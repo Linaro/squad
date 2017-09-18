@@ -22,7 +22,7 @@ setup(
     author='Antonio Terceiro',
     author_email='antonio.terceiro@linaro.org',
     url='https://github.com/Linaro/squad',
-    packages=find_packages(exclude=['tests*']),
+    packages=find_packages(exclude=['test*']),
     include_package_data=True,
     entry_points={
         'console_scripts': [
