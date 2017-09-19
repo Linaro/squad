@@ -1,5 +1,5 @@
 .pass, .pass a {
-  color: #214203;
+  color: #39aa56;
 }
 
 td.pass {
@@ -10,7 +10,7 @@ td.pass:hover {
 }
 
 .fail, .fail a {
-  color: #a40000;
+  color: #db4545;
 }
 
 td.fail {
@@ -50,4 +50,11 @@ footer a:visited, footer a:link {
   color: #777777;
   font-weight: bold;
 
+}
+
+.navbar {
+  margin-bottom: 10px;
+}
+h1 {
+  margin-top: 0px;
 }

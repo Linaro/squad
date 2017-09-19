@@ -1,0 +1,41 @@
+{% load humanize %}
+{% load squad %}
+<table class='table table-striped'>
+    <tr>
+        <th>Build</th>
+        <th>Date</th>
+        <th>Test jobs</th>
+        <th>Test results summary</th>
+    </tr>
+    {% for build in builds %}
+    <tr>
+        <td><a href="{% project_url build %}">{{build.version}}</a></td>
+        <td>
+            <a href="{% project_url build %}">{{build.datetime}}</a>
+            <em>{{build.datetime|naturaltime}}</em>
+        </td>
+        <td>
+            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.test_runs_total}} total</span>
+            {% if build.test_runs_completed > 0 %}
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Completed">{{build.test_runs_completed}} completed</span>
+            {% endif %}
+            {% if build.test_runs_incomplete > 0 %}
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Incomplete">{{build.test_runs_incomplete}}</span>
+            {% endif %}
+        </td>
+        <td>
+            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.status.tests_total}} total</span>
+            {% if build.status.tests_pass > 0 %}
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{build.status.tests_pass}} passed</span>
+            {% endif %}
+            {% if build.status.tests_skip > 0 %}
+            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{build.status.tests_skip}} skipped</span>
+            {% endif %}
+            {% if build.status.tests_fail > 0 %}
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{build.status.tests_fail}} failed</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+

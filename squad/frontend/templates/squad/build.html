@@ -4,79 +4,83 @@
 
 {% block content %}
 {% include "squad/build-nav.html" %}
-  <table class='table table-hover table-condensed' ng-app='SquadResubmit'>
-    <tr>
-        <td colspan='4'><h3>Metadata</h3></td>
-    </tr>
+
+
+<h2>Metadata</h2>
+<table class='table table-hover table-condensed' ng-app='SquadResubmit'>
     {% for key, value in metadata %}
     <tr>
         <th>{{key}}</th>
         <td colspan='3'>{{value|urlize}}</td>
     </tr>
     {% endfor %}
+</table>
+
+<h2>Test runs</h2>
+<table class='table table-hover table-condensed' ng-app='SquadResubmit'>
     {% for test_run in build.test_runs.all %}
     <tr class='warning'>
-      <th colspan='4'>
-        <h4>
-          <a href="{% project_url test_run %}">Test run #{{test_run.job_id}}</a>
-          <small>
-            Environment: <em>{{test_run.environment.slug}}</em>
+        <th colspan='3'>
+            <h4>
+                <a href="{% project_url test_run %}">Test run #{{test_run.job_id}}</a>
+                <small>
+                    Environment: <em>{{test_run.environment.slug}}</em>
 
-            {% if test_run.job_status %}
-            Status: {{test_run.job_status}}
-            {% endif %}
+                    {% if test_run.job_status %}
+                    Status: {{test_run.job_status}}
+                    {% endif %}
 
-            <div class='pull-right'>
-              {% if test_run.resubmit_url %}
-              <a href="{{test_run.resubmit_url}}" class='btn btn-info '><span class='fa fa-recycle'></span> resubmit</a>
-              {% endif %}
-              {% if user.is_staff or user.is_superuser %}
-                  {% for test_job in test_run.test_jobs.all %}
-                      {% if test_job.can_resubmit %}
-                      <a ng-controller='ResubmitController' class="btn" ng-click="done || resubmit({{test_job.id}})" ng-class="{'btn-info': !done, 'btn-success': done}" ng-disabled="done" ><span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done, 'fa-spin': loading}" ng-disabled="done">{{test_job.job_id}} - resubmit</span></a>
-                      {% endif %}
-                  {% endfor %}
-              {% endif %}
-              {% if test_run.job_url %}
-              <a href="{{test_run.job_url}}" class='btn btn-info '><span class='fa fa-info-circle'></span> origin</a>
-              {% endif %}
-            </div>
+                    <div class='pull-right'>
+                        {% if test_run.resubmit_url %}
+                        <a href="{{test_run.resubmit_url}}" class='btn btn-info '><span class='fa fa-recycle'></span> resubmit</a>
+                        {% endif %}
+                        {% if user.is_staff or user.is_superuser %}
+                        {% for test_job in test_run.test_jobs.all %}
+                        {% if test_job.can_resubmit %}
+                        <a ng-controller='ResubmitController' class="btn" ng-click="done || resubmit({{test_job.id}})" ng-class="{'btn-info': !done, 'btn-success': done}" ng-disabled="done" ><span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done, 'fa-spin': loading}" ng-disabled="done">{{test_job.job_id}} - resubmit</span></a>
+                        {% endif %}
+                        {% endfor %}
+                        {% endif %}
+                        {% if test_run.job_url %}
+                        <a href="{{test_run.job_url}}" class='btn btn-info '><span class='fa fa-info-circle'></span> origin</a>
+                        {% endif %}
+                    </div>
 
-          </small>
-        </h4>
-      </th>
+                </small>
+            </h4>
+        </th>
     </tr>
     <tr>
-      <th>Suite</th>
-      <th>Metrics summary</th>
-      <th>Tests passed</th>
-      <th>Tests failed</th>
+        <th>Suite</th>
+        <th>Metrics summary</th>
+        <th>
+            Tests<br/>
+            <span class="badge alert-default">Total</span>
+            <span class="badge alert-success">Pass</span>
+            <span class="badge alert-warning">Skip</span>
+            <span class="badge alert-danger">Fail</span>
+        </th>
     </tr>
     {% for status in test_run.status.by_suite.all %}
     {% if status %}
     <tr>
-      <td>{{status.suite.slug}}</td>
-      <td>{{status.metrics_summary}}</td>
-      <td>{{status.tests_pass}}</td>
-      <td>{{status.tests_fail}}</td>
+        <td>{{status.suite.slug}}</td>
+        <td>
+            {% if status.has_metrics %}{{status.metrics_summary}}{% endif %}
+        </td>
+        <td>
+            {% if status.has_tests %}
+            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}}</span>
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}}</span>
+            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}}</span>
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}}</span>
+            {% endif %}
+        </td>
     </tr>
     {% endif %}
     {% endfor %}
-    {% if test_run.status.by_suite.count > 1 %}
-    {% with overall_status=test_run.status.overall.first %}
-    <tr>
-      <th>Overall summary</th>
-      <th>{{overall_status.metrics_summary}}</th>
-      <th>{{overall_status.tests_pass}}</th>
-      <th>{{overall_status.tests_fail}}</th>
-    </tr>
-    {% endwith %}
-    {% endif %}
-    <tr>
-      <td colspan='4'>&nbsp;</td>
-    </tr>
     {% endfor %}
-  </table>
+</table>
 {% endblock %}
 
 

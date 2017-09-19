@@ -17,6 +17,21 @@ if ! which faketime >/dev/null; then
   exit 1
 fi
 
+if [ -z "${AUTH_TOKEN:-}" ]; then
+  export AUTH_TOKEN="$(openssl rand -hex 16)"
+fi
+basedir="$(dirname "$0")"
+
+export AUTH_TOKEN=$(./manage.py shell <<EOF
+from squad.core.models import Group
+
+group, _ = Group.objects.get_or_create(slug='$TEAM')
+project, _ = group.projects.get_or_create(slug='$PROJECT')
+token, _ = project.tokens.get_or_create(description='submit-test-data')
+print(token.key)
+EOF
+)
+
 for i in $(seq ${days} -1 0); do
   build=$((days - i))
   faketime "$i days ago" $(dirname $0)/submit-test-data "$TEAM" "$PROJECT" "$build" "$ENVIRONMENT"

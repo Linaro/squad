@@ -409,20 +409,28 @@ class StatusManager(models.Manager):
 
 
 class TestSummaryBase(object):
+
     @property
     def tests_total(self):
         return self.tests_pass + self.tests_fail + self.tests_skip
 
-    @property
-    def pass_percentage(self):
-        if self.tests_pass > 0:
-            return 100 * (float(self.tests_pass) / float(self.tests_total))
+    def __percent__(self, ntests):
+        if ntests > 0:
+            return 100 * (float(ntests) / float(self.tests_total))
         else:
             return 0
 
     @property
-    def non_pass_percentage(self):
-        return 100 - self.pass_percentage
+    def pass_percentage(self):
+        return self.__percent__(self.tests_pass)
+
+    @property
+    def fail_percentage(self):
+        return self.__percent__(self.tests_fail)
+
+    @property
+    def skip_percentage(self):
+        return self.__percent__(self.tests_skip)
 
     @property
     def has_tests(self):

@@ -24,11 +24,15 @@
             <em>{{status.last_updated|naturaltime}}</em>
         </td>
         <td>
-            <div class="progress" title="Pass: {{project.status.pass_percentage|stringformat:"d"}}%">
-                <div class="progress-bar progress-bar-success" style="width: {{project.status.pass_percentage}}%">
+            <div class="progress">
+                <div class="progress-bar progress-bar-success" style="width: {{project.status.pass_percentage}}%" title="Pass: {{project.status.pass_percentage|stringformat:"d"}}%">
                     <span class="sr-only">Pass: {{project.status.pass_percentage}}% </span>
                 </div>
-                <div class="progress-bar progress-bar-danger" style="width: {{project.status.non_pass_percentage}}%">
+                <div class="progress-bar progress-bar-warning" style="width: {{project.status.skip_percentage}}%" title="Skip: {{project.status.skip_percentage|stringformat:"d"}}%">
+                    <span class="sr-only">Skip: {{project.status.skip_percentage}}% </span>
+                </div>
+                <div class="progress-bar progress-bar-danger" style="width: {{project.status.fail_percentage}}%" title="Fail: {{project.status.fail_percentage|stringformat:"d"}}%">
+                    <span class="sr-only">Fail: {{project.status.fail_percentage}}% </span>
                 </div>
             </div>
         </td>
