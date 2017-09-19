@@ -9,7 +9,7 @@
 {% include "squad/project-nav.html" %}
 
 {% if last_build %}
-<h2>Last build - <a href="{% project_url last_build %}">{{last_build.version}}</a> {{last_build.datetime}} {{last_build.datetime|naturaltime}}</h2>
+<h2>Last build - <a class="h2 text-primary" href="{% project_url last_build %}">{{last_build.version}}</a> {{last_build.datetime}} {{last_build.datetime|naturaltime}}</h2>
 <table class='table table-hover table-striped table-condensed'>
     <tr>
         <td colspan='4'><h3>Metadata</h3></td>
