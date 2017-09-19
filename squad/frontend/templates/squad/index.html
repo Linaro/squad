@@ -1,46 +1,9 @@
 {% extends "squad/base.html" %}
 {% load humanize %}
 {% load squad %}
+{% load static %}
 
 
 {% block content %}
-<table class='table table-striped'>
-    <tr>
-        <th>Project</th>
-        <th>Last update</th>
-        <th>Tests</th>
-        <th>Metrics</th>
-    </tr>
-    {% for project in projects %}
-    {% with status=project.status %}
-    <tr>
-        <td>
-            <a href="{% group_url project.group %}">{{project.group.slug}}</a>/<a href="{% project_url project %}">{{project.slug}}</a>
-        </td>
-        <td>
-            {{status.last_updated}}
-            <em>{{status.last_updated|naturaltime}}</em>
-        </td>
-        <td>
-            {% if status.has_tests %}
-            <div class="progress">
-                <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%" title="Pass: {{project.status.pass_percentage|stringformat:"d"}}%">
-                    <span class="sr-only">Pass: {{status.pass_percentage}}% </span>
-                </div>
-                <div class="progress-bar progress-bar-warning" style="width: {{status.skip_percentage}}%" title="Skip: {{project.status.skip_percentage|stringformat:"d"}}%">
-                    <span class="sr-only">Skip: {{status.skip_percentage}}% </span>
-                </div>
-                <div class="progress-bar progress-bar-danger" style="width: {{status.fail_percentage}}%" title="Fail: {{project.status.fail_percentage|stringformat:"d"}}%">
-                    <span class="sr-only">Fail: {{status.fail_percentage}}% </span>
-                </div>
-            </div>
-            {% endif %}
-        </td>
-        <td>
-            {{status.metrics_summary}}
-        </td>
-        {% endwith %}
-    </tr>
-    {% endfor %}
-</table>
+{% include "squad/_project_list.html" %}
 {% endblock %}
