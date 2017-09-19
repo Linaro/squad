@@ -20,13 +20,17 @@
     </div>
     <div class="col-md-2 col-sm-2">
         {% if status.has_tests %}
-        <div class="progress" title="Pass: {{status.pass_percentage|stringformat:"d"}}%">
-            <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%">
-                <span class="sr-only">Pass: {{status.pass_percentage}}% </span>
+            <div class="progress">
+                <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%" title="Pass: {{project.status.pass_percentage|stringformat:"d"}}%">
+                    <span class="sr-only">Pass: {{status.pass_percentage}}% </span>
+                </div>
+                <div class="progress-bar progress-bar-warning" style="width: {{status.skip_percentage}}%" title="Skip: {{project.status.skip_percentage|stringformat:"d"}}%">
+                    <span class="sr-only">Skip: {{status.skip_percentage}}% </span>
+                </div>
+                <div class="progress-bar progress-bar-danger" style="width: {{status.fail_percentage}}%" title="Fail: {{project.status.fail_percentage|stringformat:"d"}}%">
+                    <span class="sr-only">Fail: {{status.fail_percentage}}% </span>
+                </div>
             </div>
-            <div class="progress-bar progress-bar-danger" style="width: {{status.non_pass_percentage}}%">
-            </div>
-        </div>
         {% endif %}
     </div>
     <div class="col-md-2 col-sm-2">
