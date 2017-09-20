@@ -5,21 +5,21 @@
 {% block content %}
 {% include "squad/build-nav.html" %}
 
-
+<div class="row">
 <h2>Metadata</h2>
-<table class='table table-hover table-condensed' ng-app='SquadResubmit'>
     {% for key, value in metadata %}
-    <tr>
-        <th>{{key}}</th>
-        <td colspan='3'>{{value|urlize}}</td>
-    </tr>
+    <div class="row top-line">
+        <div class="col-md-3">{{key}}</div>
+        <div class="col-md-9">{{value|urlize}}</div>
+    </div>
     {% endfor %}
-</table>
+</div>
 
+<div class="row" ng-app='SquadResubmit'>
 <h2>Test runs</h2>
-<table class='table table-hover table-condensed' ng-app='SquadResubmit'>
     {% for test_run in build.test_runs.all %}
-    <tr class='warning'>
+    <div class="row top-line bg-warning">
+        <div class='col-md-12 warning'>
         <th colspan='3'>
             <h4>
                 <a href="{% project_url test_run %}">Test run #{{test_run.job_id}}</a>
@@ -48,39 +48,53 @@
 
                 </small>
             </h4>
-        </th>
-    </tr>
-    <tr>
-        <th>Suite</th>
-        <th>Metrics summary</th>
-        <th>
-            Tests<br/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">Suite</div>
+        <div class="col-md-3">Metrics summary</div>
+        <div class="col-md-6">Tests</div>
+    </div>
+    <div class="row">
+        <div class="col-md-1 col-md-offset-6">
             <span class="badge alert-default">Total</span>
+        </div>
+        <div class="col-md-1">
             <span class="badge alert-success">Pass</span>
+        </div>
+        <div class="col-md-1">
             <span class="badge alert-warning">Skip</span>
+        </div>
+        <div class="col-md-1">
             <span class="badge alert-danger">Fail</span>
-        </th>
-    </tr>
+        </div>
+    </div>
     {% for status in test_run.status.by_suite.all %}
     {% if status %}
-    <tr>
-        <td>{{status.suite.slug}}</td>
-        <td>
+    <div class="row top-line">
+        <div class="col-md-3">{{status.suite.slug}}</div>
+        <div class="col-md-3">
             {% if status.has_metrics %}{{status.metrics_summary}}{% endif %}
-        </td>
-        <td>
-            {% if status.has_tests %}
+        </div>
+        {% if status.has_tests %}
+        <div class="col-md-1">
             <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}}</span>
+        </div>
+        <div class="col-md-1">
             <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}}</span>
+        </div>
+        <div class="col-md-1">
             <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}}</span>
+        </div>
+        <div class="col-md-1">
             <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}}</span>
-            {% endif %}
-        </td>
-    </tr>
+        </div>
+        {% endif %}
+    </div>
     {% endif %}
     {% endfor %}
     {% endfor %}
-</table>
+</div>
 {% endblock %}
 
 
