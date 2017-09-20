@@ -13,4 +13,5 @@ static
 .tests
 **/__pycache__
 **/*.pyc
+**/*.swp
 tmp
