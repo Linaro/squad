@@ -90,6 +90,15 @@ class RecordTestRunStatusTest(CommonTestCase):
         status = ProjectStatus.objects.last()
         notify_project_status.delay.assert_called_with(status.id)
 
+    @patch('squad.core.tasks.notify_project_status')
+    @patch('squad.core.models.ProjectStatus.notified')
+    def test_do_not_send_dup_notification(self, notify_project_status, notified):
+        ParseTestRunData()(self.testrun)
+        notified.return_value = True
+        RecordTestRunStatus()(self.testrun)
+
+        notify_project_status.delay.assert_not_called()
+
 
 class ProcessTestRunTest(CommonTestCase):
 

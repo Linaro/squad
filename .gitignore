@@ -14,6 +14,7 @@
 /.tests
 /__pycache__
 *.pyc
+*.swp
 /tmp
 /dist
 /build
