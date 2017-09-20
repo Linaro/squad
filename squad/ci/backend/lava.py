@@ -18,7 +18,11 @@ from squad.ci.backend.null import Backend as BaseBackend
 
 
 description = "LAVA"
-LAVA_INFRA_ERROR_MESSAGES = ['Connection closed', 'lava_test_shell connection dropped.', 'fastboot-flash-action timed out']
+LAVA_INFRA_ERROR_MESSAGES = [
+    'Connection closed',
+    'lava_test_shell connection dropped.',
+    'fastboot-flash-action timed out',
+    'auto-login-action timed out']
 
 
 class Backend(BaseBackend):
