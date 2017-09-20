@@ -64,6 +64,7 @@ class Notification(object):
         summary = self.summary
         subject_data = {
             'project': self.project,
+            'metadata': self.metadata,
             'tests_total': summary.tests_total,
             'tests_fail': summary.tests_fail,
             'tests_pass': summary.tests_pass,
