@@ -1,3 +1,35 @@
+# 0.25
+
+* Change license to the Affero GPL, v3 or later
+* MANIFEST.in: remove redundant lines
+* Normalize email addresses
+* README
+  * README.rst: remove mention of Debian packages for assets
+  * README.rst: update list of dependencies on Debian
+* ci: lava: add 'auto-login-action' to automatically resubmitted patterns
+* core
+  * core/Build: sort test suites in test_suites_by_environment
+  * core/notification: Do not send dup notifications
+  * core: added project description
+* frontend
+  * frontend: added support for logging in on small screens
+  * frontend: change license mentioned in the header
+  * frontend: display skip percentage and tooltips in test bars
+  * frontend: download static assets from their original locations
+  * frontend: hide project list header on small screens
+  * frontend: hide zeros in build listing
+  * frontend: improve UI consistency
+  * frontend: only replace download.status if needed
+  * frontend: use better colors for pass/fail
+* gen-test-data: do everything that is needed under the hood
+* git-build: fix clean of old builds
+* scripts
+  * scripts/git-build: build Python packages from the git repository
+  * scripts/release: exclude download assets from the `tar vs git` check
+  * scripts/travis: abandon git-based cache of static assets
+* setup.py: correctly exclude code from test/ from being installed
+* submit-test-data: also generate skips
+
 # 0.24
 
 * core
