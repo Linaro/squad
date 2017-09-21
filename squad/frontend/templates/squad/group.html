@@ -7,3 +7,6 @@
 <h1>{{group.slug}}</h1>
 {% include "squad/_project_list.html" %}
 {% endblock %}
+{% block javascript %}
+<script type="text/javascript" src='{% static "squad/project-list.js" %}'></script>
+{% endblock %}

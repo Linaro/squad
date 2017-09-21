@@ -1,10 +1,31 @@
-* {
+.project {
+  border: solid 1px #babdb6;
+  border-radius: 5px;
+  margin-top: 15px;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  background: #fcfcfc;
+}
+
+.project-listing-info {
+  border-left: 1px solid #babdb6;
+}
+
+.project h2 {
+  margin-top: 0px;
   font-size: 16px;
 }
 
-.top-line {
-  border-top: solid 1px #DDDDDD;
-  padding-top: 5px;
+.project .description {
+  border-top: 1px solid #babdb6;
+  margin-top: 1em;
+  padding-top: 1em;
+  font-size: 14px;
+  color: #2e3436;
+}
+
+.project .description a.toggle-description {
+  font-weight: bold;
 }
 
 .pass, .pass a {

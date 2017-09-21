@@ -1,49 +1,63 @@
 {% load humanize %}
 {% load squad %}
 
-<div class="row hidden-xs">
-    <div class="col-md-4 col-sm-4"><strong>Project</strong></div>
-    <div class="col-md-3 col-sm-3"><strong>Last update</strong></div>
-    <div class="col-md-2 col-sm-2"><strong>Tests</strong></div>
-    <div class="col-md-3 col-sm-3"><strong>Metrics</strong></div>
-</div>
+<div ng-app='ProjectList'>
 {% for project in projects %}
-<div class="row top-line">
+<div class="row project">
     {% with status=project.status %}
     <div class="col-md-4 col-sm-4">
-        <a href="{% group_url project.group %}">{{project.group.slug}}</a>/<a href="{% project_url project %}">{{project.slug}}</a>
-
+        <h2>
+            <a href="{% group_url project.group %}">{{project.group.slug}}</a>/<a href="{% project_url project %}">{{project.slug}}</a>
+        </h2>
     </div>
-    <div class="col-md-3 col-sm-3">
-        {{status.last_updated}}
-        <em>{{status.last_updated|naturaltime}}</em>
-    </div>
-    <div class="col-md-2 col-sm-2">
+    <div class="col-md-5 col-sm-5 project-listing-info">
         {% if status.has_tests %}
-            <div class="progress">
-                <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%" title="Pass: {{project.status.pass_percentage|stringformat:"d"}}%">
-                    <span class="sr-only">Pass: {{status.pass_percentage}}% </span>
-                </div>
-                <div class="progress-bar progress-bar-warning" style="width: {{status.skip_percentage}}%" title="Skip: {{project.status.skip_percentage|stringformat:"d"}}%">
-                    <span class="sr-only">Skip: {{status.skip_percentage}}% </span>
-                </div>
-                <div class="progress-bar progress-bar-danger" style="width: {{status.fail_percentage}}%" title="Fail: {{project.status.fail_percentage|stringformat:"d"}}%">
-                    <span class="sr-only">Fail: {{status.fail_percentage}}% </span>
-                </div>
-            </div>
+        <div title='Test results'>
+            <i class='fa fa-check-square-o'></i>
+            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}} total</span>
+            {% if status.tests_pass > 0 %}
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} passed</span>
+            {% endif %}
+            {% if status.tests_skip > 0 %}
+            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}} skipped</span>
+            {% endif %}
+            {% if status.tests_fail > 0 %}
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} failed</span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if status.has_metrics %}
+        <div title='Metrics summary'>
+            <i class='fa fa-line-chart'></i>
+            {{status.metrics_summary|floatformat:3}}
+         </div>
         {% endif %}
     </div>
-    <div class="col-md-2 col-sm-2">
-        {{status.metrics_summary}}
-    </div>
-    <div class"col-md-1 col-sm-1">
-        {% if project.description %}
-        <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-{{project.pk}}" aria-expanded="false" aria-controls="collapse-{{projecti.pk}}"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+    <div class="col-md-3 col-sm-3 project-listing-info">
+        {% if status.last_updated %}
+        <div>
+            <i class='fa fa-clock-o'>&nbsp;</i>
+            {{status.last_updated|naturaltime}}
+        </div>
+        <div>
+            <i class='fa fa-clock-o' style='color: transparent'>&nbsp;</i>
+            {{status.last_updated}}
+        </div>
         {% endif %}
     </div>
+
+    {% if project.description%}
+    <div ng-controller='DescriptionController' ng-init='init({{project.id}})' class='description col-md-12 col-sm-12'>
+        <span style='display: none' id='full-description-{{project.id}}'>{{project.description|urlize}}</span>
+        <em id='short-description-{{project.id}}'>{{project.description|urlize|truncatechars_html:140}}</em>
+        {% if project.description|length > 140 %}
+        <a class='toggle-description' id='toggle-description-{{project.id}}' style='cursor: pointer' ng-click='toggle()' data-alt-title='Show less'>Show more</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
     {% endwith %}
 </div>
-<div class="row collapse" id="collapse-{{project.pk}}">
-    <div class="col-md-12 col-sm-12" >{{ project.description|safe }}</div>
-</div>
 {% endfor %}
+</div>

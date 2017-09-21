@@ -490,6 +490,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
     approved = models.BooleanField(default=False)
 
     metrics_summary = models.FloatField()
+    has_metrics = models.BooleanField(default=False)
 
     tests_pass = models.IntegerField()
     tests_fail = models.IntegerField()
@@ -513,6 +514,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             'tests_fail': test_summary.tests_fail,
             'tests_skip': test_summary.tests_skip,
             'metrics_summary': metrics_summary.value,
+            'has_metrics': metrics_summary.has_metrics,
             'last_updated': now,
             'finished': build.finished,
         }
@@ -523,6 +525,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.tests_fail = test_summary.tests_fail
             status.tests_skip = test_summary.tests_skip
             status.metrics_summary = metrics_summary.value
+            status.has_metrics = metrics_summary.has_metrics
             status.last_updated = now
             status.finished = build.finished
             status.build = build
@@ -578,6 +581,7 @@ class MetricsSummary(object):
         metrics = Metric.objects.filter(test_run__build_id=build.id).all()
         values = [m.result for m in metrics]
         self.value = geomean(values)
+        self.has_metrics = len(values) > 0
 
 
 class Subscription(models.Model):
