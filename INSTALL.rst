@@ -135,3 +135,8 @@ The following environment variables affect the behavior of SQUAD:
 * ``SQUAD_ADMINS``: Comma-separated list of administrator email addresses, for
   use in exception notifications. Each address must be formatted as
   ``First Last <first.last@example.com>``.
+
+* ``SQUAD_STATIC_DIR``: Directory where SQUAD will find it's preprocessed
+  static assets. This usually does not need to be set manually, and exists
+  mostly for use in the Docker image.
+
