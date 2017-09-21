@@ -11,6 +11,7 @@ file_mapping = (
     ('application/gzip', 'archive'),
     ('application/z-xz', 'archive'),
     ('application/zip', 'archive'),
+    ('application/x-', 'code'),
 )
 
 
