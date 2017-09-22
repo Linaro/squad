@@ -113,7 +113,7 @@ class TestJob(models.Model):
 
     # input - for TestRun later
     target = models.ForeignKey(Project)
-    build = models.TextField()
+    build = models.CharField(max_length=100)
     environment = models.CharField(max_length=100, validators=[slug_validator])
 
     # control
