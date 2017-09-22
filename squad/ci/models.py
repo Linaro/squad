@@ -6,7 +6,6 @@ from dateutil.relativedelta import relativedelta
 
 from squad.core.tasks import ReceiveTestRun
 from squad.core.models import Project, TestRun, slug_validator
-from squad.core.fields import VersionField
 
 
 from squad.ci.backend import get_backend_implementation, ALL_BACKENDS
@@ -114,7 +113,7 @@ class TestJob(models.Model):
 
     # input - for TestRun later
     target = models.ForeignKey(Project)
-    build = VersionField()
+    build = models.TextField()
     environment = models.CharField(max_length=100, validators=[slug_validator])
 
     # control

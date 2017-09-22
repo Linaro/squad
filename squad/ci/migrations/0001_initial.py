@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
-import squad.core.fields
 
 
 class Migration(migrations.Migration):
@@ -32,7 +31,7 @@ class Migration(migrations.Migration):
             name='TestJob',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('build', squad.core.fields.VersionField()),
+                ('build', models.TextField()),
                 ('environment', models.CharField(max_length=100, validators=[django.core.validators.RegexValidator(regex='^[a-zA-Z0-9][a-zA-Z0-9_-]+')])),
                 ('definition', models.TextField()),
                 ('submitted', models.BooleanField(default=False)),
