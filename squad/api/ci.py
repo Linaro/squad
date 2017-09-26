@@ -28,6 +28,9 @@ def submit_job(request, group_slug, project_slug, version, environment_slug):
     if backend is None or project is None:
         return HttpResponseBadRequest("malformed request")
 
+    # create Build object
+    build, _ = project.builds.get_or_create(version=version)
+
     # definition can be received as a file upload or as a POST parameter
     definition = None
     if 'definition' in request.FILES:
@@ -70,6 +73,9 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
     project = Project.objects.get(slug=project_slug, group__slug=group_slug)
     if backend is None or project is None:
         return HttpResponseBadRequest("malformed request")
+
+    # create Build object
+    build, _ = project.builds.get_or_create(version=version)
 
     # testjob_id points to the backend's test job
     testjob_id = request.POST.get('testjob_id', None)
