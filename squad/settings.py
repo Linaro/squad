@@ -167,7 +167,7 @@ USE_TZ = True
 # staticfile courtesy of whitenoise
 # http://whitenoise.evans.io/en/stable/django.html
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(DATA_DIR, 'static')
+STATIC_ROOT = os.getenv('SQUAD_STATIC_DIR', os.path.join(DATA_DIR, 'static'))
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Always use IPython for shell_plus

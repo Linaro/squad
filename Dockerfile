@@ -16,14 +16,12 @@ RUN apt-get update && \
 WORKDIR /app
 COPY . ./
 
-# debug
-RUN find
-RUN env
-
-# downloads and prepares static assets
+# downloads if needed and prepares static assets
 RUN python3 -m squad.frontend
-RUN ./manage.py collectstatic --noinput
+RUN ./manage.py collectstatic --noinput --verbosity 0
 
-
-USER www-data
+RUN useradd --create-home squad
+USER squad
+ENV SQUAD_STATIC_DIR /app/static
+ENV ENV production
 CMD sh -c "./manage.py migrate && exec gunicorn3 squad.wsgi --bind 0.0.0.0:${PORT:-8000}"
