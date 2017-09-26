@@ -1,7 +1,7 @@
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-
 
 from squad.http import auth_write, read_file_upload
 from squad.ci import models
@@ -97,9 +97,25 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
 
 
 def resubmit_job(request, test_job_id):
+    if not (request.user.is_staff or request.user.is_superuser):
+        # don't allow to resubmit
+        return HttpResponse(status=401)
     try:
         testjob = TestJob.objects.get(pk=test_job_id)
         testjob.resubmit()
+    except TestJob.DoesNotExist:
+        return HttpResponseBadRequest("requested test job does not exist")
+
+    return HttpResponse(status=201)
+
+
+def force_resubmit_job(request, test_job_id):
+    if not (request.user.is_staff or request.user.is_superuser):
+        # don't allow to resubmit
+        return HttpResponse(status=401)
+    try:
+        testjob = TestJob.objects.get(pk=test_job_id)
+        testjob.force_resubmit()
     except TestJob.DoesNotExist:
         return HttpResponseBadRequest("requested test job does not exist")
 

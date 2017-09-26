@@ -150,5 +150,9 @@ class TestJob(models.Model):
                 self.can_resubmit = False
                 self.save()
 
+    def force_resubmit(self):
+        # resubmit test job not respecting any restrictions
+        self.backend.get_implementation().resubmit(self)
+
     def __str__(self):
         return "%s/%s" % (self.backend.name, self.job_id)
