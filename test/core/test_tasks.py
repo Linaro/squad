@@ -10,6 +10,7 @@ from unittest.mock import patch, PropertyMock
 from squad.core.models import Group, TestRun, Status, Build, ProjectStatus
 from squad.core.tasks import ParseTestRunData
 from squad.core.tasks import RecordTestRunStatus
+from squad.core.tasks import UpdateProjectStatus
 from squad.core.tasks import ProcessTestRun
 from squad.core.tasks import ProcessAllTestRuns
 from squad.core.tasks import ReceiveTestRun
@@ -67,7 +68,6 @@ class RecordTestRunStatusTest(CommonTestCase):
         self.assertEqual(1, Status.objects.filter(suite__slug='foobar').count())
         self.assertEqual(1, Status.objects.filter(suite__slug='onlytests').count())
         self.assertEqual(1, Status.objects.filter(suite__slug='missing').count())
-        self.assertEqual(1, ProjectStatus.objects.filter(build=self.testrun.build).count())
 
         status = Status.objects.filter(suite=None).last()
         self.assertEqual(status.tests_pass, 2)
@@ -80,12 +80,15 @@ class RecordTestRunStatusTest(CommonTestCase):
         RecordTestRunStatus()(self.testrun)
         RecordTestRunStatus()(self.testrun)
         self.assertEqual(1, Status.objects.filter(suite=None).count())
-        self.assertEqual(1, ProjectStatus.objects.filter(build=self.testrun.build).count())
+
+
+class UpdateProjectStatusTest(CommonTestCase):
 
     @patch('squad.core.tasks.notify_project_status')
     def test_sends_notification(self, notify_project_status):
         ParseTestRunData()(self.testrun)
         RecordTestRunStatus()(self.testrun)
+        UpdateProjectStatus()(self.testrun)
 
         status = ProjectStatus.objects.last()
         notify_project_status.delay.assert_called_with(status.id)
@@ -96,6 +99,7 @@ class RecordTestRunStatusTest(CommonTestCase):
         ParseTestRunData()(self.testrun)
         notified.return_value = True
         RecordTestRunStatus()(self.testrun)
+        UpdateProjectStatus()(self.testrun)
 
         notify_project_status.delay.assert_not_called()
 
@@ -106,6 +110,7 @@ class ProcessTestRunTest(CommonTestCase):
         ProcessTestRun()(self.testrun)
         self.assertEqual(4, self.testrun.tests.count())
         self.assertEqual(5, self.testrun.status.count())
+        self.assertEqual(1, ProjectStatus.objects.filter(build=self.testrun.build).count())
 
 
 class ReceiveTestRunTest(TestCase):
