@@ -1,5 +1,8 @@
 import os
-from django.test import TestCase
+from django.test import TestCase, Client
+from django.test.utils import override_settings
+from django.conf import settings
+from django.contrib.auth.models import User
 from test.api import APIClient
 from mock import patch, MagicMock
 
@@ -128,12 +131,39 @@ class CiApiTest(TestCase):
             target=self.project,
             can_resubmit=True
         )
-        r = self.client.get('/api/resubmit/%s' % t.pk)
+        staff_user_password = "secret"
+        staff_user = User.objects.create_superuser(
+            username="staffuser",
+            email="staff@example.com",
+            password=staff_user_password,
+            is_staff=True)
+        staff_user.save()
+        client = Client()
+        client.login(username=staff_user.username, password=staff_user_password)
+        r = client.get('/api/resubmit/%s' % t.pk)
         self.assertEqual(201, r.status_code)
         impl.resubmit.assert_called()
         t.refresh_from_db()
         self.assertEqual(False, t.can_resubmit)
 
+    def test_disallowed_resubmit(self):
+        t = self.backend.test_jobs.create(
+            target=self.project,
+            can_resubmit=True
+        )
+        r = self.client.get('/api/resubmit/%s' % t.pk)
+        self.assertEqual(401, r.status_code)
+
     def test_resubmit_invalid_id(self):
-        r = self.client.get('/api/resubmit/999')
+        staff_user_password = "secret"
+        staff_user = User.objects.create_superuser(
+            username="staffuser",
+            email="staff@example.com",
+            password=staff_user_password,
+            is_staff=True)
+        staff_user.save()
+        client = Client()
+        client.login(username=staff_user.username, password=staff_user_password)
+
+        r = client.get('/api/resubmit/999')
         self.assertEqual(400, r.status_code)

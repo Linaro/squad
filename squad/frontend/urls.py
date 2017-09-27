@@ -6,6 +6,7 @@ from django.shortcuts import redirect
 from . import views
 from . import comparison
 from . import tests
+from . import ci
 from squad.core.models import slug_pattern
 
 urlpatterns = [
@@ -20,6 +21,7 @@ urlpatterns = [
     url(r'^(%s)/(%s)/builds/$' % ((slug_pattern,) * 2), views.builds, name='builds'),
     url(r'^(%s)/(%s)/build/([^/]+)/$' % ((slug_pattern,) * 2), views.build, name='build'),
     url(r'^(%s)/(%s)/build/([^/]+)/tests/$' % ((slug_pattern,) * 2), tests.tests, name='tests'),
+    url(r'^(%s)/(%s)/build/([^/]+)/testjobs/$' % ((slug_pattern,) * 2), ci.testjobs, name='testjobs'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/$' % ((slug_pattern,) * 2), views.test_run, name='testrun'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/log$' % ((slug_pattern,) * 2), views.test_run_log, name='testrun_log'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/tests$' % ((slug_pattern,) * 2), views.test_run_tests, name='testrun_tests'),
