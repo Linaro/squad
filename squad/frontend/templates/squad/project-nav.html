@@ -2,6 +2,7 @@
 <h1>
   <a class="h1 text-primary" href="{% group_url project.group %}">{{project.group}}</a>
   » <a class="h1 text-primary" href="{% project_url project %}">{{project.slug}}</a>
+  {{pagetitle}}
 </h1>
 <ul class="nav nav-tabs">
   {% with url_name=request.resolver_match.url_name %}

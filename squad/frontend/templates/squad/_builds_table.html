@@ -1,41 +1,72 @@
 {% load humanize %}
 {% load squad %}
-<table class='table table-striped'>
-    <tr>
-        <th>Build</th>
-        <th>Date</th>
-        <th>Test jobs</th>
-        <th>Test results summary</th>
-    </tr>
-    {% for build in builds %}
-    <tr>
-        <td><a href="{% project_url build %}">{{build.version}}</a></td>
-        <td>
-            <a href="{% project_url build %}">{{build.datetime}}</a>
-            <em>{{build.datetime|naturaltime}}</em>
-        </td>
-        <td>
-            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.test_runs_total}} total</span>
+{% for build in builds %}
+<div class="row project">
+    {% with status=build.status %}
+    <div class="col-md-2 col-sm-2">
+        <h2>
+            <a href="{% build_url build %}">{{build.version}}</a>
+        </h2>
+    </div>
+    <div class='col-md-3 col-sm-3 project-listing-info'>
+        <div title='Test run status'>
+            <i class='fa fa-cog'></i>
+            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.test_runs_total}} test runs</span>
             {% if build.test_runs_completed > 0 %}
             <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Completed">{{build.test_runs_completed}} completed</span>
             {% endif %}
             {% if build.test_runs_incomplete > 0 %}
             <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Incomplete">{{build.test_runs_incomplete}} incomplete</span>
             {% endif %}
-        </td>
-        <td>
-            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.status.tests_total}} total</span>
-            {% if build.status.tests_pass > 0 %}
-            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{build.status.tests_pass}} passed</span>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-4 project-listing-info">
+        {% if status.has_tests %}
+        <div title='Test results'>
+            <i class='fa fa-check-square-o'></i>
+            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}} tests</span>
+            {% if status.tests_pass > 0 %}
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} passed</span>
             {% endif %}
-            {% if build.status.tests_skip > 0 %}
-            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{build.status.tests_skip}} skipped</span>
+            {% if status.tests_skip > 0 %}
+            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}} skipped</span>
             {% endif %}
-            {% if build.status.tests_fail > 0 %}
-            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{build.status.tests_fail}} failed</span>
+            {% if status.tests_fail > 0 %}
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} failed</span>
             {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+        </div>
+        {% endif %}
 
+        {% if status.has_metrics %}
+        <div title='Metrics summary'>
+            <i class='fa fa-line-chart'></i>
+            {{status.metrics_summary|floatformat:3}}
+         </div>
+        {% endif %}
+    </div>
+    <div class="col-md-3 col-sm-3 project-listing-info">
+        {% if status.last_updated %}
+        <div>
+            <i class='fa fa-clock-o'>&nbsp;</i>
+            {{status.last_updated|naturaltime}}
+        </div>
+        <div>
+            <i class='fa fa-clock-o' style='color: transparent'>&nbsp;</i>
+            {{status.last_updated}}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if project.description%}
+    <div ng-controller='DescriptionController' ng-init='init({{project.id}})' class='description col-md-12 col-sm-12'>
+        <span style='display: none' id='full-description-{{project.id}}'>{{project.description|urlize}}</span>
+        <em id='short-description-{{project.id}}'>{{project.description|urlize|truncatechars_html:140}}</em>
+        {% if project.description|length > 140 %}
+        <a class='toggle-description' id='toggle-description-{{project.id}}' style='cursor: pointer' ng-click='toggle()' data-alt-title='Show less'>Show more</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% endwith %}
+</div>
+{% endfor %}
