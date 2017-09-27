@@ -520,7 +520,11 @@ class ProjectStatus(models.Model, TestSummaryBase):
         }
 
         status, created = cls.objects.get_or_create(build=build, defaults=data)
-        if not created:
+        if not created and test_summary.tests_total >= status.tests_total:
+            # XXX the test above for the new total number of tests prevents
+            # results that arrived earlier, but are only being processed now,
+            # from overwriting a ProjectStatus created by results that arrived
+            # later but were already processed.
             status.tests_pass = test_summary.tests_pass
             status.tests_fail = test_summary.tests_fail
             status.tests_skip = test_summary.tests_skip
