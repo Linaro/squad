@@ -4,7 +4,7 @@ from django.utils import timezone
 from unittest.mock import patch
 
 
-from squad.core.models import Group, Build
+from squad.core.models import Group, Project, Build
 
 
 class BuildTest(TestCase):
@@ -127,3 +127,31 @@ class BuildTest(TestCase):
         self.assertEqual([env1, env2], list(test_suites.keys()))
         self.assertEqual(["bar", "foo"], [s.slug for s in test_suites[env1]])
         self.assertEqual(["foo"], [s.slug for s in test_suites[env2]])
+
+    def test_important_metadata_default(self):
+        project = Project()
+        build = Build(project=project)
+        with patch('squad.core.models.Build.metadata', {'foo': 'bar'}):
+            self.assertEqual({'foo': 'bar'}, build.important_metadata)
+            self.assertEqual({}, build.non_important_metadata)
+
+    def test_important_metadata(self):
+        project = Project(important_metadata_keys='foo1\nfoo2\nmissingkey\n')
+        build = Build(project=project)
+        m = {
+            'foo1': 'bar1',
+            'foo2': 'bar2',
+            'foo3': 'bar3',
+        }
+        with patch('squad.core.models.Build.metadata', m):
+            self.assertEqual({'foo1': 'bar1', 'foo2': 'bar2'}, build.important_metadata)
+            self.assertEqual({'foo3': 'bar3'}, build.non_important_metadata)
+
+    def test_important_metadata_keys_with_spaces(self):
+        project = Project(important_metadata_keys='my key\n')
+        build = Build(project=project)
+        m = {
+            'my key': 'my value',
+        }
+        with patch('squad.core.models.Build.metadata', m):
+            self.assertEqual({'my key': 'my value'}, build.important_metadata)

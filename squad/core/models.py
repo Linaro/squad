@@ -65,6 +65,7 @@ class Project(models.Model):
     moderate_notifications = models.BooleanField(default=False)
     custom_email_template = models.ForeignKey(EmailTemplate, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
+    important_metadata_keys = models.TextField(null=True, blank=True)
 
     NOTIFY_ALL_BUILDS = 'all'
     NOTIFY_ON_CHANGE = 'change'
@@ -162,6 +163,21 @@ class Build(models.Model):
             else:
                 metadata = test_run.metadata
         return metadata
+
+    @property
+    def important_metadata(self):
+        wanted = (self.project.important_metadata_keys or '').splitlines()
+        m = self.metadata
+        if len(wanted):
+            return {k: m[k] for k in wanted if k in m}
+        else:
+            return self.metadata
+
+    @property
+    def non_important_metadata(self):
+        m = self.metadata
+        important = self.important_metadata.keys()
+        return {k: m[k] for k in m.keys() if k not in important}
 
     @property
     def finished(self):
