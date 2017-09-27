@@ -1,0 +1,12 @@
+<div class='metadata'>
+    {% for key, value in metadata %}
+    <div class='row'>
+        <div class='col-md-3 col-sm-3'>
+            <strong>{{key}}</strong>
+        </div>
+        <div class='col-md-9 col-sm-9'>
+            {{value|urlize}}
+        </div>
+    </div>
+    {% endfor %}
+</div>
