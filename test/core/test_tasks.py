@@ -4,7 +4,7 @@ import json
 from dateutil.relativedelta import relativedelta
 from django.test import TestCase
 from django.utils import timezone
-from unittest.mock import patch
+from unittest.mock import patch, PropertyMock
 
 
 from squad.core.models import Group, TestRun, Status, Build, ProjectStatus
@@ -91,8 +91,8 @@ class RecordTestRunStatusTest(CommonTestCase):
         notify_project_status.delay.assert_called_with(status.id)
 
     @patch('squad.core.tasks.notify_project_status')
-    @patch('squad.core.models.ProjectStatus.notified')
-    def test_do_not_send_dup_notification(self, notify_project_status, notified):
+    @patch('squad.core.models.ProjectStatus.notified', new_callable=PropertyMock)
+    def test_do_not_send_dup_notification(self, notified, notify_project_status):
         ParseTestRunData()(self.testrun)
         notified.return_value = True
         RecordTestRunStatus()(self.testrun)
