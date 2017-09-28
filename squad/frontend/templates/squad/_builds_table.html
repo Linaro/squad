@@ -56,17 +56,6 @@
         </div>
         {% endif %}
     </div>
-
-    {% if project.description%}
-    <div ng-controller='DescriptionController' ng-init='init({{project.id}})' class='description col-md-12 col-sm-12'>
-        <span style='display: none' id='full-description-{{project.id}}'>{{project.description|urlize}}</span>
-        <em id='short-description-{{project.id}}'>{{project.description|urlize|truncatechars_html:140}}</em>
-        {% if project.description|length > 140 %}
-        <a class='toggle-description' id='toggle-description-{{project.id}}' style='cursor: pointer' ng-click='toggle()' data-alt-title='Show less'>Show more</a>
-        {% endif %}
-    </div>
-    {% endif %}
-
     {% endwith %}
 </div>
 {% endfor %}
