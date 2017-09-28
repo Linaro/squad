@@ -15,15 +15,7 @@
 
 
 <h2>Metadata</h2>
-
-<table class='table table-hover table-condensed'>
-    {% for key, value in metadata %}
-    <tr>
-        <th>{{key}}</th>
-        <td>{{value|urlize}}</td>
-    </tr>
-    {% endfor %}
-</table>
+{% include "squad/_metadata.html" %}
 
 <h2>Downloads</h2>
 

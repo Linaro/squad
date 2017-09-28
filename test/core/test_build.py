@@ -4,7 +4,7 @@ from django.utils import timezone
 from unittest.mock import patch
 
 
-from squad.core.models import Group, Build
+from squad.core.models import Group, Project, Build
 
 
 class BuildTest(TestCase):
@@ -30,21 +30,21 @@ class BuildTest(TestCase):
         TestSummary.assert_called_with(build)
         self.assertIs(summary, the_summary)
 
-    def test_metadata(self):
+    def test_metadata_with_different_values_for_the_same_key(self):
         build = Build.objects.create(project=self.project, version='1.1')
         env = self.project.environments.create(slug='env')
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": "qux"}')
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": "fox"}')
 
-        self.assertEqual({"foo": "bar"}, build.metadata)
+        self.assertEqual({"foo": "bar", "baz": ["fox", "qux"]}, build.metadata)
 
-    def test_metadata_empty(self):
+    def test_metadata_no_common_keys(self):
         build = Build.objects.create(project=self.project, version='1.1')
         env = self.project.environments.create(slug='env')
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar"}')
         build.test_runs.create(environment=env, metadata_file='{"baz": "qux"}')
 
-        self.assertEqual({}, build.metadata)
+        self.assertEqual({"foo": "bar", "baz": "qux"}, build.metadata)
 
     def test_metadata_no_testruns(self):
         build = Build.objects.create(project=self.project, version='1.1')
@@ -62,6 +62,20 @@ class BuildTest(TestCase):
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": ["qux"]}')
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": ["qux"]}')
         self.assertEqual({"foo": "bar", "baz": ["qux"]}, build.metadata)
+
+    def test_metadata_common_key_with_string_and_list_values(self):
+        build = Build.objects.create(project=self.project, version='1.1')
+        env = self.project.environments.create(slug='env')
+        build.test_runs.create(environment=env, metadata_file='{"foo": "bar"}')
+        build.test_runs.create(environment=env, metadata_file='{"foo": ["bar"]}')
+        self.assertEqual({"foo": [["bar"], "bar"]}, build.metadata)
+
+    def test_metadata_common_key_with_list_and_string_values(self):
+        build = Build.objects.create(project=self.project, version='1.1')
+        env = self.project.environments.create(slug='env')
+        build.test_runs.create(environment=env, metadata_file='{"foo": ["bar"]}')
+        build.test_runs.create(environment=env, metadata_file='{"foo": "bar"}')
+        self.assertEqual({"foo": [["bar"], "bar"]}, build.metadata)
 
     def test_not_finished(self):
         env1 = self.project.environments.create(slug='env1')
@@ -127,3 +141,31 @@ class BuildTest(TestCase):
         self.assertEqual([env1, env2], list(test_suites.keys()))
         self.assertEqual(["bar", "foo"], [s.slug for s in test_suites[env1]])
         self.assertEqual(["foo"], [s.slug for s in test_suites[env2]])
+
+    def test_important_metadata_default(self):
+        project = Project()
+        build = Build(project=project)
+        with patch('squad.core.models.Build.metadata', {'foo': 'bar'}):
+            self.assertEqual({'foo': 'bar'}, build.important_metadata)
+            self.assertEqual({}, build.non_important_metadata)
+
+    def test_important_metadata(self):
+        project = Project(important_metadata_keys='foo1\nfoo2\nmissingkey\n')
+        build = Build(project=project)
+        m = {
+            'foo1': 'bar1',
+            'foo2': 'bar2',
+            'foo3': 'bar3',
+        }
+        with patch('squad.core.models.Build.metadata', m):
+            self.assertEqual({'foo1': 'bar1', 'foo2': 'bar2'}, build.important_metadata)
+            self.assertEqual({'foo3': 'bar3'}, build.non_important_metadata)
+
+    def test_important_metadata_keys_with_spaces(self):
+        project = Project(important_metadata_keys='my key\n')
+        build = Build(project=project)
+        m = {
+            'my key': 'my value',
+        }
+        with patch('squad.core.models.Build.metadata', m):
+            self.assertEqual({'my key': 'my value'}, build.important_metadata)

@@ -37,12 +37,14 @@ def project(request, group_slug, project_slug):
     project = group.projects.get(slug=project_slug)
     builds = project.builds.prefetch_related('status', 'test_runs').reverse().all()[:11]
     last_build = builds.first()
-    metadata = last_build and sorted(last_build.metadata.items()) or ()
+    metadata = last_build and sorted(last_build.important_metadata.items()) or ()
+    extra_metadata = last_build and sorted(last_build.non_important_metadata.items()) or ()
     context = {
         'project': project,
         'builds': builds,
         'last_build': last_build,
         'metadata': metadata,
+        'extra_metadata': extra_metadata,
     }
     return render(request, 'squad/project.html', context)
 
@@ -68,7 +70,8 @@ def build(request, group_slug, project_slug, version):
     context = {
         'project': project,
         'build': build,
-        'metadata': sorted(build.metadata.items()),
+        'metadata': sorted(build.important_metadata.items()),
+        'extra_metadata': sorted(build.non_important_metadata.items()),
     }
     return render(request, 'squad/build.html', context)
 

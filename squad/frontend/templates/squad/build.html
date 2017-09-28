@@ -6,18 +6,7 @@
 {% include "squad/build-nav.html" %}
 
 <h2>Metadata</h2>
-<div class='metadata'>
-{% for key, value in metadata %}
-<div class='row'>
-    <div class='col-md-3 col-sm-3'>
-        <strong>{{key}}</strong>
-    </div>
-    <div class='col-md-9 col-sm-9'>
-        {{value|urlize}}
-    </div>
-</div>
-{% endfor %}
-</div>
+{% include "squad/_metadata.html" %}
 
 <h2>Test results</h2>
 <div class='test-results'>
