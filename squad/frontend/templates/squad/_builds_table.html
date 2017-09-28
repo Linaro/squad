@@ -1,14 +1,16 @@
 {% load humanize %}
 {% load squad %}
+<div class='highlight-row'>
 {% for build in builds %}
-<div class="row project">
+<a href="{% build_url build %}">
+<div class="row build">
     {% with status=build.status %}
     <div class="col-md-2 col-sm-2">
-        <h2>
-            <a href="{% build_url build %}">{{build.version}}</a>
-        </h2>
+        <strong>
+            {{build.version}}
+        </strong>
     </div>
-    <div class='col-md-3 col-sm-3 project-listing-info'>
+    <div class='col-md-3 col-sm-3'>
         <div title='Test run status'>
             <i class='fa fa-cog'></i>
             <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.test_runs_total}} test runs</span>
@@ -20,7 +22,7 @@
             {% endif %}
         </div>
     </div>
-    <div class="col-md-4 col-sm-4 project-listing-info">
+    <div class="col-md-4 col-sm-4">
         {% if status.has_tests %}
         <div title='Test results'>
             <i class='fa fa-check-square-o'></i>
@@ -44,7 +46,7 @@
          </div>
         {% endif %}
     </div>
-    <div class="col-md-3 col-sm-3 project-listing-info">
+    <div class="col-md-3 col-sm-3">
         {% if status.last_updated %}
         <div>
             <i class='fa fa-clock-o'>&nbsp;</i>
@@ -58,4 +60,6 @@
     </div>
     {% endwith %}
 </div>
+</a>
 {% endfor %}
+</div>

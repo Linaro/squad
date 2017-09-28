@@ -7,6 +7,16 @@
   border: 1px solid #d3d7cf;
 }
 
+.highlight-row .row:hover
+{
+  background-color: #fffbcf;
+}
+
+.highlight-row a:link,
+.highlight-row a:visited {
+  color: inherit;
+}
+
 .metadata .row {
   margin-top: 0px;
   border-top: none;
@@ -21,28 +31,10 @@
   border-width: 1px;
 }
 
-.project {
-  padding-left: 0px;
-  padding-right: 0px;
-  padding-top: 1em;
-  padding-bottom: 1em;
-  margin-top: 15px;
-  background: #fcfcfc;
-}
-
-.project-listing-info {
-  border-left: 1px solid #d3d7cf;
-  min-height: 40px;
-}
-
-.project h2 {
-  margin-top: 0px;
-  font-size: 16px;
-}
-
 .project .description {
   border-top: 1px solid #babdb6;
-  margin-top: 1em;
+  margin-top: 0em;
+  margin-bottom: 1em;
   padding-top: 1em;
   font-size: 14px;
   color: #2e3436;

@@ -1,14 +1,15 @@
 {% load humanize %}
 {% load squad %}
 
-<div ng-app='ProjectList'>
+<div class='highlight-row' ng-app='ProjectList'>
 {% for project in projects %}
 <div class="row project">
     {% with status=project.status %}
+    <a href="{% project_url project %}">
     <div class="col-md-4 col-sm-4">
-        <h2>
-            <a href="{% group_url project.group %}">{{project.group.slug}}</a>/<a href="{% project_url project %}">{{project.slug}}</a>
-        </h2>
+        <strong>
+            {{project.group.slug}}/{{project.slug}}
+        </strong>
     </div>
     <div class="col-md-5 col-sm-5 project-listing-info">
         {% if status.has_tests %}
@@ -46,6 +47,7 @@
         </div>
         {% endif %}
     </div>
+    </a>
 
     {% if project.description%}
     <div ng-controller='DescriptionController' ng-init='init({{project.id}})' class='description col-md-12 col-sm-12'>
