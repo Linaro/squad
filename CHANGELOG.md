@@ -1,3 +1,25 @@
+# 0.26
+
+* Dockerfile: run out of the box
+* api: create Build object when creating TestJob
+* core, ci: drop usage of VersionField
+* core:
+  * don't overwrite ProjectStatus with earlier data
+  * fix test for not sending duplicated notifications
+  * remove ProjectStatus creation/update from transaction
+  * make it possible to specify important metadata
+  * make Build metadata the union of test runs metadata
+* ci: make TestJob.build the same type as Build.version
+* frontend:
+  * add missing "incomplete" word in builds table
+  * add titles for project internal pages
+  * present test jobs in build page
+  * convert builds table into a grid
+  * redesign the build page
+  * update Font Awesome hash
+  * use a grid for metadata everywhere
+  * display only important metadata for build
+
 # 0.25
 
 * Change license to the Affero GPL, v3 or later
