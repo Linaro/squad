@@ -153,15 +153,21 @@ class Build(models.Model):
     @property
     def metadata(self):
         """
-        The build metadata is the intersection of the metadata in its test
-        runs.
+        The build metadata is the union of the metadata in its test runs.
+        Common keys with different values are transformed into a list with each
+        of the different values.
         """
         metadata = {}
         for test_run in self.test_runs.all():
-            if metadata:
-                metadata = dict_intersection(metadata, test_run.metadata)
+            for key, value in test_run.metadata.items():
+                metadata.setdefault(key, [])
+                if value not in metadata[key]:
+                    metadata[key].append(value)
+        for key in metadata.keys():
+            if len(metadata[key]) == 1:
+                metadata[key] = metadata[key][0]
             else:
-                metadata = test_run.metadata
+                metadata[key] = sorted(metadata[key], key=str)
         return metadata
 
     @property
@@ -233,10 +239,6 @@ class Build(models.Model):
         for env in result.keys():
             result[env] = sorted(result[env], key=lambda suite: suite.slug)
         return result
-
-
-def dict_intersection(d1, d2):
-    return {k: d1[k] for k in d1 if (k in d2 and d2[k] == d1[k])}
 
 
 class Environment(models.Model):

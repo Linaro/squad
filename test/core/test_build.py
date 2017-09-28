@@ -30,21 +30,21 @@ class BuildTest(TestCase):
         TestSummary.assert_called_with(build)
         self.assertIs(summary, the_summary)
 
-    def test_metadata(self):
+    def test_metadata_with_different_values_for_the_same_key(self):
         build = Build.objects.create(project=self.project, version='1.1')
         env = self.project.environments.create(slug='env')
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": "qux"}')
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": "fox"}')
 
-        self.assertEqual({"foo": "bar"}, build.metadata)
+        self.assertEqual({"foo": "bar", "baz": ["fox", "qux"]}, build.metadata)
 
-    def test_metadata_empty(self):
+    def test_metadata_no_common_keys(self):
         build = Build.objects.create(project=self.project, version='1.1')
         env = self.project.environments.create(slug='env')
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar"}')
         build.test_runs.create(environment=env, metadata_file='{"baz": "qux"}')
 
-        self.assertEqual({}, build.metadata)
+        self.assertEqual({"foo": "bar", "baz": "qux"}, build.metadata)
 
     def test_metadata_no_testruns(self):
         build = Build.objects.create(project=self.project, version='1.1')
@@ -62,6 +62,20 @@ class BuildTest(TestCase):
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": ["qux"]}')
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar", "baz": ["qux"]}')
         self.assertEqual({"foo": "bar", "baz": ["qux"]}, build.metadata)
+
+    def test_metadata_common_key_with_string_and_list_values(self):
+        build = Build.objects.create(project=self.project, version='1.1')
+        env = self.project.environments.create(slug='env')
+        build.test_runs.create(environment=env, metadata_file='{"foo": "bar"}')
+        build.test_runs.create(environment=env, metadata_file='{"foo": ["bar"]}')
+        self.assertEqual({"foo": [["bar"], "bar"]}, build.metadata)
+
+    def test_metadata_common_key_with_list_and_string_values(self):
+        build = Build.objects.create(project=self.project, version='1.1')
+        env = self.project.environments.create(slug='env')
+        build.test_runs.create(environment=env, metadata_file='{"foo": ["bar"]}')
+        build.test_runs.create(environment=env, metadata_file='{"foo": "bar"}')
+        self.assertEqual({"foo": [["bar"], "bar"]}, build.metadata)
 
     def test_not_finished(self):
         env1 = self.project.environments.create(slug='env1')
