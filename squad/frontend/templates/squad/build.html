@@ -5,82 +5,91 @@
 {% block content %}
 {% include "squad/build-nav.html" %}
 
-
 <h2>Metadata</h2>
-<table class='table table-hover table-condensed'>
-    {% for key, value in metadata %}
-    <tr>
-        <th>{{key}}</th>
-        <td colspan='3'>{{value|urlize}}</td>
-    </tr>
-    {% endfor %}
-</table>
+<div class='metadata'>
+{% for key, value in metadata %}
+<div class='row'>
+    <div class='col-md-3 col-sm-3'>
+        <strong>{{key}}</strong>
+    </div>
+    <div class='col-md-9 col-sm-9'>
+        {{value|urlize}}
+    </div>
+</div>
+{% endfor %}
+</div>
 
-<h2>Test runs</h2>
-<table class='table table-hover table-condensed' ng-app='SquadResubmit'>
-    {% for test_run in build.test_runs.all %}
-    <tr class='warning'>
-        <th colspan='3'>
-            <h4>
-                <a href="{% project_url test_run %}">Test run #{{test_run.job_id}}</a>
-                <small>
-                    Environment: <em>{{test_run.environment.slug}}</em>
+<h2>Test results</h2>
+<div class='test-results'>
+{% for test_run in build.test_runs.all %}
+{% for status in test_run.status.all %}
+{% if status.suite and status.has_tests %}
+<div class='row {% if status.tests_fail%} fail {%endif%}'>
+    <div class='col-md-3 col-sm-3' title='Test suite'>
+        <i class='fa fa-list'></i>
+        <strong>{{status.suite}}</strong>
+    </div>
 
-                    {% if test_run.job_status %}
-                    Status: {{test_run.job_status}}
-                    {% endif %}
+    <div class='col-md-3 col-sm-3' title='Environment'>
+        <i class='fa fa-microchip'></i>
+        {{test_run.environment}}
+    </div>
 
-                    <div class='pull-right'>
-                        {% if test_run.resubmit_url %}
-                        <a href="{{test_run.resubmit_url}}" class='btn btn-info '><span class='fa fa-recycle'></span> resubmit</a>
-                        {% endif %}
-                        {% if user.is_staff or user.is_superuser %}
-                        {% for test_job in test_run.test_jobs.all %}
-                        {% if test_job.can_resubmit %}
-                        <a ng-controller='ResubmitController' class="btn" ng-click="done || resubmit({{test_job.id}})" ng-class="{'btn-info': !done, 'btn-success': done}" ng-disabled="done" ><span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done, 'fa-spin': loading}" ng-disabled="done">{{test_job.job_id}} - resubmit</span></a>
-                        {% endif %}
-                        {% endfor %}
-                        {% endif %}
-                        {% if test_run.job_url %}
-                        <a href="{{test_run.job_url}}" class='btn btn-info '><span class='fa fa-info-circle'></span> origin</a>
-                        {% endif %}
-                    </div>
+    <div class='col-md-4 col-sm-4' title='Test results'>
+        <i class='fa fa-check-square-o'></i>
+        <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}} tests</span>
+        {% if status.tests_pass > 0 %}
+        <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} pass</span>
+        {% endif %}
+        {% if status.tests_skip > 0 %}
+        <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}} skip</span>
+        {% endif %}
+        {% if status.tests_fail > 0 %}
+        <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} fail</span>
+        {% endif %}
+    </div>
 
-                </small>
-            </h4>
-        </th>
-    </tr>
-    <tr>
-        <th>Suite</th>
-        <th>Metrics summary</th>
-        <th>
-            Tests<br/>
-            <span class="badge alert-default">Total</span>
-            <span class="badge alert-success">Pass</span>
-            <span class="badge alert-warning">Skip</span>
-            <span class="badge alert-danger">Fail</span>
-        </th>
-    </tr>
-    {% for status in test_run.status.by_suite.all %}
-    {% if status %}
-    <tr>
-        <td>{{status.suite.slug}}</td>
-        <td>
-            {% if status.has_metrics %}{{status.metrics_summary}}{% endif %}
-        </td>
-        <td>
-            {% if status.has_tests %}
-            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}}</span>
-            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}}</span>
-            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}}</span>
-            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}}</span>
-            {% endif %}
-        </td>
-    </tr>
-    {% endif %}
-    {% endfor %}
-    {% endfor %}
-</table>
+    <div class='col-md-2 col-sm-2' title='Test run'>
+        <i class='fa fa-cog'></i>
+        <a href="{% project_url test_run %}">{{test_run.job_id}}</a>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endfor %}
+</div>
+
+<h2>Metrics</h2>
+<div class='metrics'>
+{% for test_run in build.test_runs.all %}
+{% for status in test_run.status.all %}
+{% if status.suite and status.has_metrics %}
+<div class='row'>
+    <div class='col-md-3 col-sm-3' title='Metrics suite'>
+        <i class='fa fa-list'></i>
+        <strong>{{status.suite}}</strong>
+    </div>
+
+    <div class='col-md-3 col-sm-3' title='Environment'>
+        <i class='fa fa-microchip'></i>
+        {{test_run.environment}}
+    </div>
+
+    <div class='col-md-4 col-sm-4' title='Metrics summary'>
+        <i class='fa fa-line-chart'></i>
+        {{status.metrics_summary|floatformat:3}}
+    </div>
+
+    <div class='col-md-2 col-sm-2' title='Test runs'>
+        <i class='fa fa-cog'></i>
+        <a href="{% project_url test_run %}">{{test_run.job_id}}</a>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endfor %}
+</div>
+
 {% endblock %}
 
 

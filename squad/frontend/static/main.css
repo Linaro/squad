@@ -1,14 +1,38 @@
+.row {
+  margin-left: 0px;
+  margin-right: 0px;
+  margin-top: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border: 1px solid #d3d7cf;
+}
+
+.metadata .row {
+  margin-top: 0px;
+  border-top: none;
+}
+.metadata .row:first-child {
+  border-top: 1px solid #d3d7cf;
+}
+
+.row.fail {
+  background-color: #f2dede;
+  border-color: #a94442;
+  border-width: 1px;
+}
+
 .project {
-  border: solid 1px #babdb6;
-  border-radius: 5px;
-  margin-top: 15px;
+  padding-left: 0px;
+  padding-right: 0px;
   padding-top: 1em;
   padding-bottom: 1em;
+  margin-top: 15px;
   background: #fcfcfc;
 }
 
 .project-listing-info {
-  border-left: 1px solid #babdb6;
+  border-left: 1px solid #d3d7cf;
+  min-height: 40px;
 }
 
 .project h2 {
@@ -37,17 +61,6 @@ td.pass {
 }
 td.pass:hover {
   background-color: #d8f4ab;
-}
-
-.fail, .fail a {
-  color: #db4545;
-}
-
-td.fail {
-  background-color: #ffcccc;
-}
-td.fail:hover {
-  background-color: #ffeeee;
 }
 
 table.test-results th a:link,
