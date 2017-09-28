@@ -226,6 +226,11 @@ class RecordTestRunStatus(object):
         testrun.status_recorded = True
         testrun.save()
 
+
+class UpdateProjectStatus(object):
+
+    @staticmethod
+    def __call__(testrun):
         projectstatus = ProjectStatus.create_or_update(testrun.build)
         if projectstatus.finished and not projectstatus.notified:
             try:
@@ -248,6 +253,7 @@ class ProcessTestRun(object):
     def __call__(testrun):
         ParseTestRunData()(testrun)
         RecordTestRunStatus()(testrun)
+        UpdateProjectStatus()(testrun)
 
 
 class ProcessAllTestRuns(object):
