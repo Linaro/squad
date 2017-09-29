@@ -1,4 +1,5 @@
 from django import template
+from django.template.defaultfilters import safe, escape
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
@@ -99,3 +100,11 @@ def login_message(context, tag, classes):
 @register.simple_tag
 def squad_version():
     return version.__version__
+
+
+@register.filter
+def metadata_value(v):
+    if type(v) is list:
+        return safe("<br/>".join([escape(t) for t in v]))
+    else:
+        return escape(v)
