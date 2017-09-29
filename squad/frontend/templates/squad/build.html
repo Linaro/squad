@@ -9,7 +9,7 @@
 {% include "squad/_metadata.html" %}
 
 <h2>Test results</h2>
-<div class='test-results'>
+<div class='test-results highlight-row'>
 {% for test_run in build.test_runs.all %}
 {% for status in test_run.status.all %}
 {% if status.suite and status.has_tests %}
@@ -49,7 +49,7 @@
 </div>
 
 <h2>Metrics</h2>
-<div class='metrics'>
+<div class='metrics highlight-row'>
 {% for test_run in build.test_runs.all %}
 {% for status in test_run.status.all %}
 {% if status.suite and status.has_metrics %}
