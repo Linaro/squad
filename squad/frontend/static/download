@@ -30,6 +30,18 @@ download() {
   fi
 }
 
+uncompress() {
+  local compressed="$1"
+  case "$compressed" in
+    *.zip)
+      unzip -q "$compressed"
+      ;;
+    *.tar.*)
+      tar xaf "$compressed"
+      ;;
+  esac
+}
+
 while read destination url sha1; do
 
   # skip empty/commented lines
@@ -66,14 +78,14 @@ while read destination url sha1; do
         sha1="$(get_sha1 "$destination")"
       fi
       ;;
-    *.zip)
+    *.zip|*.tar.gz)
       zip="$(basename "$url")"
       mkdir "$tmpdir/$name"
       download "$tmpdir/$zip" "$url" "$sha1"
       if [ -z "$sha1" ]; then
         sha1="$(get_sha1 "$tmpdir/$zip")"
       fi
-      (cd "$tmpdir/$name" && unzip -q "../$zip")
+      (cd "$tmpdir/$name" && uncompress "../$zip")
       mv "$tmpdir/$name"/* "$destination"
       ;;
     *)
