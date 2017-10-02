@@ -13,6 +13,7 @@
 {% for test_run in build.test_runs.all %}
 {% for status in test_run.status.all %}
 {% if status.suite and status.has_tests %}
+<a href="{% project_url test_run %}#tests-{{status.suite}}">
 <div class='row {% if status.tests_fail%} fail {%endif%}'>
     <div class='col-md-3 col-sm-3' title='Test suite'>
         <i class='fa fa-list'></i>
@@ -40,9 +41,10 @@
 
     <div class='col-md-2 col-sm-2' title='Test run'>
         <i class='fa fa-cog'></i>
-        <a href="{% project_url test_run %}">{{test_run.job_id}}</a>
+        {{test_run.job_id}}
     </div>
 </div>
+</a>
 {% endif %}
 {% endfor %}
 {% endfor %}
@@ -53,6 +55,7 @@
 {% for test_run in build.test_runs.all %}
 {% for status in test_run.status.all %}
 {% if status.suite and status.has_metrics %}
+<a href="{% project_url test_run %}#metrics-{{status.suite}}">
 <div class='row'>
     <div class='col-md-3 col-sm-3' title='Metrics suite'>
         <i class='fa fa-list'></i>
@@ -71,9 +74,10 @@
 
     <div class='col-md-2 col-sm-2' title='Test runs'>
         <i class='fa fa-cog'></i>
-        <a href="{% project_url test_run %}">{{test_run.job_id}}</a>
+        {{test_run.job_id}}
     </div>
 </div>
+</a>
 {% endif %}
 {% endfor %}
 {% endfor %}
