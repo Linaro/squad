@@ -292,7 +292,7 @@ td.fail {
       {% for key, value in metadata.items %}
       <div class='row'>
         <div class='col-3 key'>{{key}}</div>
-        <div class='col-9'>{{value|urlize}}</div>
+        <div class='col-9'>{{value|metadata_value|urlize}}</div>
       </div>
       {% endfor %}
     {% endif %}
