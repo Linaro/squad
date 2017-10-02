@@ -1,4 +1,5 @@
 from django import template
+from squad.core.utils import format_metadata
 
 
 register = template.Library()
@@ -35,3 +36,11 @@ def tabulate_test_comparison(comparison, test_results=None):
         text.append(row_format % tuple(row))
 
     return "\n".join(text)
+
+
+@register.filter
+def metadata_txt(v, key=None):
+    separator = " "
+    if key:
+        separator = "\n" + " " * (len(key) + 2)
+    return format_metadata(v, separator)
