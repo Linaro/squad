@@ -480,6 +480,13 @@ class Status(models.Model, TestSummaryBase):
         return self.test_run.tests.filter(suite=self.suite)
 
     @property
+    def tests_by_result(self):
+        result = {'pass': [], 'fail': [], 'skip': []}
+        for test in self.tests:
+            result[test.status].append(test)
+        return result
+
+    @property
     def metrics(self):
         return self.test_run.metrics.filter(suite=self.suite)
 
