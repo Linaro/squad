@@ -63,64 +63,86 @@
 
 
 {% if tests_status|length > 0 %}
-<h2>Tests</h2>
-<table class='table table-hover table-condensed'>
+    <h2>Tests</h2>
     {% for status in tests_status %}
-    <tr class='warning'>
-        <td>
-            <h4>{{status.suite.slug}}</h4>
-        </td>
-        <td style='vertical-align: middle'>
-            <div class="progress" style='margin-bottom: 0px'>
-                <div class="progress-bar progress-bar-success" style="width: {{status.pass_percentage}}%" title="Pass: {{status.pass_percentage|stringformat:"d"}}%">
-                    <span class="sr-only">Pass: {{status.pass_percentage}}% </span>
+        <a name="tests-{{status.suite}}"></a>
+        <h3>{{status.suite}}</h3>
+        {% with tests=status.tests_by_result %}
+            {% if tests.fail %}
+                {% for test in status.tests_by_result.fail %}
+                    <div class='row fail'>
+                        <div class='col-md-3 col-sm-3'>
+                            <i class='fa fa-times'></i>
+                            {{test.name}}
+                        </div>
+                        <div class='col-md-9 col-sm-9'>
+                            {% if test.log %}
+                                <a class="btn btn-sm btn-danger testlog-{{test.id}}" href='#' onclick='$(".testlog-{{test.id}}").toggle(); return false'>Show log snippet</a>
+                                <a class="btn btn-sm btn-danger testlog-{{test.id}}" href='#' onclick='$(".testlog-{{test.id}}").toggle(); return false' style='display: none'>Hide log snippet</a>
+                                <pre class='testlog-{{test.id}}' style='display: none'>{{test.log}}</pre>
+                            {% else %}
+                                <em>No log available for this test</em>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% if tests.skip %}
+                <div class='row'>
+                    <div class='col-md-12 col-sm-12'>
+                        <span class="badge alert-warning" data-placement="top">{{tests.skip|length}} skipped</span>
+                        <a class='tests-{{status.id}}-skip' href='#' onclick='$(".tests-{{status.id}}-skip").toggle(); return false'>Show</a>
+                        <a class='tests-{{status.id}}-skip' href='#' onclick='$(".tests-{{status.id}}-skip").toggle(); return false' style='display:none'>Hide</a>
+                    </div>
                 </div>
-                <div class="progress-bar progress-bar-warning" style="width: {{status.skip_percentage}}%" title="Skip: {{status.skip_percentage|stringformat:"d"}}%">
-                    <span class="sr-only">Skip: {{status.skip_percentage}}%</span>
+                <div class='row tests-details tests-details-skip tests-{{status.id}}-skip' style='display: none'>
+                    {% for test in status.tests_by_result.skip %}
+                        <div class='col-md-12 col-sm-12'>
+                            <i class='fa fa-question-circle-o'></i>
+                            {{test.name}}
+                        </div>
+                    {% endfor %}
                 </div>
-                <div class="progress-bar progress-bar-danger" style="width: {{status.fail_percentage}}%" title="Fail: {{status.fail_percentage|stringformat:"d"}}%">
-                    <span class="sr-only">Fail: {{status.fail_percentage}}%</span>
+            {% endif %}
+            {% if tests.pass %}
+                <div class='row'>
+                    <div class='col-md-12 col-sm-12'>
+                        <span class="badge alert-success" data-placement="top">{{tests.pass|length}} passed</span>
+                        <a class='tests-{{status.id}}-pass' href='#' onclick='$(".tests-{{status.id}}-pass").toggle(); return false'>Show</a>
+                        <a class='tests-{{status.id}}-pass' href='#' onclick='$(".tests-{{status.id}}-pass").toggle(); return false' style='display:none'>Hide</a>
+                    </div>
                 </div>
-            </div>
-        </td>
-    </tr>
-    {% for test in status.tests %}
-    <tr>
-        <td>{{test.name}}</td>
-        <td class='{{test.status|slugify}}'>
-            <a href="{% url 'test_history' build.project.group.slug build.project.slug test.full_name %}">{{test.status}}</a>
-        </td>
-    </tr>
+                <div class='row tests-details tests-details-pass tests-{{status.id}}-pass' style='display: none'>
+                    {% for test in status.tests_by_result.pass %}
+                        <div class='col-md-12 col-sm-12'>
+                            <i class='fa fa-check-square-o'></i>
+                            {{test.name}}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
     {% endfor %}
-    <tr>
-        <td colspan='2'>&nbsp;</td>
-    </tr>
-    {% endfor %}
-</table>
 {% endif %}
-
 
 {% if metrics_status|length > 0 %}
-<h2>Metrics</h2>
-<table class='table table-hover table-condensed'>
+    <h2>Metrics</h2>
     {% for status in metrics_status %}
-    <tr class='warning'>
-        <td colspan='2'>
-            <h4>{{status.suite.slug}}</h4>
-        </td>
-    </tr>
-    {% for metric in status.metrics %}
-    <tr>
-        <td>{{metric.name}}</td>
-        <td>{{metric.result}}</td>
-    </tr>
+        <a name="metrics-{{status.suite}}"></a>
+        <h3>{{status.suite}}</h3>
+        <div class='row metrics'>
+        {% for metric in status.metrics %}
+            <div class='col-md-4 col-sm-4 metric'>
+               <i class='fa fa-line-chart'></i>
+               {{metric.name}}
+               <div class='pull-right'>
+                   {{metric.result}}
+               </div>
+            </div>
+        {% endfor %}
+        </div>
     {% endfor %}
-    <tr>
-        <td colspan='2'>&nbsp;</td>
-    </tr>
-    {% endfor %}
-
-</table>
 {% endif %}
+
 
 {% endblock %}
