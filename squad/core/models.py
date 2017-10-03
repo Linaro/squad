@@ -329,6 +329,7 @@ class Test(models.Model):
     suite = models.ForeignKey(Suite)
     name = models.CharField(max_length=256)
     result = models.NullBooleanField()
+    log = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return "%s: %s" % (self.name, self.status)
