@@ -1,9 +1,9 @@
 from django import template
-from django.template.defaultfilters import safe, escape
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from squad import version
+from squad.core.utils import format_metadata
 
 
 register = template.Library()
@@ -104,7 +104,4 @@ def squad_version():
 
 @register.filter
 def metadata_value(v):
-    if type(v) is list:
-        return safe("<br/>".join([escape(t) for t in v]))
-    else:
-        return escape(v)
+    return format_metadata(v, "<br/>")

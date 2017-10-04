@@ -1,5 +1,6 @@
 import random
 import string
+from django.template.defaultfilters import safe, escape
 
 
 def random_key(length, chars=string.printable):
@@ -31,3 +32,10 @@ def join_name(group, name):
         return name
     else:
         return "/".join([group, name])
+
+
+def format_metadata(v, separator):
+    if type(v) is list:
+        return safe(separator.join([escape(t) for t in v]))
+    else:
+        return escape(v)
