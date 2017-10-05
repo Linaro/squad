@@ -1,14 +1,16 @@
 {% load humanize %}
 {% load squad %}
+<div class='highlight-row'>
 {% for build in builds %}
-<div class="row project">
+<a href="{% build_url build %}">
+<div class="row build">
     {% with status=build.status %}
     <div class="col-md-2 col-sm-2">
-        <h2>
-            <a href="{% build_url build %}">{{build.version}}</a>
-        </h2>
+        <strong>
+            {{build.version}}
+        </strong>
     </div>
-    <div class='col-md-3 col-sm-3 project-listing-info'>
+    <div class='col-md-3 col-sm-3'>
         <div title='Test run status'>
             <i class='fa fa-cog'></i>
             <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.test_runs_total}} test runs</span>
@@ -20,19 +22,19 @@
             {% endif %}
         </div>
     </div>
-    <div class="col-md-4 col-sm-4 project-listing-info">
+    <div class="col-md-4 col-sm-4">
         {% if status.has_tests %}
         <div title='Test results'>
             <i class='fa fa-check-square-o'></i>
             <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}} tests</span>
             {% if status.tests_pass > 0 %}
-            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} passed</span>
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} pass</span>
             {% endif %}
             {% if status.tests_skip > 0 %}
-            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}} skipped</span>
+            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}} skip</span>
             {% endif %}
             {% if status.tests_fail > 0 %}
-            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} failed</span>
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} fail</span>
             {% endif %}
         </div>
         {% endif %}
@@ -44,7 +46,7 @@
          </div>
         {% endif %}
     </div>
-    <div class="col-md-3 col-sm-3 project-listing-info">
+    <div class="col-md-3 col-sm-3">
         {% if status.last_updated %}
         <div>
             <i class='fa fa-clock-o'>&nbsp;</i>
@@ -56,17 +58,8 @@
         </div>
         {% endif %}
     </div>
-
-    {% if project.description%}
-    <div ng-controller='DescriptionController' ng-init='init({{project.id}})' class='description col-md-12 col-sm-12'>
-        <span style='display: none' id='full-description-{{project.id}}'>{{project.description|urlize}}</span>
-        <em id='short-description-{{project.id}}'>{{project.description|urlize|truncatechars_html:140}}</em>
-        {% if project.description|length > 140 %}
-        <a class='toggle-description' id='toggle-description-{{project.id}}' style='cursor: pointer' ng-click='toggle()' data-alt-title='Show less'>Show more</a>
-        {% endif %}
-    </div>
-    {% endif %}
-
     {% endwith %}
 </div>
+</a>
 {% endfor %}
+</div>
