@@ -71,18 +71,20 @@
             {% if tests.fail %}
                 {% for test in status.tests_by_result.fail %}
                     <div class='row fail'>
-                        <div class='col-md-3 col-sm-3'>
+                        <div class='col-md-6 col-sm-6'>
                             <i class='fa fa-times'></i>
                             {{test.name}}
                         </div>
-                        <div class='col-md-9 col-sm-9'>
+                        <div class='col-md-6 col-sm-6'>
                             {% if test.log %}
                                 <a class="btn btn-sm btn-danger testlog-{{test.id}}" href='#' onclick='$(".testlog-{{test.id}}").toggle(); return false'>Show log snippet</a>
                                 <a class="btn btn-sm btn-danger testlog-{{test.id}}" href='#' onclick='$(".testlog-{{test.id}}").toggle(); return false' style='display: none'>Hide log snippet</a>
-                                <pre class='testlog-{{test.id}}' style='display: none'>{{test.log}}</pre>
                             {% else %}
                                 <em>No log available for this test</em>
                             {% endif %}
+                        </div>
+                        <div class='testlog-{{test.id}} col-md-12 col-sm-12' style='display: none'>
+                            <pre>{{test.log}}</pre>
                         </div>
                     </div>
                 {% endfor %}
