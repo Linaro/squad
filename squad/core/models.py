@@ -329,6 +329,7 @@ class Test(models.Model):
     suite = models.ForeignKey(Suite)
     name = models.CharField(max_length=256)
     result = models.NullBooleanField()
+    log = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return "%s: %s" % (self.name, self.status)
@@ -477,6 +478,13 @@ class Status(models.Model, TestSummaryBase):
     @property
     def tests(self):
         return self.test_run.tests.filter(suite=self.suite)
+
+    @property
+    def tests_by_result(self):
+        result = {'pass': [], 'fail': [], 'skip': []}
+        for test in self.tests:
+            result[test.status].append(test)
+        return result
 
     @property
     def metrics(self):

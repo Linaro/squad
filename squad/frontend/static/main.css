@@ -28,7 +28,28 @@
 .row.fail {
   background-color: #f2dede;
   border-color: #a94442;
-  border-width: 1px;
+  color: #a40000;
+}
+
+.tests-details {
+  margin-top: 0px;
+  border-top: none;
+}
+
+.tests-details-skip i {
+  color: #c4a000;
+}
+
+.tests-details-pass i {
+  color: #4e9a06;
+}
+
+.row.metrics {
+  border: none;
+}
+
+.metrics .metric {
+  border: 1px solid #d3d7cf;
 }
 
 .project .description {
