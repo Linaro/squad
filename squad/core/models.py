@@ -54,6 +54,11 @@ class EmailTemplate(models.Model):
         return self.name
 
 
+plugin_list_validator = RegexValidator(
+    regex='^$|^%s(\s+%s)*$' % (slug_pattern, slug_pattern)
+)
+
+
 class Project(models.Model):
     objects = ProjectManager()
 
@@ -66,6 +71,11 @@ class Project(models.Model):
     custom_email_template = models.ForeignKey(EmailTemplate, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     important_metadata_keys = models.TextField(null=True, blank=True)
+    enabled_plugins_list = models.TextField(
+        validators=[plugin_list_validator],
+        default='',
+        help_text='One per line. Non-existing plugins are ignored.',
+    )
 
     NOTIFY_ALL_BUILDS = 'all'
     NOTIFY_ON_CHANGE = 'change'
@@ -100,6 +110,10 @@ class Project(models.Model):
     class Meta:
         unique_together = ('group', 'slug',)
         ordering = ['group', 'slug']
+
+    @property
+    def enabled_plugins(self):
+        return self.enabled_plugins_list.split()
 
 
 class Token(models.Model):

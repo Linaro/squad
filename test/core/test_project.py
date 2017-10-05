@@ -1,9 +1,11 @@
 from django.test import TestCase
 from django.contrib.auth.models import AnonymousUser
+from django.core.exceptions import ValidationError
 
 
 from django.contrib.auth.models import Group as UserGroup, User
 from squad.core.models import Group, Project, Token
+from squad.core.models import plugin_list_validator
 
 
 class ProjectTest(TestCase):
@@ -61,3 +63,33 @@ class ProjectTest(TestCase):
 
     def test_accessible_instance_admin(self):
         self.assertTrue(self.private_project.accessible_to(self.admin))
+
+    def test_enabled_plugins_empty(self):
+        self.assertEqual([], Project().enabled_plugins)
+
+    def test_enabled_plugins(self):
+        p = Project(enabled_plugins_list='aaa bbb')
+        self.assertEqual(['aaa', 'bbb'], p.enabled_plugins)
+
+
+class PluginListValidatorTest(TestCase):
+
+    def test_valid_values(self):
+        valid = (
+            ''
+            'aaaa',
+            'aaaa bbb',
+            'aaaa\nbbb',
+            'aaaa\r\nbbb',
+        )
+        for v in valid:
+            plugin_list_validator(v)
+
+    def test_invalid_values(self):
+        invalid = (
+            'aaa,bbb'
+            'aaa,a b',
+        )
+        for v in invalid:
+            with self.assertRaises(ValidationError):
+                plugin_list_validator(v)

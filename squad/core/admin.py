@@ -1,6 +1,7 @@
 from django.contrib import admin
 from . import models
 from .tasks import notify_project_status
+from squad.plugins import PluginLoader
 
 
 class TokenAdmin(admin.ModelAdmin):
@@ -50,6 +51,12 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'is_public', 'notification_strategy', 'moderate_notifications', 'custom_email_template']
     list_filter = ['group', 'is_public', 'notification_strategy', 'moderate_notifications', 'custom_email_template']
     inlines = [EnvironmentInline, TokenInline, SubscriptionInline, AdminSubscriptionInline]
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(ProjectAdmin, self).get_form(request, obj, **kwargs)
+        plugins = PluginLoader.load_all()
+        form.base_fields['enabled_plugins_list'].help_text += " Available plugins:<br/><ul>" + "".join(['<li>%s</li>' % p for p in sorted(plugins.keys())]) + "</ul>"
+        return form
 
 
 def __resend__notification__(queryset, approve):
