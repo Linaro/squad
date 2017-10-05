@@ -139,8 +139,8 @@ class BuildTest(TestCase):
         test_suites = build.test_suites_by_environment
 
         self.assertEqual([env1, env2], list(test_suites.keys()))
-        self.assertEqual(["bar", "foo"], [s.slug for s in test_suites[env1]])
-        self.assertEqual(["foo"], [s.slug for s in test_suites[env2]])
+        self.assertEqual(["bar", "foo"], [s[0].slug for s in test_suites[env1]])
+        self.assertEqual(["foo"], [s[0].slug for s in test_suites[env2]])
 
     def test_important_metadata_default(self):
         project = Project()
