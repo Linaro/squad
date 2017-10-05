@@ -1,3 +1,25 @@
+# 0.27
+
+* core:
+  * display metadata in a grid in HTML notifications emails
+  * handle list as metadata keys in emails
+  * Test: add `log` field
+* frontend:
+  * add line break between metadata list values
+  * highlight rows under the mouse on project and build listings, and in the
+    list of test suites in the build page
+  * remove "ed" suffix from test results
+  * align width of top navigation bar with content width
+  * turn entire suite rows into links
+  * improve HTML markup
+  * redesign the TestRun page
+    * failures are listed at the top, with their corresponding log snippet if
+      available
+      * note however that assigning log snippets to test results is not
+        implemented yet; will probably be available on the next update.
+    * skipped and passed tests are hidden by default, but can be displayed with
+      a click
+
 # 0.26
 
 * Dockerfile: run out of the box
