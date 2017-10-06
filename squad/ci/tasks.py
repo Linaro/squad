@@ -38,6 +38,7 @@ def submit(self, job_id):
     test_job = TestJob.objects.get(pk=job_id)
     try:
         test_job.backend.submit(test_job)
+        test_job.save()
     except SubmissionIssue as issue:
         logger.error("submitting job %s to %s: %s" % (test_job.id, test_job.backend.name, str(issue)))
         test_job.failure = str(issue)

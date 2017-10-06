@@ -169,11 +169,13 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__submit__", return_value='1234')
     def test_submit(self, __submit__):
         lava = LAVABackend(None)
+        test_definition = "foo: 1\njob_name: bar"
         testjob = TestJob(
-            definition="foo: 1\n",
+            definition=test_definition,
             backend=self.backend)
         self.assertEqual('1234', lava.submit(testjob))
-        __submit__.assert_called_with("foo: 1\n")
+        self.assertEqual('bar', testjob.name)
+        __submit__.assert_called_with(test_definition)
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
@@ -225,6 +227,7 @@ class LavaTest(TestCase):
         self.assertEqual(len(results), 2)
         self.assertEqual(len(metrics), 2)
         self.assertEqual(10, metrics['DefinitionFoo/case_foo'])
+        self.assertEqual('job_foo', testjob.name)
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
@@ -368,6 +371,7 @@ class LavaTest(TestCase):
             submitted=True,
             fetched=False,
             job_id='123',
+            name="foo",
         )
 
         lava.receive_event('foo.com.testjob', {"job": '123', 'status': 'Complete'})
@@ -376,6 +380,7 @@ class LavaTest(TestCase):
         fetch.apply_async.assert_called_with(args=[testjob.id], countdown=120)
         # proper solution below
         # fetch.fetch.assert_called_with(testjob.id)
+        self.assertEqual('Complete', TestJob.objects.get(pk=testjob.id).job_status)
 
     def test_receive_event_no_testjob(self):
         backend = MagicMock()

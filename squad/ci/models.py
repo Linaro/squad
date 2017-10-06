@@ -110,6 +110,9 @@ class TestJob(models.Model):
     # definition can only be empty if the job already exists
     # in the executor.
     definition = models.TextField(null=True, blank=True)
+    # name field is optional. In case of LAVA it's extrated from
+    # test job definition
+    name = models.CharField(max_length=256, null=True, blank=True)
 
     # input - for TestRun later
     target = models.ForeignKey(Project)
