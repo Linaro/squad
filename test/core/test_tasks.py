@@ -9,6 +9,7 @@ from unittest.mock import patch, PropertyMock
 
 from squad.core.models import Group, TestRun, Status, Build, ProjectStatus
 from squad.core.tasks import ParseTestRunData
+from squad.core.tasks import PostProcessTestRun
 from squad.core.tasks import RecordTestRunStatus
 from squad.core.tasks import UpdateProjectStatus
 from squad.core.tasks import ProcessTestRun
@@ -111,6 +112,22 @@ class ProcessTestRunTest(CommonTestCase):
         self.assertEqual(4, self.testrun.tests.count())
         self.assertEqual(5, self.testrun.status.count())
         self.assertEqual(1, ProjectStatus.objects.filter(build=self.testrun.build).count())
+
+    @patch('squad.core.tasks.PostProcessTestRun.__call__')
+    def test_postprocess(self, postprocess):
+        ProcessTestRun()(self.testrun)
+        postprocess.assert_called_with(self.testrun)
+
+
+class TestPostProcessTestRun(CommonTestCase):
+
+    @patch('squad.plugins.example.Plugin.postprocess_testrun')
+    def test_calls_enabled_plugin(self, plugin_method):
+        project = self.testrun.build.project
+        project.enabled_plugins_list = 'example'
+        project.save()
+        PostProcessTestRun()(self.testrun)
+        plugin_method.assert_called_with(self.testrun)
 
 
 class ReceiveTestRunTest(TestCase):

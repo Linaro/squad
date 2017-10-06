@@ -49,4 +49,5 @@ def apply_plugins(plugin_names):
 
 class Plugin(object):
 
-    pass
+    def postprocess_testrun(self, testrun):
+        pass

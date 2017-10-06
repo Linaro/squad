@@ -11,6 +11,7 @@ from django.db import transaction
 from squad.core.models import TestRun, Suite, Test, Metric, Status, ProjectStatus
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
 from squad.core.statistics import geomean
+from squad.plugins import apply_plugins
 from . import exceptions
 
 
@@ -187,6 +188,21 @@ class ParseTestRunData(object):
         test_run.save()
 
 
+class PostProcessTestRun(object):
+
+    def __call__(self, testrun):
+        project = testrun.build.project
+        for plugin in apply_plugins(project.enabled_plugins):
+            try:
+                self.__call_plugin__(plugin, testrun)
+            except Exception as e:
+                logger.error("Plugin postprocessing error: " + str(e) + "\n" + traceback.format_exc())
+
+    @transaction.atomic
+    def __call_plugin__(self, plugin, testrun):
+        plugin.postprocess_testrun(testrun)
+
+
 class RecordTestRunStatus(object):
 
     @staticmethod
@@ -252,6 +268,7 @@ class ProcessTestRun(object):
     @staticmethod
     def __call__(testrun):
         ParseTestRunData()(testrun)
+        PostProcessTestRun()(testrun)
         RecordTestRunStatus()(testrun)
         UpdateProjectStatus()(testrun)
 
