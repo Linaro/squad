@@ -3,12 +3,13 @@ import json
 import mimetypes
 import os
 
+from django.db.models import Count, Case, When
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
-from squad.core.models import Group, Project, Metric
+from squad.core.models import Group, Project, Metric, ProjectStatus
 from squad.core.queries import get_metric_data
 from squad.core.utils import join_name
 from squad.frontend.utils import file_type
@@ -31,17 +32,36 @@ def group(request, group_slug):
     return render(request, 'squad/group.html', context)
 
 
+def __get_statuses__(project, limit=None):
+    statuses = ProjectStatus.objects.filter(
+        build__project=project
+    ).prefetch_related(
+        'build',
+        'build__project'
+    ).annotate(
+        test_runs_total=Count('build__test_runs'),
+        test_runs_completed=Count(Case(When(build__test_runs__completed=True, then=1))),
+        test_runs_incomplete=Count(Case(When(build__test_runs__completed=False, then=1))),
+    ).order_by('-build__datetime')
+    if limit:
+        statuses = statuses[:limit]
+    return statuses
+
+
 @auth
 def project(request, group_slug, project_slug):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    builds = project.builds.prefetch_related('status', 'test_runs').reverse().all()[:11]
-    last_build = builds.first()
+
+    statuses = __get_statuses__(project, 11)
+    last_status = statuses.first()
+    last_build = last_status and last_status.build
+
     metadata = last_build and sorted(last_build.important_metadata.items()) or ()
     extra_metadata = last_build and sorted(last_build.non_important_metadata.items()) or ()
     context = {
         'project': project,
-        'builds': builds,
+        'statuses': statuses,
         'last_build': last_build,
         'metadata': metadata,
         'extra_metadata': extra_metadata,
@@ -53,10 +73,12 @@ def project(request, group_slug, project_slug):
 def builds(request, group_slug, project_slug):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    builds = project.builds.prefetch_related('test_runs').reverse().all()
+
+    statuses = __get_statuses__(project)
+
     context = {
         'project': project,
-        'builds': builds,
+        'statuses': statuses,
     }
     return render(request, 'squad/builds.html', context)
 
