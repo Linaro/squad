@@ -232,12 +232,20 @@ class Build(models.Model):
         result = OrderedDict()
         envlist = set([t.environment for t in test_runs])
         for env in sorted(envlist, key=lambda env: env.slug):
-            result[env] = set()
+            result[env] = dict()
         for tr in test_runs:
             for t in tr.tests.all():
-                result[tr.environment].add(t.suite)
+                if t.suite in result[tr.environment].keys():
+                    result[tr.environment][t.suite][t.status] += 1
+                else:
+                    result[tr.environment].setdefault(t.suite, {'fail': 0, 'pass': 0, 'skip': 0})
+                    result[tr.environment][t.suite][t.status] += 1
         for env in result.keys():
-            result[env] = sorted(result[env], key=lambda suite: suite.slug)
+            # there should only be one key in the most nested dict
+            result[env] = sorted(
+                result[env].items(),
+                key=lambda suite_dict: suite_dict[0].slug)
+
         return result
 
 
