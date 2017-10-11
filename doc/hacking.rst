@@ -1,5 +1,6 @@
-Development-related notes
-=========================
+==================================
+Development-related notes and tips
+==================================
 
 Running a development environment under Docker
 ----------------------------------------------

@@ -1,5 +1,6 @@
-SQUAD - Installation Instructions
-=================================
+=====================================================
+Installation Instructions for production environments
+=====================================================
 
 Installation using the Python package manager pip
 -------------------------------------------------
@@ -81,6 +82,7 @@ needed:
   administration web UI, and under "CI", choose "Backends".
 * For each project, create authentication tokens and subscriptions
 * Under "Djcelery", create "Periodic tasks":
+
   * ``squad.ci.tasks.poll``: this is that task to  poll results from the
     backends from time to time. You can schedule this for every 5 minutes;
 
