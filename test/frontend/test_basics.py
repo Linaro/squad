@@ -44,12 +44,21 @@ class FrontendTest(TestCase):
     def test_project(self):
         self.hit('/mygroup/myproject/')
 
+    def test_project_404(self):
+        self.hit('/mygroup/unexistingproject/', 404)
+
     def test_project_no_build(self):
         self.project.builds.all().delete()
         self.hit('/mygroup/myproject/')
 
     def test_builds(self):
         self.hit('/mygroup/myproject/builds/')
+
+    def test_build_404(self):
+        self.hit('/mygroup/myproject/build/999/', 404)
+
+    def test_test_run_404(self):
+        self.hit('/mygroup/myproject/build/1.0/testrun/999/', 404)
 
     def test_attachment(self):
         data = bytes('text file', 'utf-8')
