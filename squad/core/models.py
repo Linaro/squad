@@ -211,18 +211,6 @@ class Build(models.Model):
         return True
 
     @property
-    def test_runs_total(self):
-        return len(self.test_runs.all())
-
-    @property
-    def test_runs_completed(self):
-        return sum([1 for t in self.test_runs.all() if t.completed])
-
-    @property
-    def test_runs_incomplete(self):
-        return sum([1 for t in self.test_runs.all() if not t.completed])
-
-    @property
     def test_suites_by_environment(self):
         test_runs = self.test_runs.prefetch_related(
             'tests',

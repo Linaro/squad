@@ -1,10 +1,10 @@
 {% load humanize %}
 {% load squad %}
 <div class='highlight-row'>
-{% for build in builds %}
+{% for status in statuses %}
+{% with build=status.build %}
 <a href="{% build_url build %}">
 <div class="row build">
-    {% with status=build.status %}
     <div class="col-md-2 col-sm-2">
         <strong>
             {{build.version}}
@@ -13,12 +13,12 @@
     <div class='col-md-3 col-sm-3'>
         <div title='Test run status'>
             <i class='fa fa-cog'></i>
-            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{build.test_runs_total}} test runs</span>
-            {% if build.test_runs_completed > 0 %}
-            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Completed">{{build.test_runs_completed}} completed</span>
+            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.test_runs_total}} test runs</span>
+            {% if status.test_runs_completed > 0 %}
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Completed">{{status.test_runs_completed}} completed</span>
             {% endif %}
-            {% if build.test_runs_incomplete > 0 %}
-            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Incomplete">{{build.test_runs_incomplete}} incomplete</span>
+            {% if status.test_runs_incomplete > 0 %}
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Incomplete">{{status.test_runs_incomplete}} incomplete</span>
             {% endif %}
         </div>
     </div>
@@ -58,8 +58,8 @@
         </div>
         {% endif %}
     </div>
-    {% endwith %}
 </div>
 </a>
+{% endwith %}
 {% endfor %}
 </div>
