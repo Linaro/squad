@@ -87,7 +87,15 @@ def builds(request, group_slug, project_slug):
 def build(request, group_slug, project_slug, version):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    build = project.builds.prefetch_related('test_runs', 'test_runs__status', 'test_runs__status__suite', 'test_runs__status__test_run__environment').get(version=version)
+    build = get_object_or_404(
+        project.builds.prefetch_related(
+            'test_runs',
+            'test_runs__status',
+            'test_runs__status__suite',
+            'test_runs__status__test_run__environment'
+        ),
+        version=version
+    )
 
     context = {
         'project': project,
@@ -103,7 +111,7 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
     build = project.builds.get(version=build_version)
-    test_run = build.test_runs.get(job_id=job_id)
+    test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
     status = test_run.status.by_suite()
 
@@ -142,7 +150,7 @@ def test_run_log(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
     build = project.builds.get(version=build_version)
-    test_run = build.test_runs.get(job_id=job_id)
+    test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
     if not test_run.log_file:
         raise Http404("No log file available for this test run")
@@ -155,7 +163,7 @@ def test_run_tests(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
     build = project.builds.get(version=build_version)
-    test_run = build.test_runs.get(job_id=job_id)
+    test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
     filename = '%s_%s_%s_%s_tests.json' % (group.slug, project.slug, build.version, test_run.job_id)
     return __download__(filename, test_run.tests_file)
@@ -166,7 +174,7 @@ def test_run_metrics(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
     build = project.builds.get(version=build_version)
-    test_run = build.test_runs.get(job_id=job_id)
+    test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
     filename = '%s_%s_%s_%s_metrics.json' % (group.slug, project.slug, build.version, test_run.job_id)
     return __download__(filename, test_run.metrics_file)
@@ -177,7 +185,7 @@ def test_run_metadata(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
     build = project.builds.get(version=build_version)
-    test_run = build.test_runs.get(job_id=job_id)
+    test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
     filename = '%s_%s_%s_%s_metadata.json' % (group.slug, project.slug, build.version, test_run.job_id)
     return __download__(filename, test_run.metadata_file)
@@ -188,9 +196,9 @@ def attachment(request, group_slug, project_slug, build_version, job_id, fname):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
     build = project.builds.get(version=build_version)
-    test_run = build.test_runs.get(job_id=job_id)
+    test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
-    attachment = test_run.attachments.get(filename=fname)
+    attachment = get_object_or_404(test_run.attachments, filename=fname)
     return __download__(attachment.filename, attachment.data)
 
 
