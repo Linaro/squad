@@ -13,3 +13,5 @@ recursive-include squad/frontend/static/ *
 recursive-include squad/*/templates/ *
 recursive-include test/ *.py *.json *.csv *.log *.png *.yaml
 recursive-include scripts/ *
+recursive-include doc/ *
+recursive-exclude doc/_build/ *
