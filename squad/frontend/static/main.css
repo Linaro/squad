@@ -76,6 +76,16 @@ td.pass:hover {
   background-color: #d8f4ab;
 }
 
+td.fail {
+  background-color: #ff8c8c;
+}
+td.fail a {
+  color: #a40000;
+}
+td.fail:hover {
+  background-color: #f75757;
+}
+
 table.test-results th a:link,
 table.test-results td a:link {
   display: block;
