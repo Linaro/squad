@@ -1,3 +1,15 @@
+# 0.28
+
+* core:
+  * modify `test_suites_by_environment` to provide count of pass, fail, and
+    skip tests
+* README.rst: fix copyright notice to mention AGPL
+* frontend:
+  * optimize build listings
+  * return 404 on non-existing Build, TestRun, and Attachment
+  * re-add missing red background for failed tests in test results tables
+* doc: move documentation to sphinx
+
 # 0.27
 
 * core:
