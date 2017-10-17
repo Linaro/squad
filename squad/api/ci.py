@@ -89,6 +89,7 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
         target=project,
         build=version,
         environment=environment_slug,
+        submitted=True,
         job_id=testjob_id
     )
 

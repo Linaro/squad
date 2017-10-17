@@ -33,6 +33,7 @@ class Backend(BaseBackend):
     def submit(self, test_job):
         try:
             job_id = self.__submit__(test_job.definition)
+            test_job.name = self.__lava_job_name(test_job.definition)
             return job_id
         except xmlrpc.client.ProtocolError as error:
             raise TemporarySubmissionIssue(str(error))
@@ -144,6 +145,9 @@ class Backend(BaseBackend):
     def resubmit(self, test_job):
         if test_job.job_id is not None:
             new_job_id = self.__resubmit__(test_job.job_id)
+            new_test_job_name = None
+            if test_job.definition is not None:
+                new_test_job_name = self.__lava_job_name(test_job.definition)
             new_test_job = TestJob(
                 backend=self.data,
                 testrun=test_job.testrun,
@@ -154,11 +158,19 @@ class Backend(BaseBackend):
                 submitted=True,
                 job_id=new_job_id,
                 resubmitted_count=test_job.resubmitted_count + 1,
+                name=new_test_job_name,
             )
-            new_test_job.save()
             test_job.can_resubmit = False
             test_job.save()
+            new_test_job.save()
             return new_test_job
+        return None
+
+    def __lava_job_name(self, definition):
+        yaml_definition = yaml.load(definition)
+        if 'job_name' in yaml_definition.keys():
+            # only return first 255 characters
+            return yaml_definition['job_name'][:255]
         return None
 
     def __resubmit__(self, job_id):
@@ -203,6 +215,7 @@ class Backend(BaseBackend):
         definition = yaml.load(data['definition'])
         if data['multinode_definition']:
             definition = yaml.load(data['multinode_definition'])
+        test_job.name = definition['job_name'][:255]
         job_metadata = definition['metadata']
         results = {}
         metrics = {}
@@ -264,14 +277,25 @@ class Backend(BaseBackend):
         if 'sub_id' in data.keys():
             lava_id = data['sub_id']
         lava_status = data['status']
-        if lava_status in self.complete_statuses:
-            db_test_job_list = self.data.test_jobs.filter(
-                submitted=True,
-                fetched=False,
-                job_id=lava_id)
-            if db_test_job_list.exists() and \
-                    len(db_test_job_list) == 1:
-                job = db_test_job_list[0]
+        db_test_job_list = self.data.test_jobs.filter(
+            submitted=True,
+            fetched=False,
+            job_id=lava_id)
+        if db_test_job_list.exists() and \
+                len(db_test_job_list) == 1:
+            job = db_test_job_list[0]
+            job.job_status = lava_status
+            if job.name is None:
+                # fetch job name once
+                data = self.__get_job_details__(lava_id)
+                if data['is_pipeline'] is False:
+                    return
+                definition = yaml.load(data['definition'])
+                if data['multinode_definition']:
+                    definition = yaml.load(data['multinode_definition'])
+                job.name = definition['job_name'][:255]
+            job.save()
+            if lava_status in self.complete_statuses:
                 self.log_info("scheduling fetch for job %s" % job.job_id)
                 # introduce 2 min delay to allow LAVA for storing all results
                 # this workaround should be removed once LAVA issue is fixed
