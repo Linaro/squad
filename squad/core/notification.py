@@ -52,6 +52,10 @@ class Notification(object):
             return dict()
 
     @property
+    def important_metadata(self):
+        return self.build.important_metadata
+
+    @property
     def summary(self):
         return self.build.test_summary
 
@@ -65,6 +69,7 @@ class Notification(object):
         subject_data = {
             'project': self.project,
             'metadata': self.metadata,
+            'important_metadata': self.important_metadata,
             'tests_total': summary.tests_total,
             'tests_fail': summary.tests_fail,
             'tests_pass': summary.tests_pass,

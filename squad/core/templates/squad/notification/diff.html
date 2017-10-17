@@ -288,8 +288,8 @@ td.fail {
     <div class='row'><div class='col-3 key'>Skipped: </div>  <div class='col-9'>{{summary.tests_skip}}  </div></div>
     <div class='row'><div class='col-3 key'>Build:   </div>  <div class='col-9'>{{build.version}}       </div></div>
     <div class='row'><div class='col-12 key'> <a href="{{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}">See details</a> </div></div>
-    {% if metadata %}
-      {% for key, value in metadata.items %}
+    {% if important_metadata %}
+    {% for key, value in important_metadata.items %}
       <div class='row'>
         <div class='col-3 key'>{{key}}</div>
         <div class='col-9'>{{value|metadata_value|urlize}}</div>
