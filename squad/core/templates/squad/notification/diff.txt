@@ -6,7 +6,7 @@ Skipped: {{summary.tests_skip}}
 Build:   {{build.version}}
 Details: {{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}
 
-{% for key, value in metadata.items %}{{key}}: {{value|metadata_txt:key}}
+{% for key, value in important_metadata.items %}{{key}}: {{value|metadata_txt:key}}
 {% endfor %}
 
 Regressions{%if previous_build %} (compared to build {{previous_build.version}}){% endif %}
