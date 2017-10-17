@@ -109,6 +109,7 @@ class CiApiTest(TestCase):
                 environment='myenv',
                 build='1',
                 backend=self.backend,
+                submitted=True,
                 job_id=testjob_id
             ).count()
         )
