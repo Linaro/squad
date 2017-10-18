@@ -5,6 +5,13 @@ Failed to retrieve test results or test job finished with error.
 Reason
 {{test_job.failure|safe}}
 
+Details:
+ * project: {{test_job.target|safe}}
+ * version: {{test_job.version|safe}}
+ * environment: {{test_job.environment|safe}}
+ * status: {{test_job.job_status|safe}}
+ * name: {{test_job.name|safe}}
+
 --
 {{settings.SITE_NAME}}
 {{settings.BASE_URL}}

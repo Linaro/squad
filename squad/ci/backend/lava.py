@@ -260,11 +260,13 @@ class Backend(BaseBackend):
                                 any(substring.lower() in metadata['error_msg'].lower() for substring in LAVA_INFRA_ERROR_MESSAGES):
                             if test_job.resubmitted_count < 3:
                                 resubmitted_job = self.resubmit(test_job)
-                                send_testjob_resubmit_admin_email.delay(test_job.pk, resubmitted_job.pk)
+                                # delay sending email by 15 seconds to allow the database object to be saved
+                                send_testjob_resubmit_admin_email.apply_async(args=[test_job.pk, resubmitted_job.pk], countdown=15)
                                 # don't send admin_email
                                 continue
                         # notify about incomplete job
-                        send_admin_email.delay(test_job.pk)
+                        # delay sending email by 15 seconds to allow the database object to be saved
+                        send_admin_email.apply_async(args=[test_job.pk], countdown=15)
 
         return (data['status'], completed, job_metadata, results, metrics)
 

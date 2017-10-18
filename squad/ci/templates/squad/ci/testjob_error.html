@@ -38,10 +38,18 @@ table.table-bordered td.fail {
     <h1>Failed to retrieve test results or test job finished with error.</h1>
     <ul>
       <li>URL: <a href="{{test_job.url}}">{{test_job.backend.name}} - {{test_job.job_id}}</a></li>
-      <li>Build <a href="{{settings.BASE_URL}}/{{test_job.target}}/build/{{test_job.build}}">See details</a></li>
+      <li>Build: <a href="{{settings.BASE_URL}}/{{test_job.target}}/build/{{test_job.build}}">{{settings.BASE_URL}}/{{test_job.target}}/build/{{test_job.build}}</a></li>
     </ul>
     <h2>Reason</h2>
     <p>{{test_job.failure|safe}}</p>
+    <h2>Details</h2>
+    <ul>
+      <li>project: {{test_job.target|safe}}</li>
+      <li>version: {{test_job.version|safe}}</li>
+      <li>environment: {{test_job.environment|safe}}</li>
+      <li>status: {{test_job.job_status|safe}}</li>
+      <li>name: {{test_job.name|safe}}</li>
+    </ul>
     <div class='footer'>
     Sent by <a href="{{settings.BASE_URL}}">{{settings.SITE_NAME}}</a>
     </div>

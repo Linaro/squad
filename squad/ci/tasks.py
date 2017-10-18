@@ -54,7 +54,12 @@ def send_admin_email(job_id):
     sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
 
     emails = [r.email for r in admin_subscriptions]
-    subject = "TestJob %s (status: %s) failed" % (test_job.job_id, test_job.job_status)
+    subject = "%s - TestJob %s: %s, %s, %s" % (
+        test_job.target,
+        test_job.job_id,
+        test_job.job_status,
+        test_job.environment,
+        test_job.name)
     context = {
         'test_job': test_job,
         'subject': subject,
@@ -85,7 +90,12 @@ def send_testjob_resubmit_admin_email(job_id, resubmitted_job_id):
     sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
 
     emails = [r.email for r in admin_subscriptions]
-    subject = "TestJob %s (status: %s) failed and was automatically resubmitted" % (test_job.job_id, test_job.job_status)
+    subject = "Resubmitted: %s - TestJob %s: %s, %s, %s" % (
+        test_job.target,
+        test_job.job_id,
+        test_job.job_status,
+        test_job.environment,
+        test_job.name)
     context = {
         'test_job': test_job,
         'resubmitted_job': resubmitted_test_job,
