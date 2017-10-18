@@ -8,6 +8,13 @@ Reason
 Failed test job was automatically resubmitted as: {{resubmitted_job.url}}.
 Original test job was resubmitted {{resubmitted_job.resubmitted_count}} time(s).
 
+Details:
+ * project: {{test_job.target|safe}}
+ * version: {{test_job.version|safe}}
+ * environment: {{test_job.environment|safe}}
+ * status: {{test_job.job_status|safe}}
+ * name: {{test_job.name|safe}}
+
 --
 {{settings.SITE_NAME}}
 {{settings.BASE_URL}}
