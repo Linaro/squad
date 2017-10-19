@@ -223,8 +223,7 @@ function ChartsController($scope, $http, $location) {
             environment.line_color = colors[i][0]
             environment.fill_color = colors[i][1]
         })
-        /*_.each(_.castArray(params.environment), function(param) {*/
-        _.each(params.environment, function(param) {
+        _.each(_.castArray(params.environment), function(param) {
             var env = _.find($scope.environments, function(env)  { return env.name == param})
             if (env) {
                 env.selected = true
@@ -238,8 +237,7 @@ function ChartsController($scope, $http, $location) {
             }
         })
         $scope.selectedMetrics = _.filter($scope.metrics, function(metric) {
-            /*var found = _.find(_.castArray(params.metric), function(param) { return param == metric.name })*/
-            var found = _.find(params.metric, function(param) { return param == metric.name })
+            var found = _.find(_.castArray(params.metric), function(param) { return param == metric.name })
             return found
         })
 
