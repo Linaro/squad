@@ -5,7 +5,7 @@
 
 {% block content %}
 <h1>{{group.slug}}</h1>
-{% include "squad/_project_list.html" %}
+{% include "squad/_project_list.html" with hide_group=True %}
 {% endblock %}
 {% block javascript %}
 <script type="text/javascript" src='{% static "squad/project-list.js" %}'></script>
