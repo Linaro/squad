@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 
 from squad.core.models import Group, Project, Build
+from squad.ci.models import TestJob, Backend
 
 
 class BuildTest(TestCase):
@@ -119,6 +120,35 @@ class BuildTest(TestCase):
         env1 = self.project.environments.create(slug='env1', expected_test_runs=1)
         build.test_runs.create(environment=env1, completed=False)
         self.assertFalse(build.finished)
+
+    def test_not_finished_with_pending_ci_jobs(self):
+        build = self.project.builds.create(version='1')
+        env1 = self.project.environments.create(slug='env1', expected_test_runs=1)
+        backend = Backend.objects.create(name='foobar', implementation_type='null')
+        TestJob.objects.create(
+            job_id='1',
+            backend=backend,
+            definition='blablabla',
+            target=build.project,
+            build=build.version,
+            environment=env1.slug,
+            submitted=True,
+            fetched=True,
+        )
+        t2 = TestJob.objects.create(
+            job_id='2',
+            backend=backend,
+            definition='blablabla',
+            target=build.project,
+            build=build.version,
+            environment=env1.slug,
+            submitted=True,
+            fetched=False,
+        )
+        self.assertFalse(build.finished)
+        t2.fetched = True
+        t2.save()
+        self.assertTrue(build.finished)
 
     def test_get_or_create_with_version_twice(self):
         self.project.builds.get_or_create(version='1.0-rc1')

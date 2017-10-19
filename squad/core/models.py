@@ -203,25 +203,43 @@ class Build(models.Model):
     @property
     def finished(self):
         """
-        A finished build is a build that has at least N test runs for each of
-        the project environments, where N is configured in
-        Environment.expected_test_runs.
+        A finished build is a build that satisfies one of the following conditions:
 
-        If an environment does not have expected_test_runs set, or has it set to
-        0, then there must be at least one test run for that environment.
+        * it has no pending CI test jobs.
+        * it has no submitted CI test jobs, and has at least N test runs for each of
+          the project environments, where N is configured in
+          Environment.expected_test_runs.  the expected number of completed
+          test runs per environment. If an environment does not have
+          expected_test_runs set, or has it set to 0, then there must be at
+          least one test run for that environment.
         """
-        environments = self.project.environments.all()
-        expected = {e.id: e.expected_test_runs for e in environments}
+        # XXX note that by using test_jobs here, we are adding an implicit
+        # dependency on squad.ci, what in theory violates our architecture.
+        testjobs = self.test_jobs
+        if testjobs.count() > 0:
+            # If this build has CI jobs, then it's finished if there are no
+            # outstanding test jobs.
+            return testjobs.filter(fetched=False).count() == 0
 
-        received = {}
+        # builds with no CI jobs are finished when each environment has
+        # received the expected amount of test runs
+        testruns = {
+            e.id: {
+                'expected': e.expected_test_runs,
+                'received': 0
+            }
+            for e in self.project.environments.all()
+        }
+
         for t in self.test_runs.filter(completed=True).all():
-            received.setdefault(t.environment_id, 0)
-            received[t.environment_id] += 1
+            testruns[t.environment_id]['received'] += 1
 
-        for env, n in expected.items():
-            if env not in received:
+        for env, count in testruns.items():
+            expected = count['expected']
+            received = count['received']
+            if received == 0:
                 return False
-            if n and received[env] < n:
+            if expected and received < expected:
                 return False
         return True
 
