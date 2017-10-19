@@ -13,6 +13,7 @@ SQUAD — Software Quality Dashboard
    intro
    quickstart
    hacking
+   plugins
    install
 
 Indices and tables

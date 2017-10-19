@@ -1,4 +1,5 @@
 from django.test import TestCase
+from fnmatch import fnmatch
 import re
 import shutil
 import subprocess
@@ -13,6 +14,8 @@ ALLOWED_MODULE_DEPENDENCIES = (
     ('squad.ci', 'squad.ci'),
     ('squad.ci', 'squad.core'),
     ('squad.core', 'squad.core'),
+    ('squad.core.admin', 'squad.plugins'),
+    ('squad.core.tasks', 'squad.plugins'),
     ('squad.frontend', 'squad.core'),
     ('squad.frontend', 'squad.frontend'),
     ('squad.frontend', 'squad.http'),
@@ -20,6 +23,7 @@ ALLOWED_MODULE_DEPENDENCIES = (
     ('squad.http', 'squad.core'),
     ('squad.run', 'squad.manage'),
     ('squad.run', 'squad.version'),
+    ('squad.plugins.*', 'squad.plugins'),
     ('squad.settings', 'squad.core'),
 )
 
@@ -30,7 +34,7 @@ def filename2modulename(f):
 
 
 def match_module(contained, container):
-    return contained == container or contained.startswith(container + '.')
+    return fnmatch(contained, container) or contained.startswith(container + '.')
 
 
 def check_dependency(file1, file2):

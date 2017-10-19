@@ -103,6 +103,9 @@ date > "$attachment"
 
 trap "rm -rf $metrics $tests $metadata $attachment" INT TERM EXIT
 
+if [ -n "${LOGS:-}" ]; then
+  log=$(printf "%s\n" $LOGS | shuf | head -1)
+fi
 
 hit_api "/api/submit/$TEAM/$PROJECT/$BUILD/$ENVIRONMENT" \
   --fail \
@@ -111,5 +114,6 @@ hit_api "/api/submit/$TEAM/$PROJECT/$BUILD/$ENVIRONMENT" \
   --form metadata=@${metadata} \
   --form metrics=@${metrics} \
   --form tests=@${tests} \
+  ${log:+--form log=@$log} \
   --form attachment=@${attachment} \
   --form attachment=@test/core/test_import_data_input/2/default/2/screenshot.png \
