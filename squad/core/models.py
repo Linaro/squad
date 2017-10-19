@@ -77,6 +77,10 @@ class Project(models.Model):
         blank=True,
         help_text='One per line. Non-existing plugins are ignored.',
     )
+    wait_before_notification = models.IntegerField(
+        help_text='Wait this many seconds before sending notifications',
+        null=True,
+    )
 
     NOTIFY_ALL_BUILDS = 'all'
     NOTIFY_ON_CHANGE = 'change'
