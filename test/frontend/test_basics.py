@@ -57,6 +57,9 @@ class FrontendTest(TestCase):
     def test_build_404(self):
         self.hit('/mygroup/myproject/build/999/', 404)
 
+    def test_test_run_build_404(self):
+        self.hit('/mygroup/myproject/build/2.0.missing/testrun/999/', 404)
+
     def test_test_run_404(self):
         self.hit('/mygroup/myproject/build/1.0/testrun/999/', 404)
 

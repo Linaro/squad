@@ -110,7 +110,7 @@ def build(request, group_slug, project_slug, version):
 def test_run(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    build = project.builds.get(version=build_version)
+    build = get_object_or_404(project.builds, version=build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
     status = test_run.status.by_suite()
