@@ -24,6 +24,16 @@ checkdep curl
 checkdep jq
 checkdep openssl
 
+export AUTH_TOKEN=$(./manage.py shell <<EOF
+from squad.core.models import Group
+
+group, _ = Group.objects.get_or_create(slug='$TEAM')
+project, _ = group.projects.get_or_create(slug='$PROJECT')
+token, _ = project.tokens.get_or_create(description='submit-test-data')
+print(token.key)
+EOF
+)
+
 rand() {
   local max="$1"
   echo $((0x$(openssl rand -hex 1) % ${max} + 1))
