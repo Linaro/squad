@@ -15,6 +15,10 @@ def maybe_notify_project_status(status_id):
     build = projectstatus.build
     project = build.project
 
+    timeout = project.notification_timeout
+    if timeout:
+        notification_timeout.apply_async(args=[status_id], countdown=timeout)
+
     if project.wait_before_notification:
         to_wait = project.wait_before_notification
         time_passed = timezone.now() - build.datetime
@@ -35,3 +39,10 @@ def maybe_notify_project_status(status_id):
 def notify_project_status(status_id):
     projectstatus = ProjectStatus.objects.get(pk=status_id)
     send_status_notification(projectstatus)
+
+
+@celery.task
+def notification_timeout(status_id):
+    projectstatus = ProjectStatus.objects.get(pk=status_id)
+    if not projectstatus.notified:
+        send_status_notification(projectstatus)

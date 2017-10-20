@@ -88,3 +88,54 @@ class TestNotificationTasks(TestCase):
 
         send_status_notification.assert_called_with(status)
         apply_async.assert_not_called()
+
+    @patch("squad.core.tasks.notification.notification_timeout.apply_async")
+    def test_maybe_notify_project_status_schedule_timeout(self, apply_async):
+        self.project1.notification_timeout = 3600  # 1 hour
+        self.project1.save()
+
+        build = self.project1.builds.create(datetime=timezone.now())
+        environment = self.project1.environments.create(slug='env')
+        build.test_runs.create(environment=environment)
+        status = ProjectStatus.create_or_update(build)
+
+        maybe_notify_project_status(status.id)
+        apply_async.assert_called_with(args=[status.id], countdown=3600)
+
+    @patch("squad.core.tasks.notification.notification_timeout.apply_async")
+    def test_maybe_notify_project_status_schedule_timeout_not_requested(self, apply_async):
+        build = self.project1.builds.create(datetime=timezone.now())
+        environment = self.project1.environments.create(slug='env')
+        build.test_runs.create(environment=environment)
+        status = ProjectStatus.create_or_update(build)
+
+        maybe_notify_project_status(status.id)
+        apply_async.assert_not_called()
+
+    @patch("squad.core.tasks.notification.send_status_notification")
+    def test_notification_timeout(self, send_status_notification):
+        self.project1.notification_timeout = 3600  # 1 hour
+        self.project1.save()
+
+        build = self.project1.builds.create(datetime=timezone.now())
+        environment = self.project1.environments.create(slug='env')
+        build.test_runs.create(environment=environment)
+        status = ProjectStatus.create_or_update(build)
+
+        maybe_notify_project_status(status.id)
+        send_status_notification.assert_called_with(status)
+
+    @patch("squad.core.tasks.notification.send_status_notification")
+    def test_notification_timeout_noop(self, send_status_notification):
+        self.project1.notification_timeout = 3600  # 1 hour
+        self.project1.save()
+
+        build = self.project1.builds.create(datetime=timezone.now())
+        environment = self.project1.environments.create(slug='env')
+        build.test_runs.create(environment=environment)
+        status = ProjectStatus.create_or_update(build)
+        status.notified = True
+        status.save()
+
+        maybe_notify_project_status(status.id)
+        send_status_notification.assert_not_called()

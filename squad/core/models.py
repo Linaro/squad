@@ -81,6 +81,10 @@ class Project(models.Model):
         help_text='Wait this many seconds before sending notifications',
         null=True,
     )
+    notification_timeout = models.IntegerField(
+        help_text='Force sending build notifications after this many seconds',
+        null=True,
+    )
 
     NOTIFY_ALL_BUILDS = 'all'
     NOTIFY_ON_CHANGE = 'change'
