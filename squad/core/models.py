@@ -74,6 +74,7 @@ class Project(models.Model):
     enabled_plugins_list = models.TextField(
         validators=[plugin_list_validator],
         default='',
+        blank=True,
         help_text='One per line. Non-existing plugins are ignored.',
     )
 
