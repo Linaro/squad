@@ -1,3 +1,24 @@
+# 0.29
+
+* api: set 'submitted=True' on TestJobs created with 'watchjob' API
+* ci:
+  * add more details to failed test job notifications
+  * lava: delay email notification to allow for storing the object
+  * lava: update TestJob name and status
+  * update failed testjob subject
+* core:
+  * notification: include only important metadata in emails
+  * postprocess test runs, using plugins
+  * Project: add field to store list of enabled plugins
+* frontend
+  * hide group slug when in the group page
+  * Fix loading metrics chart configuration from URL
+* plugins:
+  * add the beginnings of a plugin system
+  * add basic documentation for both using and writing plugins
+  * add a `linux_log_parser` plugin as an example. It still needs a few
+    improvements before it can start to be used seriously.
+
 # 0.28
 
 * core:
