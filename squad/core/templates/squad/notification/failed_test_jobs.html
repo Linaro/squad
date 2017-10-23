@@ -1,0 +1,26 @@
+{% extends "squad/notification/base.html" %}
+
+{% block content %}
+<h1>Build information</h1>
+
+<ul>
+    <li>Project: {{project}}</li>
+    <li>
+        Build:
+        <a href="{{settings.BASE_URL}}/{{project.slug}}/build/{{build.version}}/">{{settings.BASE_URL}}/{{project.slug}}/build/{{build.version}}/</a>
+    </li>
+</ul>
+
+<h1>Failed test jobs ({{count}})</h1>
+
+{% for test_job in test_jobs %}
+<h2>{{test_job.job_id}}</h2>
+<ul>
+    <li>URL: {{test_job.url|urlize}}</li>
+    <li>Name: {{test_job.name|safe}}</li>
+    <li>Environment: {{test_job.environment|safe}}</li>
+    <li>Status: {{test_job.job_status|safe}}</li>
+    <li>Failure: {{test_job.failure|safe}}</li>
+</ul>
+{% endfor %}
+{% endblock %}
