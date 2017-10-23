@@ -255,19 +255,6 @@ class LavaTest(TestCase):
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
-    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_YAML)
-    def test_admin_notification(self, get_results, get_details, get_logs):
-        self.project.admin_subscriptions.create(email='foo@example.com')
-        lava = LAVABackend(None)
-        testjob = TestJob(
-            job_id='1234',
-            backend=self.backend,
-            target=self.project)
-        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
-        self.assertEqual(1, len(mail.outbox))
-
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
-    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT_YAML)
     def test_automated_resubmit_email(self, get_results, get_details, get_logs):
         self.project.admin_subscriptions.create(email='foo@example.com')
