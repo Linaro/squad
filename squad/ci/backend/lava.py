@@ -56,8 +56,8 @@ class Backend(BaseBackend):
                 logs = ""
                 try:
                     logs = self.__get_job_logs__(test_job.job_id)
-                except:
-                    self.log_warn("Logs for job %s are not available" % test_job.job_id)
+                except Exception as ex:
+                    self.log_warn("Logs for job %s are not available" % test_job.job_id + "\n" + traceback.format_exc(ex))
 
                 return self.__parse_results__(data, test_job) + (logs,)
         except xmlrpc.client.ProtocolError as error:
