@@ -10,11 +10,10 @@
 
 <h2>Test results</h2>
 <div class='test-results highlight-row'>
-{% for test_run in build.test_runs.all %}
-{% for status in test_run.status.all %}
+{% for status in statuses %}
 {% if status.suite and status.has_tests %}
-<a href="{% project_url test_run %}#tests-{{status.suite}}">
-<div class='row {% if status.tests_fail%} fail {%endif%}'>
+<a href="{% project_url status.test_run %}#tests-{{status.suite}}" class="status-fail{{status.tests_fail}}" {% if status.tests_fail == 0%}style='display: none'{% endif%}>
+<div class='row {% if status.tests_fail%}fail{% else %}nofail{%endif%}'>
     <div class='col-md-3 col-sm-3' title='Test suite'>
         <i class='fa fa-list'></i>
         <strong>{{status.suite}}</strong>
@@ -22,7 +21,7 @@
 
     <div class='col-md-3 col-sm-3' title='Environment'>
         <i class='fa fa-microchip'></i>
-        {{test_run.environment}}
+        {{status.test_run.environment}}
     </div>
 
     <div class='col-md-4 col-sm-4' title='Test results'>
@@ -41,14 +40,27 @@
 
     <div class='col-md-2 col-sm-2' title='Test run'>
         <i class='fa fa-cog'></i>
-        {{test_run.job_id}}
+        {{status.test_run.job_id}}
     </div>
 </div>
 </a>
 {% endif %}
 {% endfor %}
-{% endfor %}
 </div>
+{% if count_statuses_nofail > 0 %}
+<div class='row'>
+    <div class='col-md-12 col-sm-12'>
+        <em>
+            <span class='badge alert-success'>{{count_statuses_nofail}}</span>
+            test suites with no failures
+            <span class='status-fail0-show'>hidden</span>
+            <span class='status-fail0' style='display: none'>shown</span>
+        </em>
+        <a href='#' class='status-fail0-show' onclick="$('.status-fail0, .status-fail0-show').toggle(); return false">Show</a>
+        <a href='#' class='status-fail0'      onclick="$('.status-fail0, .status-fail0-show').toggle(); return false" style='display: none'>Hide</a>
+    </div>
+</div>
+{% endif %}
 
 <h2>Metrics</h2>
 <div class='metrics highlight-row'>
