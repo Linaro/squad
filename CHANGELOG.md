@@ -1,3 +1,10 @@
+# 0.29.1
+
+* frontend: return 404 for unexisting build on test run page
+* core:
+  * allow empty list of enabled plugins
+  * notifications: add missing important metadata dict
+
 # 0.29
 
 * api: set 'submitted=True' on TestJobs created with 'watchjob' API
