@@ -1,7 +1,7 @@
 {% load squad %}
 <div class='metadata'>
     {% for key, value in metadata %}
-    <div class='row'>
+    <div class='row row-bordered'>
         <div class='col-md-3 col-sm-3'>
             <strong>{{key}}</strong>
         </div>
@@ -13,7 +13,7 @@
     {% if extra_metadata %}
     <a class='extra-metadata-button' href="#" onclick='$(".extra-metadata, .extra-metadata-button").toggle(); return false;'><small><i class='fa fa-plus'></i> Display more</small></a>
     {% for key, value in extra_metadata %}
-    <div class='row extra-metadata' style='display: none'>
+    <div class='row row-bordered extra-metadata' style='display: none'>
         <div class='col-md-3 col-sm-3'>
             <strong>{{key}}</strong>
         </div>

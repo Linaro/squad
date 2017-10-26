@@ -1,4 +1,4 @@
-.row {
+.row-bordered {
   margin-left: 0px;
   margin-right: 0px;
   margin-top: 5px;
@@ -7,7 +7,7 @@
   border: 1px solid #d3d7cf;
 }
 
-.highlight-row .row:hover
+.highlight-row .row-bordered:hover
 {
   background-color: #fffbcf;
 }
@@ -17,15 +17,15 @@
   color: inherit;
 }
 
-.metadata .row {
+.metadata .row-bordered {
   margin-top: 0px;
   border-top: none;
 }
-.metadata .row:first-child {
+.metadata .row-bordered:first-child {
   border-top: 1px solid #d3d7cf;
 }
 
-.row.fail {
+.row-bordered.fail {
   background-color: #f2dede;
   border-color: #a94442;
   color: #a40000;

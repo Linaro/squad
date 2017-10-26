@@ -70,7 +70,7 @@
         {% with tests=status.tests_by_result %}
             {% if tests.fail %}
                 {% for test in status.tests_by_result.fail %}
-                    <div class='row fail'>
+                    <div class='row row-bordered fail'>
                         <div class='col-md-6 col-sm-6'>
                             <i class='fa fa-times'></i>
                             {{test.name}}
@@ -90,14 +90,14 @@
                 {% endfor %}
             {% endif %}
             {% if tests.skip %}
-                <div class='row'>
+                <div class='row row-bordered'>
                     <div class='col-md-12 col-sm-12'>
                         <span class="badge alert-warning" data-placement="top">{{tests.skip|length}} skipped</span>
                         <a class='tests-{{status.id}}-skip' href='#' onclick='$(".tests-{{status.id}}-skip").toggle(); return false'>Show</a>
                         <a class='tests-{{status.id}}-skip' href='#' onclick='$(".tests-{{status.id}}-skip").toggle(); return false' style='display:none'>Hide</a>
                     </div>
                 </div>
-                <div class='row tests-details tests-details-skip tests-{{status.id}}-skip' style='display: none'>
+                <div class='row row-bordered tests-details tests-details-skip tests-{{status.id}}-skip' style='display: none'>
                     {% for test in status.tests_by_result.skip %}
                         <div class='col-md-12 col-sm-12'>
                             <i class='fa fa-question-circle-o'></i>
@@ -107,14 +107,14 @@
                 </div>
             {% endif %}
             {% if tests.pass %}
-                <div class='row'>
+                <div class='row row-bordered'>
                     <div class='col-md-12 col-sm-12'>
                         <span class="badge alert-success" data-placement="top">{{tests.pass|length}} passed</span>
                         <a class='tests-{{status.id}}-pass' href='#' onclick='$(".tests-{{status.id}}-pass").toggle(); return false'>Show</a>
                         <a class='tests-{{status.id}}-pass' href='#' onclick='$(".tests-{{status.id}}-pass").toggle(); return false' style='display:none'>Hide</a>
                     </div>
                 </div>
-                <div class='row tests-details tests-details-pass tests-{{status.id}}-pass' style='display: none'>
+                <div class='row row-bordered tests-details tests-details-pass tests-{{status.id}}-pass' style='display: none'>
                     {% for test in status.tests_by_result.pass %}
                         <div class='col-md-12 col-sm-12'>
                             <i class='fa fa-check-square-o'></i>
@@ -132,7 +132,7 @@
     {% for status in metrics_status %}
         <a name="metrics-{{status.suite}}"></a>
         <h3>{{status.suite}}</h3>
-        <div class='row metrics'>
+        <div class='row row-bordered metrics'>
         {% for metric in status.metrics %}
             <div class='col-md-4 col-sm-4 metric'>
                <i class='fa fa-line-chart'></i>

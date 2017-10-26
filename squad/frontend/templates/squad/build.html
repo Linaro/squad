@@ -13,7 +13,7 @@
 {% for status in statuses %}
 {% if status.suite and status.has_tests %}
 <a href="{% project_url status.test_run %}#tests-{{status.suite}}" class="status-fail{{status.tests_fail}}" {% if status.tests_fail == 0%}style='display: none'{% endif%}>
-<div class='row {% if status.tests_fail%}fail{% else %}nofail{%endif%}'>
+<div class='row row-bordered {% if status.tests_fail%}fail{% else %}nofail{%endif%}'>
     <div class='col-md-3 col-sm-3' title='Test suite'>
         <i class='fa fa-list'></i>
         <strong>{{status.suite}}</strong>
@@ -48,7 +48,7 @@
 {% endfor %}
 </div>
 {% if count_statuses_nofail > 0 %}
-<div class='row'>
+<div class='row row-bordered'>
     <div class='col-md-12 col-sm-12'>
         <em>
             <span class='badge alert-success'>{{count_statuses_nofail}}</span>
@@ -68,7 +68,7 @@
 {% for status in test_run.status.all %}
 {% if status.suite and status.has_metrics %}
 <a href="{% project_url test_run %}#metrics-{{status.suite}}">
-<div class='row'>
+<div class='row row-bordered'>
     <div class='col-md-3 col-sm-3' title='Metrics suite'>
         <i class='fa fa-list'></i>
         <strong>{{status.suite}}</strong>

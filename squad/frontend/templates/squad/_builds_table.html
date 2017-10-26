@@ -4,7 +4,7 @@
 {% for status in statuses %}
 {% with build=status.build %}
 <a href="{% build_url build %}">
-<div class="row build">
+<div class="row row-bordered build">
     <div class="col-md-2 col-sm-2">
         <strong>
             {{build.version}}
