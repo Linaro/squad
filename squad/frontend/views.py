@@ -3,13 +3,13 @@ import json
 import mimetypes
 import os
 
-from django.db.models import Count, Case, When
+from django.db.models import Count, Case, When, Q
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
-from squad.core.models import Group, Project, Metric, ProjectStatus
+from squad.core.models import Group, Project, Metric, ProjectStatus, Status
 from squad.core.queries import get_metric_data
 from squad.core.utils import join_name
 from squad.frontend.utils import file_type
@@ -88,18 +88,28 @@ def build(request, group_slug, project_slug, version):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
     build = get_object_or_404(
-        project.builds.prefetch_related(
-            'test_runs',
-            'test_runs__status',
-            'test_runs__status__suite',
-            'test_runs__status__test_run__environment'
-        ),
-        version=version
+        project.builds.prefetch_related('test_runs'),
+        version=version,
     )
+
+    statuses = Status.objects.filter(
+        test_run__build=build,
+        suite__isnull=False,
+    ).prefetch_related(
+        'test_run',
+        'test_run__environment',
+        'suite',
+    ).order_by('-tests_fail')
+
+    count_statuses_nofail = len([s for s in statuses if s.has_tests and s.tests_fail == 0])
+    count_statuses_fail = len([s for s in statuses if s.has_tests and s.tests_fail > 0])
 
     context = {
         'project': project,
         'build': build,
+        'statuses': statuses,
+        'count_statuses_nofail': count_statuses_nofail,
+        'count_statuses_fail': count_statuses_fail,
         'metadata': sorted(build.important_metadata.items()),
         'extra_metadata': sorted(build.non_important_metadata.items()),
     }

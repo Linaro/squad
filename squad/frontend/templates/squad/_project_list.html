@@ -3,7 +3,7 @@
 
 <div class='highlight-row' ng-app='ProjectList'>
 {% for project in projects %}
-<div class="row project">
+<div class="row row-bordered project">
     {% with status=project.status %}
     <a href="{% project_url project %}">
     <div class="col-md-4 col-sm-4">
