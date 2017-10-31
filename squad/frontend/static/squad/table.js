@@ -1,0 +1,3 @@
+$('table').floatThead({
+    position: 'auto'
+});

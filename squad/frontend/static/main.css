@@ -94,6 +94,10 @@ table.test-results th:hover {
   background-color: rgb(221,221,221);
 }
 
+thead {
+  background: white
+}
+
 body {
   background: #f9f9f9;
 }

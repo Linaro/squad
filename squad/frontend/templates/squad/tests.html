@@ -17,12 +17,12 @@
         </form>
       </td>
     </tr>
-    <tr>
+    <thead>
       <th>Test</th>
       {% for env in results.environments %}
       <th>{{env}}</th>
       {% endfor %}
-    </tr>
+    </thead>
   {% if results %}
   {% for test in results.failures %}
   <tr id='test-{{test.name|slugify}}' ng-show="match('test-{{test.name|slugify}}')">
