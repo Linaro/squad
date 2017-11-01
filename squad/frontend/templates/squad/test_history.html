@@ -11,13 +11,13 @@
 
   <table class='table table-bordered test-results'>
 
-    <tr>
+    <thead>
       <th>Build</th>
       <th>Date</th>
       {% for environment in history.environments %}
       <th>{{environment.slug}}</th>
       {% endfor %}
-    </tr>
+    </thead>
 
     {% for build, results in history.results.items %}
     <tr>
