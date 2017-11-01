@@ -178,6 +178,7 @@ class PreviewNotification(Notification):
 
 def send_status_notification(status, project=None):
     project = project or status.build.project
+    send_admin_notification(status, project)
 
     if project.moderate_notifications and not status.approved:
         notification = PreviewNotification(status)
@@ -189,3 +190,35 @@ def send_status_notification(status, project=None):
             return
 
     notification.send()
+
+
+def send_admin_notification(status, project):
+    build = status.build
+    failed_test_jobs = build.test_jobs.filter(
+        fetched=True,
+        failure__isnull=False,
+    )
+
+    if not failed_test_jobs:
+        return
+
+    data = {
+        'project': project,
+        'build': build,
+        'build_version': build.version,
+        'project': project,
+        'test_jobs': failed_test_jobs,
+        'count': len(failed_test_jobs),
+        'settings': settings,
+    }
+    subject = '%(build_version)s: FAILED TEST JOBS (%(count)d) -- %(project)s' % data
+    sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
+    recipients = [r.email for r in project.admin_subscriptions.all()]
+    txt = render_to_string('squad/notification/failed_test_jobs.txt', data)
+
+    message = EmailMultiAlternatives(subject, txt, sender, recipients)
+    if project.html_mail:
+        html = render_to_string('squad/notification/failed_test_jobs.html', data)
+        message.attach_alternative(html, "text/html")
+
+    message.send()

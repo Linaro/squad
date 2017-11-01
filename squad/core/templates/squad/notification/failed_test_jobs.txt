@@ -1,0 +1,20 @@
+Build information
+-----------------
+
+Project: {{project}}
+Build: {{settings.BASE_URL}}/{{project.slug}}/build/{{build.version}}/
+
+Failed test jobs
+----------------
+
+{% for test_job in test_jobs %}URL: {{test_job.url}}
+Name: {{test_job.name|safe}}
+Environment: {{test_job.environment|safe}}
+Status: {{test_job.job_status|safe}}
+Failure: {{test_job.failure|safe}}
+{% endfor %}
+
+--
+{{settings.SITE_NAME}}
+{{settings.BASE_URL}}
+

@@ -85,24 +85,14 @@ class RecordTestRunStatusTest(CommonTestCase):
 
 class UpdateProjectStatusTest(CommonTestCase):
 
-    @patch('squad.core.tasks.notify_project_status')
-    def test_sends_notification(self, notify_project_status):
+    @patch('squad.core.tasks.maybe_notify_project_status')
+    def test_sends_notification(self, maybe_notify_project_status):
         ParseTestRunData()(self.testrun)
         RecordTestRunStatus()(self.testrun)
         UpdateProjectStatus()(self.testrun)
 
         status = ProjectStatus.objects.last()
-        notify_project_status.delay.assert_called_with(status.id)
-
-    @patch('squad.core.tasks.notify_project_status')
-    @patch('squad.core.models.ProjectStatus.notified', new_callable=PropertyMock)
-    def test_do_not_send_dup_notification(self, notified, notify_project_status):
-        ParseTestRunData()(self.testrun)
-        notified.return_value = True
-        RecordTestRunStatus()(self.testrun)
-        UpdateProjectStatus()(self.testrun)
-
-        notify_project_status.delay.assert_not_called()
+        maybe_notify_project_status.delay.assert_called_with(status.id)
 
 
 class ProcessTestRunTest(CommonTestCase):

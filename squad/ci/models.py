@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 
 
 from squad.core.tasks import ReceiveTestRun
-from squad.core.models import Project, TestRun, slug_validator
+from squad.core.models import Project, Build, TestRun, slug_validator
 
 
 from squad.ci.backend import get_backend_implementation, ALL_BACKENDS
@@ -117,6 +117,7 @@ class TestJob(models.Model):
     # input - for TestRun later
     target = models.ForeignKey(Project)
     build = models.CharField(max_length=100)
+    target_build = models.ForeignKey(Build, related_name='test_jobs', null=True, blank=True)
     environment = models.CharField(max_length=100, validators=[slug_validator])
 
     # control
@@ -129,6 +130,10 @@ class TestJob(models.Model):
     # this field should be set to "previous job + 1" whenever
     # resubmitting
     resubmitted_count = models.IntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        self.target_build = self.target.builds.filter(version=self.build).first()
+        super(TestJob, self).save(*args, **kwargs)
 
     def success(self):
         return not self.failure

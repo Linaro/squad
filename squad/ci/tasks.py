@@ -48,41 +48,6 @@ def submit(self, job_id):
 
 
 @celery.task
-def send_admin_email(job_id):
-    test_job = TestJob.objects.get(pk=job_id)
-    admin_subscriptions = test_job.target.admin_subscriptions.all()
-    sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
-
-    emails = [r.email for r in admin_subscriptions]
-    subject = "%s - TestJob %s: %s, %s, %s" % (
-        test_job.target,
-        test_job.job_id,
-        test_job.job_status,
-        test_job.environment,
-        test_job.name)
-    context = {
-        'test_job': test_job,
-        'subject': subject,
-        'settings': settings,
-    }
-
-    text_message = render_to_string(
-        'squad/ci/testjob_error.txt',
-        context=context,
-    )
-    html_message = ''
-    html_message = render_to_string(
-        'squad/ci/testjob_error.html',
-        context=context,
-    )
-
-    message = EmailMultiAlternatives(subject, text_message, sender, emails)
-    if test_job.target.html_mail:
-        message.attach_alternative(html_message, "text/html")
-    message.send()
-
-
-@celery.task
 def send_testjob_resubmit_admin_email(job_id, resubmitted_job_id):
     test_job = TestJob.objects.get(pk=job_id)
     resubmitted_test_job = TestJob.objects.get(pk=resubmitted_job_id)

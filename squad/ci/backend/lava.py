@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 
 
 from squad.ci.models import TestJob
-from squad.ci.tasks import fetch, send_admin_email, send_testjob_resubmit_admin_email
+from squad.ci.tasks import fetch, send_testjob_resubmit_admin_email
 from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue
 from squad.ci.exceptions import FetchIssue, TemporaryFetchIssue
 from squad.ci.backend.null import Backend as BaseBackend
@@ -264,9 +264,6 @@ class Backend(BaseBackend):
                                 send_testjob_resubmit_admin_email.apply_async(args=[test_job.pk, resubmitted_job.pk], countdown=15)
                                 # don't send admin_email
                                 continue
-                        # notify about incomplete job
-                        # delay sending email by 15 seconds to allow the database object to be saved
-                        send_admin_email.apply_async(args=[test_job.pk], countdown=15)
 
         return (data['status'], completed, job_metadata, results, metrics)
 
