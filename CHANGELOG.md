@@ -1,3 +1,23 @@
+# 0.30
+
+* ci:
+  * formally associate TestJobs with their target build
+  * lava: remove per-job failure notifications
+* core/Build: use pending CI jobs in the definition of `finished`
+* core/notification:
+  * add support for delayed notifications
+* core/notification:
+  * drop retry logic from notification task
+  * extract a reusable base HTML template
+  * force sending notifications after a timeout
+  * improve design of moderation warning in HTML
+  * notify admins of failed test jobs
+* frontend:
+  * add filtering to build page
+  * add floating table headers
+  * list failures on top, and allow filtering in Test results page
+  * prioritize test suites with failures in build page
+
 # 0.29.1
 
 * frontend: return 404 for unexisting build on test run page
