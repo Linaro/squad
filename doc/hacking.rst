@@ -17,17 +17,20 @@ To open a shell in the development environment::
 Checklist for loading a copy of a production database
 -----------------------------------------------------
 
+This procedure assumes you are using PostgreSQL in production, and will use
+PostgreSQL locally. If you are using sqlite, then the procedure is trivial
+(just copy the database file).
+
+
 on the server:
 
-* dump the database: squad-admin dumpdata -o /tmp/data.json auth core ci
-* compress the dump: gzip /tmp/data.json
+* dump the database: pg_dump -F custom -f /tmp/dump squad
 
 locally:
 
-* backup local DB:   mv db.sqlite3 db.sqlite3.old
-* create empty DB:   ./manage.py migrate
-* copy dump:         scp SERVER:/tmp/data.json.gz /tmp/
-* decompress dump:   gunzip /tmp/data.json.gz
-* load dump:         ./manage.py loaddata /tmp/data.json
+* create empty DB:   createdb squad
+* copy dump:         scp SERVER:/tmp/dump /tmp/
+* load dump:         pg_restore -d squad -j4 /tmp/dump
+* migrate database:  ./manage.py migrate
 * create superuser:  ./manage.py createsuperuser
 * anonymize data:    ./manage.py prepdump # avoid mailing users
