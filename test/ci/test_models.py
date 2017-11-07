@@ -43,44 +43,34 @@ class BackendTestBase(TestCase):
 
 class BackendPollTest(BackendTestBase):
 
-    @patch('squad.ci.models.Backend.fetch_on_poll')
-    def test_poll(self, fetch_method):
+    def test_poll(self):
         test_job = self.create_test_job(submitted=True)
-        self.backend.poll()
+        jobs = list(self.backend.poll())
+        self.assertEqual([test_job], jobs)
 
-        fetch_method.assert_called_with(test_job)
-
-    @patch('squad.ci.models.Backend.fetch_on_poll')
-    def test_poll_wont_fetch_non_submitted_job(self, fetch_method):
+    def test_poll_wont_fetch_non_submitted_job(self):
         self.create_test_job(submitted=False)
-        self.backend.poll()
+        jobs = list(self.backend.poll())
+        self.assertEqual(jobs, [])
 
-        fetch_method.assert_not_called()
-
-    @patch('squad.ci.models.Backend.fetch_on_poll')
-    def test_poll_wont_fetch_job_previouly_fetched(self, fetch_method):
+    def test_poll_wont_fetch_job_previouly_fetched(self):
         self.create_test_job(submitted=True, fetched=True)
-        self.backend.poll()
+        jobs = list(self.backend.poll())
+        self.assertEqual(jobs, [])
 
-        fetch_method.assert_not_called()
+    def test_poll_wont_fetch_before_poll_interval(self):
+        self.create_test_job(submitted=True, last_fetch_attempt=NOW)
+        jobs = list(self.backend.poll())
+        self.assertEqual(jobs, [])
+
+    def test_poll_will_fetch_after_poll_interval(self):
+        past = timezone.now() - relativedelta(minutes=self.backend.poll_interval + 1)
+        test_job = self.create_test_job(submitted=True, last_fetch_attempt=past)
+        jobs = list(self.backend.poll())
+        self.assertEqual([test_job], jobs)
 
 
 class BackendFetchTest(BackendTestBase):
-
-    @patch('squad.ci.models.Backend.fetch')
-    def test_poll_wont_fetch_before_poll_interval(self, fetch_method):
-        test_job = self.create_test_job(submitted=True, last_fetch_attempt=NOW)
-        self.backend.fetch_on_poll(test_job)
-
-        fetch_method.assert_not_called()
-
-    @patch('squad.ci.models.Backend.fetch')
-    def test_poll_will_fetch_after_poll_interval(self, fetch_method):
-        past = timezone.now() - relativedelta(minutes=self.backend.poll_interval + 1)
-        test_job = self.create_test_job(submitted=True, last_fetch_attempt=past)
-        self.backend.fetch_on_poll(test_job)
-
-        fetch_method.assert_called_with(test_job)
 
     @patch("squad.ci.models.Backend.really_fetch")
     def test_fetch_skips_already_fetched(self, really_fetch):

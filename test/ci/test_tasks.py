@@ -32,6 +32,15 @@ class PollTest(TestCase):
         poll.apply(args=[b1.id])
         poll_method.assert_called_once()
 
+    @patch("squad.ci.tasks.fetch")
+    def test_poll_calls_fetch_on_all_test_jobs(self, fetch_method):
+        group = core_models.Group.objects.create(slug='testgroup')
+        project = group.projects.create(slug='testproject')
+        backend = models.Backend.objects.create(name='b1')
+        testjob = backend.test_jobs.create(target=project, submitted=True)
+        poll.apply()
+        fetch_method.delay.assert_called_with(testjob.id)
+
 
 class FetchTest(TestCase):
 

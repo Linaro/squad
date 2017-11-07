@@ -30,17 +30,14 @@ class Backend(models.Model):
 
     def poll(self):
         for test_job in self.test_jobs.filter(submitted=True, fetched=False):
-            self.fetch_on_poll(test_job)
-
-    def fetch_on_poll(self, test_job):
-        last = test_job.last_fetch_attempt
-        if last:
-            now = timezone.now()
-            next_poll = last + relativedelta(minutes=self.poll_interval)
-            if now > next_poll:
-                self.fetch(test_job)
-        else:
-            self.fetch(test_job)
+            last = test_job.last_fetch_attempt
+            if last:
+                now = timezone.now()
+                next_poll = last + relativedelta(minutes=self.poll_interval)
+                if now > next_poll:
+                    yield test_job
+            else:
+                yield test_job
 
     def fetch(self, test_job):
         if not test_job.fetched:
