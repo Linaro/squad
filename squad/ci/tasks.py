@@ -17,7 +17,8 @@ def poll(backend_id=None):
     else:
         backends = Backend.objects.all()
     for backend in backends:
-        backend.poll()
+        for test_job in backend.poll():
+            fetch.delay(test_job.id)
 
 
 @celery.task
