@@ -84,8 +84,8 @@ resend_notification.short_description = "Re-send notification"
 class ProjectStatusAdmin(admin.ModelAdmin):
     model = models.ProjectStatus
     ordering = ['-build__datetime']
-    list_display = ['__str__', 'approved', 'notified']
-    list_filter = ['build__project', 'approved', 'notified']
+    list_display = ['__str__', 'finished', 'approved', 'notified']
+    list_filter = ['build__project', 'finished', 'approved', 'notified']
     actions = [approve_project_status, resend_notification]
 
     def get_queryset(self, request):
