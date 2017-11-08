@@ -1,3 +1,9 @@
+# 0.30.1
+
+* ci: Reimplement poll as a series of fetch operations
+* core.queries: optimize query for "tests pass %" metric
+* frontend: add links to test history
+
 # 0.30
 
 * ci:
