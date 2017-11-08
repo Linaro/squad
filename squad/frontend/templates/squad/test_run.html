@@ -73,7 +73,7 @@
                     <div class='row row-bordered fail'>
                         <div class='col-md-6 col-sm-6'>
                             <i class='fa fa-times'></i>
-                            {{test.name}}
+                            <a href="{% url 'test_history' project.group.slug project.slug test.full_name %}">{{test.name}}</a>
                         </div>
                         <div class='col-md-6 col-sm-6'>
                             {% if test.log %}
@@ -101,7 +101,7 @@
                     {% for test in status.tests_by_result.skip %}
                         <div class='col-md-12 col-sm-12'>
                             <i class='fa fa-question-circle-o'></i>
-                            {{test.name}}
+                            <a href="{% url 'test_history' project.group.slug project.slug test.full_name %}">{{test.name}}</a>
                         </div>
                     {% endfor %}
                 </div>
@@ -118,7 +118,7 @@
                     {% for test in status.tests_by_result.pass %}
                         <div class='col-md-12 col-sm-12'>
                             <i class='fa fa-check-square-o'></i>
-                            {{test.name}}
+                            <a href="{% url 'test_history' project.group.slug project.slug test.full_name %}">{{test.name}}</a>
                         </div>
                     {% endfor %}
                 </div>

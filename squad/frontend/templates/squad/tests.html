@@ -26,7 +26,7 @@
   {% if results %}
   {% for test in results.failures %}
   <tr id='test-{{test.name|slugify}}' ng-show="match('test-{{test.name|slugify}}')">
-    <td>{{test.name}}</td>
+    <td><a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{test.name}}</a></td>
     {% for result in test.results %}
     <td class="{{result}}">{{result}}</td>
     {% endfor %}
@@ -34,7 +34,7 @@
   {% endfor %}
   {% for test in results.non_failures %}
   <tr id='test-{{test.name|slugify}}' ng-show="match('test-{{test.name|slugify}}')">
-    <td>{{test.name}}</td>
+    <td><a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{test.name}}</a></td>
     {% for result in test.results %}
     <td class="{{result}}">{{result}}</td>
     {% endfor %}
