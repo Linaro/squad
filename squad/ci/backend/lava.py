@@ -184,7 +184,7 @@ class Backend(BaseBackend):
 
     def __get_job_logs__(self, job_id):
         log_data = self.proxy.scheduler.job_output(job_id).data.decode('utf-8')
-        log_data_yaml = yaml.load(log_data)
+        log_data_yaml = yaml.load(log_data, Loader=yaml.CLoader)
         returned_log = ""
         for log_entry in log_data_yaml:
             if log_entry['lvl'] == 'target':
