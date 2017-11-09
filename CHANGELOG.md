@@ -1,3 +1,21 @@
+# 0.31
+
+* core.admin: list and fiter by ProjectStatus.finished
+* ci/lava:
+  * speed up parsing of structured logs and test results from YAML
+  * fix parsing of test suite names
+
+**IMPORTANT:** starting from this version, the LAVA backend for CI jobs
+requires that PyYAML has been compiled with support for libyaml. So if you are
+upgrading from a previous version and are using the LAVA integration, make sure
+that is the case.
+
+  * `python3 -c 'import yaml; print(yaml.__with_libyaml__)'` must print `True`
+  * if not, make sure you have the development files for libyaml installed
+    (e.g. `libyaml-dev`) _before_ (re)installing PyYAML.
+    * To reinstall PyYAML:
+      `pip install --upgrade --force-reinstall --no-cache-dir PyYAML`
+
 # 0.30.1
 
 * ci: Reimplement poll as a series of fetch operations
