@@ -50,7 +50,7 @@ class Backend(BaseBackend):
 
             if data['status'] in self.complete_statuses:
                 yamldata = self.__get_testjob_results_yaml__(test_job.job_id)
-                data['results'] = yaml.load(yamldata)
+                data['results'] = yaml.load(yamldata, Loader=yaml.CLoader)
 
                 # fetch logs
                 logs = ""
@@ -184,7 +184,7 @@ class Backend(BaseBackend):
 
     def __get_job_logs__(self, job_id):
         log_data = self.proxy.scheduler.job_output(job_id).data.decode('utf-8')
-        log_data_yaml = yaml.load(log_data)
+        log_data_yaml = yaml.load(log_data, Loader=yaml.CLoader)
         returned_log = ""
         for log_entry in log_data_yaml:
             if log_entry['lvl'] == 'target':
@@ -226,7 +226,7 @@ class Backend(BaseBackend):
         else:
             for result in data['results']:
                 if result['suite'] != 'lava':
-                    suite = result['suite'].split("_", 1)[1]
+                    suite = result['suite'].split("_", 1)[-1]
                     res_name = "%s/%s" % (suite, result['name'])
                     # YAML from LAVA has all values serialized to strings
                     if result['measurement'] == 'None':
