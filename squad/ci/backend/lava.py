@@ -226,7 +226,7 @@ class Backend(BaseBackend):
         else:
             for result in data['results']:
                 if result['suite'] != 'lava':
-                    suite = result['suite'].split("_", 1)[1]
+                    suite = result['suite'].split("_", 1)[-1]
                     res_name = "%s/%s" % (suite, result['name'])
                     # YAML from LAVA has all values serialized to strings
                     if result['measurement'] == 'None':
