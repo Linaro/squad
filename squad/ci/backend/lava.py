@@ -50,7 +50,7 @@ class Backend(BaseBackend):
 
             if data['status'] in self.complete_statuses:
                 yamldata = self.__get_testjob_results_yaml__(test_job.job_id)
-                data['results'] = yaml.load(yamldata)
+                data['results'] = yaml.load(yamldata, Loader=yaml.CLoader)
 
                 # fetch logs
                 logs = ""
