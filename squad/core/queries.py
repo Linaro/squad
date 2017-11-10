@@ -37,21 +37,20 @@ def get_tests_series(project, environments):
     tests_total = (F('tests_pass') + F('tests_skip') + F('tests_fail'))
     pass_percentage = Value('100') * F('tests_pass') / tests_total
     for environment in environments:
-        series = models.Status.objects.overall().filter(
-            test_run__build__project=project,
-            test_run__environment__slug=environment,
+        series = models.ProjectStatus.objects.filter(
+            build__project=project
         ).filter(
             Q(tests_pass__gt=0) | Q(tests_skip__gt=0) | Q(tests_fail__gt=0)
         ).order_by(
-            'test_run__datetime'
+            'build__datetime'
         ).values(
-            'test_run__datetime',
-            'test_run__build__version',
+            'build__datetime',
+            'build__version',
         ).annotate(
             pass_percentage=pass_percentage
         )
         results[environment] = [
-            [int(s['test_run__datetime'].timestamp()), s['pass_percentage'], s['test_run__build__version']]
+            [int(s['build__datetime'].timestamp()), s['pass_percentage'], s['build__version']]
             for s in series
         ]
     return results
