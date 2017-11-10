@@ -1,5 +1,5 @@
 import time
-from squad.core.models import Project, TestRun
+from squad.core.models import Group, Project, TestRun
 from squad.ci.models import Backend
 from django.core.management.base import BaseCommand
 
@@ -31,7 +31,8 @@ class Command(BaseCommand):
 
         backend = Backend.objects.get(name=backend_name)
 
-        project = Project.objects.get(group__slug=group_slug, slug=project_slug)
+        group, _ = Group.objects.get_or_create(slug=group_slug)
+        project, _ = group.projects.get_or_create(slug=project_slug)
         build = project.builds.create(version=str(time.time()))
 
         testjob = backend.test_jobs.create(target=project, job_id=job_id, build=build.version)
