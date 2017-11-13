@@ -69,6 +69,11 @@ class BackendPollTest(BackendTestBase):
         jobs = list(self.backend.poll())
         self.assertEqual([test_job], jobs)
 
+    def test_poll_gives_up_eventually(self):
+        self.create_test_job(submitted=True, fetch_attempts=self.backend.max_fetch_attempts + 1)
+        jobs = list(self.backend.poll())
+        self.assertEqual([], jobs)
+
 
 class BackendFetchTest(BackendTestBase):
 
