@@ -1,3 +1,11 @@
+# 0.32
+
+* core: fix query for "test pass %"
+* ci: limit fetch attempts with temporary issues
+* ci/lava:
+  * Fix exception handling for failed log fetching
+  * disable log fetching for the moment
+
 # 0.31
 
 * core.admin: list and fiter by ProjectStatus.finished
