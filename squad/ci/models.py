@@ -27,9 +27,15 @@ class Backend(models.Model):
         default='null',
     )
     poll_interval = models.IntegerField(default=60)  # minutes
+    max_fetch_attempts = models.IntegerField(default=3)
 
     def poll(self):
-        for test_job in self.test_jobs.filter(submitted=True, fetched=False):
+        test_jobs = self.test_jobs.filter(
+            submitted=True,
+            fetched=False,
+            fetch_attempts__lt=self.max_fetch_attempts
+        )
+        for test_job in test_jobs:
             last = test_job.last_fetch_attempt
             if last:
                 now = timezone.now()
@@ -120,6 +126,7 @@ class TestJob(models.Model):
     # control
     submitted = models.BooleanField(default=False)
     fetched = models.BooleanField(default=False)
+    fetch_attempts = models.IntegerField(default=0)
     last_fetch_attempt = models.DateTimeField(null=True, default=None, blank=True)
     failure = models.TextField(null=True, blank=True)
 

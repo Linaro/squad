@@ -31,6 +31,7 @@ def fetch(job_id):
         logger.warn("error fetching job %s: %s" % (test_job.id, str(issue)))
         test_job.failure = str(issue)
         test_job.fetched = not issue.retry
+        test_job.fetch_attempts += 1
         test_job.save()
 
 

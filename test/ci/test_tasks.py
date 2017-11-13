@@ -81,6 +81,15 @@ class FetchTest(TestCase):
         self.assertEqual("ERROR", self.test_job.failure)
         self.assertFalse(self.test_job.fetched)
 
+    @patch('squad.ci.models.Backend.fetch')
+    def test_counts_attempts_with_temporary_exceptions(self, fetch_method):
+        attemps = self.test_job.fetch_attempts
+        fetch_method.side_effect = TemporaryFetchIssue("ERROR")
+        fetch.apply(args=[self.test_job.id])
+
+        self.test_job.refresh_from_db()
+        self.assertEqual(attemps + 1, self.test_job.fetch_attempts)
+
 
 class SubmitTest(TestCase):
 

@@ -56,8 +56,8 @@ class Backend(BaseBackend):
                 logs = ""
                 try:
                     logs = self.__get_job_logs__(test_job.job_id)
-                except Exception as ex:
-                    self.log_warn("Logs for job %s are not available" % test_job.job_id + "\n" + traceback.format_exc(ex))
+                except Exception:
+                    self.log_warn(("Logs for job %s are not available" % test_job.job_id) + "\n" + traceback.format_exc())
 
                 return self.__parse_results__(data, test_job) + (logs,)
         except xmlrpc.client.ProtocolError as error:
@@ -183,6 +183,10 @@ class Backend(BaseBackend):
         return self.proxy.scheduler.job_details(job_id)
 
     def __get_job_logs__(self, job_id):
+        # Fetching logs is currently being a problem with regards to memory
+        # usage, so we will just not do it for now.
+        return None
+
         log_data = self.proxy.scheduler.job_output(job_id).data.decode('utf-8')
         log_data_yaml = yaml.load(log_data, Loader=yaml.CLoader)
         returned_log = ""
