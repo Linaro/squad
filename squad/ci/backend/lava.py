@@ -183,6 +183,10 @@ class Backend(BaseBackend):
         return self.proxy.scheduler.job_details(job_id)
 
     def __get_job_logs__(self, job_id):
+        # Fetching logs is currently being a problem with regards to memory
+        # usage, so we will just not do it for now.
+        return None
+
         log_data = self.proxy.scheduler.job_output(job_id).data.decode('utf-8')
         log_data_yaml = yaml.load(log_data, Loader=yaml.CLoader)
         returned_log = ""
