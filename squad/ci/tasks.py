@@ -24,6 +24,8 @@ def poll(backend_id=None):
 @celery.task
 def fetch(job_id):
     test_job = TestJob.objects.get(pk=job_id)
+    if test_job.fetch_attempts > test_job.backend.max_fetch_attempts:
+        return
     logger.info("fetching %s" % test_job)
     try:
         test_job.backend.fetch(test_job)
