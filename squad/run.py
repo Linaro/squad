@@ -22,6 +22,8 @@ def usage():
 
 
 def main():
+    gunicorn = load_entry_point('gunicorn', 'console_scripts', 'gunicorn')
+
     argv = sys.argv
 
     if '--help' in argv or '-h' in argv:
@@ -40,11 +42,8 @@ def main():
     sys.argv = ['squad-admin', 'collectstatic', '--no-input', '-v', '0']
     manage()
 
-    os.system('sh -c "echo $PATH"')
-    os.system('rm -f /tmp/foo')
-
-    argv = ['python3', '-m', 'gunicorn.app.wsgiapp', 'squad.wsgi'] + argv[1:]
-    os.execvp('python3', argv)
+    sys.argv = ['gunicorn', 'squad.wsgi'] + argv[1:]
+    gunicorn()
 
 
 if __name__ == "__main__":
