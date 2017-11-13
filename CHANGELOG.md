@@ -1,3 +1,7 @@
+# 0.32.2
+
+* ci: fix off-by-one error
+
 # 0.32.1
 
 * squad.run: exec an actual gunicorn process
