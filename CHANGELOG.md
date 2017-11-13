@@ -1,3 +1,8 @@
+# 0.32.1
+
+* squad.run: exec an actual gunicorn process
+* ci: handle maximum fetch attempts in works as well
+
 # 0.32
 
 * core: fix query for "test pass %"
