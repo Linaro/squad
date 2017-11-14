@@ -92,7 +92,6 @@ class Backend(BaseBackend):
         while True:
             try:
                 message = self.socket.recv_multipart()
-                self.log_debug("message received: %r" % message)
                 (topic, uuid, dt, username, data) = (u(m) for m in message[:])
                 data = json.loads(data)
                 self.receive_event(topic, data)
@@ -286,20 +285,24 @@ class Backend(BaseBackend):
             job_id=lava_id)
         if db_test_job_list.exists() and \
                 len(db_test_job_list) == 1:
-            job = db_test_job_list[0]
-            job.job_status = lava_status
-            if job.name is None:
-                # fetch job name once
-                data = self.__get_job_details__(lava_id)
-                if data['is_pipeline'] is False:
-                    return
-                definition = yaml.load(data['definition'])
-                if data['multinode_definition']:
-                    definition = yaml.load(data['multinode_definition'])
-                job.name = definition['job_name'][:255]
-            job.save()
-            if lava_status in self.complete_statuses:
-                self.log_info("scheduling fetch for job %s" % job.job_id)
-                # introduce 2 min delay to allow LAVA for storing all results
-                # this workaround should be removed once LAVA issue is fixed
-                fetch.apply_async(args=[job.id], countdown=120)
+            self.log_debug("interesting message received: %r" % data)
+        else:
+            return
+
+        job = db_test_job_list[0]
+        job.job_status = lava_status
+        if job.name is None:
+            # fetch job name once
+            data = self.__get_job_details__(lava_id)
+            if data['is_pipeline'] is False:
+                return
+            definition = yaml.load(data['definition'])
+            if data['multinode_definition']:
+                definition = yaml.load(data['multinode_definition'])
+            job.name = definition['job_name'][:255]
+        job.save()
+        if lava_status in self.complete_statuses:
+            self.log_info("scheduling fetch for job %s" % job.job_id)
+            # introduce 2 min delay to allow LAVA for storing all results
+            # this workaround should be removed once LAVA issue is fixed
+            fetch.apply_async(args=[job.id], countdown=120)
