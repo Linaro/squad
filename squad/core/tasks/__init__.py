@@ -150,7 +150,6 @@ class ReceiveTestRun(object):
 class ParseTestRunData(object):
 
     @staticmethod
-    @transaction.atomic
     def __call__(test_run):
         if test_run.data_processed:
             return
@@ -198,7 +197,6 @@ class PostProcessTestRun(object):
             except Exception as e:
                 logger.error("Plugin postprocessing error: " + str(e) + "\n" + traceback.format_exc())
 
-    @transaction.atomic
     def __call_plugin__(self, plugin, testrun):
         plugin.postprocess_testrun(testrun)
 
@@ -206,7 +204,6 @@ class PostProcessTestRun(object):
 class RecordTestRunStatus(object):
 
     @staticmethod
-    @transaction.atomic
     def __call__(testrun):
         if testrun.status_recorded:
             return
@@ -266,9 +263,10 @@ class ProcessTestRun(object):
 
     @staticmethod
     def __call__(testrun):
-        ParseTestRunData()(testrun)
-        PostProcessTestRun()(testrun)
-        RecordTestRunStatus()(testrun)
+        with transaction.atomic():
+            ParseTestRunData()(testrun)
+            PostProcessTestRun()(testrun)
+            RecordTestRunStatus()(testrun)
         UpdateProjectStatus()(testrun)
 
 
