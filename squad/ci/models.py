@@ -51,6 +51,10 @@ class Backend(models.Model):
 
     def really_fetch(self, test_job):
         implementation = self.get_implementation()
+
+        test_job.last_fetch_attempt = timezone.now()
+        test_job.save()
+
         results = implementation.fetch(test_job)
 
         if results:
@@ -89,8 +93,6 @@ class Backend(models.Model):
             test_job.testrun = testrun
             test_job.fetched = True
 
-        # save test job
-        test_job.last_fetch_attempt = timezone.now()
         test_job.save()
 
     def submit(self, test_job):
