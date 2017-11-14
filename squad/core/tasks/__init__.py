@@ -85,8 +85,9 @@ class ValidateTestRun(object):
 
 class ReceiveTestRun(object):
 
-    def __init__(self, project):
+    def __init__(self, project, update_project_status=True):
         self.project = project
+        self.update_project_status = update_project_status
 
     SPECIAL_METADATA_FIELDS = (
         "build_url",
@@ -144,6 +145,10 @@ class ReceiveTestRun(object):
 
         processor = ProcessTestRun()
         processor(testrun)
+
+        if self.update_project_status:
+            UpdateProjectStatus()(testrun)
+
         return testrun
 
 
@@ -267,7 +272,6 @@ class ProcessTestRun(object):
             ParseTestRunData()(testrun)
             PostProcessTestRun()(testrun)
             RecordTestRunStatus()(testrun)
-        UpdateProjectStatus()(testrun)
 
 
 class ProcessAllTestRuns(object):

@@ -101,7 +101,6 @@ class ProcessTestRunTest(CommonTestCase):
         ProcessTestRun()(self.testrun)
         self.assertEqual(4, self.testrun.tests.count())
         self.assertEqual(5, self.testrun.status.count())
-        self.assertEqual(1, ProjectStatus.objects.filter(build=self.testrun.build).count())
 
     @patch('squad.core.tasks.PostProcessTestRun.__call__')
     def test_postprocess(self, postprocess):
@@ -237,6 +236,18 @@ class ReceiveTestRunTest(TestCase):
         receive('199', 'myenv')
         testrun = TestRun.objects.last()
         self.assertIsNotNone(testrun.job_id)
+
+    def test_update_project_status(self):
+        receive = ReceiveTestRun(self.project)
+        receive('199', 'myenv')
+        testrun = TestRun.objects.last()
+        self.assertEqual(1, ProjectStatus.objects.filter(build=testrun.build).count())
+
+    def test_dont_update_project_status(self):
+        receive = ReceiveTestRun(self.project, update_project_status=False)
+        receive('199', 'myenv')
+        testrun = TestRun.objects.last()
+        self.assertEqual(0, ProjectStatus.objects.filter(build=testrun.build).count())
 
 
 class TestValidateTestRun(TestCase):
