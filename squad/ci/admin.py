@@ -54,9 +54,14 @@ class TestJobFailureFilter(admin.SimpleListFilter):
 
 
 class TestJobAdmin(admin.ModelAdmin):
-    list_display = ('backend', 'target', 'submitted', 'fetched', 'success', 'last_fetch_attempt', 'job_id',)
+    list_display = ('backend', 'target', 'submitted', 'fetched', 'success', 'last_fetch_attempt', 'job_id_link',)
     list_filter = ('backend', 'target', 'submitted', 'fetched', TestJobFailureFilter)
     actions = [submit_job, fetch_job]
+
+    def job_id_link(self, test_job):
+        return '<a href="%s">%s</a>' % (test_job.url, test_job.job_id)
+    job_id_link.allow_tags = True
+    job_id_link.short_description = 'Job ID ⇒'
 
 
 admin.site.register(Backend, BackendAdmin)
