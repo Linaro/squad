@@ -2,7 +2,7 @@ Build information
 -----------------
 
 Project: {{project}}
-Build: {{settings.BASE_URL}}/{{project.slug}}/build/{{build.version}}/
+Build: {{settings.BASE_URL}}/{{project.group.slug}}/{{project.slug}}/build/{{build.version}}/
 
 Failed test jobs
 ----------------
