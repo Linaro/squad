@@ -1,3 +1,16 @@
+# 0.33
+
+* squad.run: exec() into an actual gunicorn process
+* ci/admin: make Job ID a link to the backend
+* ci/lava/listener: log only messages related to test jobs of interest
+* ci:
+  * save `TestJob.last_fetch_attempt` before fetching
+  * delay updating project status until after TestJob is saved
+* core
+  * tasks: make database transaction explicit
+  * make updating project status optional
+  * fix failed testjob notification templates
+
 # 0.32.3
 
 * Revert "squad.run: exec an actual gunicorn process"
