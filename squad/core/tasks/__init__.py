@@ -85,8 +85,9 @@ class ValidateTestRun(object):
 
 class ReceiveTestRun(object):
 
-    def __init__(self, project):
+    def __init__(self, project, update_project_status=True):
         self.project = project
+        self.update_project_status = update_project_status
 
     SPECIAL_METADATA_FIELDS = (
         "build_url",
@@ -144,13 +145,16 @@ class ReceiveTestRun(object):
 
         processor = ProcessTestRun()
         processor(testrun)
+
+        if self.update_project_status:
+            UpdateProjectStatus()(testrun)
+
         return testrun
 
 
 class ParseTestRunData(object):
 
     @staticmethod
-    @transaction.atomic
     def __call__(test_run):
         if test_run.data_processed:
             return
@@ -198,7 +202,6 @@ class PostProcessTestRun(object):
             except Exception as e:
                 logger.error("Plugin postprocessing error: " + str(e) + "\n" + traceback.format_exc())
 
-    @transaction.atomic
     def __call_plugin__(self, plugin, testrun):
         plugin.postprocess_testrun(testrun)
 
@@ -206,7 +209,6 @@ class PostProcessTestRun(object):
 class RecordTestRunStatus(object):
 
     @staticmethod
-    @transaction.atomic
     def __call__(testrun):
         if testrun.status_recorded:
             return
@@ -266,10 +268,10 @@ class ProcessTestRun(object):
 
     @staticmethod
     def __call__(testrun):
-        ParseTestRunData()(testrun)
-        PostProcessTestRun()(testrun)
-        RecordTestRunStatus()(testrun)
-        UpdateProjectStatus()(testrun)
+        with transaction.atomic():
+            ParseTestRunData()(testrun)
+            PostProcessTestRun()(testrun)
+            RecordTestRunStatus()(testrun)
 
 
 class ProcessAllTestRuns(object):

@@ -4,7 +4,7 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
 
-from squad.core.tasks import ReceiveTestRun
+from squad.core.tasks import ReceiveTestRun, UpdateProjectStatus
 from squad.core.models import Project, Build, TestRun, slug_validator
 
 
@@ -51,6 +51,10 @@ class Backend(models.Model):
 
     def really_fetch(self, test_job):
         implementation = self.get_implementation()
+
+        test_job.last_fetch_attempt = timezone.now()
+        test_job.save()
+
         results = implementation.fetch(test_job)
 
         if results:
@@ -76,7 +80,7 @@ class Backend(models.Model):
             if test_job.url is not None:
                 metadata['job_url'] = test_job.url
 
-            receive = ReceiveTestRun(test_job.target)
+            receive = ReceiveTestRun(test_job.target, update_project_status=False)
             testrun = receive(
                 version=test_job.build,
                 environment_slug=test_job.environment,
@@ -88,10 +92,9 @@ class Backend(models.Model):
             )
             test_job.testrun = testrun
             test_job.fetched = True
+            test_job.save()
 
-        # save test job
-        test_job.last_fetch_attempt = timezone.now()
-        test_job.save()
+            UpdateProjectStatus()(testrun)
 
     def submit(self, test_job):
         test_job.job_id = self.get_implementation().submit(test_job)
