@@ -140,3 +140,17 @@ class TestNotificationTasks(TestCase):
 
         notification_timeout(status.id)
         send_status_notification.assert_not_called()
+
+    @patch("squad.core.tasks.notification.send_status_notification")
+    def test_notification_timeout_only_once(self, send_status_notification):
+        self.project1.notification_timeout = 3600  # 1 hour
+        self.project1.save()
+
+        build = self.project1.builds.create(datetime=timezone.now())
+        environment = self.project1.environments.create(slug='env')
+        build.test_runs.create(environment=environment)
+        status = ProjectStatus.create_or_update(build)
+
+        notification_timeout(status.id)
+        notification_timeout(status.id)
+        self.assertEqual(1, len(send_status_notification.call_args_list))

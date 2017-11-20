@@ -44,5 +44,7 @@ def notify_project_status(status_id):
 @celery.task
 def notification_timeout(status_id):
     projectstatus = ProjectStatus.objects.get(pk=status_id)
-    if not projectstatus.notified:
+    if not projectstatus.notified and not projectstatus.notified_on_timeout:
         send_status_notification(projectstatus)
+        projectstatus.notified_on_timeout = True
+        projectstatus.save()
