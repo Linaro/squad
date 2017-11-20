@@ -8,6 +8,7 @@ from django.utils import timezone
 from squad.core.models import Group, ProjectStatus
 from squad.core.tasks.notification import maybe_notify_project_status
 from squad.core.tasks.notification import notify_project_status
+from squad.core.tasks.notification import notification_timeout
 
 
 class TestNotificationTasks(TestCase):
@@ -122,7 +123,7 @@ class TestNotificationTasks(TestCase):
         build.test_runs.create(environment=environment)
         status = ProjectStatus.create_or_update(build)
 
-        maybe_notify_project_status(status.id)
+        notification_timeout(status.id)
         send_status_notification.assert_called_with(status)
 
     @patch("squad.core.tasks.notification.send_status_notification")
@@ -137,5 +138,5 @@ class TestNotificationTasks(TestCase):
         status.notified = True
         status.save()
 
-        maybe_notify_project_status(status.id)
+        notification_timeout(status.id)
         send_status_notification.assert_not_called()
