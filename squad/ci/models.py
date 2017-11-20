@@ -126,6 +126,11 @@ class TestJob(models.Model):
     target_build = models.ForeignKey(Build, related_name='test_jobs', null=True, blank=True)
     environment = models.CharField(max_length=100, validators=[slug_validator])
 
+    # dates
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    submitted_at = models.DateTimeField(null=True)
+    fetched_at = models.DateTimeField(null=True)
+
     # control
     submitted = models.BooleanField(default=False)
     fetched = models.BooleanField(default=False)
