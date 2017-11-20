@@ -358,6 +358,25 @@ class BackendFetchTest(BackendTestBase):
             completed=False,
         )
 
+    @patch('squad.ci.backend.null.Backend.fetch')
+    @patch('squad.ci.models.ReceiveTestRun.__call__')
+    def test_really_fetch_sets_fetched_at(self, receive, backend_fetch):
+        backend_fetch.return_value = ('Completed', True, {}, {}, {}, None)
+
+        build = self.project.builds.create(version='1')
+        env = self.project.environments.create(slug='foo')
+        receive.return_value = build.test_runs.create(environment=env)
+
+        test_job = self.create_test_job(
+            backend=self.backend,
+            definition='foo: 1',
+            build='1',
+            environment='myenv',
+            job_id='999',
+        )
+        self.backend.really_fetch(test_job)
+        self.assertIsNotNone(test_job.fetched_at)
+
 
 class BackendSubmitTest(BackendTestBase):
 
@@ -373,6 +392,7 @@ class BackendSubmitTest(BackendTestBase):
 
         impl.submit.assert_called()
         self.assertTrue(test_job.submitted)
+        self.assertIsNotNone(test_job.submitted_at)
         self.assertEqual('999', test_job.job_id)
 
 

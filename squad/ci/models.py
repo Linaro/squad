@@ -92,6 +92,7 @@ class Backend(models.Model):
             )
             test_job.testrun = testrun
             test_job.fetched = True
+            test_job.fetched_at = timezone.now()
             test_job.save()
 
             UpdateProjectStatus()(testrun)
@@ -99,6 +100,7 @@ class Backend(models.Model):
     def submit(self, test_job):
         test_job.job_id = self.get_implementation().submit(test_job)
         test_job.submitted = True
+        test_job.submitted_at = timezone.now()
         test_job.save()
 
     def get_implementation(self):
