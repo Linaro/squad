@@ -92,6 +92,7 @@ class Backend(models.Model):
             )
             test_job.testrun = testrun
             test_job.fetched = True
+            test_job.fetched_at = timezone.now()
             test_job.save()
 
             UpdateProjectStatus()(testrun)
@@ -99,6 +100,7 @@ class Backend(models.Model):
     def submit(self, test_job):
         test_job.job_id = self.get_implementation().submit(test_job)
         test_job.submitted = True
+        test_job.submitted_at = timezone.now()
         test_job.save()
 
     def get_implementation(self):
@@ -125,6 +127,11 @@ class TestJob(models.Model):
     build = models.CharField(max_length=100)
     target_build = models.ForeignKey(Build, related_name='test_jobs', null=True, blank=True)
     environment = models.CharField(max_length=100, validators=[slug_validator])
+
+    # dates
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    submitted_at = models.DateTimeField(null=True)
+    fetched_at = models.DateTimeField(null=True)
 
     # control
     submitted = models.BooleanField(default=False)
