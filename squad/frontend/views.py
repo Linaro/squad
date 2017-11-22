@@ -249,6 +249,6 @@ def test_job(request, testjob_id):
     else:
         # display some description page
         context = {
-            'testjob_id': testjob_id
+            'testjob': testjob
         }
         return render(request, 'squad/testjob.html', context)
