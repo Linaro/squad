@@ -1,3 +1,16 @@
+# 0.34
+
+* ci:
+  * add created, submitted and fetched dates to TestJob
+  * fill in submission and fetch dates
+  * admin: avoid loading all Build and TestRun objects
+* core/notification:
+  * fix tests for `notification_timeout`
+  * core/notification: notify only once on timeout
+* frontend:
+  * display testjob.failure if available
+
+
 # 0.33
 
 * squad.run: exec() into an actual gunicorn process
