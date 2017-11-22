@@ -69,6 +69,7 @@ __apps__ = [
     'django.contrib.staticfiles',
     django_extensions,  # OPTIONAL
     'djcelery',
+    'rest_framework',
     'squad.core',
     'squad.api',
     'squad.frontend',
@@ -239,5 +240,11 @@ CELERYD_HIJACK_ROOT_LOGGER = False
 CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
 CELERY_TASK_SERIALIZER = 'msgpack'
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
 
 exec(open(os.getenv('SQUAD_EXTRA_SETTINGS', '/dev/null')).read())
