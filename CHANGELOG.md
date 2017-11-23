@@ -1,3 +1,7 @@
+# 0.34.1
+
+* core/notification: don't spam admins
+
 # 0.34
 
 * ci:
