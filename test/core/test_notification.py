@@ -182,9 +182,6 @@ class TestSendUnmoderatedNotification(TestModeratedNotifications):
         html = mail.outbox[0].alternatives[0][0]
         self.assertTrue(html.find('needs to be approved') >= 0)
 
-    def test_does_not_mark_as_notified(self):
-        self.assertFalse(self.status.notified)
-
 
 class TestSendApprovedNotification(TestModeratedNotifications):
 
