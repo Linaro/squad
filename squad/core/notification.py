@@ -172,9 +172,6 @@ class PreviewNotification(Notification):
         html = sub("<body>", "<body>\n" + html_banner, html)
         return (txt, html)
 
-    def mark_as_notified(self):
-        pass
-
 
 def send_status_notification(status, project=None):
     project = project or status.build.project
