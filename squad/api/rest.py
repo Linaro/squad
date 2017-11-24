@@ -105,6 +105,7 @@ class TestRunSerializer(serializers.HyperlinkedModelSerializer):
     metadata_file = serializers.HyperlinkedIdentityField(view_name='testrun-metadata-file')
     log_file = serializers.HyperlinkedIdentityField(view_name='testrun-log-file')
     tests = serializers.HyperlinkedIdentityField(view_name='testrun-tests')
+    metrics = serializers.HyperlinkedIdentityField(view_name='testrun-metrics')
 
     class Meta:
         model = TestRun
@@ -118,6 +119,15 @@ class TestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Test
         exclude = ('id', 'name', 'suite', 'test_run',)
+
+
+class MetricSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='full_name', read_only=True)
+    measurement_list = serializers.ListField(read_only=True)
+
+    class Meta:
+        model = Metric
+        exclude = ('id', 'name', 'suite', 'test_run', 'measurements')
 
 
 class TestRunViewSet(ModelViewSet):
@@ -153,6 +163,14 @@ class TestRunViewSet(ModelViewSet):
         tests = testrun.tests.prefetch_related('suite')
         page = self.paginate_queryset(tests)
         serializer = TestSerializer(page, many=True, context={'request': request})
+        return self.get_paginated_response(serializer.data)
+
+    @detail_route(methods=['get'])
+    def metrics(self, request, pk=None):
+        testrun = self.get_object()
+        metrics = testrun.metrics.prefetch_related('suite')
+        page = self.paginate_queryset(metrics)
+        serializer = MetricSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
 
