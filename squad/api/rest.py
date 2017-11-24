@@ -1,4 +1,4 @@
-from squad.core.models import Project, Build, TestRun, Environment
+from squad.core.models import Project, Build, TestRun, Environment, Test, Metric
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
 from rest_framework import routers, serializers, viewsets
@@ -104,10 +104,20 @@ class TestRunSerializer(serializers.HyperlinkedModelSerializer):
     metrics_file = serializers.HyperlinkedIdentityField(view_name='testrun-metrics-file')
     metadata_file = serializers.HyperlinkedIdentityField(view_name='testrun-metadata-file')
     log_file = serializers.HyperlinkedIdentityField(view_name='testrun-log-file')
+    tests = serializers.HyperlinkedIdentityField(view_name='testrun-tests')
 
     class Meta:
         model = TestRun
         fields = '__all__'
+
+
+class TestSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='full_name', read_only=True)
+    status = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Test
+        exclude = ('id', 'name', 'suite', 'test_run',)
 
 
 class TestRunViewSet(ModelViewSet):
@@ -136,6 +146,14 @@ class TestRunViewSet(ModelViewSet):
     def log_file(self, request, pk=None):
         testrun = self.get_object()
         return HttpResponse(testrun.log_file, content_type='text/plain')
+
+    @detail_route(methods=['get'])
+    def tests(self, request, pk=None):
+        testrun = self.get_object()
+        tests = testrun.tests.prefetch_related('suite')
+        page = self.paginate_queryset(tests)
+        serializer = TestSerializer(page, many=True, context={'request': request})
+        return self.get_paginated_response(serializer.data)
 
 
 class BackendSerializer(serializers.ModelSerializer):
