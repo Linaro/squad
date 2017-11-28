@@ -4,6 +4,7 @@ django-celery
 djangorestframework
 gunicorn
 Jinja2
+markdown
 msgpack-python
 python_dateutil
 PyYAML

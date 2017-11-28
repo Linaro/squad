@@ -1,9 +1,38 @@
 from squad.core.models import Project, Build, TestRun, Environment, Test, Metric
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
-from rest_framework import routers, serializers, viewsets
+from rest_framework import routers, serializers, views, viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
+
+
+class API(routers.APIRootView):
+    """
+    Welcome to the SQUAD API. This API is self-describing, i.e. all of the
+    available endpoints are accessible from this browseable user interface, and
+    are self-describing themselves. See below for a list of them.
+
+    Notes on the API:
+
+    * All requests for lists of objects are paginated by default. Make sure you
+      take the `count` and `next` fields of the response into account so you can
+      navigate to the rest of the objects.
+
+    * Only public projects are available through the API without
+      authentication. Non-public projects require authentication using a valid
+      API token, and the corresponding user account must also have access to
+      the project in question.
+
+    * All URLs displayed in this API browser are clickable.
+    """
+
+    def get_view_name(self):
+        return "API"
+
+
+class APIRouter(routers.DefaultRouter):
+
+    APIRootView = API
 
 
 class ModelViewSet(viewsets.ModelViewSet):
@@ -39,14 +68,21 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
+    """
+    List of projects. Includes public projects and projects that the current
+    user has access to.
+    """
     queryset = Project.objects
     serializer_class = ProjectSerializer
 
     def get_queryset(self):
         return self.queryset.accessible_to(self.request.user)
 
-    @detail_route(methods=['get'])
+    @detail_route(methods=['get'], suffix='builds')
     def builds(self, request, pk=None):
+        """
+        List of builds for the current project.
+        """
         builds = self.get_object().builds.order_by('-datetime')
         page = self.paginate_queryset(builds)
         serializer = BuildSerializer(page, many=True, context={'request': request})
@@ -63,20 +99,24 @@ class BuildSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class BuildViewSet(ModelViewSet):
+    """
+    List of all builds in the system. Only builds belonging to public projects
+    and to projects you have access to are available.
+    """
     queryset = Build.objects.all()
     serializer_class = BuildSerializer
 
     def get_queryset(self):
         return self.queryset.filter(project__in=self.get_project_ids())
 
-    @detail_route(methods=['get'])
+    @detail_route(methods=['get'], suffix='test runs')
     def testruns(self, request, pk=None):
         testruns = self.get_object().test_runs.order_by('-id')
         page = self.paginate_queryset(testruns)
         serializer = TestRunSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
-    @detail_route(methods=['get'])
+    @detail_route(methods=['get'], suffix='test jobs')
     def testjobs(self, request, pk=None):
         testjobs = self.get_object().test_jobs.order_by('-id')
         page = self.paginate_queryset(testjobs)
@@ -91,6 +131,10 @@ class EnvironmentSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class EnvironmentViewSet(ModelViewSet):
+    """
+    List of environments. Only environments belonging to public projects and
+    projects you have access to are available.
+    """
     queryset = Environment.objects
     serializer_class = EnvironmentSerializer
 
@@ -131,6 +175,13 @@ class MetricSerializer(serializers.ModelSerializer):
 
 
 class TestRunViewSet(ModelViewSet):
+    """
+    List of test runs. Test runs represent test executions of a given build on
+    a given environment.
+
+    Only test runs from public projects and from projects accessible to you are
+    available.
+    """
     queryset = TestRun.objects.order_by('-id')
     serializer_class = TestRunSerializer
 
@@ -157,7 +208,7 @@ class TestRunViewSet(ModelViewSet):
         testrun = self.get_object()
         return HttpResponse(testrun.log_file, content_type='text/plain')
 
-    @detail_route(methods=['get'])
+    @detail_route(methods=['get'], suffix='tests')
     def tests(self, request, pk=None):
         testrun = self.get_object()
         tests = testrun.tests.prefetch_related('suite')
@@ -165,7 +216,7 @@ class TestRunViewSet(ModelViewSet):
         serializer = TestSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
-    @detail_route(methods=['get'])
+    @detail_route(methods=['get'], suffix='metrics')
     def metrics(self, request, pk=None):
         testrun = self.get_object()
         metrics = testrun.metrics.prefetch_related('suite')
@@ -181,6 +232,9 @@ class BackendSerializer(serializers.ModelSerializer):
 
 
 class BackendViewSet(viewsets.ModelViewSet):
+    """
+    List of CI backends used.
+    """
     queryset = Backend.objects.all()
     serializer_class = BackendSerializer
 
@@ -196,19 +250,23 @@ class TestJobSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class TestJobViewSet(ModelViewSet):
+    """
+    List of CI test jobs. Only testjobs for public projects, and for projects
+    you have access to, are available.
+    """
     queryset = TestJob.objects.order_by('-id')
     serializer_class = TestJobSerializer
 
     def get_queryset(self):
         return self.queryset.filter(target_build__project__in=self.get_project_ids())
 
-    @detail_route(methods=['get'])
+    @detail_route(methods=['get'], suffix='definition')
     def definition(self, request, pk=None):
         definition = self.get_object().definition
         return HttpResponse(definition, content_type='text/plain')
 
 
-router = routers.DefaultRouter()
+router = APIRouter()
 router.register(r'projects', ProjectViewSet)
 router.register(r'builds', BuildViewSet)
 router.register(r'testjobs', TestJobViewSet)
