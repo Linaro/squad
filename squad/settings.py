@@ -96,7 +96,9 @@ ROOT_URLCONF = 'squad.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        # look for templates explicitly under squad.api so that Django REST
+        # Framework finds rest_framework/api.html in there
+        'DIRS': [os.path.join(BASE_DIR, 'squad/frontend/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

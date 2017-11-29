@@ -1,7 +1,7 @@
 -r requirements.txt
-ipython
-pickleshare
 django_extensions
-Werkzeug
 flake8
+ipython
 mock
+pickleshare
+Werkzeug
