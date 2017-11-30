@@ -4,7 +4,7 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
-v="$(git describe --tag)"
+v="$(git describe --tag | sed -e 's/-/+/')"
 if [ -f dist/LASTBUILD ]; then
     v0="$(cat dist/LASTBUILD)"
 else
