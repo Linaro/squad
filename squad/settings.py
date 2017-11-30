@@ -237,6 +237,9 @@ if not EMAIL_FROM:
     EMAIL_FROM = 'noreply@%s' % HOSTNAME
 SERVER_EMAIL = EMAIL_FROM
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Celery settings
 CELERYD_HIJACK_ROOT_LOGGER = False
 CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
