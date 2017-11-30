@@ -74,6 +74,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     queryset = Project.objects
     serializer_class = ProjectSerializer
+    filter_fields = ('group', 'slug', 'name')
 
     def get_queryset(self):
         return self.queryset.accessible_to(self.request.user)
@@ -137,6 +138,7 @@ class EnvironmentViewSet(ModelViewSet):
     """
     queryset = Environment.objects
     serializer_class = EnvironmentSerializer
+    filter_fields = ('project', 'slug', 'name')
 
     def get_queryset(self):
         return self.queryset.filter(project__in=self.get_project_ids())
@@ -184,6 +186,13 @@ class TestRunViewSet(ModelViewSet):
     """
     queryset = TestRun.objects.order_by('-id')
     serializer_class = TestRunSerializer
+    filter_fields = (
+        "completed",
+        "job_status",
+        "data_processed",
+        "status_recorded",
+        "environment",
+    )
 
     def get_queryset(self):
         return self.queryset.filter(build__project__in=self.get_project_ids())
@@ -237,6 +246,7 @@ class BackendViewSet(viewsets.ModelViewSet):
     """
     queryset = Backend.objects.all()
     serializer_class = BackendSerializer
+    filter_fields = ('implementation_type',)
 
 
 class TestJobSerializer(serializers.HyperlinkedModelSerializer):
@@ -256,6 +266,19 @@ class TestJobViewSet(ModelViewSet):
     """
     queryset = TestJob.objects.order_by('-id')
     serializer_class = TestJobSerializer
+    filter_fields = (
+        "name",
+        "environment",
+        "submitted",
+        "fetched",
+        "fetch_attempts",
+        "failure",
+        "can_resubmit",
+        "resubmitted_count",
+        "job_status",
+        "backend",
+        "target",
+    )
 
     def get_queryset(self):
         return self.queryset.filter(target_build__project__in=self.get_project_ids())
