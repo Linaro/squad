@@ -1,4 +1,4 @@
 web: ./manage.py runserver
-worker: ./manage.py celery worker --loglevel INFO
-scheduler: ./manage.py celery beat --loglevel WARN --pidfile=''
+worker: celery -A squad worker --loglevel INFO
+scheduler: celery -A squad beat --loglevel WARN --pidfile=''
 listener: ./manage.py listen

@@ -56,9 +56,9 @@ integration:
 +-----------+----------------------------
 | Process   | Command                   |
 +-----------+---------------------------+
-| worker    | squad-admin celery worker |
+| worker    | celery -A squad worker    |
 +-----------+---------------------------+
-| scheduler | squad-admin celery beat   |
+| scheduler | celery -A squad beat      |
 +-----------+---------------------------+
 | listener  | squad-admin listen        |
 +-----------+---------------------------+
@@ -81,10 +81,6 @@ needed:
 * Create ``Backend`` instances for your test execution backends. Go to the
   administration web UI, and under "CI", choose "Backends".
 * For each project, create authentication tokens and subscriptions
-* Under "Djcelery", create "Periodic tasks":
-
-  * ``squad.ci.tasks.poll``: this is that task to  poll results from the
-    backends from time to time. You can schedule this for every 5 minutes;
 
 Further configuration
 ---------------------
