@@ -20,3 +20,4 @@
 /dist
 /build
 /.metadata.json
+/celerybeat-schedule.db
