@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
+from celery.schedules import crontab
 from email.utils import parseaddr
 import os
 import sys
@@ -68,7 +69,6 @@ __apps__ = [
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     django_extensions,  # OPTIONAL
-    'djcelery',
     'rest_framework',
     'django_filters',
     'squad.core',
@@ -245,7 +245,12 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CELERYD_HIJACK_ROOT_LOGGER = False
 CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
 CELERY_TASK_SERIALIZER = 'msgpack'
-CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+CELERYBEAT_SCHEDULE = {
+    'poll-every-hour': {
+        'task': 'squad.ci.tasks.poll',
+        'schedule': crontab(hour='*/1', minute=17),
+    },
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
