@@ -1,3 +1,29 @@
+# 0.35
+
+**Upgrade notes:** this version drops support for starting the celery-related
+daemons (worker and scheduler) using the "./manage.py | squad-admin" command
+line interface. To start those daemons, you should now use the standard celery
+command line interface, i.e.
+
+* `celery -A squad worker` for the worker, and
+* `celery -A squad beat` for the scheduler.
+
+
+**Changes:**
+
+* api:
+  * Added a REST API for accessing most of the data in SQUAD. This API is only
+    adequate for read-only access for now.
+  * The API is self-describing and features a API browser when accessed with a
+    web browser. This API browser is linked from the navigation bar at the top.
+* frontend:
+  * make login link redirect to original page
+* settings:
+  * respect proxy headers when generating absolute URLs
+* upgrade to celery v4
+  * Drop support for SQL-backed periodic task scheduling
+  * requirements.txt: drop restriction for using celery v3
+
 # 0.34.1
 
 * core/notification: don't spam admins
