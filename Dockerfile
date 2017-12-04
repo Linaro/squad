@@ -1,17 +1,14 @@
 FROM debian:stretch
 RUN apt-get update && \
   apt-get install -qy auto-apt-proxy && \
-  apt-get install -qy \
-    python3-dateutil \
-    python3-django \
-    python3-celery \
-    python3-django-celery \
-    python3-jinja2 \
-    python3-whitenoise \
-    python3-zmq \
+  apt-get install -qy python3 \
+    python3-pip \
+    libyaml-dev \
     wget \
-    unzip \
-    gunicorn3
+    unzip
+
+COPY requirements.txt /srv/
+RUN pip3 install -r /srv/requirements.txt
 
 WORKDIR /app
 COPY . ./
@@ -24,4 +21,4 @@ RUN useradd --create-home squad
 USER squad
 ENV SQUAD_STATIC_DIR /app/static
 ENV ENV production
-CMD sh -c "./manage.py migrate && exec gunicorn3 squad.wsgi --bind 0.0.0.0:${PORT:-8000}"
+CMD sh -c "./manage.py migrate && exec gunicorn squad.wsgi --bind 0.0.0.0:${PORT:-8000}"

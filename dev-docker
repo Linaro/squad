@@ -11,7 +11,9 @@ mkdir -p "$datadir"
 dockerfile="$datadir"/../Dockerfile.dev
 (
   sed -e '1,/WORKDIR/!d' "$basedir"/Dockerfile
-  echo 'RUN apt-get install -qy python3-ipython python3-pickleshare python3-django-extensions python3-werkzeug flake8 python3-mock snakefood'
+  echo "COPY requirements-dev.txt /srv"
+  echo "RUN pip3 install -r /srv/requirements-dev.txt"
+  echo 'RUN apt-get install -qy snakefood'
   echo "RUN groupadd -g $(id -g) $(id -gn)"
   echo "RUN useradd -m -u $(id -u) -g $(id -g) -s /bin/bash ${USER}"
   echo "USER ${USER}"
