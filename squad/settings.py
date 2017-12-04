@@ -70,6 +70,7 @@ __apps__ = [
     django_extensions,  # OPTIONAL
     'djcelery',
     'rest_framework',
+    'django_filters',
     'squad.core',
     'squad.api',
     'squad.frontend',
@@ -251,6 +252,9 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
     'PAGE_SIZE': 50,
 }
 
