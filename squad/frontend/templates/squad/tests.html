@@ -32,14 +32,29 @@
                 {% endfor %}
             </tr>
             {% endfor %}
-            {% for test in results.non_failures %}
-            <tr id='test-{{test.name|slugify}}' ng-show="match('test-{{test.name|slugify}}')">
-                <td><a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{test.name}}</a></td>
-                {% for result in test.results %}
-                <td class="{{result}}">{{result}}</td>
+            {% if full %}
+                <tr>
+                    <td colspan="{{results.environments|length|add:1}}">
+                        <span class="badge alert-success" data-placement="top">{{results.non_failures|length}} without failures</span>
+                        <a href=".">Hide</a>
+                    </td>
+                </tr>
+                {% for test in results.non_failures %}
+                <tr id='test-{{test.name|slugify}}' ng-show="match('test-{{test.name|slugify}}')">
+                    <td><a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{test.name}}</a></td>
+                    {% for result in test.results %}
+                    <td class="{{result}}">{{result}}</td>
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-            </tr>
-            {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="{{results.environments|length|add:1}}">
+                        <span class="badge alert-success" data-placement="top">{{results.non_failures|length}} without failures</span>
+                        <a href="?full=1">Show</a>
+                    </td>
+                </tr>
+            {% endif %}
         {% else %}
             <tr>
                 <td colspan="{{results.environments|length|add:1}}" class='alert alert-warning'>
