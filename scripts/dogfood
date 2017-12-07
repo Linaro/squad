@@ -2,14 +2,9 @@
 
 set -eu
 
-if [ $# -ne 3 ] && [ $# -ne 4 ]; then
-  echo "usage: $0 APIURL GROUP/PROJECT ENVIRONMENT [BUILD]"
-  exit 1
-fi
-
-apiurl="$1"
-project="$2"
-environment="$3"
+apiurl="${1:-http://localhost:8000/api}"
+project="${2:-qa/squad}"
+environment="${3:-env1}"
 
 build=${4:-}
 if [ -z "$build" ]; then
