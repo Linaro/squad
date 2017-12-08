@@ -65,35 +65,6 @@
   font-weight: bold;
 }
 
-.pass, .pass a {
-  color: #39aa56;
-}
-
-td.pass {
-  background-color: #c7e39a;
-}
-td.pass:hover {
-  background-color: #d8f4ab;
-}
-
-td.fail {
-  background-color: #ff8c8c;
-}
-td.fail a {
-  color: #a40000;
-}
-td.fail:hover {
-  background-color: #f75757;
-}
-
-table.test-results th a:link,
-table.test-results td a:link {
-  display: block;
-}
-table.test-results th:hover {
-  background-color: rgb(221,221,221);
-}
-
 thead {
   background: white
 }
@@ -132,3 +103,49 @@ h1 {
   width: 90%;
   border: none;
 }
+
+table.test-results {
+  width: 100%;
+  border: none;
+  border-spacing: 2px;
+  border-collapse: separate;
+  empty-cells: hide;
+}
+
+table.test-results th, table.test-results td {
+  border: 1px solid #eeeeec;
+  padding: 4px;
+}
+
+table.test-results td.fail {
+  background-color: #f2dede;
+  border-color: #a94442;
+  color: #a40000;
+}
+table.test-results td.pass {
+  background-color: #def2de;
+  border-color: #44a942;
+  color: #00a400;
+}
+table.test-results td.skip {
+  background-color: #f2f2de;
+  border-color: #a9a942;
+  color: #a4a400;
+}
+
+table.test-results a:only-child {
+  display: block;
+  margin: -4px;
+  padding: 4px;
+}
+
+.pass a, .fail a, .skip a {
+  font-weight: bold;
+}
+
+.fail a       { color: #a40000; }
+.fail a:hover { background-color: #ffeeee; text-decoration: none; }
+.pass a       { color: #00a400; }
+.pass a:hover { background-color: #ddffdd; text-decoration: none; }
+.skip a       { color: #a4a400; }
+.skip a:hover { background-color: #ffffdd; text-decoration: none; }
