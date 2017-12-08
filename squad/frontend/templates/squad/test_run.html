@@ -9,61 +9,24 @@
     » <a href="{% project_url project %}">{{project.slug}}</a>
     » <a href="{% build_url build %}">Build {{build.version}}</a>
     »
-    Test run {% if test_run.job_url %}<a href="{{ test_run.job_url }}">{% endif %}<u>{{test_run.job_id}}</u>{% if test_run.job_url %}</a>{% endif %}
-    <small>Environment: <em>{{test_run.environment.slug}}</em></small>
+    Test run {{test_run.job_id}}
 </h1>
 
-
-<h2>Metadata</h2>
-{% include "squad/_metadata.html" %}
-
-<h2>Downloads</h2>
-
-{% if test_run.log_file|length > 0 %}
-<a href="log" class='btn btn-default'>
-    <i class='fa fa-file-text-o'></i>
-    Log file
-</a>
-{% endif %}
-
-{% if test_run.tests_file|length > 0 %}
-<a href="tests" class='btn btn-default'>
-    <i class='fa fa-file-code-o'></i>
-    Tests file
-</a>
-{% endif %}
-
-{% if test_run.metrics_file|length > 0 %}
-<a href="metrics" class='btn btn-default'>
-    <i class='fa fa-file-code-o'></i>
-    Metrics file
-</a>
-{% endif %}
-
-{% if test_run.metadata_file|length > 0 %}
-<a href="metadata" class='btn btn-default'>
-    <i class='fa fa-file-code-o'></i>
-    Metadata file
-</a>
-{% endif %}
-
-{% if attachments|length > 0 %}
-{% for file, file_type, length in attachments %}
-<a href="attachments/{{file}}" class='btn btn-default'>
-    {% if file_type %}
-    <i class='fa fa-file-{{file_type}}-o'></i>
-    {% else %}
-    <i class='fa fa-file-o'></i>
+<h2>
+    Test environment: {{test_run.environment}}
+    {% if test_run.environment.description %}
+    <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
     {% endif %}
-    {{file}}
-    ({{length|filesizeformat}})
-</a>
-{% endfor %}
+</h2>
+{% if test_run.environment.description %}
+<div class='alert alert-info' id='environment-description' style='display: none'>
+    {{test_run.environment.description|markdown}}
+</div>
 {% endif %}
 
 
 {% if tests_status|length > 0 %}
-    <h2>Tests</h2>
+    <h2>Test results</h2>
     {% for status in tests_status %}
         <a name="tests-{{status.suite}}"></a>
         <h3>{{status.suite}}</h3>
@@ -146,5 +109,51 @@
     {% endfor %}
 {% endif %}
 
+<h2>Test run metadata</h2>
+{% include "squad/_metadata.html" %}
+
+<h2>Related downloads</h2>
+
+{% if test_run.log_file|length > 0 %}
+<a href="log" class='btn btn-default'>
+    <i class='fa fa-file-text-o'></i>
+    Log file
+</a>
+{% endif %}
+
+{% if test_run.tests_file|length > 0 %}
+<a href="tests" class='btn btn-default'>
+    <i class='fa fa-file-code-o'></i>
+    Tests file
+</a>
+{% endif %}
+
+{% if test_run.metrics_file|length > 0 %}
+<a href="metrics" class='btn btn-default'>
+    <i class='fa fa-file-code-o'></i>
+    Metrics file
+</a>
+{% endif %}
+
+{% if test_run.metadata_file|length > 0 %}
+<a href="metadata" class='btn btn-default'>
+    <i class='fa fa-file-code-o'></i>
+    Metadata file
+</a>
+{% endif %}
+
+{% if attachments|length > 0 %}
+{% for file, file_type, length in attachments %}
+<a href="attachments/{{file}}" class='btn btn-default'>
+    {% if file_type %}
+    <i class='fa fa-file-{{file_type}}-o'></i>
+    {% else %}
+    <i class='fa fa-file-o'></i>
+    {% endif %}
+    {{file}}
+    ({{length|filesizeformat}})
+</a>
+{% endfor %}
+{% endif %}
 
 {% endblock %}
