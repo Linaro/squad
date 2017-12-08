@@ -21,7 +21,7 @@ class EnvironmentInline(admin.StackedInline):
     Handles environments when editing a project.
     """
     model = models.Environment
-    fields = ['slug', 'name', 'expected_test_runs']
+    fields = ['slug', 'name', 'description', 'expected_test_runs']
     extra = 0
 
 

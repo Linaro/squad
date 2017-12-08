@@ -283,6 +283,7 @@ class Environment(models.Model):
     slug = models.CharField(max_length=100, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
     expected_test_runs = models.IntegerField(default=None, null=True)
+    description = models.TextField(null=True, blank=True)
 
     class Meta:
         unique_together = ('project', 'slug',)
