@@ -28,7 +28,7 @@
             <tr id='test-{{test.name|slugify}}' ng-show="match('test-{{test.name|slugify}}')">
                 <td><a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{test.name}}</a></td>
                 {% for result in test.results %}
-                <td class="{{result}}">{{result}}</td>
+                <td class="{{result}}"><a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{result}}</a></td>
                 {% endfor %}
             </tr>
             {% endfor %}
@@ -43,7 +43,7 @@
                 <tr id='test-{{test.name|slugify}}' ng-show="match('test-{{test.name|slugify}}')">
                     <td><a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{test.name}}</a></td>
                     {% for result in test.results %}
-                    <td class="{{result}}">{{result}}</td>
+                    <td class="{{result}}"><a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{result}}</a></td>
                     {% endfor %}
                 </tr>
                 {% endfor %}
