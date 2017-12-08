@@ -1,6 +1,8 @@
 from django import template
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.template.defaultfilters import safe
+from markdown import markdown as to_markdown
 
 from squad import version
 from squad.core.utils import format_metadata
@@ -105,3 +107,10 @@ def squad_version():
 @register.filter
 def metadata_value(v):
     return format_metadata(v, "<br/>")
+
+
+@register.filter
+def markdown(mkdn):
+    if mkdn is None:
+        return ''
+    return safe(to_markdown(mkdn))
