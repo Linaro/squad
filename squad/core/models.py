@@ -353,7 +353,7 @@ class Attachment(models.Model):
 class Suite(models.Model):
     project = models.ForeignKey(Project, related_name='suites')
     slug = models.CharField(max_length=256, validators=[slug_validator])
-    name = models.CharField(max_length=256, null=True)
+    name = models.CharField(max_length=256, null=True, blank=True)
 
     class Meta:
         unique_together = ('project', 'slug',)
