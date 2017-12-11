@@ -33,23 +33,7 @@
         {% with tests=status.tests_by_result %}
             {% if tests.fail %}
                 {% for test in status.tests_by_result.fail %}
-                    <div class='row row-bordered fail'>
-                        <div class='col-md-6 col-sm-6'>
-                            <i class='fa fa-times'></i>
-                            <a href="{% url 'test_history' project.group.slug project.slug test.full_name %}">{{test.name}}</a>
-                        </div>
-                        <div class='col-md-6 col-sm-6'>
-                            {% if test.log %}
-                                <a class="btn btn-sm btn-danger testlog-{{test.id}}" href='#' onclick='$(".testlog-{{test.id}}").toggle(); return false'>Show log snippet</a>
-                                <a class="btn btn-sm btn-danger testlog-{{test.id}}" href='#' onclick='$(".testlog-{{test.id}}").toggle(); return false' style='display: none'>Hide log snippet</a>
-                            {% else %}
-                                <em>No log available for this test</em>
-                            {% endif %}
-                        </div>
-                        <div class='testlog-{{test.id}} col-md-12 col-sm-12' style='display: none'>
-                            <pre>{{test.log}}</pre>
-                        </div>
-                    </div>
+                    {% include "squad/_test_run_test.html" %}
                 {% endfor %}
             {% endif %}
             {% if tests.skip %}
@@ -60,14 +44,9 @@
                         <a class='tests-{{status.id}}-skip' href='#' onclick='$(".tests-{{status.id}}-skip").toggle(); return false' style='display:none'>Hide</a>
                     </div>
                 </div>
-                <div class='row row-bordered tests-details tests-details-skip tests-{{status.id}}-skip' style='display: none'>
-                    {% for test in status.tests_by_result.skip %}
-                        <div class='col-md-12 col-sm-12'>
-                            <i class='fa fa-question-circle-o'></i>
-                            <a href="{% url 'test_history' project.group.slug project.slug test.full_name %}">{{test.name}}</a>
-                        </div>
-                    {% endfor %}
-                </div>
+                {% for test in status.tests_by_result.skip %}
+                    {% include "squad/_test_run_test.html" %}
+                {% endfor %}
             {% endif %}
             {% if tests.pass %}
                 <div class='row row-bordered'>
@@ -77,14 +56,9 @@
                         <a class='tests-{{status.id}}-pass' href='#' onclick='$(".tests-{{status.id}}-pass").toggle(); return false' style='display:none'>Hide</a>
                     </div>
                 </div>
-                <div class='row row-bordered tests-details tests-details-pass tests-{{status.id}}-pass' style='display: none'>
-                    {% for test in status.tests_by_result.pass %}
-                        <div class='col-md-12 col-sm-12'>
-                            <i class='fa fa-check-square-o'></i>
-                            <a href="{% url 'test_history' project.group.slug project.slug test.full_name %}">{{test.name}}</a>
-                        </div>
-                    {% endfor %}
-                </div>
+                {% for test in status.tests_by_result.pass %}
+                    {% include "squad/_test_run_test.html" %}
+                {% endfor %}
             {% endif %}
         {% endwith %}
     {% endfor %}
