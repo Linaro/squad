@@ -65,11 +65,13 @@ def tests(request, group_slug, project_slug, build_version):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
     build = get_object_or_404(project.builds, version=build_version)
+    full = request.GET.get('full', None) is not None
 
     context = {
         "project": project,
         "build": build,
         "results": TestResultTable.get(build),
+        'full': full,
     }
 
     return render(request, 'squad/tests.html', context)
