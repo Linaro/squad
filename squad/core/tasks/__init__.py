@@ -161,12 +161,10 @@ class ParseTestRunData(object):
 
         project = test_run.project
         for test in test_parser()(test_run.tests_file):
-            suite = None
-            if test['group_name']:
-                suite, _ = Suite.objects.get_or_create(
-                    project=project,
-                    slug=test['group_name'],
-                )
+            suite, _ = Suite.objects.get_or_create(
+                project=project,
+                slug=test['group_name'],
+            )
             Test.objects.create(
                 test_run=test_run,
                 suite=suite,
@@ -174,12 +172,10 @@ class ParseTestRunData(object):
                 result=test['pass'],
             )
         for metric in metric_parser()(test_run.metrics_file):
-            suite = None
-            if metric['group_name']:
-                suite, _ = Suite.objects.get_or_create(
-                    project=project,
-                    slug=metric['group_name']
-                )
+            suite, _ = Suite.objects.get_or_create(
+                project=project,
+                slug=metric['group_name']
+            )
             Metric.objects.create(
                 test_run=test_run,
                 suite=suite,
