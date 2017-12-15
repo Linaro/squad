@@ -350,10 +350,41 @@ class Attachment(models.Model):
     length = models.IntegerField(default=None)
 
 
+class SuiteMetadata(models.Model):
+    suite = models.CharField(max_length=256)
+    kind = models.CharField(
+        max_length=6,
+        choices=(
+            ('suite', 'Suite'),
+            ('test', 'Test'),
+            ('metric', 'Metric'),
+        )
+    )
+    name = models.CharField(max_length=256, null=True)
+    description = models.TextField(null=True, blank=True)
+    instructions_to_reproduce = models.TextField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('kind', 'suite', 'name')
+        verbose_name_plural = 'Suite metadata'
+
+    def __str__(self):
+        if self.name == '-':
+            return self.suite
+        else:
+            return join_name(self.suite, self.name)
+
+
 class Suite(models.Model):
     project = models.ForeignKey(Project, related_name='suites')
     slug = models.CharField(max_length=256, validators=[slug_validator])
     name = models.CharField(max_length=256, null=True, blank=True)
+    metadata = models.ForeignKey(
+        SuiteMetadata,
+        null=True,
+        related_name='+',
+        limit_choices_to={'kind': 'suite'},
+    )
 
     class Meta:
         unique_together = ('project', 'slug',)
@@ -377,6 +408,12 @@ class SuiteVersion(models.Model):
 class Test(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='tests')
     suite = models.ForeignKey(Suite)
+    metadata = models.ForeignKey(
+        SuiteMetadata,
+        null=True,
+        related_name='+',
+        limit_choices_to={'kind': 'test'},
+    )
     name = models.CharField(max_length=256)
     result = models.NullBooleanField()
     log = models.TextField(null=True, blank=True)
@@ -448,6 +485,12 @@ class MetricManager(models.Manager):
 class Metric(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='metrics')
     suite = models.ForeignKey(Suite)
+    metadata = models.ForeignKey(
+        SuiteMetadata,
+        null=True,
+        related_name='+',
+        limit_choices_to={'kind': 'metric'},
+    )
     name = models.CharField(max_length=100)
     result = models.FloatField()
     measurements = models.TextField()  # comma-separated float numbers

@@ -48,6 +48,31 @@ class ParseTestRunDataTest(CommonTestCase):
         self.assertEqual(4, self.testrun.tests.count())
         self.assertEqual(3, self.testrun.metrics.count())
 
+    def test_creates_suite_metadata(self):
+        ParseTestRunData()(self.testrun)
+        suite = self.testrun.tests.last().suite
+        metadata = suite.metadata
+        self.assertEqual('suite', metadata.kind)
+
+    def test_creates_test_metadata(self):
+        ParseTestRunData()(self.testrun)
+        test = self.testrun.tests.last()
+        metadata = test.metadata
+        self.assertIsNotNone(metadata)
+        self.assertEqual(test.name, metadata.name)
+        self.assertEqual(test.suite.slug, metadata.suite)
+        self.assertEqual('test', metadata.kind)
+
+    def test_creates_metric_metadata(self):
+        ParseTestRunData()(self.testrun)
+        self.testrun.refresh_from_db()
+        metric = self.testrun.metrics.last()
+        metadata = metric.metadata
+        self.assertIsNotNone(metadata)
+        self.assertEqual(metric.name, metadata.name)
+        self.assertEqual(metric.suite.slug, metadata.suite)
+        self.assertEqual('metric', metadata.kind)
+
 
 class ProcessAllTestRunsTest(CommonTestCase):
 
