@@ -29,7 +29,17 @@
     <h2>Test results</h2>
     {% for status in tests_status %}
         <a name="tests-{{status.suite}}"></a>
-        <h3>{{status.suite}}</h3>
+        <h3>
+            {{status.suite}}
+            {% if status.suite.metadata.description %}
+            <a href='#' onclick="$('#tests-{{status.suite.slug}}-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
+            {% endif %}
+        </h3>
+        {% if status.suite.metadata.description %}
+        <div class='alert alert-info' id='tests-{{status.suite.slug}}-description' style='display: none'>
+            {{status.suite.metadata.description|markdown}}
+        </div>
+        {% endif %}
         {% with tests=status.tests_by_result %}
             {% if tests.fail %}
                 {% for test in status.tests_by_result.fail %}
