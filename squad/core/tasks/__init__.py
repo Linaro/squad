@@ -8,7 +8,7 @@ import uuid
 from django.db import transaction
 
 
-from squad.core.models import TestRun, Suite, Test, Metric, Status, ProjectStatus
+from squad.core.models import TestRun, Suite, SuiteVersion, Test, Metric, Status, ProjectStatus
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
 from squad.core.statistics import geomean
 from squad.plugins import apply_plugins
@@ -202,6 +202,17 @@ class PostProcessTestRun(object):
         plugin.postprocess_testrun(testrun)
 
 
+def get_suite_version(test_run, suite):
+    if not suite:
+        return None
+    v = test_run.metadata.get('suite_versions', {}).get(suite.slug)
+    if v:
+        suite_version, _ = SuiteVersion.objects.get_or_create(suite=suite, version=v)
+        return suite_version
+    else:
+        return None
+
+
 class RecordTestRunStatus(object):
 
     @staticmethod
@@ -235,6 +246,7 @@ class RecordTestRunStatus(object):
 
         for sid, s in status.items():
             s.suite_id = sid
+            s.suite_version = get_suite_version(testrun, s.suite)
             s.save()
 
         testrun.status_recorded = True

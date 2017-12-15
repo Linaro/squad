@@ -362,6 +362,18 @@ class Suite(models.Model):
         return self.name or self.slug
 
 
+class SuiteVersion(models.Model):
+    suite = models.ForeignKey(Suite, related_name='versions')
+    version = models.CharField(max_length=40, null=True)
+    first_seen = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('suite', 'version')
+
+    def __str__(self):
+        return '%s %s' % (self.suite.name, self.version)
+
+
 class Test(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='tests')
     suite = models.ForeignKey(Suite)
@@ -498,6 +510,7 @@ class TestSummaryBase(object):
 class Status(models.Model, TestSummaryBase):
     test_run = models.ForeignKey(TestRun, related_name='status')
     suite = models.ForeignKey(Suite, null=True)
+    suite_version = models.ForeignKey(SuiteVersion, null=True)
 
     tests_pass = models.IntegerField(default=0)
     tests_fail = models.IntegerField(default=0)
