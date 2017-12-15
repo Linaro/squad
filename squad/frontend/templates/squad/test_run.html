@@ -31,6 +31,9 @@
         <a name="tests-{{status.suite}}"></a>
         <h3>
             {{status.suite}}
+            {% if status.suite_version %}
+            {{status.suite_version.version}}
+            {% endif %}
             {% if status.suite.metadata.description %}
             <a href='#' onclick="$('#tests-{{status.suite.slug}}-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
             {% endif %}
