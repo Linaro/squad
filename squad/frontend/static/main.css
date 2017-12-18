@@ -155,3 +155,7 @@ table.test-results a:only-child {
 .pass a:hover { background-color: #ddffdd; text-decoration: none; }
 .skip a       { color: #a4a400; }
 .skip a:hover { background-color: #ffffdd; text-decoration: none; }
+
+.test-description {
+  margin-top: 1em;
+}

@@ -46,7 +46,7 @@
         {% with tests=status.tests_by_result %}
             {% if tests.fail %}
                 {% for test in status.tests_by_result.fail %}
-                    {% include "squad/_test_run_test.html" %}
+                    {% include "squad/_test_run_test.html" with suite=status.suite %}
                 {% endfor %}
             {% endif %}
             {% if tests.skip %}
