@@ -50,14 +50,6 @@
   color: #4e9a06;
 }
 
-.row.metrics {
-  border: none;
-}
-
-.metrics .metric {
-  border: 1px solid #d3d7cf;
-}
-
 .project .description {
   border-top: 1px solid #babdb6;
   margin-top: 0em;
@@ -156,6 +148,6 @@ table.test-results a:only-child {
 .skip a       { color: #a4a400; }
 .skip a:hover { background-color: #ffffdd; text-decoration: none; }
 
-.test-description {
+.test-description, .metric-description {
   margin-top: 1em;
 }

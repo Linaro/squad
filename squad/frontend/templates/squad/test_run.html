@@ -81,18 +81,23 @@
     <h2>Metrics</h2>
     {% for status in metrics_status %}
         <a name="metrics-{{status.suite}}"></a>
-        <h3>{{status.suite}}</h3>
-        <div class='row row-bordered metrics'>
-        {% for metric in status.metrics %}
-            <div class='col-md-4 col-sm-4 metric'>
-               <i class='fa fa-line-chart'></i>
-               {{metric.name}}
-               <div class='pull-right'>
-                   {{metric.result}}
-               </div>
-            </div>
-        {% endfor %}
+        <h3>
+            {{status.suite}}
+            {% if status.suite_version %}
+            {{status.suite_version.version}}
+            {% endif %}
+            {% if status.suite.metadata.description %}
+            <a href='#' onclick="$('#tests-{{status.suite.slug}}-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
+            {% endif %}
+        </h3>
+        {% if status.suite.metadata.description %}
+        <div class='alert alert-info' id='tests-{{status.suite.slug}}-description' style='display: none'>
+            {{status.suite.metadata.description|markdown}}
         </div>
+        {% endif %}
+        {% for metric in status.metrics %}
+            {% include "squad/_test_run_metric.html" %}
+        {% endfor %}
     {% endfor %}
 {% endif %}
 
