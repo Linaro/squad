@@ -1,0 +1,39 @@
+#!/bin/sh
+
+set -eu
+
+if [ $# -lt 2 ]; then
+  echo "usage: $0 TEAM PROJECT [BUILD] [ENVIRONMENT]"
+  exit 1
+fi
+
+TEAM="$1"
+PROJECT="$2"
+BUILD=${3:-}
+ENVIRONMENT="${4:-testenv}"
+
+checkdep() {
+  if ! which "$1" > /dev/null; then
+    echo "E: $1 not found; please install"
+    exit 1
+  fi
+}
+
+# dependencies
+checkdep curl
+
+export AUTH_TOKEN=$(./manage.py shell <<EOF
+from squad.core.models import Group
+
+group, _ = Group.objects.get_or_create(slug='$TEAM')
+project, _ = group.projects.get_or_create(slug='$PROJECT')
+token, _ = project.tokens.get_or_create(description='submit-test-data')
+print(token.key)
+EOF
+)
+curl --fail "http://localhost:8000/api/submitjob/$TEAM/$PROJECT/$BUILD/$ENVIRONMENT" \
+  --fail \
+  --silent --output /dev/null \
+  --header "Auth-Token: $AUTH_TOKEN" \
+  --form backend=fake \
+  --form definition="something, it does not matter"
