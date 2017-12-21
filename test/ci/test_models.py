@@ -397,18 +397,32 @@ class BackendSubmitTest(BackendTestBase):
 
 class TestJobTest(TestCase):
 
-    def test_basics(self):
-        group = core_models.Group.objects.create(slug='mygroup')
-        project = group.projects.create(slug='myproject')
-        backend = models.Backend.objects.create(
+    def setUp(self):
+        self.group = core_models.Group.objects.create(slug='mygroup')
+        self.project = self.group.projects.create(slug='myproject')
+        self.backend = models.Backend.objects.create(
             url='http://example.com',
             username='foobar',
             token='mypassword',
         )
+
+    def test_basics(self):
         testjob = models.TestJob.objects.create(
-            target=project,
+            target=self.project,
             build='1',
             environment='myenv',
-            backend=backend,
+            backend=self.backend,
         )
         self.assertIsNone(testjob.job_id)
+
+    def test_records_resubmitted_count(self):
+        testjob = models.TestJob.objects.create(
+            target=self.project,
+            build='1',
+            environment='myenv',
+            backend=self.backend,
+            submitted=True,
+            can_resubmit=True,
+        )
+        testjob.resubmit()
+        self.assertEqual(1, testjob.resubmitted_count)
