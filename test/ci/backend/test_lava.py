@@ -384,3 +384,20 @@ class LavaTest(TestCase):
 
         # just not crashing is OK
         lava.receive_event('foo.com.device', {'job': '123'})
+
+    @patch('squad.ci.backend.lava.fetch')
+    def test_receive_event_no_status(self, fetch):
+        lava = LAVABackend(self.backend)
+        testjob = TestJob.objects.create(
+            backend=self.backend,
+            target=self.project,
+            build='1',
+            environment='myenv',
+            submitted=True,
+            fetched=False,
+            job_id='123',
+            name="foo",
+        )
+
+        lava.receive_event('foo.com.testjob', {"job": '123'})
+        self.assertEqual('Submitted', TestJob.objects.get(pk=testjob.id).job_status)
