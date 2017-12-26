@@ -278,7 +278,7 @@ class Backend(BaseBackend):
             return
         if 'sub_id' in data.keys():
             lava_id = data['sub_id']
-        lava_status = data['status']
+        lava_status = data.get('status', 'Submitted')
         db_test_job_list = self.data.test_jobs.filter(
             submitted=True,
             fetched=False,
