@@ -1,3 +1,12 @@
+# 0.36
+
+* frontend:
+  * retitle test results page to "All test results"
+  * hide non-failing test results by default
+  * improve formatting of "test results" tables
+  * link test results to test history in "all test results" page
+* ci/lava: don't crash when lava listener provides no status
+
 # 0.35
 
 **Upgrade notes:** this version drops support for starting the celery-related
