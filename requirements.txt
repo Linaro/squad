@@ -6,7 +6,7 @@ djangorestframework
 gunicorn
 Jinja2
 markdown
-msgpack-python
+msgpack>=0.5.0
 python_dateutil
 PyYAML
 pyzmq
