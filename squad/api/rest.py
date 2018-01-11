@@ -106,6 +106,7 @@ class BuildViewSet(ModelViewSet):
     """
     queryset = Build.objects.all()
     serializer_class = BuildSerializer
+    filter_fields = ('version', 'project')
 
     def get_queryset(self):
         return self.queryset.filter(project__in=self.get_project_ids())
