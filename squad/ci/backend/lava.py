@@ -1,4 +1,5 @@
 import json
+import logging
 import traceback
 import yaml
 import xmlrpc
@@ -23,6 +24,8 @@ LAVA_INFRA_ERROR_MESSAGES = [
     'lava_test_shell connection dropped.',
     'fastboot-flash-action timed out',
     'auto-login-action timed out']
+
+logger = logging.getLogger('squad.ci.backend')
 
 
 class Backend(BaseBackend):
@@ -49,8 +52,7 @@ class Backend(BaseBackend):
             data = self.__get_job_details__(test_job.job_id)
 
             if data['status'] in self.complete_statuses:
-                yamldata = self.__get_testjob_results_yaml__(test_job.job_id)
-                data['results'] = yaml.load(yamldata, Loader=yaml.CLoader)
+                data['results'] = self.__get_testjob_results_yaml__(test_job.job_id)
 
                 # fetch logs
                 logs = ""
@@ -206,7 +208,35 @@ class Backend(BaseBackend):
         return returned_log
 
     def __get_testjob_results_yaml__(self, job_id):
-        return self.proxy.results.get_testjob_results_yaml(job_id)
+        logger.debug("Retrieving result summary for job: %s" % job_id)
+        suites = self.proxy.results.get_testjob_suites_list_yaml(job_id)
+        y = yaml.load(suites)
+        lava_job_results = []
+        for suite in y:
+            limit = 500
+            offset = 0
+            results = self.proxy.results.get_testsuite_results_yaml(
+                job_id,
+                suite['name'],
+                limit,
+                offset)
+            yaml_results = yaml.load(results, Loader=yaml.CLoader)
+            while True:
+                if len(yaml_results) > 0:
+                    lava_job_results = lava_job_results + yaml_results
+                    offset = offset + limit
+                    logger.debug("requesting results for %s with offset of %s"
+                                 % (suite['name'], offset))
+                    results = self.proxy.results.get_testsuite_results_yaml(
+                        job_id,
+                        suite['name'],
+                        limit,
+                        offset)
+                    yaml_results = yaml.load(results, Loader=yaml.CLoader)
+                else:
+                    break
+
+        return lava_job_results
 
     def __get_publisher_event_socket__(self):
         return self.proxy.scheduler.get_publisher_event_socket()
