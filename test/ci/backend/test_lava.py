@@ -134,10 +134,49 @@ JOB_DETAILS_CANCELED = {
     'multinode_definition': ''
 }
 
+JOB_DETAILS_WITH_SUITE_VERSIONS = {
+    'is_pipeline': True,
+    'status': 'Complete',
+    'id': 1234,
+    'definition': yaml.dump({
+        'job_name': 'job_foo',
+        'metadata': {
+            'suite1__version': "1.0",
+        },
+        'device_type': 'device_foo',
+    }),
+    'multinode_definition': ''
+}
+
+TEST_RESULTS_WITH_SUITE_VERSIONS = [
+    {
+        'duration': '',
+        'id': '5089687',
+        'job': '22505',
+        'level': 'None',
+        'logged': '2017-09-05 07:53:07.040871+00:00',
+        'measurement': '29.7200000000',
+        'metadata': {
+            'case': 'test1',
+            'definition': 'suite1',
+            'duration': '29.72',
+            'level': '4.5',
+            'result': 'pass'
+        },
+        'name': 'test1',
+        'result': 'pass',
+        'suite': 'suite1',
+        'timeout': '',
+        'unit': 'seconds',
+        'url': '/results/testcase/5089687'
+    },
+]
+
 TEST_RESULTS_YAML = yaml.dump(TEST_RESULTS)
 TEST_RESULTS_INFRA_FAILURE_YAML = yaml.dump(TEST_RESULTS_INFRA_FAILURE)
 TEST_RESULTS_INFRA_FAILURE_RESUBMIT_YAML = yaml.dump(TEST_RESULTS_INFRA_FAILURE_RESUBMIT)
 TEST_RESULTS_INFRA_FAILURE_RESUBMIT2_YAML = yaml.dump(TEST_RESULTS_INFRA_FAILURE_RESUBMIT2)
+TEST_RESULTS_WITH_SUITE_VERSIONS_YAML = yaml.dump(TEST_RESULTS_WITH_SUITE_VERSIONS)
 
 
 HTTP_400 = xmlrpc.client.Fault(400, 'Problem with submitted job data')
@@ -213,6 +252,18 @@ class LavaTest(TestCase):
         status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
 
         self.assertEqual(JOB_METADATA, metadata)
+
+    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_WITH_SUITE_VERSIONS)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_WITH_SUITE_VERSIONS_YAML)
+    def test_parse_results_metadata_with_suite_versions(self, get_results, get_details, get_logs):
+        lava = LAVABackend(None)
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend)
+        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+
+        self.assertEqual({"suite1": "1.0"}, metadata['suite_versions'])
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
