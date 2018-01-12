@@ -21,7 +21,7 @@ class EnvironmentInline(admin.StackedInline):
     Handles environments when editing a project.
     """
     model = models.Environment
-    fields = ['slug', 'name', 'expected_test_runs']
+    fields = ['slug', 'name', 'description', 'expected_test_runs']
     extra = 0
 
 
@@ -103,9 +103,18 @@ class BuildAdmin(admin.ModelAdmin):
     list_filter = ['project', 'datetime']
 
 
+class SuiteMetadataAdmin(admin.ModelAdmin):
+    models = models.SuiteMetadata
+    ordering = ['name']
+    list_display = ['__str__', 'kind', 'description']
+    list_filter = ['kind', 'suite']
+    readonly_fields = ['kind', 'suite', 'name']
+
+
 admin.site.register(models.Group)
 admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.EmailTemplate)
 admin.site.register(models.Token, TokenAdmin)
 admin.site.register(models.ProjectStatus, ProjectStatusAdmin)
 admin.site.register(models.Build, BuildAdmin)
+admin.site.register(models.SuiteMetadata, SuiteMetadataAdmin)

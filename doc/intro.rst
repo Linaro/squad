@@ -177,6 +177,18 @@ strings. The following fields are recognized:
   makes no judgement about its value.
 * ``job_url``: URL pointing to the original test run.
 * ``resubmit_url``: URL that can be used to resubmit the test run.
+* ``suite_versions``: a dictionary with version number strings for suite names
+  used in the tests and metrics data. For example, if you have test suites
+  called "foo" and "bar", their versions can be expressed having metadata that
+  looks like this::
+
+    {
+        # ...
+        "suite_versions": {
+            "foo": "1.0",
+            "bar": "3.1"
+        }
+    }
 
 If a metadata JSON file is not submitted, the above fields can be
 submitted as POST parameters. If a metadata JSON file is submitted, no

@@ -30,6 +30,12 @@
   border-color: #a94442;
   color: #a40000;
 }
+.row-bordered.pass i {
+  color: #00a400;
+}
+.row-bordered.skip i {
+  color: #a4a400;
+}
 
 .tests-details {
   margin-top: 0px;
@@ -42,14 +48,6 @@
 
 .tests-details-pass i {
   color: #4e9a06;
-}
-
-.row.metrics {
-  border: none;
-}
-
-.metrics .metric {
-  border: 1px solid #d3d7cf;
 }
 
 .project .description {
@@ -149,3 +147,7 @@ table.test-results a:only-child {
 .pass a:hover { background-color: #ddffdd; text-decoration: none; }
 .skip a       { color: #a4a400; }
 .skip a:hover { background-color: #ffffdd; text-decoration: none; }
+
+.test-description, .metric-description {
+  margin-top: 1em;
+}

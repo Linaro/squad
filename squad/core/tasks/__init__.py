@@ -8,7 +8,7 @@ import uuid
 from django.db import transaction
 
 
-from squad.core.models import TestRun, Suite, Test, Metric, Status, ProjectStatus
+from squad.core.models import TestRun, Suite, SuiteVersion, SuiteMetadata, Test, Metric, Status, ProjectStatus
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
 from squad.core.statistics import geomean
 from squad.plugins import apply_plugins
@@ -152,6 +152,21 @@ class ReceiveTestRun(object):
         return testrun
 
 
+def get_suite(test_run, suite_name):
+    project = test_run.build.project
+    metadata, _ = SuiteMetadata.objects.get_or_create(
+        kind='suite',
+        suite=suite_name,
+        name='-'
+    )
+    suite, _ = Suite.objects.get_or_create(
+        project=project,
+        slug=suite_name,
+        defaults={'metadata': metadata},
+    )
+    return suite
+
+
 class ParseTestRunData(object):
 
     @staticmethod
@@ -159,30 +174,29 @@ class ParseTestRunData(object):
         if test_run.data_processed:
             return
 
-        project = test_run.project
         for test in test_parser()(test_run.tests_file):
-            suite = None
-            if test['group_name']:
-                suite, _ = Suite.objects.get_or_create(
-                    project=project,
-                    slug=test['group_name'],
-                )
+            suite = get_suite(
+                test_run,
+                test['group_name']
+            )
+            metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=test['test_name'], kind='test')
             Test.objects.create(
                 test_run=test_run,
                 suite=suite,
+                metadata=metadata,
                 name=test['test_name'],
                 result=test['pass'],
             )
         for metric in metric_parser()(test_run.metrics_file):
-            suite = None
-            if metric['group_name']:
-                suite, _ = Suite.objects.get_or_create(
-                    project=project,
-                    slug=metric['group_name']
-                )
+            suite = get_suite(
+                test_run,
+                metric['group_name']
+            )
+            metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=metric['name'], kind='metric')
             Metric.objects.create(
                 test_run=test_run,
                 suite=suite,
+                metadata=metadata,
                 name=metric['name'],
                 result=metric['result'],
                 measurements=','.join([str(m) for m in metric['measurements']]),
@@ -204,6 +218,17 @@ class PostProcessTestRun(object):
 
     def __call_plugin__(self, plugin, testrun):
         plugin.postprocess_testrun(testrun)
+
+
+def get_suite_version(test_run, suite):
+    if not suite:
+        return None
+    v = test_run.metadata.get('suite_versions', {}).get(suite.slug)
+    if v:
+        suite_version, _ = SuiteVersion.objects.get_or_create(suite=suite, version=v)
+        return suite_version
+    else:
+        return None
 
 
 class RecordTestRunStatus(object):
@@ -239,6 +264,7 @@ class RecordTestRunStatus(object):
 
         for sid, s in status.items():
             s.suite_id = sid
+            s.suite_version = get_suite_version(testrun, s.suite)
             s.save()
 
         testrun.status_recorded = True

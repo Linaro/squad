@@ -123,7 +123,7 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
     build = get_object_or_404(project.builds, version=build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
-    status = test_run.status.by_suite()
+    status = test_run.status.by_suite().prefetch_related('suite', 'suite__metadata').all()
 
     tests_status = [s for s in status if s.has_tests]
     metrics_status = [s for s in status if s.has_metrics]

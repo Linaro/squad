@@ -7,7 +7,7 @@ from django.utils import timezone
 from unittest.mock import patch, PropertyMock
 
 
-from squad.core.models import Group, TestRun, Status, Build, ProjectStatus
+from squad.core.models import Group, TestRun, Status, Build, ProjectStatus, SuiteVersion
 from squad.core.tasks import ParseTestRunData
 from squad.core.tasks import PostProcessTestRun
 from squad.core.tasks import RecordTestRunStatus
@@ -48,6 +48,31 @@ class ParseTestRunDataTest(CommonTestCase):
         self.assertEqual(4, self.testrun.tests.count())
         self.assertEqual(3, self.testrun.metrics.count())
 
+    def test_creates_suite_metadata(self):
+        ParseTestRunData()(self.testrun)
+        suite = self.testrun.tests.last().suite
+        metadata = suite.metadata
+        self.assertEqual('suite', metadata.kind)
+
+    def test_creates_test_metadata(self):
+        ParseTestRunData()(self.testrun)
+        test = self.testrun.tests.last()
+        metadata = test.metadata
+        self.assertIsNotNone(metadata)
+        self.assertEqual(test.name, metadata.name)
+        self.assertEqual(test.suite.slug, metadata.suite)
+        self.assertEqual('test', metadata.kind)
+
+    def test_creates_metric_metadata(self):
+        ParseTestRunData()(self.testrun)
+        self.testrun.refresh_from_db()
+        metric = self.testrun.metrics.last()
+        metadata = metric.metadata
+        self.assertIsNotNone(metadata)
+        self.assertEqual(metric.name, metadata.name)
+        self.assertEqual(metric.suite.slug, metadata.suite)
+        self.assertEqual('metric', metadata.kind)
+
 
 class ProcessAllTestRunsTest(CommonTestCase):
 
@@ -81,6 +106,36 @@ class RecordTestRunStatusTest(CommonTestCase):
         RecordTestRunStatus()(self.testrun)
         RecordTestRunStatus()(self.testrun)
         self.assertEqual(1, Status.objects.filter(suite=None).count())
+
+    def test_suite_version_not_informed(self):
+        ParseTestRunData()(self.testrun)
+        RecordTestRunStatus()(self.testrun)
+
+        self.assertEqual(0, SuiteVersion.objects.filter(suite__slug='/').count())
+        self.assertEqual(0, SuiteVersion.objects.filter(suite__slug='foobar').count())
+        self.assertEqual(0, SuiteVersion.objects.filter(suite__slug='onlytests').count())
+        self.assertEqual(0, SuiteVersion.objects.filter(suite__slug='missing').count())
+        self.assertIsNone(self.testrun.status.by_suite().first().suite_version)
+
+    def set_suite_versions(self):
+        self.testrun.metadata['suite_versions'] = {
+            '/': '1',
+            'foobar': '2',
+            'onlytests': '3',
+            'missing': '4',
+        }
+        self.testrun.save()
+
+    def test_suite_version_informed(self):
+        self.set_suite_versions()
+        ParseTestRunData()(self.testrun)
+        RecordTestRunStatus()(self.testrun)
+
+        self.assertEqual(1, SuiteVersion.objects.filter(version='1', suite__slug='/').count())
+        self.assertEqual(1, SuiteVersion.objects.filter(version='2', suite__slug='foobar').count())
+        self.assertEqual(1, SuiteVersion.objects.filter(version='3', suite__slug='onlytests').count())
+        self.assertEqual(1, SuiteVersion.objects.filter(version='4', suite__slug='missing').count())
+        self.assertIsNotNone(self.testrun.status.by_suite().first().suite_version)
 
 
 class UpdateProjectStatusTest(CommonTestCase):

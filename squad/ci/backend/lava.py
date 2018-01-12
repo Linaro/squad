@@ -220,6 +220,14 @@ class Backend(BaseBackend):
             definition = yaml.load(data['multinode_definition'])
         test_job.name = definition['job_name'][:255]
         job_metadata = definition['metadata']
+
+        suite_versions = {}
+        for key, value in job_metadata.items():
+            if key.endswith('__version'):
+                suite_versions[key.replace('__version', '')] = value
+        if suite_versions:
+            job_metadata['suite_versions'] = suite_versions
+
         results = {}
         metrics = {}
         completed = True
