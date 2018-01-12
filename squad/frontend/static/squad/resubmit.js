@@ -2,41 +2,32 @@ var app = angular.module('SquadResubmit', []);
 
 function ResubmitController($scope, $http, $location, $timeout) {
 
+    $scope.error = false
     $scope.loading = false
     $scope.done = false
-    $scope.resubmit = function(test_job_id) {
+    $scope.resubmit = function(test_job_id, force) {
         if ($scope.done) return
         $scope.loading = true
 
-        $http.get("/api/resubmit/" + test_job_id).then(
-            function() {
+        var endpoint = force ? "/api/forceresubmit/" : "/api/resubmit/";
+
+        $http.get(endpoint + test_job_id).then(
+            function(response) {
+                $timeout(function() {
+                    $scope.loading = false
+                    $scope.done = true
+                }, 1000)
+            },
+            function(response) {
+                var msg = "There was an error while resubmitting.\n" +
+                    "Status = " + response.status + " " + response.statusText +
+                    "(" + response.xhrStatus + ")"
+                alert(msg)
                 $scope.loading = false
+                $scope.error = true
                 $scope.done = true
             }
         )
-
-        $timeout(function() {
-            $scope.loading = false
-            $scope.done = true
-        }, 2000).apply();
-
-    }
-
-    $scope.forceresubmit = function(test_job_id) {
-        if ($scope.done) return
-        $scope.loading = true
-
-        $http.get("/api/forceresubmit/" + test_job_id).then(
-            function() {
-                $scope.loading = false
-                $scope.done = true
-            }
-        )
-
-        $timeout(function() {
-            $scope.loading = false
-            $scope.done = true
-        }, 2000).apply();
 
     }
 

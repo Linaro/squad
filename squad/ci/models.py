@@ -165,7 +165,7 @@ class TestJob(models.Model):
 
     def resubmit(self):
         if self.can_resubmit:
-            self.backend.get_implementation().resubmit(self)
+            self.force_resubmit()
             if self.can_resubmit:
                 # in case the backend doesn't set the can_resubmit=False
                 # or the resubmit call comes from api
@@ -175,6 +175,8 @@ class TestJob(models.Model):
     def force_resubmit(self):
         # resubmit test job not respecting any restrictions
         self.backend.get_implementation().resubmit(self)
+        self.resubmitted_count += 1
+        self.save()
 
     def __str__(self):
         return "%s/%s" % (self.backend.name, self.job_id)

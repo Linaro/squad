@@ -7,6 +7,9 @@ if [ $# -lt 2 ]; then
   exit 1
 fi
 
+script=$(basename "$0")
+what=${script#gen-}
+
 TEAM="$1"
 PROJECT="$2"
 ENVIRONMENT="${3:-}"
@@ -21,6 +24,6 @@ basedir="$(dirname "$0")"
 
 for i in $(seq ${days} -1 0); do
   build=$((days - i))
-  faketime "$i days ago" $(dirname $0)/submit-test-data "$TEAM" "$PROJECT" "$build" "$ENVIRONMENT"
+  faketime "$i days ago" $(dirname $0)/submit-$what "$TEAM" "$PROJECT" "$build" "$ENVIRONMENT"
   echo "submitted data for $i days ago"
 done
