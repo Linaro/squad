@@ -46,6 +46,32 @@ def project_url(the_object):
 
 
 @register.simple_tag
+def testrun_suite_tests_url(status):
+    return testrun_suite_url(status, 'testrun_suite_tests')
+
+
+@register.simple_tag
+def testrun_suite_metrics_url(status):
+    return testrun_suite_url(status, 'testrun_suite_metrics')
+
+
+def testrun_suite_url(status, kind):
+    testrun = status.test_run
+    suite = status.suite
+    build = testrun.build
+    project = build.project
+    group = project.group
+    args = (
+        group.slug,
+        project.slug,
+        build.version,
+        testrun.job_id,
+        suite.slug.replace('/', '$'),  # encode / in suite names
+    )
+    return reverse(kind, args=args)
+
+
+@register.simple_tag
 def build_url(build):
     return reverse("build", args=(build.project.group.slug, build.project.slug, build.version))
 
@@ -114,3 +140,17 @@ def markdown(mkdn):
     if mkdn is None:
         return ''
     return safe(to_markdown(mkdn))
+
+
+@register.filter
+def get_page_list(items):
+    first = max(items.number - 5, 1)
+    last = min(items.number + 5, items.paginator.num_pages)
+    pages = range(first, last + 1)
+    return {
+        "link_first": 1 not in pages,
+        "head_ellipsis": 2 not in pages,
+        "pages": pages,
+        "tail_ellipsis": (items.paginator.num_pages - 1) not in pages,
+        "link_last": items.paginator.num_pages not in pages,
+    }
