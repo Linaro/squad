@@ -8,7 +8,7 @@ environment="${3:-env1}"
 
 build=${4:-}
 if [ -z "$build" ]; then
-  build=$(date +%Y.%m.%d.%H.%M)
+  build=$(date +%Y.%m.%d.%H.%M.%S)
 fi
 
 if [ -z "${SQUAD_TOKEN:-}" ]; then
