@@ -1,8 +1,9 @@
-from squad.core.models import Project, Build, TestRun, Environment, Test, Metric
+from squad.core.models import Project, ProjectStatus, Build, TestRun, Environment, Test, Metric
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
 from rest_framework import routers, serializers, views, viewsets
 from rest_framework.decorators import detail_route
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 
@@ -90,9 +91,34 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return self.get_paginated_response(serializer.data)
 
 
+class ProjectStatusSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ProjectStatus
+        fields = ('last_updated',
+                  'finished',
+                  'notified',
+                  'notified_on_timeout',
+                  'approved',
+                  'tests_pass',
+                  'tests_fail',
+                  'tests_skip',
+                  'has_metrics',
+                  'metrics_summary',
+                  'build')
+
+
+class ProjectStatusViewSet(viewsets.ModelViewSet):
+    queryset = ProjectStatus.objects
+    serializer_class = ProjectStatusSerializer
+    filter_fields = ('build',)
+
+
 class BuildSerializer(serializers.HyperlinkedModelSerializer):
     testruns = serializers.HyperlinkedIdentityField(view_name='build-testruns')
     testjobs = serializers.HyperlinkedIdentityField(view_name='build-testjobs')
+    # not sure if 'finished' field is needed when status is exposed
+    finished = serializers.BooleanField(read_only=True)
+    status = serializers.HyperlinkedIdentityField(read_only=True, view_name='build-status', allow_null=True)
 
     class Meta:
         model = Build
@@ -110,6 +136,15 @@ class BuildViewSet(ModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(project__in=self.get_project_ids())
+
+    @detail_route(methods=['get'], suffix='status')
+    def status(self, request, pk=None):
+        try:
+            status = self.get_object().status
+            serializer = ProjectStatusSerializer(status, many=False, context={'request': request})
+            return Response(serializer.data)
+        except ProjectStatus.DoesNotExist:
+            raise NotFound()
 
     @detail_route(methods=['get'], suffix='test runs')
     def testruns(self, request, pk=None):

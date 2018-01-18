@@ -2,6 +2,7 @@ import json
 from test.api import APIClient
 from django.test import TestCase
 from squad.core import models
+from squad.core.tasks import UpdateProjectStatus
 from squad.ci import models as ci_models
 
 
@@ -47,6 +48,13 @@ class RestApiTest(TestCase):
     def test_builds(self):
         data = self.hit('/api/builds/')
         self.assertEqual(1, len(data['results']))
+
+    def test_builds_status(self):
+        response = self.client.get('/api/builds/%d/status/')
+        self.assertEqual(404, response.status_code)
+        # create ProjectStatus
+        UpdateProjectStatus()(self.testrun)
+        self.hit('/api/builds/%d/status/' % self.build.id)
 
     def test_build_testruns(self):
         data = self.hit('/api/builds/%d/testruns/' % self.build.id)
