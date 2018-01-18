@@ -37,7 +37,7 @@ class TestResultTable(object):
             self.non_failures.append(test)
 
     @classmethod
-    def get(cls, build):
+    def get(cls, build, page, per_page=50):
         table = cls()
         table.environments = set([t.environment for t in build.test_runs.prefetch_related('environment').all()])
 
@@ -67,10 +67,15 @@ def tests(request, group_slug, project_slug, build_version):
     build = get_object_or_404(project.builds, version=build_version)
     full = request.GET.get('full', None) is not None
 
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+
     context = {
         "project": project,
         "build": build,
-        "results": TestResultTable.get(build),
+        "results": TestResultTable.get(build, page),
         'full': full,
     }
 
