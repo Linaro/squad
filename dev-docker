@@ -17,7 +17,7 @@ dockerfile="$datadir"/../Dockerfile.dev
   echo "RUN groupadd -g $(id -g) $(id -gn)"
   echo "RUN useradd -m -u $(id -u) -g $(id -g) -s /bin/bash ${USER}"
   echo "USER ${USER}"
-  echo 'CMD sh -c "./manage.py test && ./manage.py migrate && ./manage.py runserver 0.0.0.0:8000"'
+  echo 'CMD sh -c "./manage.py test && ./manage.py migrate && ./manage.py runserver 0.0.0.0:8000 & bash"'
 ) > "$dockerfile"
 
 docker build -t squad/dev -f "$dockerfile" .
