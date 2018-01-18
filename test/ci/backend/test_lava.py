@@ -172,12 +172,6 @@ TEST_RESULTS_WITH_SUITE_VERSIONS = [
     },
 ]
 
-TEST_RESULTS_YAML = yaml.dump(TEST_RESULTS)
-TEST_RESULTS_INFRA_FAILURE_YAML = yaml.dump(TEST_RESULTS_INFRA_FAILURE)
-TEST_RESULTS_INFRA_FAILURE_RESUBMIT_YAML = yaml.dump(TEST_RESULTS_INFRA_FAILURE_RESUBMIT)
-TEST_RESULTS_INFRA_FAILURE_RESUBMIT2_YAML = yaml.dump(TEST_RESULTS_INFRA_FAILURE_RESUBMIT2)
-TEST_RESULTS_WITH_SUITE_VERSIONS_YAML = yaml.dump(TEST_RESULTS_WITH_SUITE_VERSIONS)
-
 
 HTTP_400 = xmlrpc.client.Fault(400, 'Problem with submitted job data')
 HTTP_503 = xmlrpc.client.Fault(503, 'Service Unavailable')
@@ -218,7 +212,7 @@ class LavaTest(TestCase):
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
-    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_fetch_basics(self, get_results, get_details, get_logs):
         lava = LAVABackend(None)
         testjob = TestJob(
@@ -243,7 +237,7 @@ class LavaTest(TestCase):
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
-    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results_metadata(self, get_results, get_details, get_logs):
         lava = LAVABackend(None)
         testjob = TestJob(
@@ -255,7 +249,7 @@ class LavaTest(TestCase):
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_WITH_SUITE_VERSIONS)
-    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_WITH_SUITE_VERSIONS_YAML)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_WITH_SUITE_VERSIONS)
     def test_parse_results_metadata_with_suite_versions(self, get_results, get_details, get_logs):
         lava = LAVABackend(None)
         testjob = TestJob(
@@ -267,7 +261,7 @@ class LavaTest(TestCase):
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
-    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results(self, get_results, get_details, get_logs):
         lava = LAVABackend(None)
         testjob = TestJob(
@@ -282,7 +276,7 @@ class LavaTest(TestCase):
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
-    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_YAML)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE)
     def test_completed(self, get_results, get_details, get_logs):
         lava = LAVABackend(None)
         testjob = TestJob(
@@ -294,7 +288,7 @@ class LavaTest(TestCase):
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_CANCELED)
-    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_YAML)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_canceled(self, get_results, get_details, get_logs):
         lava = LAVABackend(None)
         testjob = TestJob(
@@ -306,7 +300,7 @@ class LavaTest(TestCase):
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
-    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT_YAML)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT)
     def test_automated_resubmit_email(self, get_results, get_details, get_logs):
         self.project.admin_subscriptions.create(email='foo@example.com')
         backend = MagicMock()
@@ -330,7 +324,7 @@ class LavaTest(TestCase):
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
-    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT_YAML)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT)
     @patch("squad.ci.backend.lava.Backend.__resubmit__", return_value="1235")
     def test_automated_resubmit(self, lava_resubmit, get_results, get_details, get_logs):
         lava = LAVABackend(self.backend)
@@ -346,7 +340,7 @@ class LavaTest(TestCase):
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
-    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT2_YAML)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT2)
     @patch("squad.ci.backend.lava.Backend.__resubmit__", return_value="1235")
     def test_automated_resubmit2(self, lava_resubmit, get_results, get_details, get_logs):
         lava = LAVABackend(self.backend)
