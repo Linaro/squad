@@ -23,7 +23,7 @@
 <div class='test-results highlight-row'>
 {% for status in statuses %}
 {% if status.suite and status.has_tests %}
-<a href="{% project_url status.test_run %}#tests-{{status.suite}}" class="status-fail{{status.tests_fail}}" {% if status.tests_fail == 0%}style='display: none'{% endif%} id='tests-{{status.id}}' ng-show='match("tests-" + {{status.id}})'>
+<a href="{% testrun_suite_tests_url status %}" class="status-fail{{status.tests_fail}}" {% if status.tests_fail == 0%}style='display: none'{% endif%} id='tests-{{status.id}}' ng-show='match("tests-" + {{status.id}})'>
 <div class='row row-bordered {% if status.tests_fail%}fail{% else %}nofail{%endif%}'>
     <div class='col-md-3 col-sm-3' title='Test suite'>
         <i class='fa fa-list'></i>
@@ -88,7 +88,7 @@
 {% for test_run in build.test_runs.all %}
 {% for status in test_run.status.all %}
 {% if status.suite and status.has_metrics %}
-<a href="{% project_url test_run %}#metrics-{{status.suite}}" id="metrics-{{status.id}}" ng-show="match('metrics-{{status.id}}')">
+<a href="{% testrun_suite_metrics_url status %}" id="metrics-{{status.id}}" ng-show="match('metrics-{{status.id}}')">
 <div class='row row-bordered'>
     <div class='col-md-3 col-sm-3' title='Metrics suite'>
         <i class='fa fa-list'></i>
@@ -116,6 +116,38 @@
 {% endfor %}
 </div>
 </div> <!-- ng-content=FilterController -->
+
+<div class='testruns highlight-row'>
+    <h2>Test runs</h2>
+    {% for test_run in build.test_runs.all %}
+        <a href="{% project_url test_run %}">
+            <div class='row row-bordered'>
+                <div class='col-md-3 col-sm-3' title='Job ID'>
+                    <i class='fa fa-list'></i>
+                    <strong>{{test_run.job_id}}</strong>
+                </div>
+                <div class='col-md-3 col-sm-3' title='Environment'>
+                    <i class='fa fa-microchip'></i>
+                    {{test_run.environment}}
+                </div>
+
+                <div class='col-md-4 col-sm-4' title='Date &amp; time'>
+                    <i class='fa fa-calendar'></i>
+                    {{test_run.datetime}}
+                </div>
+
+                <div class='col-md-2 col-sm-2' title='Completed: {{test_run.completed}}'>
+                    {% if test_run.completed %}
+                        <i class='fa fa-check-square-o'></i>
+                    {% else %}
+                        <i class='fa fa-square-o'></i>
+                    {% endif %}
+                    {{test_run.job_status|default:""}}
+                </div>
+            </div>
+        </a>
+    {% endfor %}
+</div>
 
 </div> <!-- ng-app=Filter -->
 

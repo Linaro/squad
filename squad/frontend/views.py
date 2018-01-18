@@ -4,6 +4,7 @@ import mimetypes
 import os
 
 from django.db.models import Count, Case, When, Q
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
@@ -143,6 +144,71 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
         'metrics_status': metrics_status,
     }
     return render(request, 'squad/test_run.html', context)
+
+
+def __test_run_suite_context__(request, group_slug, project_slug, build_version, job_id, suite_slug):
+    group = Group.objects.get(slug=group_slug)
+    project = group.projects.get(slug=project_slug)
+    build = get_object_or_404(project.builds, version=build_version)
+    test_run = get_object_or_404(build.test_runs, job_id=job_id)
+    suite = project.suites.get(slug=suite_slug.replace('$', '/'))
+    status = test_run.status.get(suite=suite)
+    context = {
+        'project': project,
+        'build': build,
+        'test_run': test_run,
+        'metadata': sorted(test_run.metadata.items()),
+        'suite': suite,
+        'status': status,
+    }
+    return context
+
+
+@auth
+def test_run_suite_tests(request, group_slug, project_slug, build_version, job_id, suite_slug):
+    context = __test_run_suite_context__(
+        request,
+        group_slug,
+        project_slug,
+        build_version,
+        job_id,
+        suite_slug
+    )
+
+    all_tests = context['status'].tests.prefetch_related(
+        'suite',
+        'metadata',
+        'suite__metadata'
+    ).order_by(Case(When(result=False, then=0), When(result=True, then=2), default=1), 'name')
+
+    paginator = Paginator(all_tests, 100)
+    page = request.GET.get('page', '1')
+    context['tests'] = paginator.page(page)
+
+    return render(request, 'squad/test_run_suite_tests.html', context)
+
+
+@auth
+def test_run_suite_metrics(request, group_slug, project_slug, build_version, job_id, suite_slug):
+    context = __test_run_suite_context__(
+        request,
+        group_slug,
+        project_slug,
+        build_version,
+        job_id,
+        suite_slug
+    )
+    all_metrics = context['status'].metrics.prefetch_related(
+        'suite',
+        'metadata',
+        'suite__metadata'
+    ).order_by('name')
+
+    paginator = Paginator(all_metrics, 100)
+    page = request.GET.get('page', '1')
+    context['metrics'] = paginator.page(page)
+
+    return render(request, 'squad/test_run_suite_metrics.html', context)
 
 
 def __download__(filename, data, content_type=None):

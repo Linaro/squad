@@ -1,0 +1,54 @@
+{% extends "squad/base.html" %}
+{% load squad %}
+{% block content %}
+
+<h1>
+    <a href="{% group_url project.group %}">{{project.group}}</a>
+    » <a href="{% project_url project %}">{{project.slug}}</a>
+    » <a href="{% build_url build %}">Build {{build.version}}</a>
+    » <a href="{% project_url test_run %}">Test run {{test_run.job_id}}</a>
+    » Test results for {{suite}}
+</h1>
+
+<h2>
+    Test environment: {{test_run.environment}}
+    {% if test_run.environment.description %}
+    <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
+    {% endif %}
+</h2>
+{% if test_run.environment.description %}
+<div class='alert alert-info' id='environment-description' style='display: none'>
+    {{test_run.environment.description|markdown}}
+</div>
+{% endif %}
+
+<h2>
+    Suite: {{suite}}
+    {% if status.suite_version %}
+    {{status.suite_version.version}}
+    {% endif %}
+    {% if suite.metadata.description %}
+    <a href='#' onclick="$('#tests-{{suite.slug}}-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
+    {% endif %}
+</h2>
+
+{% if suite.metadata.description %}
+<div class='alert alert-info' id='tests-{{suite.slug}}-description' style='display: none'>
+    {{suite.metadata.description|markdown}}
+</div>
+{% endif %}
+
+<a name="tests"></a>
+<h2>
+    Metrics
+</h2>
+
+{% include "squad/_pagination.html" with items=metrics %}
+
+{% for metric in metrics %}
+    {% include "squad/_test_run_metric.html" %}
+{% endfor %}
+
+{% include "squad/_pagination.html" with items=tests %}
+
+{% endblock %}
