@@ -172,3 +172,15 @@ table.test-results a:only-child {
 .avatar-lg {
   border-radius: 8px;
 }
+
+.badge-Complete {
+  color: #3c763d;
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
+}
+
+.badge-Incomplete {
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;
+}
