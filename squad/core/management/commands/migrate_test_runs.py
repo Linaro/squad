@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from squad.core.models import Project, Build, Environment
+from squad.core.models import Project, Build, Environment, Status, Test, Metric
 from squad.core.tasks import UpdateProjectStatus
 
 
@@ -90,3 +90,17 @@ class Command(BaseCommand):
                 new_build.status.save()
             else:
                 print("No matching test runs found in build: %s" % build)
+
+        env.project = new_project
+        env.save()
+
+        for suite in old_project.suites.all():
+            new_suite, _ = new_project.suites.get_or_create(
+                slug=suite.slug,
+                defaults={'name': suite.name}
+            )
+            for model in [Status, Test, Metric]:
+                model.objects.filter(
+                    suite=suite,
+                    test_run__build__project_id=new_project.id,
+                ).update(suite=new_suite)
