@@ -1,6 +1,6 @@
 from django.contrib import admin
 from . import models
-from .tasks import notify_project_status
+from .tasks import notify_project_status, postprocess_test_run
 from squad.plugins import PluginLoader
 
 
@@ -134,9 +134,18 @@ class TestRunProjectFilter(admin.SimpleListFilter):
         return queryset
 
 
+def force_execute_plugins(modeladmin, request, queryset):
+    for testrun in queryset.all():
+        postprocess_test_run.delay(testrun.id)
+
+
+force_execute_plugins.short_description = "Postprocess selected test runs"
+
+
 class TestRunAdmin(admin.ModelAdmin):
     models = models.TestRun
     list_filter = [TestRunProjectFilter]
+    actions = [force_execute_plugins]
 
     def has_add_permission(self, request):
         return False

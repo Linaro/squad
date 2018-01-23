@@ -8,6 +8,7 @@ import uuid
 from django.db import transaction
 
 
+from squad.celery import app as celery
 from squad.core.models import TestRun, Suite, SuiteVersion, SuiteMetadata, Test, Metric, Status, ProjectStatus
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
 from squad.core.statistics import geomean
@@ -218,6 +219,18 @@ class PostProcessTestRun(object):
 
     def __call_plugin__(self, plugin, testrun):
         plugin.postprocess_testrun(testrun)
+
+
+@celery.task
+def postprocess_test_run(test_run_id):
+    testrun = None
+    try:
+        testrun = TestRun.objects.get(pk=test_run_id)
+    except TestRun.DoesNotExist:
+        # fail gracefully when test_run_id doesn't exist
+        logger.error("TestRun with ID: %s not found" % test_run_id)
+        return
+    PostProcessTestRun()(testrun)
 
 
 def get_suite_version(test_run, suite):
