@@ -111,6 +111,31 @@ class SuiteMetadataAdmin(admin.ModelAdmin):
     readonly_fields = ['kind', 'suite', 'name']
 
 
+class TestRunProjectFilter(admin.SimpleListFilter):
+    title = "Project"
+    parameter_name = "project"
+
+    def lookups(self, request, model_admin):
+        ret_list = ()
+        for project in models.Project.objects.all():
+            ret_list = ret_list + ((project.id, "%s/%s" % (project.group.slug, project.slug)),)
+        print(ret_list)
+        return ret_list
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(build__project=self.value())
+        return queryset
+
+
+class TestRunAdmin(admin.ModelAdmin):
+    models = models.TestRun
+    list_filter = [TestRunProjectFilter]
+
+    def has_add_permission(self, request):
+        return False
+
+
 admin.site.register(models.Group)
 admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.EmailTemplate)
@@ -118,3 +143,4 @@ admin.site.register(models.Token, TokenAdmin)
 admin.site.register(models.ProjectStatus, ProjectStatusAdmin)
 admin.site.register(models.Build, BuildAdmin)
 admin.site.register(models.SuiteMetadata, SuiteMetadataAdmin)
+admin.site.register(models.TestRun, TestRunAdmin)
