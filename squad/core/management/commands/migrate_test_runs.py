@@ -1,6 +1,7 @@
 import sys
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 from squad.core.models import Project, Build, Environment
 from squad.core.tasks import UpdateProjectStatus
@@ -64,7 +65,10 @@ class Command(BaseCommand):
             sys.exit(0)
         print("Migrating testruns from project %s to %s" % (old_project.slug, new_project.slug))
         print("All test runs with environment name: %s will be migrated" % env.slug)
+        self.__handle__(old_project, new_project, env)
 
+    @transaction.atomic
+    def __handle__(self, old_project, new_project, env):
         for build in old_project.builds.all():
             if build.test_runs.filter(environment=env):
                 print("moving build: %s" % build)
