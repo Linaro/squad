@@ -95,12 +95,18 @@ class ProjectStatusAdmin(admin.ModelAdmin):
             'build__project__group',
         )
 
+    def has_add_permission(self, request):
+        return False
+
 
 class BuildAdmin(admin.ModelAdmin):
     model = models.Build
     ordering = ['-id']
     list_display = ['__str__', 'project']
     list_filter = ['project', 'datetime']
+
+    def has_add_permission(self, request):
+        return False
 
 
 class SuiteMetadataAdmin(admin.ModelAdmin):
