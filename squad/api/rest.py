@@ -59,6 +59,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
         model = Project
         fields = (
             'url',
+            'id',
             'full_name',
             'slug',
             'name',
@@ -114,6 +115,7 @@ class ProjectStatusViewSet(viewsets.ModelViewSet):
 
 
 class BuildSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.IntegerField()
     testruns = serializers.HyperlinkedIdentityField(view_name='build-testruns')
     testjobs = serializers.HyperlinkedIdentityField(view_name='build-testjobs')
     # not sure if 'finished' field is needed when status is exposed
@@ -162,6 +164,8 @@ class BuildViewSet(ModelViewSet):
 
 
 class EnvironmentSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.IntegerField()
+
     class Meta:
         model = Environment
         fields = '__all__'
@@ -182,6 +186,7 @@ class EnvironmentViewSet(ModelViewSet):
 
 class TestRunSerializer(serializers.HyperlinkedModelSerializer):
 
+    id = serializers.IntegerField()
     tests_file = serializers.HyperlinkedIdentityField(view_name='testrun-tests-file')
     metrics_file = serializers.HyperlinkedIdentityField(view_name='testrun-metrics-file')
     metadata_file = serializers.HyperlinkedIdentityField(view_name='testrun-metadata-file')
@@ -271,6 +276,8 @@ class TestRunViewSet(ModelViewSet):
 
 
 class BackendSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+
     class Meta:
         model = Backend
         exclude = ('token',)
