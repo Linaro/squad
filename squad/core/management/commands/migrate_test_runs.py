@@ -1,8 +1,9 @@
 import sys
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
-from squad.core.models import Project, Build, Environment
+from squad.core.models import Project, Build, Environment, Status, Test, Metric
 from squad.core.tasks import UpdateProjectStatus
 
 
@@ -64,7 +65,10 @@ class Command(BaseCommand):
             sys.exit(0)
         print("Migrating testruns from project %s to %s" % (old_project.slug, new_project.slug))
         print("All test runs with environment name: %s will be migrated" % env.slug)
+        self.__handle__(old_project, new_project, env)
 
+    @transaction.atomic
+    def __handle__(self, old_project, new_project, env):
         for build in old_project.builds.all():
             if build.test_runs.filter(environment=env):
                 print("moving build: %s" % build)
@@ -86,3 +90,17 @@ class Command(BaseCommand):
                 new_build.status.save()
             else:
                 print("No matching test runs found in build: %s" % build)
+
+        env.project = new_project
+        env.save()
+
+        for suite in old_project.suites.all():
+            new_suite, _ = new_project.suites.get_or_create(
+                slug=suite.slug,
+                defaults={'name': suite.name}
+            )
+            for model in [Status, Test, Metric]:
+                model.objects.filter(
+                    suite=suite,
+                    test_run__build__project_id=new_project.id,
+                ).update(suite=new_suite)
