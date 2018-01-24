@@ -5,58 +5,86 @@ from __future__ import unicode_literals
 from django.db import migrations
 
 
-SQL = """
-INSERT INTO core_suitemetadata (kind, suite, name)
-SELECT DISTINCT 'suite', slug, '-'
-FROM core_suite;
-
-INSERT INTO core_suitemetadata (kind, suite, name)
-SELECT DISTINCT 'test', core_suite.slug, core_test.name
-FROM core_test
-JOIN core_suite ON core_suite.id = core_test.suite_id;
-
-INSERT INTO core_suitemetadata (kind, suite, name)
-SELECT DISTINCT 'metric', core_suite.slug, core_metric.name
-FROM core_metric
-JOIN core_suite ON core_suite.id = core_metric.suite_id;
-
-UPDATE core_suite
-SET metadata_id = (
-    SELECT id
-    FROM core_suitemetadata
-    WHERE kind = 'suite'
-    AND suite = core_suite.slug
-);
-
-UPDATE core_test
-SET metadata_id = (
-    SELECT core_suitemetadata.id
-    FROM core_suitemetadata, core_suite
-    WHERE core_suitemetadata.kind = 'test'
-    AND core_suite.id = core_test.suite_id
-    AND core_suitemetadata.suite = core_suite.slug
-    AND core_suitemetadata.name = core_test.name
-);
-
-UPDATE core_metric
-SET metadata_id = (
-    SELECT core_suitemetadata.id
-    FROM core_suitemetadata, core_suite
-    WHERE core_suitemetadata.kind = 'metric'
-    AND core_suite.id = core_metric.suite_id
-    AND core_suitemetadata.suite = core_suite.slug
-    AND core_suitemetadata.name = core_metric.name
-);
-"""
+NOOP = migrations.RunSQL.noop
 
 
-REVERSE_SQL = """
-UPDATE core_suite SET metadata = NULL;
-UPDATE core_test SET metadata_id = NULL;
-UPDATE core_metric SET metadata_id = NULL;
+STEPS = (
+    (
+        """
+        INSERT INTO core_suitemetadata (kind, suite, name)
+        SELECT DISTINCT 'suite', slug, '-'
+        FROM core_suite;
+        """,
+        """
+        DELETE FROM core_suitemetadata;
+        """
+    ),
+    (
+        """
+        INSERT INTO core_suitemetadata (kind, suite, name)
+        SELECT DISTINCT 'test', core_suite.slug, core_test.name
+        FROM core_test
+        JOIN core_suite ON core_suite.id = core_test.suite_id;
+        """,
+        NOOP
+    ),
+    (
+        """
+        INSERT INTO core_suitemetadata (kind, suite, name)
+        SELECT DISTINCT 'metric', core_suite.slug, core_metric.name
+        FROM core_metric
+        JOIN core_suite ON core_suite.id = core_metric.suite_id;
+        """,
+        NOOP
+    ),
+    (
+        """
+        UPDATE core_suite
+        SET metadata_id = (
+        SELECT id
+        FROM core_suitemetadata
+        WHERE kind = 'suite'
+        AND suite = core_suite.slug
+    );
+        """,
+        """
+        UPDATE core_suite SET metadata_id = NULL;
+        """
+    ),
+    (
+        """
+        UPDATE core_test
+        SET metadata_id = (
+        SELECT core_suitemetadata.id
+        FROM core_suitemetadata, core_suite
+        WHERE core_suitemetadata.kind = 'test'
+        AND core_suite.id = core_test.suite_id
+        AND core_suitemetadata.suite = core_suite.slug
+        AND core_suitemetadata.name = core_test.name
+    );
+        """,
+        """
+        UPDATE core_test SET metadata_id = NULL;
+        """
+    ),
 
-DELETE FROM core_suitemetadata;
-"""
+    (
+        """
+        UPDATE core_metric
+        SET metadata_id = (
+        SELECT core_suitemetadata.id
+        FROM core_suitemetadata, core_suite
+        WHERE core_suitemetadata.kind = 'metric'
+        AND core_suite.id = core_metric.suite_id
+        AND core_suitemetadata.suite = core_suite.slug
+        AND core_suitemetadata.name = core_metric.name
+    );
+        """,
+        """
+        UPDATE core_metric SET metadata_id = NULL;
+        """
+    ),
+)
 
 
 class Migration(migrations.Migration):
@@ -66,8 +94,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            SQL,
-            reverse_sql=REVERSE_SQL,
-        ),
+        migrations.RunSQL(sql, reverse_sql=reverse_sql)
+        for sql, reverse_sql in STEPS
     ]
