@@ -1,5 +1,6 @@
 import json
 import logging
+import requests
 import traceback
 import yaml
 import xmlrpc
@@ -183,12 +184,14 @@ class Backend(BaseBackend):
     def __get_job_details__(self, job_id):
         return self.proxy.scheduler.job_details(job_id)
 
-    def __get_job_logs__(self, job_id):
-        # Fetching logs is currently being a problem with regards to memory
-        # usage, so we will just not do it for now.
-        return None
+    def __download_full_log__(self, job_id):
+        url = self.data.url.replace('/RPC2', '/scheduler/job/%s/log_file/plain' % job_id)
+        payload = {"user": self.data.username, "token": self.data.token}
+        response = requests.get(url, params=payload)
+        return response.content
 
-        log_data = self.proxy.scheduler.job_output(job_id).data.decode('utf-8')
+    def __get_job_logs__(self, job_id):
+        log_data = self.__download_full_log__(job_id)
         log_data_yaml = yaml.load(log_data, Loader=yaml.CLoader)
         returned_log = ""
         for log_entry in log_data_yaml:
