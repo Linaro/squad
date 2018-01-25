@@ -1,3 +1,5 @@
+from django.db import connection
+from django.db.models import Q
 from django.shortcuts import render
 
 from squad.http import auth
@@ -6,43 +8,115 @@ from squad.core.history import TestHistory
 from django.shortcuts import get_object_or_404
 
 
-class TestResult(object):
+class TestResult(list):
+    """
+    A List of pass/fail/skip statuses, one per environment. Represents one row
+    of the test results table.
+    """
 
     def __init__(self, name):
         self.name = name
-        self.results = []
+        self.totals = {"pass": 0, "fail": 0, "skip": 0, "n/a": 0}
 
-    def add(self, result):
-        self.results.append(result)
+    def append(self, item):
+        self.totals[item] += 1
+        return super(TestResult, self).append(item)
 
-    @property
-    def failure(self):
-        return any([r == 'fail' for r in self.results])
+    def ordering(self):
+        return tuple((-self.totals[k] for k in ("fail", "skip", "pass", "n/a")))
+
+    def __lt__(self, other):
+        return self.ordering() < other.ordering()
 
 
-class TestResultTable(object):
+class TestResultTable(list):
+    """
+    A plain list with a few extra attributes. Each list item represents one row
+    of the table, and should be an instance of TestResult.
+
+    This class also mimics a Django Paginator so that it can be used with our
+    pagination UI.
+    """
 
     def __init__(self):
         self.environments = None
-        self.failures = []
-        self.non_failures = []
+        self.paginator = self
+        self.paginator.num_pages = 0
+        self.number = 0
 
-    def __bool__(self):
-        return bool(self.failures) or bool(self.non_failures)
+    # count how many unique tests are represented in the given build, and sets
+    # pagination data
+    def __count_pages__(self, build_id, per_page):
+        query = """
+            SELECT COUNT(*)
+            FROM (
+                SELECT distinct suite_id, name
+                FROM core_test
+                JOIN core_testrun ON core_testrun.id = core_test.test_run_id
+                WHERE core_testrun.build_id = %s
+            ) unique_tests
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(query, [build_id])
+            count = cursor.fetchone()[0]
+            # count pages
+            self.num_pages = count // per_page
+            if count % per_page > 0:
+                self.num_pages += 1
 
-    def add(self, test):
-        if test.failure:
-            self.failures.append(test)
-        else:
-            self.non_failures.append(test)
+    def __get_page_filter__(self, build_id, page, per_page):
+        """
+        Query to obtain one page os test results. It is used to know which tests
+        should be in the page. It's ordered so that the tests with more failures
+        come first, then tests with less failures, then tests with more skips.
+
+        After the tests in the page have been determined here, a new query is
+        needed to obtain the data about per-environment test results.
+        """
+
+        conditions = {}
+        offset = (page - 1) * per_page
+
+        query = """
+        SELECT
+          suite_id,
+          name,
+          SUM(CASE when result is null then 1 else 0 end) as skips,
+          SUM(CASE when result is null then 0 when result then 0 else 1 end) as fails,
+          SUM(CASE when result is null then 0 when result then 1 else 0 end) as passes
+        FROM core_test
+        JOIN core_testrun ON core_testrun.id = core_test.test_run_id
+        WHERE core_testrun.build_id = %s
+        GROUP BY suite_id, name
+        ORDER BY fails DESC, skips DESC, passes DESC, suite_id, name
+        LIMIT %s
+        OFFSET %s
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(query, [build_id, per_page, offset])
+            for suite_id, name, _, _, _ in cursor.fetchall():
+                conditions.setdefault(suite_id, [])
+                conditions[suite_id].append(name)
+
+        the_filter = Q(id__lt=0)  # always false
+        for suite_id, names in conditions.items():
+            new_filter = (Q(suite_id=suite_id) & Q(name__in=names))
+            the_filter = the_filter | new_filter
+
+        return the_filter
 
     @classmethod
-    def get(cls, build):
+    def get(cls, build, page, per_page=50):
         table = cls()
+        table.number = page
+        table.__count_pages__(build.id, per_page)
+
         table.environments = set([t.environment for t in build.test_runs.prefetch_related('environment').all()])
 
         tests = Test.objects.filter(
             test_run__build=build
+        ).filter(
+            table.__get_page_filter__(build.id, page, per_page)
         ).prefetch_related(
             'test_run',
             'suite',
@@ -54,8 +128,10 @@ class TestResultTable(object):
         for name, results in memo.items():
             test_result = TestResult(name)
             for env in table.environments:
-                test_result.add(results.get(env.id, "n/a"))
-            table.add(test_result)
+                test_result.append(results.get(env.id, "n/a"))
+            table.append(test_result)
+
+        table.sort()
 
         return table
 
@@ -65,13 +141,16 @@ def tests(request, group_slug, project_slug, build_version):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
     build = get_object_or_404(project.builds, version=build_version)
-    full = request.GET.get('full', None) is not None
+
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
 
     context = {
         "project": project,
         "build": build,
-        "results": TestResultTable.get(build),
-        'full': full,
+        "results": TestResultTable.get(build, page),
     }
 
     return render(request, 'squad/tests.html', context)

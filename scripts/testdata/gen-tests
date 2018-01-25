@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import os
+import random
+SQUAD_RESULT = os.getenv('SQUAD_RESULT')
+
+def rand_pass_fail():
+  if SQUAD_RESULT:
+    return SQUAD_RESULT
+  rnd = random.random()
+  if rnd <= 0.2:
+    return 'fail'
+  elif rnd <= 0.3:
+    return 'skip'
+  else:
+    return 'pass'
+
+SUITES = int(os.getenv('SUITES', '5'))
+TESTS = int(os.getenv('TESTS', '2'))
+
+print('{')
+sep=''
+for suite in range(1, SUITES+1):
+  for test in range(1, TESTS+1):
+    print(sep)
+    print('  "testsuite%d/test%d": "%s"' % (suite, test, rand_pass_fail()), end='')
+    sep = ','
+print('\n}')

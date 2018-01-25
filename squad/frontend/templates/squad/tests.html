@@ -6,17 +6,11 @@
 {% include "squad/build-nav.html" %}
 <h2>All test results</h2>
 
-<div ng-app='Filter'>
+{% include "squad/_pagination.html" with items=results %}
 
-    <table class='test-results' ng-controller='FilterController' data-param="filter">
-        <tr>
-            <td colspan="{{results.environments|length|add:1}}">
-                <form class='filter'>
-                    <span class='fa fa-search'></span>
-                    <input type='text' name='filter' ng-model='filter' placeholder="Filter tests ..."/>
-                </form>
-            </td>
-        </tr>
+<div>
+
+    <table class='test-results' data-param="filter">
         <thead>
             <th>Test</th>
             {% for env in results.environments %}
@@ -24,37 +18,14 @@
             {% endfor %}
         </thead>
         {% if results %}
-            {% for test in results.failures %}
+            {% for test in results %}
             <tr id='test-{{test.name|slugify}}' ng-show="match('test-{{test.name|slugify}}')">
                 <td><a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{test.name}}</a></td>
-                {% for result in test.results %}
-                <td class="{{result}}"><a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{result}}</a></td>
+                {% for status in test %}
+                <td class="{{status}}"><a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{status}}</a></td>
                 {% endfor %}
             </tr>
             {% endfor %}
-            {% if full %}
-                <tr>
-                    <td colspan="{{results.environments|length|add:1}}">
-                        <span class="badge alert-success" data-placement="top">{{results.non_failures|length}} without failures</span>
-                        <a href=".">Hide</a>
-                    </td>
-                </tr>
-                {% for test in results.non_failures %}
-                <tr id='test-{{test.name|slugify}}' ng-show="match('test-{{test.name|slugify}}')">
-                    <td><a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{test.name}}</a></td>
-                    {% for result in test.results %}
-                    <td class="{{result}}"><a href="{% url 'test_history' build.project.group.slug build.project.slug test.name %}">{{result}}</a></td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="{{results.environments|length|add:1}}">
-                        <span class="badge alert-success" data-placement="top">{{results.non_failures|length}} without failures</span>
-                        <a href="?full=1">Show</a>
-                    </td>
-                </tr>
-            {% endif %}
         {% else %}
             <tr>
                 <td colspan="{{results.environments|length|add:1}}" class='alert alert-warning'>
@@ -64,7 +35,9 @@
         {% endif %}
     </table>
 
-</div> <!-- ng-app=Filter -->
+</div>
+
+{% include "squad/_pagination.html" with items=results %}
 
 {% endblock %}
 
