@@ -1,6 +1,5 @@
 celery
 Django>=1.10,<1.12
-django-celery
 django_filter
 djangorestframework
 gunicorn
