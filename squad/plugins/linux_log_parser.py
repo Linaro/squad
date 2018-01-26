@@ -55,13 +55,14 @@ class KernelPanic(Issue):
 class Plugin(BasePlugin):
 
     def postprocess_testrun(self, testrun):
-        project = testrun.build.project
+        if testrun.log_file is not None:
+            project = testrun.build.project
 
-        suite, _ = project.suites.get_or_create(slug='linux-log-parser')
-        for issue in Issue.find(testrun.log_file):
-            testrun.tests.create(
-                suite=suite,
-                name='check-' + issue.name,
-                result=(not issue.found),
-                log=issue.log
-            )
+            suite, _ = project.suites.get_or_create(slug='linux-log-parser')
+            for issue in Issue.find(testrun.log_file):
+                testrun.tests.create(
+                    suite=suite,
+                    name='check-' + issue.name,
+                    result=(not issue.found),
+                    log=issue.log
+                )
