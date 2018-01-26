@@ -9,5 +9,6 @@ msgpack>=0.5.0
 python_dateutil
 PyYAML
 pyzmq
+requests
 sqlparse
 whitenoise
