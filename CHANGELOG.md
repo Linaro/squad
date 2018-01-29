@@ -1,3 +1,18 @@
+# 0.37
+
+* admin: allow manually triggering post-processing of test run data
+* api: add `filter_fields` to BuildViewSet
+* api: add ID field to objects returned by REST API
+* api: Add ProjectStatus to REST API
+* ci: fetch test result data in chunks in LAVA backend
+* ci/lava: restore downloading logs
+* frontend: Add pagination to test and metric listings
+* frontend: fix environment label in tests history table
+* frontend: improvements to the resubmit UI
+* frontend: paginate "all test results" page
+* scripts: add script to migrate testruns between projects
+* Store and display metadata about environments, suites, tests, and metrics
+
 # 0.36
 
 * frontend:
