@@ -151,8 +151,8 @@ def __test_run_suite_context__(request, group_slug, project_slug, build_version,
     project = group.projects.get(slug=project_slug)
     build = get_object_or_404(project.builds, version=build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
-    suite = project.suites.get(slug=suite_slug.replace('$', '/'))
-    status = test_run.status.get(suite=suite)
+    suite = get_object_or_404(project.suites, slug=suite_slug.replace('$', '/'))
+    status = get_object_or_404(test_run.status, suite=suite)
     context = {
         'project': project,
         'build': build,
