@@ -70,6 +70,7 @@ __apps__ = [
     'django.contrib.staticfiles',
     django_extensions,  # OPTIONAL
     'rest_framework',
+    'rest_framework.authtoken',
     'django_filters',
     'squad.core',
     'squad.api',
