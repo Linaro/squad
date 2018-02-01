@@ -74,6 +74,7 @@ class Command(BaseCommand):
                 print("moving build: %s" % build)
                 new_build, _ = Build.objects.get_or_create(
                     version=build.version,
+                    datetime=build.datetime,
                     project=new_project,
                     created_at=build.created_at)
                 for testrun in build.test_runs.filter(environment=env):
