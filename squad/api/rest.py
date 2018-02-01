@@ -205,7 +205,7 @@ class TestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Test
-        exclude = ('id', 'name', 'suite', 'test_run',)
+        exclude = ('id', 'suite', 'test_run',)
 
 
 class MetricSerializer(serializers.ModelSerializer):
