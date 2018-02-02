@@ -11,6 +11,7 @@
       </div>
       <ul class="list-group settings-nav">
         <li class="list-group-item {% if url_name == "settings-profile" %}active{% endif %}"><a href="{% url 'settings-profile' %}">Profile</a></li>
+        <li class="list-group-item {% if url_name == "settings-api-token" %}active{% endif %}"><a href="{% url 'settings-api-token' %}">API token</a></li>
       </ul>
       {% endwith %}
     </div>
