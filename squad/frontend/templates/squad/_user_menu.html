@@ -1,0 +1,23 @@
+{% load squad %}
+{% if user.is_authenticated %}
+  <li>
+      <a class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        <img src="{% avatar_url user.email 20 %}" class='avatar-sm'/>
+        <span class="caret"></span>
+      </a>
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+        <li><div>Signed in as <strong>{{ user.username }}</strong></div></li> <!-- FIXME -->
+        {% if user.is_staff %}
+          <li role="separator" class="divider"></li>
+          <li><a href="/admin/">Administration</a></li>
+        {% endif %}
+        <li role="separator" class="divider"></li>
+        <li><a href="{% url 'settings-home' %}">Settings</a></li>
+        <li><a href="/logout">Sign out</a></li>
+      </ul>
+  </li>
+{% else %}
+  <li>
+    <a href="/login/?next={{request.path}}"><i class='fa fa-sign-in'></i> Log in</a>
+  </li>
+{% endif %}

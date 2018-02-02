@@ -34,25 +34,15 @@
           </a>
         </div>
 
-        <ul class="nav navbar-nav">
+        <ul class="nav navbar-nav collapse navbar-collapse">
           <li class="{% active 'home'%}"><a href="{% url 'home' %}">Explore</a></li>
           <li class="{% active 'compare_projects' %}"><a href="{% url 'compare_projects' %}">Compare</a></li>
           <li class="{% active 'api-root' %}"><a href="{% url 'api-root' %}">API</a></li>
         </ul>
 
-        <div class="collapse navbar-collapse">
-          <ul id='user-menu' class="nav navbar-nav navbar-right">
-            {% if user.is_authenticated %}
-            <li><a><i class='fa fa-user-circle'></i> {{ user.username }}</a></li>
-            {% if user.is_staff %}
-            <li><a href="/admin/"><i class='fa fa-gear'></i> Administration</a></li>
-            {% endif %}
-            <li><a href="/logout"><i class='fa fa-sign-out'></i> Log out</a></li>
-          </ul>
-          {% else %}
-          <li><a href="/login/?next={{request.path}}"><i class='fa fa-sign-in'></i> Log in</a></li>
-          {% endif %}
-        </div>
+        <ul class="nav navbar-nav collapse navbar-collapse navbar-right">
+          {% include "squad/_user_menu.html" %}
+        </ul>
 
       </div>
     </nav>

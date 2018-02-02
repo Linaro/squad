@@ -151,3 +151,25 @@ table.test-results a:only-child {
 .test-description, .metric-description {
   margin-top: 1em;
 }
+
+.settings-nav a {
+  display: block;
+}
+
+.settings-nav li.active a {
+  color: white;
+  font-weight: bold;
+}
+
+.dropdown-menu > li > div {
+  padding: 3px 20px;
+  white-space: nowrap;
+}
+
+.avatar-sm {
+  border-radius: 4px;
+}
+
+.avatar-lg {
+  border-radius: 8px;
+}
