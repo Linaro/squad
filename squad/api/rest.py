@@ -54,6 +54,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
     builds = serializers.HyperlinkedIdentityField(
         view_name='project-builds',
     )
+    slug = serializers.CharField(read_only=True)
 
     class Meta:
         model = Project
