@@ -29,7 +29,7 @@ class CommonTestCase(TestCase):
         self.testrun = TestRun.objects.create(
             build=build,
             environment=env,
-            tests_file='{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip"}',
+            tests_file='{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
             metrics_file='{"metric0": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}',
         )
 
@@ -38,14 +38,19 @@ class ParseTestRunDataTest(CommonTestCase):
     def test_basics(self):
         ParseTestRunData()(self.testrun)
 
-        self.assertEqual(4, self.testrun.tests.count())
+        self.assertEqual(5, self.testrun.tests.count())
         self.assertEqual(3, self.testrun.metrics.count())
+
+    def test_name_with_variant(self):
+        ParseTestRunData()(self.testrun)
+        special_case = self.testrun.tests.filter(name="case.for[result/variants]")
+        self.assertEqual(1, special_case.count())
 
     def test_does_not_process_twice(self):
         ParseTestRunData()(self.testrun)
         ParseTestRunData()(self.testrun)
 
-        self.assertEqual(4, self.testrun.tests.count())
+        self.assertEqual(5, self.testrun.tests.count())
         self.assertEqual(3, self.testrun.metrics.count())
 
     def test_creates_suite_metadata(self):
@@ -78,8 +83,8 @@ class ProcessAllTestRunsTest(CommonTestCase):
 
     def test_processes_all(self):
         ProcessAllTestRuns()()
-        self.assertEqual(4, self.testrun.tests.count())
-        self.assertEqual(5, self.testrun.status.count())
+        self.assertEqual(5, self.testrun.tests.count())
+        self.assertEqual(6, self.testrun.status.count())
 
 
 class RecordTestRunStatusTest(CommonTestCase):
@@ -94,9 +99,10 @@ class RecordTestRunStatusTest(CommonTestCase):
         self.assertEqual(1, Status.objects.filter(suite__slug='foobar').count())
         self.assertEqual(1, Status.objects.filter(suite__slug='onlytests').count())
         self.assertEqual(1, Status.objects.filter(suite__slug='missing').count())
+        self.assertEqual(1, Status.objects.filter(suite__slug='special').count())
 
         status = Status.objects.filter(suite=None).last()
-        self.assertEqual(status.tests_pass, 2)
+        self.assertEqual(status.tests_pass, 3)
         self.assertEqual(status.tests_fail, 1)
         self.assertEqual(status.tests_skip, 1)
         self.assertIsInstance(status.metrics_summary, float)
@@ -115,6 +121,7 @@ class RecordTestRunStatusTest(CommonTestCase):
         self.assertEqual(0, SuiteVersion.objects.filter(suite__slug='foobar').count())
         self.assertEqual(0, SuiteVersion.objects.filter(suite__slug='onlytests').count())
         self.assertEqual(0, SuiteVersion.objects.filter(suite__slug='missing').count())
+        self.assertEqual(0, SuiteVersion.objects.filter(suite__slug='special').count())
         self.assertIsNone(self.testrun.status.by_suite().first().suite_version)
 
     def set_suite_versions(self):
@@ -123,6 +130,7 @@ class RecordTestRunStatusTest(CommonTestCase):
             'foobar': '2',
             'onlytests': '3',
             'missing': '4',
+            'special': '5',
         }
         self.testrun.save()
 
@@ -135,6 +143,7 @@ class RecordTestRunStatusTest(CommonTestCase):
         self.assertEqual(1, SuiteVersion.objects.filter(version='2', suite__slug='foobar').count())
         self.assertEqual(1, SuiteVersion.objects.filter(version='3', suite__slug='onlytests').count())
         self.assertEqual(1, SuiteVersion.objects.filter(version='4', suite__slug='missing').count())
+        self.assertEqual(1, SuiteVersion.objects.filter(version='5', suite__slug='special').count())
         self.assertIsNotNone(self.testrun.status.by_suite().first().suite_version)
 
 
@@ -154,8 +163,8 @@ class ProcessTestRunTest(CommonTestCase):
 
     def test_basics(self):
         ProcessTestRun()(self.testrun)
-        self.assertEqual(4, self.testrun.tests.count())
-        self.assertEqual(5, self.testrun.status.count())
+        self.assertEqual(5, self.testrun.tests.count())
+        self.assertEqual(6, self.testrun.status.count())
 
     @patch('squad.core.tasks.PostProcessTestRun.__call__')
     def test_postprocess(self, postprocess):

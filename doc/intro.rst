@@ -114,8 +114,11 @@ when downcased is not either ``"pass"`` or ``"fail"`` will be mapped to
 Tests can be grouped in test suites. For that, the test name must be
 prefixed with the suite name and a slash (``/``). Therefore, slashes are
 reserved characters in this context, and cannot be used in test names.
-Suite names can have embedded slashes in them; so "foo/bar" means suite
-"foo", test "bar"; and "foo/bar/baz" means suite "foo/bar", test "baz".
+There is one exception to this rule. If test name contains square brackets
+(``[``, ``]``) they are considered as test variant. The string inside
+brackets can contain slashes. Suite names can have embedded slashes in
+them; so "foo/bar" means suite "foo", test "bar"; and "foo/bar/baz" means
+suite "foo/bar", test "baz".
 
 Example:
 
@@ -127,7 +130,9 @@ Example:
       "testsuite1/test1": "pass",
       "testsuite1/test2": "fail",
       "testsuite2/subgroup1/testA": "pass",
-      "testsuite2/subgroup2/testA": "pass"
+      "testsuite2/subgroup2/testA": "pass",
+      "testsuite2/subgroup2/testA[variant/one]": "pass",
+      "testsuite2/subgroup2/testA[variant/two]": "pass"
     }
 
 Metrics
