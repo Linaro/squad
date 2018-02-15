@@ -3,6 +3,7 @@ from django.test import TestCase, Client
 from django.test.utils import override_settings
 from django.conf import settings
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 from test.api import APIClient
 from mock import patch, MagicMock
 
@@ -19,7 +20,12 @@ class CiApiTest(TestCase):
     def setUp(self):
         self.group = core_models.Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
-        self.project.tokens.create(key='thekey')
+
+        self.project_submission_user = User.objects.create(username='project-user')
+        usergroup = self.group.user_groups.create()
+        self.project_submission_user.groups.add(usergroup)
+        Token.objects.create(user=self.project_submission_user, key='thekey')
+
         self.backend = models.Backend.objects.create(name='lava')
         self.client = APIClient('thekey')
 
