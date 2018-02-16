@@ -1,5 +1,6 @@
 celery
 Django>=1.10,<1.12
+django-cors-headers
 django_filter
 djangorestframework
 gunicorn
