@@ -24,7 +24,9 @@ LAVA_INFRA_ERROR_MESSAGES = [
     'Connection closed',
     'lava_test_shell connection dropped.',
     'fastboot-flash-action timed out',
-    'auto-login-action timed out']
+    'auto-login-action timed out',
+    'u-boot-interrupt timed out',
+    'enter-vexpress-mcc timed out']
 
 logger = logging.getLogger('squad.ci.backend')
 
@@ -300,7 +302,7 @@ class Backend(BaseBackend):
                         if metadata['error_type'] in ['Infrastructure', 'Lava', 'Job']:
                             completed = False
                         # automatically resubmit in some cases
-                        if metadata['error_type'] == 'Infrastructure' and \
+                        if metadata['error_type'] in ['Infrastructure', 'Job'] and \
                                 any(substring.lower() in metadata['error_msg'].lower() for substring in LAVA_INFRA_ERROR_MESSAGES):
                             if test_job.resubmitted_count < 3:
                                 resubmitted_job = self.resubmit(test_job)

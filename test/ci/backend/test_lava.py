@@ -98,6 +98,18 @@ TEST_RESULTS_INFRA_FAILURE_RESUBMIT2 = [
     },
 ]
 
+TEST_RESULTS_INFRA_FAILURE_RESUBMIT3 = [
+    {
+        'suite': 'lava',
+        'name': 'job',
+        'result': 'fail',
+        'metadata': {
+            'error_type': 'Job',
+            'error_msg': 'auto-login-action timed out after 321 seconds'
+        },
+    },
+]
+
 JOB_METADATA = {
     'key_foo': 'value_foo',
     'key_bar': 'value_bar'
@@ -343,6 +355,22 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT2)
     @patch("squad.ci.backend.lava.Backend.__resubmit__", return_value="1235")
     def test_automated_resubmit2(self, lava_resubmit, get_results, get_details, get_logs):
+        lava = LAVABackend(self.backend)
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend,
+            target=self.project)
+        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+        lava_resubmit.assert_called()
+        new_test_job = TestJob.objects.all().last()
+        self.assertEqual(1, new_test_job.resubmitted_count)
+        self.assertFalse(testjob.can_resubmit)
+
+    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT3)
+    @patch("squad.ci.backend.lava.Backend.__resubmit__", return_value="1235")
+    def test_automated_resubmit3(self, lava_resubmit, get_results, get_details, get_logs):
         lava = LAVABackend(self.backend)
         testjob = TestJob(
             job_id='1234',
