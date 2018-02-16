@@ -66,6 +66,7 @@ __apps__ = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.humanize',
+    'corsheaders',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     django_extensions,  # OPTIONAL
@@ -82,6 +83,7 @@ INSTALLED_APPS = [app for app in __apps__ if app]
 MIDDLEWARE_CLASSES = [
     'squad.core.middleware.Custom401Middleware',
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -262,5 +264,9 @@ REST_FRAMEWORK = {
     ),
     'PAGE_SIZE': 50,
 }
+
+# CORS setup
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_METHODS = ['GET', 'HEAD']
 
 exec(open(os.getenv('SQUAD_EXTRA_SETTINGS', '/dev/null')).read())
