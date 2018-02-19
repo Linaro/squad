@@ -2,12 +2,14 @@ import os
 from io import StringIO
 
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test import Client
 from test.api import APIClient
 
 
 from squad.core import models
+from rest_framework.authtoken.models import Token
 
 
 tests_file = os.path.join(os.path.dirname(__file__), 'tests.json')
@@ -26,8 +28,13 @@ class ApiTest(TestCase):
 
         self.group = models.Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
-        self.project.tokens.create(key='thekey')
-        self.global_token = models.Token.objects.create()
+        self.project_submission_user = User.objects.create(username='project-user')
+        usergroup = self.group.user_groups.create()
+        self.project_submission_user.groups.add(usergroup)
+        Token.objects.create(user=self.project_submission_user, key='thekey')
+
+        self.global_submission_user = User.objects.create(username='global-user', is_staff=True)
+        self.global_token = Token.objects.create(user=self.global_submission_user)
 
         self.client = APIClient('thekey')
 
@@ -253,15 +260,10 @@ class ApiTest(TestCase):
         self.assertEqual(201, first.status_code)
         self.assertEqual(400, second.status_code)
 
-
-class TestApiUpperCaseSlug(TestCase):
-
-    def setUp(self):
-        self.group = models.Group.objects.create(slug='MyGroup')
-        self.project = self.group.projects.create(slug='MyProject')
-        self.project.tokens.create(key='thekey')
-        self.client = APIClient('thekey')
-
     def test_accepts_uppercase_in_slug(self):
+        self.group.slug = 'MyGroup'
+        self.group.save()
+        self.project.slug = 'MyProject'
+        self.project.save()
         response = self.client.post('/api/submit/MyGroup/MyProject/1.0.0/MyEnvironment')
         self.assertEqual(response.status_code, 201)

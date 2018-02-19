@@ -71,6 +71,7 @@ __apps__ = [
     'django.contrib.staticfiles',
     django_extensions,  # OPTIONAL
     'rest_framework',
+    'rest_framework.authtoken',
     'django_filters',
     'squad.core',
     'squad.api',
@@ -263,6 +264,10 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
     'PAGE_SIZE': 50,
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    )
 }
 
 # CORS setup

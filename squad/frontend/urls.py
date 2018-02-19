@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.conf.urls import url
+from django.conf.urls import include, url
 from django.http import HttpResponse
 from django.shortcuts import redirect
 
@@ -7,6 +7,7 @@ from . import views
 from . import comparison
 from . import tests
 from . import ci
+from . import user_settings
 from squad.core.models import slug_pattern
 
 urlpatterns = [
@@ -14,6 +15,7 @@ urlpatterns = [
     url(r'^robots.txt$', lambda _: HttpResponse("User-agent: *\nDisallow: /\n", content_type='text/plain')),
     url(r'^$', views.home, name='home'),
     url(r'^_/compare/$', comparison.compare_projects, name='compare_projects'),
+    url(r'^_/settings/', include(user_settings.urls)),
     url(r'^(%s)/$' % slug_pattern, views.group, name='group'),
     url(r'^(%s)/(%s)/$' % ((slug_pattern,) * 2), views.project, name='project'),
     url(r'^(%s)/(%s)/tests/(.*)$' % ((slug_pattern,) * 2), tests.test_history, name='test_history'),

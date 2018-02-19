@@ -1,0 +1,24 @@
+{% extends "squad/base.html" %}
+
+{% block content %}
+
+<div class='row'>
+  <div class='col-md-3'>
+    <div class="panel panel-default">
+      {% with url_name=request.resolver_match.url_name %}
+      <div class="panel-heading">
+        <strong>Settings</strong>
+      </div>
+      <ul class="list-group settings-nav">
+        <li class="list-group-item {% if url_name == "settings-profile" %}active{% endif %}"><a href="{% url 'settings-profile' %}">Profile</a></li>
+        <li class="list-group-item {% if url_name == "settings-api-token" %}active{% endif %}"><a href="{% url 'settings-api-token' %}">API token</a></li>
+      </ul>
+      {% endwith %}
+    </div>
+  </div>
+  <div class='col-md-9'>
+    {% block settings %}{% endblock %}
+  </div>
+</div>
+
+{% endblock %}

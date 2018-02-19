@@ -2,6 +2,7 @@ from django import template
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import safe
+from hashlib import md5
 from markdown import markdown as to_markdown
 
 from squad import version
@@ -154,3 +155,14 @@ def get_page_list(items):
         "tail_ellipsis": (items.paginator.num_pages - 1) not in pages,
         "link_last": items.paginator.num_pages not in pages,
     }
+
+
+@register.filter
+def add_class(field, class_name):
+    return field.as_widget(attrs={"class": class_name})
+
+
+@register.simple_tag
+def avatar_url(email, size=150):
+    h = md5(email.encode('utf-8').strip().lower()).hexdigest()
+    return 'https://seccdn.libravatar.org/avatar/%s?s=%s&default=mm' % (h, size)

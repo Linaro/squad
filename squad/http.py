@@ -3,15 +3,10 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from enum import Enum
+from rest_framework.authtoken.models import Token
 
 
 from squad.core import models
-
-
-def valid_token(token, project):
-    return models.Token.objects.filter(key=token).filter(
-        Q(project=project) | Q(project=None)
-    ).exists()
 
 
 class AuthMode(Enum):
@@ -32,13 +27,22 @@ def auth(func, mode=AuthMode.READ):
         group = get_object_or_404(models.Group, slug=group_slug)
         project = get_object_or_404(group.projects, slug=project_slug)
 
-        token = request.META.get('HTTP_AUTH_TOKEN', None)
+        tokenkey = request.META.get('HTTP_AUTH_TOKEN', None)
         user = request.user
+        token = None
+        if tokenkey:
+            try:
+                # truncate keys at 40 characters since djangorestframework's
+                # Token keys are limited to 40 characters
+                token = Token.objects.get(key=tokenkey[0:40])
+                user = token.user
+            except Token.DoesNotExist:
+                pass
 
         if not (project.is_public or user.is_authenticated or token):
             raise PermissionDenied()
 
-        if (mode == AuthMode.READ and (project.is_public or project.accessible_to(user))) or valid_token(token, project):
+        if (mode == AuthMode.READ and project.is_public) or project.writable_by(user):
             # authentication OK, call the original view
             return func(*args, **kwargs)
         else:
