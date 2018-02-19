@@ -1,6 +1,7 @@
 from django.core import mail
 from django.test import TestCase
 from mock import patch, MagicMock
+import os
 import yaml
 import xmlrpc
 
@@ -474,3 +475,10 @@ class LavaTest(TestCase):
 
         lava.receive_event('foo.com.testjob', {"job": '123'})
         self.assertEqual('Submitted', TestJob.objects.get(pk=testjob.id).job_status)
+
+    def test_lava_log_parsing(self):
+        lava = LAVABackend(self.backend)
+        log_data = open(os.path.join(os.path.dirname(__file__), 'example-lava-log.yaml')).read()
+        log = lava.__parse_log__(log_data)
+        self.assertIn("target message", log)
+        self.assertNotIn("info message", log)

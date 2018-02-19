@@ -1,0 +1,7 @@
+- {"dt": "2018-02-16T18:16:46.738008", "lvl": "info", "msg": "info message ..."}
+- {"dt": "2018-02-16T18:16:46.738008", "lvl": "debug", "msg": "debug message ..."}
+- {"dt": "2018-02-16T18:16:46.738008", "lvl": "warning", "msg": "warning message ..."}
+- {"dt": "2018-02-16T18:16:46.738008", "lvl": "results", "msg": "results message ..."}
+- {"dt": "2018-02-16T18:16:46.738008", "lvl": "input", "msg": "input message ..."}
+- {"dt": "2018-02-16T18:16:46.738008", "lvl": "target", "msg": "target message ..."}
+- {"dt": "2018-02-16T18:16:46.738008", "lvl": "feedback", "msg": "feedback message ..."}
