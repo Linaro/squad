@@ -1,7 +1,7 @@
 {% load humanize %}
 {% load squad %}
 
-<div class='highlight-row' ng-app='ProjectList'>
+<div class='highlight-row'>
 {% for project in projects %}
 <div class="row row-bordered project">
     {% with status=project.status %}
@@ -10,6 +10,14 @@
         <strong>
             {% if not hide_group %}{{project.group.slug}}/{% endif %}{{project.slug}}
         </strong>
+        {% if project.description%}
+        <div class='description-{{project.id}}'>
+            {{project.description|urlize|truncatechars_html:50}}
+            {% if project.description|length > 50 %}
+            <a class='toggle-description' style='cursor: pointer' onclick='$(".description-{{project.id}}").toggle(); return false'>»</a>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
     <div class="col-md-5 col-sm-5 project-listing-info">
         {% if status.has_tests %}
@@ -49,13 +57,10 @@
     </div>
     </a>
 
-    {% if project.description%}
-    <div ng-controller='DescriptionController' ng-init='init({{project.id}})' class='description col-md-12 col-sm-12'>
-        <span style='display: none' id='full-description-{{project.id}}'>{{project.description|urlize}}</span>
-        <em id='short-description-{{project.id}}'>{{project.description|urlize|truncatechars_html:140}}</em>
-        {% if project.description|length > 140 %}
-        <a class='toggle-description' id='toggle-description-{{project.id}}' style='cursor: pointer' ng-click='toggle()' data-alt-title='Show less'>Show more</a>
-        {% endif %}
+    {% if project.description and project.description|length > 50 %}
+    <div class='description-{{project.id}} description col-md-12 col-sm-12' style='display: none'>
+        <span >{{project.description|urlize}}</span>
+        <a class='toggle-description' style='cursor: pointer' onclick='$(".description-{{project.id}}").toggle(); return false'>«</a>
     </div>
     {% endif %}
 
