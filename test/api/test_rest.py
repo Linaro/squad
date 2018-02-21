@@ -24,6 +24,11 @@ class RestApiTest(TestCase):
             environment='myenv',
             testrun=self.testrun
         )
+        self.emailtemplate = models.EmailTemplate.objects.create(
+            name="fooTemplate",
+            subject="abc",
+            plain_text="def",
+        )
 
     def hit(self, url):
         response = self.client.get(url)
@@ -79,3 +84,7 @@ class RestApiTest(TestCase):
     def test_environments(self):
         data = self.hit('/api/environments/')
         self.assertEqual('myenv', data['results'][0]['slug'])
+
+    def test_email_template(self):
+        data = self.hit('/api/emailtemplates/')
+        self.assertEqual('fooTemplate', data['results'][0]['name'])

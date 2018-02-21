@@ -1,4 +1,4 @@
-from squad.core.models import Project, ProjectStatus, Build, TestRun, Environment, Test, Metric
+from squad.core.models import Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
 from rest_framework import routers, serializers, views, viewsets
@@ -333,6 +333,22 @@ class TestJobViewSet(ModelViewSet):
         return HttpResponse(definition, content_type='text/plain')
 
 
+class EmailTemplateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = EmailTemplate
+        fields = '__all__'
+
+
+class EmailTemplateViewSet(viewsets.ModelViewSet):
+    """
+    List of email templates used.
+    """
+    queryset = EmailTemplate.objects.all()
+    serializer_class = EmailTemplateSerializer
+    filter_fields = ('name',)
+
+
 router = APIRouter()
 router.register(r'projects', ProjectViewSet)
 router.register(r'builds', BuildViewSet)
@@ -340,3 +356,4 @@ router.register(r'testjobs', TestJobViewSet)
 router.register(r'testruns', TestRunViewSet)
 router.register(r'environments', EnvironmentViewSet)
 router.register(r'backends', BackendViewSet)
+router.register(r'emailtemplates', EmailTemplateViewSet)
