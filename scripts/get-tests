@@ -4,8 +4,7 @@ set -eu
 
 tests_file=${1:-.tests}
 if [ ! -f "$tests_file" ]; then
-   echo "E: $tests_file does not exist" >&2
-   exit 1
+  (./manage.py test --noinput -v 2 2>&1 || true) > .tests
 fi
 
 (
