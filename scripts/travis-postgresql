@@ -2,6 +2,6 @@
 
 set -ex
 
-pip install psycopg2
+pip install --no-binary :all: psycopg2
 psql -d template1 -c 'create extension hstore;' -U postgres
 psql -c 'create database "squad";' -U postgres
