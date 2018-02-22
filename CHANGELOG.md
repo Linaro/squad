@@ -1,3 +1,26 @@
+# 0.38
+
+* core, api: migrate to Django REST Framework tokens
+  * The old squad-specific Token model has been migrated to Django REST
+    Framework tokens. The actual data for the old tokens is still there, but
+    it's not used for anything anymore. It will be automatically removed in the
+    next release.
+* core:
+  * add support for test case variants
+* frontend:
+  * return 404 on non-existing data
+  * add initial user settings UI
+  * add API token settings page
+  * improve display of descriptions in project list
+* api
+  * Add CORS support via django-cors-headers
+  * fix TestSerializer
+  * make Project.slug readonly
+* ci/lava:
+  * add more strings to automatic resubmit list
+  * parse LAVA log using incremental parser
+  * add unit test for log parsing
+
 # 0.37
 
 * admin: allow manually triggering post-processing of test run data
