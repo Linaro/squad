@@ -22,15 +22,19 @@ checkdep() {
 # dependencies
 checkdep curl
 
-export AUTH_TOKEN=$(./manage.py shell <<EOF
-from squad.core.models import Group
-
-group, _ = Group.objects.get_or_create(slug='$TEAM')
-project, _ = group.projects.get_or_create(slug='$PROJECT')
-token, _ = project.tokens.get_or_create(description='submit-test-data')
-print(token.key)
-EOF
+./manage.py shell <<EOF
+from squad.ci.models import Backend
+Backend.objects.get_or_create(
+    name="fake",
+    url="https://www.example.com/",
+    username='example',
+    token='example',
+    implementation_type='fake',
 )
+EOF
+
+export AUTH_TOKEN=$(./manage.py get-token "$TEAM/$PROJECT")
+
 curl --fail "http://localhost:8000/api/submitjob/$TEAM/$PROJECT/$BUILD/$ENVIRONMENT" \
   --fail \
   --silent --output /dev/null \
