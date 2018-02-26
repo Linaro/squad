@@ -346,7 +346,7 @@ class Backend(BaseBackend):
             return
         if 'sub_id' in data.keys():
             lava_id = data['sub_id']
-        lava_status = data.get('status', 'Submitted')
+        lava_status = data.get('state', 'Unknown')
         db_test_job_list = self.data.test_jobs.filter(
             submitted=True,
             fetched=False,
@@ -359,6 +359,9 @@ class Backend(BaseBackend):
 
         job = db_test_job_list[0]
         job.job_status = lava_status
+        if lava_status == 'Finished':
+            lava_health = data.get('health', 'Unknown')
+            job.job_status = lava_health
         if job.name is None:
             # fetch job name once
             data = self.__get_job_details__(lava_id)
@@ -369,7 +372,7 @@ class Backend(BaseBackend):
                 definition = yaml.load(data['multinode_definition'])
             job.name = definition['job_name'][:255]
         job.save()
-        if lava_status in self.complete_statuses:
+        if job.job_status in self.complete_statuses:
             self.log_info("scheduling fetch for job %s" % job.job_id)
             # introduce 2 min delay to allow LAVA for storing all results
             # this workaround should be removed once LAVA issue is fixed

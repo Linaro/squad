@@ -435,7 +435,7 @@ class LavaTest(TestCase):
             name="foo",
         )
 
-        lava.receive_event('foo.com.testjob', {"job": '123', 'status': 'Complete'})
+        lava.receive_event('foo.com.testjob', {"job": '123', 'state': 'Finished', 'health': 'Complete'})
         # this is workaround to LAVA issues
         # it should be removed when LAVA bug is fixed
         fetch.apply_async.assert_called_with(args=[testjob.id], countdown=120)
@@ -474,7 +474,7 @@ class LavaTest(TestCase):
         )
 
         lava.receive_event('foo.com.testjob', {"job": '123'})
-        self.assertEqual('Submitted', TestJob.objects.get(pk=testjob.id).job_status)
+        self.assertEqual('Unknown', TestJob.objects.get(pk=testjob.id).job_status)
 
     def test_lava_log_parsing(self):
         lava = LAVABackend(self.backend)
