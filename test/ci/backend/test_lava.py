@@ -123,6 +123,11 @@ JOB_DEFINITION = {
     'device_type': 'device_foo'
 }
 
+JOB_DEFINITION_NO_METADATA = {
+    'job_name': 'job_foo',
+    'device_type': 'device_foo'
+}
+
 JOB_DETAILS = {
     'is_pipeline': True,
     'status': 'Complete',
@@ -144,6 +149,14 @@ JOB_DETAILS_CANCELED = {
     'status': 'Canceled',
     'id': 1234,
     'definition': yaml.dump(JOB_DEFINITION),
+    'multinode_definition': ''
+}
+
+JOB_DETAILS_NO_METADATA = {
+    'is_pipeline': True,
+    'status': 'Complete',
+    'id': 1234,
+    'definition': yaml.dump(JOB_DEFINITION_NO_METADATA),
     'multinode_definition': ''
 }
 
@@ -259,6 +272,18 @@ class LavaTest(TestCase):
         status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
 
         self.assertEqual(JOB_METADATA, metadata)
+
+    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_NO_METADATA)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
+    def test_parse_results_empty_metadata(self, get_results, get_details, get_logs):
+        lava = LAVABackend(None)
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend)
+        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+
+        self.assertEqual({}, metadata)
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_WITH_SUITE_VERSIONS)

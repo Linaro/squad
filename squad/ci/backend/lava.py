@@ -279,7 +279,7 @@ class Backend(BaseBackend):
         if data['multinode_definition']:
             definition = yaml.load(data['multinode_definition'])
         test_job.name = definition['job_name'][:255]
-        job_metadata = definition['metadata']
+        job_metadata = definition.get('metadata', {})
 
         suite_versions = {}
         for key, value in job_metadata.items():
