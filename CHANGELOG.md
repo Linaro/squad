@@ -1,3 +1,10 @@
+# 0.39
+
+* api: add REST API for email templates
+* ci/lava:
+  * don't crash if there is no metadata
+  * update listener to match new LAVA state machine
+
 # 0.38
 
 * core, api: migrate to Django REST Framework tokens
