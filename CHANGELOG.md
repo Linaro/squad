@@ -1,3 +1,7 @@
+# 0.39.1
+
+* fix crash in admin by removing debug print
+
 # 0.39
 
 * api: add REST API for email templates
