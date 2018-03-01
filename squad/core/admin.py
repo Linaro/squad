@@ -125,7 +125,6 @@ class TestRunProjectFilter(admin.SimpleListFilter):
         ret_list = ()
         for project in models.Project.objects.all():
             ret_list = ret_list + ((project.id, "%s/%s" % (project.group.slug, project.slug)),)
-        print(ret_list)
         return ret_list
 
     def queryset(self, request, queryset):
