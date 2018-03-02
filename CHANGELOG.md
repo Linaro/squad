@@ -1,3 +1,7 @@
+# 0.39.3
+
+* celery: correctly load configuration from Django settings
+
 # 0.39.2
 
 * settings: take Celery broker URL via environment
