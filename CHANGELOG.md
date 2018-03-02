@@ -1,3 +1,7 @@
+# 0.39.2
+
+* settings: take Celery broker URL via environment
+
 # 0.39.1
 
 * fix crash in admin by removing debug print
