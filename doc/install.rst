@@ -138,3 +138,5 @@ The following environment variables affect the behavior of SQUAD:
   static assets. This usually does not need to be set manually, and exists
   mostly for use in the Docker image.
 
+* ``SQUAD_CELERY_BROKER_URL``: URL to the broker to be used by Celery for
+  background jobs. Defaults to ``amqp://localhost:5672``.
