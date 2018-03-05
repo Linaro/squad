@@ -4,7 +4,7 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
 
-from squad.core.tasks import ReceiveTestRun, UpdateProjectStatus
+from squad.core.tasks import ReceiveTestRun, UpdateProjectStatus, PostProcessTestRun
 from squad.core.models import Project, Build, TestRun, slug_validator
 
 
@@ -94,7 +94,10 @@ class Backend(models.Model):
             test_job.fetched = True
             test_job.fetched_at = timezone.now()
             test_job.save()
-
+            # call postprocess again after assigning test job to test run
+            # it might make the Status obsolete as plugins may add
+            # test cases to test run
+            PostProcessTestRun()(testrun)
             UpdateProjectStatus()(testrun)
 
     def submit(self, test_job):
