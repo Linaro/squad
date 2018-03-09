@@ -67,14 +67,14 @@ class Notification(object):
     def subject(self):
         summary = self.summary
         subject_data = {
-            'project': self.project,
-            'metadata': self.metadata,
+            'build': self.build.version,
             'important_metadata': self.important_metadata,
-            'tests_total': summary.tests_total,
+            'metadata': self.metadata,
+            'project': self.project,
+            'regressions': len(self.comparison.regressions),
             'tests_fail': summary.tests_fail,
             'tests_pass': summary.tests_pass,
-            'regressions': len(self.comparison.regressions),
-            'build': self.build.version,
+            'tests_total': summary.tests_total,
         }
         custom_email_template = self.project.custom_email_template
         if custom_email_template and custom_email_template.subject:
@@ -90,14 +90,14 @@ class Notification(object):
         """
         context = {
             'build': self.build,
-            'metadata': self.metadata,
             'important_metadata': self.important_metadata,
-            'previous_build': self.previous_build,
-            'regressions': self.comparison.regressions,
-            'regressions_grouped_by_suite': self.comparison.regressions_grouped_by_suite,
-            'summary': self.summary,
+            'metadata': self.metadata,
             'notification': self,
+            'previous_build': self.previous_build,
+            'regressions_grouped_by_suite': self.comparison.regressions_grouped_by_suite,
+            'regressions': self.comparison.regressions,
             'settings': settings,
+            'summary': self.summary,
         }
 
         custom_email_template = self.project.custom_email_template
