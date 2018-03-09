@@ -112,7 +112,6 @@ class Notification(object):
                 'squad/notification/diff.txt',
                 context=context,
             )
-            html_message = ''
             html_message = render_to_string(
                 'squad/notification/diff.html',
                 context=context,
