@@ -86,3 +86,17 @@ class Plugin(object):
         ``squad.core.models.TestRun``.
         """
         pass
+
+    def postprocess_testjob(self, testjob):
+        """
+        This method is called after a test job has been fetched by SQUAD, and
+        the test run data (tests, metrics, metadata, logs, etc) have been saved
+        to the database.
+
+        You can use this method to do any processing that is specific to a
+        given CI backend (e.g. LAVA).
+
+        The ``testjob`` arguments is an instance of
+        ``squad.ci.models.TestJob``.
+        """
+        pass

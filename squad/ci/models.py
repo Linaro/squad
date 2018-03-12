@@ -1,4 +1,6 @@
 import json
+import logging
+import traceback
 from django.db import models
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
@@ -6,9 +8,13 @@ from dateutil.relativedelta import relativedelta
 
 from squad.core.tasks import ReceiveTestRun, UpdateProjectStatus
 from squad.core.models import Project, Build, TestRun, slug_validator
+from squad.plugins import apply_plugins
 
 
 from squad.ci.backend import get_backend_implementation, ALL_BACKENDS
+
+
+logger = logging.getLogger()
 
 
 def list_backends():
@@ -95,7 +101,17 @@ class Backend(models.Model):
             test_job.fetched_at = timezone.now()
             test_job.save()
 
+            self.__postprocess_testjob__(test_job)
+
             UpdateProjectStatus()(testrun)
+
+    def __postprocess_testjob__(self, test_job):
+        project = test_job.target
+        for plugin in apply_plugins(project.enabled_plugins):
+            try:
+                plugin.postprocess_testjob(test_job)
+            except Exception as e:
+                logger.error("Plugin postprocessing error: " + str(e) + "\n" + traceback.format_exc())
 
     def submit(self, test_job):
         test_job.job_id = self.get_implementation().submit(test_job)

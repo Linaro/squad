@@ -13,6 +13,7 @@ ALLOWED_MODULE_DEPENDENCIES = (
     ('squad.api', 'squad.http'),
     ('squad.ci', 'squad.ci'),
     ('squad.ci', 'squad.core'),
+    ('squad.ci', 'squad.plugins'),
     ('squad.core', 'squad.core'),
     ('squad.core.admin', 'squad.plugins'),
     ('squad.core.tasks', 'squad.plugins'),
