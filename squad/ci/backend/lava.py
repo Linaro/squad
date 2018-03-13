@@ -154,7 +154,6 @@ class Backend(BaseBackend):
                 new_test_job_name = self.__lava_job_name(test_job.definition)
             new_test_job = TestJob(
                 backend=self.data,
-                testrun=test_job.testrun,
                 definition=test_job.definition,
                 target=test_job.target,
                 build=test_job.build,
