@@ -1,6 +1,7 @@
 import json
 import logging
 import requests
+import ssl
 import traceback
 import yaml
 import xmlrpc
@@ -49,6 +50,8 @@ class Backend(BaseBackend):
                 raise TemporarySubmissionIssue(str(fault))
             else:
                 raise SubmissionIssue(str(fault))
+        except ssl.SSLError as fault:
+            raise SubmissionIssue(str(fault))
 
     def fetch(self, test_job):
         try:
@@ -73,6 +76,8 @@ class Backend(BaseBackend):
                 raise TemporaryFetchIssue(str(fault))
             else:
                 raise FetchIssue(str(fault))
+        except ssl.SSLError as fault:
+            raise FetchIssue(str(fault))
 
     def listen(self):
         listener_url = self.get_listener_url()
