@@ -25,7 +25,7 @@ Failures
 {% if summary.failures %}
 {% for env, tests in summary.failures.items %}{{env}}:
 {% for test in tests %}
-  * {{test.full_name}} {% if test.history.since %}-- {% if test.history.last_different %}{% with build=test.history.since.test_run.build %}failing since build {{build.version}}, from {{build.datetime}} {% endwith %}{% else %}never passed{% endif %}{% endif %}{% endfor %}
+  * {{test.full_name}}{% endfor %}
 {% endfor %}
 {% else %}
 (none)

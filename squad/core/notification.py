@@ -67,14 +67,14 @@ class Notification(object):
     def subject(self):
         summary = self.summary
         subject_data = {
-            'project': self.project,
-            'metadata': self.metadata,
+            'build': self.build.version,
             'important_metadata': self.important_metadata,
-            'tests_total': summary.tests_total,
+            'metadata': self.metadata,
+            'project': self.project,
+            'regressions': len(self.comparison.regressions),
             'tests_fail': summary.tests_fail,
             'tests_pass': summary.tests_pass,
-            'regressions': len(self.comparison.regressions),
-            'build': self.build.version,
+            'tests_total': summary.tests_total,
         }
         custom_email_template = self.project.custom_email_template
         if custom_email_template and custom_email_template.subject:
@@ -83,40 +83,41 @@ class Notification(object):
             template = '{{project}}: {{tests_total}} tests, {{tests_fail}} failed, {{tests_pass}} passed (build {{build}})'
         return jinja2.from_string(template).render(subject_data)
 
-    @property
-    def message(self):
+    def message(self, do_html=True):
         """
         Returns a tuple with (text_message,html_message)
         """
         context = {
             'build': self.build,
-            'metadata': self.metadata,
             'important_metadata': self.important_metadata,
-            'previous_build': self.previous_build,
-            'regressions': self.comparison.regressions,
-            'regressions_grouped_by_suite': self.comparison.regressions_grouped_by_suite,
-            'summary': self.summary,
+            'metadata': self.metadata,
             'notification': self,
+            'previous_build': self.previous_build,
+            'regressions_grouped_by_suite': self.comparison.regressions_grouped_by_suite,
+            'regressions': self.comparison.regressions,
             'settings': settings,
+            'summary': self.summary,
         }
 
         custom_email_template = self.project.custom_email_template
+        html_message = ''
         if custom_email_template:
             text_template = jinja2.from_string(custom_email_template.plain_text)
             text_message = text_template.render(context)
 
-            html_template = jinja2.from_string(custom_email_template.html)
-            html_message = html_template.render(context)
+            if do_html:
+                html_template = jinja2.from_string(custom_email_template.html)
+                html_message = html_template.render(context)
         else:
             text_message = render_to_string(
                 'squad/notification/diff.txt',
                 context=context,
             )
-            html_message = ''
-            html_message = render_to_string(
-                'squad/notification/diff.html',
-                context=context,
-            )
+            if do_html:
+                html_message = render_to_string(
+                    'squad/notification/diff.html',
+                    context=context,
+                )
 
         return (text_message, html_message)
 
@@ -127,7 +128,7 @@ class Notification(object):
 
         sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
         subject = self.subject
-        txt, html = self.message
+        txt, html = self.message(self.project.html_mail)
 
         message = EmailMultiAlternatives(subject, txt, sender, recipients)
         if self.project.html_mail:
@@ -151,9 +152,8 @@ class PreviewNotification(Notification):
     def subject(self):
         return '[PREVIEW] %s' % super(PreviewNotification, self).subject
 
-    @property
-    def message(self):
-        txt, html = super(PreviewNotification, self).message
+    def message(self, do_html=True):
+        txt, html = super(PreviewNotification, self).message(do_html)
         txt_banner = render_to_string(
             'squad/notification/moderation.txt',
             {
