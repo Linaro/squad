@@ -1,6 +1,8 @@
 import json
 import logging
 import traceback
+import yaml
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
@@ -17,6 +19,18 @@ from squad.ci.backend import get_backend_implementation, ALL_BACKENDS
 logger = logging.getLogger()
 
 
+def yaml_validator(value):
+    if value is None:
+        return
+    if len(value) == 0:
+        return
+    try:
+        if not isinstance(yaml.load(value), dict):
+            raise ValidationError("Dictionary object expected")
+    except yaml.YAMLError as e:
+        raise ValidationError(e)
+
+
 def list_backends():
     for backend in ALL_BACKENDS:
         yield backend
@@ -31,6 +45,11 @@ class Backend(models.Model):
         max_length=64,
         choices=list_backends(),
         default='null',
+    )
+    backend_settings = models.TextField(
+        null=True,
+        blank=True,
+        validators=[yaml_validator]
     )
     poll_interval = models.IntegerField(default=60)  # minutes
     max_fetch_attempts = models.IntegerField(default=3)

@@ -20,14 +20,6 @@ from squad.ci.backend.null import Backend as BaseBackend
 
 
 description = "LAVA"
-LAVA_INFRA_ERROR_MESSAGES = [
-    'Connection closed',
-    'lava_test_shell connection dropped.',
-    'fastboot-flash-action timed out',
-    'auto-login-action timed out',
-    'u-boot-interrupt timed out',
-    'enter-vexpress-mcc timed out']
-
 logger = logging.getLogger('squad.ci.backend')
 
 
@@ -272,6 +264,9 @@ class Backend(BaseBackend):
         return self.proxy.scheduler.get_publisher_event_socket()
 
     def __parse_results__(self, data, test_job):
+        lava_infra_error_messages = []
+        if self.settings is not None:
+            lava_infra_error_messages = self.settings.get('CI_LAVA_INFRA_ERROR_MESSAGES', [])
         if data['is_pipeline'] is False:
             # in case of v1 job, return empty data
             return (data['status'], {}, {}, {})
@@ -328,7 +323,7 @@ class Backend(BaseBackend):
                             completed = False
                         # automatically resubmit in some cases
                         if metadata['error_type'] in ['Infrastructure', 'Job'] and \
-                                any(substring.lower() in metadata['error_msg'].lower() for substring in LAVA_INFRA_ERROR_MESSAGES):
+                                any(substring.lower() in metadata['error_msg'].lower() for substring in lava_infra_error_messages):
                             if test_job.resubmitted_count < 3:
                                 resubmitted_job = self.resubmit(test_job)
                                 # delay sending email by 15 seconds to allow the database object to be saved

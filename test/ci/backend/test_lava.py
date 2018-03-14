@@ -75,6 +75,7 @@ TEST_RESULTS_INFRA_FAILURE = [
     },
 ]
 
+RESUBMIT_STRING = "Connection closed"
 TEST_RESULTS_INFRA_FAILURE_RESUBMIT = [
     {
         'suite': 'lava',
@@ -87,6 +88,7 @@ TEST_RESULTS_INFRA_FAILURE_RESUBMIT = [
     },
 ]
 
+RESUBMIT_STRING2 = "auto-login-action timed out"
 TEST_RESULTS_INFRA_FAILURE_RESUBMIT2 = [
     {
         'suite': 'lava',
@@ -212,6 +214,7 @@ class LavaTest(TestCase):
             username='myuser',
             token='mypassword',
             implementation_type='lava',
+            backend_settings='{"CI_LAVA_INFRA_ERROR_MESSAGES": ["%s", "%s"]}' % (RESUBMIT_STRING, RESUBMIT_STRING2),
         )
         self.group = Group.objects.create(
             name="group_foo"
@@ -341,9 +344,7 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT)
     def test_automated_resubmit_email(self, get_results, get_details, get_logs):
         self.project.admin_subscriptions.create(email='foo@example.com')
-        backend = MagicMock()
-        backend.url = 'https://foo.tld/RPC2'
-        lava = LAVABackend(backend)
+        lava = LAVABackend(self.backend)
         testjob = TestJob(
             job_id='1234',
             backend=self.backend,
