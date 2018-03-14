@@ -9,7 +9,7 @@ import squad.ci.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ci', '0018_testjob_dates'),
+        ('ci', '0019_add_fake_backend'),
     ]
 
     operations = [
