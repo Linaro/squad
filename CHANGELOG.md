@@ -1,3 +1,17 @@
+# 0.40
+
+* ci:
+  * move backend settings to database
+* ci/lava:
+  * fix resubmit() function
+  * properly handle invalid SSH handshake
+* core/notification:
+  * drop test history info from default templates (eliminates a performance
+    bottleneck with builds that have a large number of failed tests)
+  * skip creating HTML version of the email if not required
+* plugins:
+  * add testjob postprocessing hook
+
 # 0.39.3
 
 * celery: correctly load configuration from Django settings
