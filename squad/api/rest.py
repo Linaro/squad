@@ -281,7 +281,10 @@ class BackendSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Backend
-        exclude = ('token',)
+        fields = '__all__'
+        extra_kwargs = {
+            'token': {'write_only': True}
+        }
 
 
 class BackendViewSet(viewsets.ModelViewSet):
