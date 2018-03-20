@@ -5,5 +5,10 @@
 
 {% block content %}
 <h1>{{group.slug}}</h1>
+
+<p>
+{{group.description|default:""}}
+</p>
+
 {% include "squad/_project_list.html" with hide_group=True %}
 {% endblock %}

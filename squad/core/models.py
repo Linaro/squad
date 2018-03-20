@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 from dateutil.relativedelta import relativedelta
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import Group as UserGroup
 from django.core.validators import EmailValidator
@@ -21,7 +21,18 @@ slug_pattern = '[a-zA-Z0-9][a-zA-Z0-9_.-]*'
 slug_validator = RegexValidator(regex='^' + slug_pattern)
 
 
+class GroupManager(models.Manager):
+
+    def accessible_to(self, user):
+        projects = Project.objects.accessible_to(user)
+        project_ids = [p.id for p in projects]
+        group_ids = set([p.group_id for p in projects])
+        return self.filter(id__in=group_ids).annotate(project_count=Count('projects', filter=Q(id__in=project_ids)))
+
+
 class Group(models.Model):
+    objects = GroupManager()
+
     slug = models.CharField(max_length=100, unique=True, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
     description = models.TextField(null=True)
