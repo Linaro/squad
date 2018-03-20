@@ -24,6 +24,7 @@ slug_validator = RegexValidator(regex='^' + slug_pattern)
 class Group(models.Model):
     slug = models.CharField(max_length=100, unique=True, validators=[slug_validator])
     name = models.CharField(max_length=100, null=True)
+    description = models.TextField(null=True)
     user_groups = models.ManyToManyField(UserGroup)
 
     def __str__(self):
