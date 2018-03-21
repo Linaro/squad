@@ -83,7 +83,7 @@ class Notification(object):
             template = '{{project}}: {{tests_total}} tests, {{tests_fail}} failed, {{tests_pass}} passed (build {{build}})'
         return jinja2.from_string(template).render(subject_data)
 
-    def message(self, do_html=True):
+    def message(self, do_html=True, custom_email_template=None):
         """
         Returns a tuple with (text_message,html_message)
         """
@@ -99,7 +99,6 @@ class Notification(object):
             'summary': self.summary,
         }
 
-        custom_email_template = self.project.custom_email_template
         html_message = ''
         if custom_email_template:
             text_template = jinja2.from_string(custom_email_template.plain_text)
@@ -128,7 +127,7 @@ class Notification(object):
 
         sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
         subject = self.subject
-        txt, html = self.message(self.project.html_mail)
+        txt, html = self.message(self.project.html_mail, self.project.custom_email_template)
 
         message = EmailMultiAlternatives(subject, txt, sender, recipients)
         if self.project.html_mail:
@@ -152,8 +151,8 @@ class PreviewNotification(Notification):
     def subject(self):
         return '[PREVIEW] %s' % super(PreviewNotification, self).subject
 
-    def message(self, do_html=True):
-        txt, html = super(PreviewNotification, self).message(do_html)
+    def message(self, do_html=True, custom_email_template=None):
+        txt, html = super(PreviewNotification, self).message(do_html, custom_email_template)
         txt_banner = render_to_string(
             'squad/notification/moderation.txt',
             {

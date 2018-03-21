@@ -1,4 +1,5 @@
 from squad.core.models import Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate
+from squad.core.notification import Notification
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
 from rest_framework import routers, serializers, views, viewsets
@@ -162,6 +163,36 @@ class BuildViewSet(ModelViewSet):
         page = self.paginate_queryset(testjobs)
         serializer = TestJobSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
+
+    @detail_route(methods=['get'], suffix='email')
+    def email(self, request, pk=None):
+        """
+        This method produces the body of email notification for the build.
+        By default it uses the project settings for HTML and template.
+        These settings can be overwritten by using GET parameters:
+         * output - sets the output format (text/plan, text/html)
+         * template - sets the template used (id of existing template or
+                      "default" for default SQUAD templates)
+        """
+        output_format = request.query_params.get("output", "text/plain")
+        template_id = request.query_params.get("template", None)
+        template = None
+        if template_id != "default":
+            template = self.get_object().project.custom_email_template
+        if template_id is not None:
+            try:
+                template = EmailTemplate.objects.get(pk=template_id)
+            except EmailTemplate.DoesNotExist:
+                pass
+        status = self.get_object().status
+        notification = Notification(status)
+        produce_html = self.get_object().project.html_mail
+        if output_format == "text/html":
+            produce_html = True
+        txt, html = notification.message(produce_html, template)
+        if len(html) > 0:
+            return HttpResponse(html, content_type=output_format)
+        return HttpResponse(txt, content_type=output_format)
 
 
 class EnvironmentSerializer(serializers.HyperlinkedModelSerializer):
