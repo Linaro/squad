@@ -1,3 +1,5 @@
+from django.db import models
+from django.forms import MultipleChoiceField, ChoiceField
 from pkg_resources import EntryPoint, iter_entry_points
 from pkgutil import iter_modules
 
@@ -36,6 +38,11 @@ def get_plugin_instance(name):
     except KeyError:
         raise PluginNotFound(name)
     return plugin_class()
+
+
+def get_all_plugins():
+    plugins = PluginLoader.load_all()
+    return plugins.keys()
 
 
 def apply_plugins(plugin_names):
@@ -100,3 +107,44 @@ class Plugin(object):
         ``squad.ci.models.TestJob``.
         """
         pass
+
+
+class PluginField(models.CharField):
+
+    def __init__(self, **args):
+        defaults = {'max_length': 256}
+        defaults.update(args)
+        return super(PluginField, self).__init__(**defaults)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(PluginField, self).deconstruct()
+        del kwargs["max_length"]
+        return name, path, args, kwargs
+
+    def formfield(self, **kwargs):
+        plugins = ((v, v) for v in get_all_plugins())
+        return ChoiceField(choices=plugins)
+
+
+class PluginListField(models.TextField):
+
+    def from_db_value(self, value, expression, connection, context):
+        if value is None:
+            return None
+        return [item.strip() for item in value.split(',')]
+
+    def to_python(self, value):
+        if isinstance(value, list):
+            return value
+        if value is None:
+            return None
+        return [item.strip() for item in value.split(',')]
+
+    def get_prep_value(self, value):
+        if value is None:
+            return value
+        return ', '.join(value)
+
+    def formfield(self, **kwargs):
+        plugins = ((v, v) for v in get_all_plugins())
+        return MultipleChoiceField(choices=plugins)
