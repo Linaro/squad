@@ -64,6 +64,9 @@ def apply_plugins(plugin_names):
             plugin.method(...)
 
     """
+    if plugin_names is None:
+        return
+
     for p in plugin_names:
         try:
             plugin = get_plugin_instance(p)

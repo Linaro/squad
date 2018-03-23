@@ -15,6 +15,7 @@ from django.utils import timezone
 
 from squad.core.utils import random_token, parse_name, join_name
 from squad.core.statistics import geomean
+from squad.plugins import PluginListField
 
 
 slug_pattern = '[a-zA-Z0-9][a-zA-Z0-9_.-]*'
@@ -66,11 +67,6 @@ class EmailTemplate(models.Model):
         return self.name
 
 
-plugin_list_validator = RegexValidator(
-    regex='^$|^%s(\s+%s)*$' % (slug_pattern, slug_pattern)
-)
-
-
 class Project(models.Model):
     objects = ProjectManager()
 
@@ -83,12 +79,8 @@ class Project(models.Model):
     custom_email_template = models.ForeignKey(EmailTemplate, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     important_metadata_keys = models.TextField(null=True, blank=True)
-    enabled_plugins_list = models.TextField(
-        validators=[plugin_list_validator],
-        default='',
-        blank=True,
-        help_text='One per line. Non-existing plugins are ignored.',
-    )
+    enabled_plugins_list = PluginListField(null=True)
+
     wait_before_notification = models.IntegerField(
         help_text='Wait this many seconds before sending notifications',
         null=True,
@@ -139,7 +131,7 @@ class Project(models.Model):
 
     @property
     def enabled_plugins(self):
-        return self.enabled_plugins_list.split()
+        return self.enabled_plugins_list
 
 
 class Token(models.Model):

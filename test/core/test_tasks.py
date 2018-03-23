@@ -177,7 +177,7 @@ class TestPostProcessTestRun(CommonTestCase):
     @patch('squad.plugins.example.Plugin.postprocess_testrun')
     def test_calls_enabled_plugin(self, plugin_method):
         project = self.testrun.build.project
-        project.enabled_plugins_list = 'example'
+        project.enabled_plugins_list = ['example']
         project.save()
         PostProcessTestRun()(self.testrun)
         plugin_method.assert_called_with(self.testrun)
