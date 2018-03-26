@@ -1,4 +1,5 @@
-from squad.core.models import Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate
+from django.contrib.auth.models import Group as UserGroup
+from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate
 from squad.core.notification import Notification
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
@@ -50,6 +51,48 @@ class ModelViewSet(viewsets.ModelViewSet):
         return [p['id'] for p in projects]
 
 
+class UserGroupSerializer(serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = UserGroup
+        fields = ('id', 'name',)
+
+
+class UserGroupViewSet(viewsets.ModelViewSet):
+    """
+    List of user groups.
+    """
+    queryset = UserGroup.objects
+    serializer_class = UserGroupSerializer
+    filter_fields = ('name',)
+
+
+class GroupSerializer(serializers.HyperlinkedModelSerializer):
+
+    slug = serializers.CharField(read_only=True)
+    user_groups = serializers.HyperlinkedRelatedField(
+        many=True,
+        queryset=UserGroup.objects,
+        view_name='usergroups-detail')
+
+    class Meta:
+        model = Group
+        fields = '__all__'
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    """
+    List of groups. Includes public groups and groups that the current
+    user has access to.
+    """
+    queryset = Group.objects
+    serializer_class = GroupSerializer
+    filter_fields = ('slug', 'name')
+
+#    def get_queryset(self):
+#        return self.queryset.accessible_to(self.request.user)
+
+
 class ProjectSerializer(serializers.HyperlinkedModelSerializer):
 
     builds = serializers.HyperlinkedIdentityField(
@@ -68,6 +111,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
             'is_public',
             'description',
             'builds',
+            'group',
         )
 
 
@@ -384,6 +428,8 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
 
 
 router = APIRouter()
+router.register(r'groups', GroupViewSet)
+router.register(r'usergroups', UserGroupViewSet, 'usergroups')
 router.register(r'projects', ProjectViewSet)
 router.register(r'builds', BuildViewSet)
 router.register(r'testjobs', TestJobViewSet)
