@@ -69,7 +69,6 @@ class UserGroupViewSet(viewsets.ModelViewSet):
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
 
-    slug = serializers.CharField(read_only=True)
     user_groups = serializers.HyperlinkedRelatedField(
         many=True,
         queryset=UserGroup.objects,
