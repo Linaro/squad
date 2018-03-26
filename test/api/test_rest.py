@@ -95,3 +95,7 @@ class RestApiTest(TestCase):
     def test_email_template(self):
         data = self.hit('/api/emailtemplates/')
         self.assertEqual('fooTemplate', data['results'][0]['name'])
+
+    def test_groups(self):
+        data = self.hit('/api/groups/')
+        self.assertEqual('mygroup', data['results'][0]['slug'])
