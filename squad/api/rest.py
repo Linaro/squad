@@ -69,6 +69,7 @@ class UserGroupViewSet(viewsets.ModelViewSet):
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
 
+    id = serializers.IntegerField()
     user_groups = serializers.HyperlinkedRelatedField(
         many=True,
         queryset=UserGroup.objects,
@@ -166,6 +167,7 @@ class BuildSerializer(serializers.HyperlinkedModelSerializer):
     # not sure if 'finished' field is needed when status is exposed
     finished = serializers.BooleanField(read_only=True)
     status = serializers.HyperlinkedIdentityField(read_only=True, view_name='build-status', allow_null=True)
+    metadata = serializers.JSONField(read_only=True)
 
     class Meta:
         model = Build
