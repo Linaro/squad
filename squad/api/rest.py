@@ -1,4 +1,6 @@
-from squad.core.models import Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate
+from django.contrib.auth.models import Group as UserGroup
+from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate
+from squad.core.notification import Notification
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
 from rest_framework import routers, serializers, views, viewsets
@@ -49,6 +51,48 @@ class ModelViewSet(viewsets.ModelViewSet):
         return [p['id'] for p in projects]
 
 
+class UserGroupSerializer(serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = UserGroup
+        fields = ('id', 'name',)
+
+
+class UserGroupViewSet(viewsets.ModelViewSet):
+    """
+    List of user groups.
+    """
+    queryset = UserGroup.objects
+    serializer_class = UserGroupSerializer
+    filter_fields = ('name',)
+
+
+class GroupSerializer(serializers.HyperlinkedModelSerializer):
+
+    id = serializers.IntegerField()
+    user_groups = serializers.HyperlinkedRelatedField(
+        many=True,
+        queryset=UserGroup.objects,
+        view_name='usergroups-detail')
+
+    class Meta:
+        model = Group
+        fields = '__all__'
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    """
+    List of groups. Includes public groups and groups that the current
+    user has access to.
+    """
+    queryset = Group.objects
+    serializer_class = GroupSerializer
+    filter_fields = ('slug', 'name')
+
+#    def get_queryset(self):
+#        return self.queryset.accessible_to(self.request.user)
+
+
 class ProjectSerializer(serializers.HyperlinkedModelSerializer):
 
     builds = serializers.HyperlinkedIdentityField(
@@ -67,6 +111,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
             'is_public',
             'description',
             'builds',
+            'group',
         )
 
 
@@ -122,6 +167,7 @@ class BuildSerializer(serializers.HyperlinkedModelSerializer):
     # not sure if 'finished' field is needed when status is exposed
     finished = serializers.BooleanField(read_only=True)
     status = serializers.HyperlinkedIdentityField(read_only=True, view_name='build-status', allow_null=True)
+    metadata = serializers.JSONField(read_only=True)
 
     class Meta:
         model = Build
@@ -162,6 +208,36 @@ class BuildViewSet(ModelViewSet):
         page = self.paginate_queryset(testjobs)
         serializer = TestJobSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
+
+    @detail_route(methods=['get'], suffix='email')
+    def email(self, request, pk=None):
+        """
+        This method produces the body of email notification for the build.
+        By default it uses the project settings for HTML and template.
+        These settings can be overwritten by using GET parameters:
+         * output - sets the output format (text/plan, text/html)
+         * template - sets the template used (id of existing template or
+                      "default" for default SQUAD templates)
+        """
+        output_format = request.query_params.get("output", "text/plain")
+        template_id = request.query_params.get("template", None)
+        template = None
+        if template_id != "default":
+            template = self.get_object().project.custom_email_template
+        if template_id is not None:
+            try:
+                template = EmailTemplate.objects.get(pk=template_id)
+            except EmailTemplate.DoesNotExist:
+                pass
+        status = self.get_object().status
+        notification = Notification(status)
+        produce_html = self.get_object().project.html_mail
+        if output_format == "text/html":
+            produce_html = True
+        txt, html = notification.message(produce_html, template)
+        if len(html) > 0:
+            return HttpResponse(html, content_type=output_format)
+        return HttpResponse(txt, content_type=output_format)
 
 
 class EnvironmentSerializer(serializers.HyperlinkedModelSerializer):
@@ -281,7 +357,10 @@ class BackendSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Backend
-        exclude = ('token',)
+        fields = '__all__'
+        extra_kwargs = {
+            'token': {'write_only': True}
+        }
 
 
 class BackendViewSet(viewsets.ModelViewSet):
@@ -350,6 +429,8 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
 
 
 router = APIRouter()
+router.register(r'groups', GroupViewSet)
+router.register(r'usergroups', UserGroupViewSet, 'usergroups')
 router.register(r'projects', ProjectViewSet)
 router.register(r'builds', BuildViewSet)
 router.register(r'testjobs', TestJobViewSet)

@@ -61,6 +61,13 @@ class RestApiTest(TestCase):
         UpdateProjectStatus()(self.testrun)
         self.hit('/api/builds/%d/status/' % self.build.id)
 
+    def test_builds_email(self):
+        response = self.client.get('/api/builds/%d/email/')
+        self.assertEqual(404, response.status_code)
+        # create ProjectStatus
+        UpdateProjectStatus()(self.testrun)
+        self.hit('/api/builds/%d/email/' % self.build.id)
+
     def test_build_testruns(self):
         data = self.hit('/api/builds/%d/testruns/' % self.build.id)
         self.assertEqual(1, len(data['results']))
@@ -88,3 +95,7 @@ class RestApiTest(TestCase):
     def test_email_template(self):
         data = self.hit('/api/emailtemplates/')
         self.assertEqual('fooTemplate', data['results'][0]['name'])
+
+    def test_groups(self):
+        data = self.hit('/api/groups/')
+        self.assertEqual('mygroup', data['results'][0]['slug'])
