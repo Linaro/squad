@@ -19,7 +19,7 @@ from squad.http import auth
 
 def home(request):
     context = {
-        'projects': Project.objects.accessible_to(request.user),
+        'groups': Group.objects.accessible_to(request.user),
     }
     return render(request, 'squad/index.html', context)
 

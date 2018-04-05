@@ -4,6 +4,30 @@
 {% load static %}
 
 {% block content %}
-<h1>All projects</h1>
-{% include "squad/_project_list.html" %}
+<h1>All groups</h1>
+
+<div class='highlight-row'>
+{% for group in groups %}
+<div class="row row-bordered project">
+    <a href="{% group_url group %}">
+    <div class="col-md-3 col-sm-3">
+        <strong>
+            {{group.slug}}
+        </strong>
+    </div>
+    <div class="col-md-6 col-sm-6">
+        <p>
+        {{group.description|default:""|truncatechars_html:250}}
+        </p>
+    </div>
+    <div class="col-md-3 col-sm-3">
+        <span class="badge" data-toggle="tooltip" data-placement="top" title="">{{group.project_count}}</span>
+        projects
+    </div>
+    </a>
+</div>
+{% endfor %}
+</div>
+
+
 {% endblock %}
