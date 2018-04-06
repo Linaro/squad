@@ -14,6 +14,21 @@ Install squad::
 
     pip3 install squad
 
+Message broker
+--------------
+
+In order to SQUAD processes to be able to communicate between each other, you
+need to install an AMQP server. We recommend RabbitMQ::
+
+    apt-get install rabbitmq-server
+
+By default SQUAD will look for an AMQP server running on localhost, listening
+to the standard port,, so for a single-server deployment you don't need to do
+anything else.
+
+If you have a multi-server setup, then each server needs to be configured with
+the location of a central AMQP server. See the `SQUAD_CELERY_BROKER_URL` in the
+"Further configuration" section below.
 
 Processes
 ---------
@@ -24,10 +39,6 @@ SQUAD is composed of 4 different process:
 * background worker (celery worker)
 * periodic task scheduler (celery beat)
 * CI backend listener
-
-The only mandatory process if the web interface. The others are optional and
-are only needed if you need features like email notification and CI loop
-integration.
 
 To run the web interface, run as a dedicated user (i.e. don't run the
 application as ``root``!)::
@@ -50,8 +61,7 @@ an admin user for yourself, use::
 
     squad-admin createsuperuser
 
-These are the command lines to run the other processes, for the CI loop
-integration:
+These are the command lines to run the other processes:
 
 +-----------+----------------------------
 | Process   | Command                   |
