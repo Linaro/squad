@@ -5,6 +5,6 @@ import os
 # Django starts so that shared_task will use this app.
 try:
     from .celery import app as celery_app  # noqa
-except ModuleNotFoundError as e:
+except ImportError as e:
     if not os.environ.get('SQUAD_GIT_BUILD'):
         raise e
