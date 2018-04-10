@@ -99,20 +99,11 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
         view_name='project-builds',
     )
     slug = serializers.CharField(read_only=True)
+    id = serializers.IntegerField()
 
     class Meta:
         model = Project
-        fields = (
-            'url',
-            'id',
-            'full_name',
-            'slug',
-            'name',
-            'is_public',
-            'description',
-            'builds',
-            'group',
-        )
+        fields = '__all__'
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
