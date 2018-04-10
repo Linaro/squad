@@ -113,7 +113,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     queryset = Project.objects
     serializer_class = ProjectSerializer
-    filter_fields = ('group', 'slug', 'name')
+    filter_fields = ('group',
+                     'slug',
+                     'name',
+                     'is_public',
+                     'html_mail',
+                     'custom_email_template',
+                     'moderate_notifications',
+                     'notification_strategy')
 
     def get_queryset(self):
         return self.queryset.accessible_to(self.request.user)
