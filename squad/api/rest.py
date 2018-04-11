@@ -65,6 +65,8 @@ class UserGroupViewSet(viewsets.ModelViewSet):
     queryset = UserGroup.objects
     serializer_class = UserGroupSerializer
     filter_fields = ('name',)
+    search_fields = ('name',)
+    ordering_fields = ('name',)
 
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
@@ -88,6 +90,8 @@ class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects
     serializer_class = GroupSerializer
     filter_fields = ('slug', 'name')
+    search_fields = ('slug', 'name')
+    ordering_fields = ('slug', 'name')
 
 #    def get_queryset(self):
 #        return self.queryset.accessible_to(self.request.user)
@@ -121,6 +125,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
                      'custom_email_template',
                      'moderate_notifications',
                      'notification_strategy')
+    search_fields = ('slug',
+                     'name',)
+    ordering_fields = ('slug',
+                       'name',)
 
     def get_queryset(self):
         return self.queryset.accessible_to(self.request.user)
@@ -149,13 +157,15 @@ class ProjectStatusSerializer(serializers.HyperlinkedModelSerializer):
                   'tests_skip',
                   'has_metrics',
                   'metrics_summary',
-                  'build')
+                  'build',
+                  'created_at')
 
 
 class ProjectStatusViewSet(viewsets.ModelViewSet):
     queryset = ProjectStatus.objects
     serializer_class = ProjectStatusSerializer
     filter_fields = ('build',)
+    ordering_fields = ('created_at', 'last_updated')
 
 
 class BuildSerializer(serializers.HyperlinkedModelSerializer):
@@ -180,6 +190,8 @@ class BuildViewSet(ModelViewSet):
     queryset = Build.objects.all()
     serializer_class = BuildSerializer
     filter_fields = ('version', 'project')
+    search_fields = ('version',)
+    ordering_fields = ('id', 'version', 'created_at', 'datetime')
 
     def get_queryset(self):
         return self.queryset.filter(project__in=self.get_project_ids())
@@ -254,6 +266,8 @@ class EnvironmentViewSet(ModelViewSet):
     queryset = Environment.objects
     serializer_class = EnvironmentSerializer
     filter_fields = ('project', 'slug', 'name')
+    search_fields = ('slug', 'name')
+    ordering_fields = ('id', 'slug', 'name')
 
     def get_queryset(self):
         return self.queryset.filter(project__in=self.get_project_ids())
@@ -303,12 +317,15 @@ class TestRunViewSet(ModelViewSet):
     queryset = TestRun.objects.order_by('-id')
     serializer_class = TestRunSerializer
     filter_fields = (
+        "build",
         "completed",
         "job_status",
         "data_processed",
         "status_recorded",
         "environment",
     )
+    search_fields = ('environment',)
+    ordering_fields = ('id', 'created_at', 'environment', 'datetime')
 
     def get_queryset(self):
         return self.queryset.filter(build__project__in=self.get_project_ids())
@@ -367,7 +384,9 @@ class BackendViewSet(viewsets.ModelViewSet):
     """
     queryset = Backend.objects.all()
     serializer_class = BackendSerializer
-    filter_fields = ('implementation_type',)
+    filter_fields = ('implementation_type', 'name', 'url')
+    search_fields = ('implementation_type', 'name', 'url')
+    ordering_fields = ('id', 'implementation_type', 'name', 'url')
 
 
 class TestJobSerializer(serializers.HyperlinkedModelSerializer):
@@ -393,6 +412,7 @@ class TestJobViewSet(ModelViewSet):
         "submitted",
         "fetched",
         "fetch_attempts",
+        "last_fetch_attempt",
         "failure",
         "can_resubmit",
         "resubmitted_count",
@@ -400,6 +420,8 @@ class TestJobViewSet(ModelViewSet):
         "backend",
         "target",
     )
+    search_fields = ("name", "environment", "last_fetch_attempt")
+    ordering_fields = ("id", "name", "environment", "last_fetch_attempt")
 
     def get_queryset(self):
         return self.queryset.filter(target_build__project__in=self.get_project_ids())
@@ -424,6 +446,7 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
     queryset = EmailTemplate.objects.all()
     serializer_class = EmailTemplateSerializer
     filter_fields = ('name',)
+    ordering_fields = ('name', 'id')
 
 
 router = APIRouter()
