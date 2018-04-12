@@ -179,6 +179,8 @@ class TestJob(models.Model):
     # this field should be set to "previous job + 1" whenever
     # resubmitting
     resubmitted_count = models.IntegerField(default=0)
+    # reference to the job that was used as base for resubmission
+    parent_job = models.ForeignKey('self', default=None, blank=True, null=True, related_name="resubmitted_jobs")
 
     def save(self, *args, **kwargs):
         self.target_build = self.target.builds.filter(version=self.build).first()

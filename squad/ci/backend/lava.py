@@ -159,6 +159,7 @@ class Backend(BaseBackend):
                 job_id=new_job_id,
                 resubmitted_count=test_job.resubmitted_count + 1,
                 name=new_test_job_name,
+                parent_job=test_job,
             )
             test_job.can_resubmit = False
             test_job.save()
