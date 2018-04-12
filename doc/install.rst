@@ -2,6 +2,8 @@
 Installation Instructions for production environments
 =====================================================
 
+.. _install_python:
+
 Installation using the Python package manager pip
 -------------------------------------------------
 

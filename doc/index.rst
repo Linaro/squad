@@ -15,6 +15,7 @@ SQUAD — Software Quality Dashboard
    hacking
    plugins
    install
+   ci
 
 Indices and tables
 ==================

@@ -207,36 +207,8 @@ CI loop integration (optional)
 ------------------------------
 
 SQUAD can integrate with existing automation systems to participate in a
-Continuous Integration (CI) loop through its CI subsystem. This
-subsystem has the following features:
-
-* receiving test job requests
-* submitting test job requests to test execution backends
-* pulling test job results from test execution backends
-
-The data model for the CI subsystem looks like this::
-
-   +---------+    +---------+    +------------------------+
-   | TestJob |--->| Backend |--->| Backend implementation |
-   +---------+    +---------+    +------------------------+
-        |
-        |         +---------------------+
-        +-------->| TestRun (from core) |
-                  +---------------------+
-
-
-TestJob holds the data related to a test job request. This test job is going to
-be submitted to a Backend, and after SQUAD gets results back from that backend,
-it will create a TestRun object with the results data. A Backend is a
-representation of a given test execution system, such as a LAVA server, or
-Jenkins. ``Backend`` contains the necessary data to access the backend, such as
-URL, username and password, etc, while ``Backend implementation`` encapsulates
-the details on how to interact with that type of system (e.g. API calls, etc).
-So for example you can have multiple backends of the same type (e.g. different
-2 LAVA servers).
-
-For the CI loop integration to work, you need to run a few extra
-processes beyond the web interface. See ``INSTALL.rst`` for details.
+Continuous Integration (CI) loop through its CI subsystem. For more details
+check :ref:`ci_ref_label`.
 
 Submitting test job requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
