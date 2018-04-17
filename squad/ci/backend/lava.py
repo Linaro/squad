@@ -331,8 +331,9 @@ class Backend(BaseBackend):
                                 any(substring.lower() in metadata['error_msg'].lower() for substring in lava_infra_error_messages):
                             if test_job.resubmitted_count < 3:
                                 resubmitted_job = self.resubmit(test_job)
-                                # delay sending email by 15 seconds to allow the database object to be saved
-                                send_testjob_resubmit_admin_email.apply_async(args=[test_job.pk, resubmitted_job.pk], countdown=15)
+                                if self.settings.get('CI_LAVA_SEND_ADMIN_EMAIL', True):
+                                    # delay sending email by 15 seconds to allow the database object to be saved
+                                    send_testjob_resubmit_admin_email.apply_async(args=[test_job.pk, resubmitted_job.pk], countdown=15)
                                 # don't send admin_email
                                 continue
 

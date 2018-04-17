@@ -364,6 +364,30 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT)
+    def test_automated_dont_resubmit_email(self, get_results, get_details, get_logs):
+        self.project.admin_subscriptions.create(email='foo@example.com')
+        lava = LAVABackend(self.backend)
+        # update lava backend settings in place
+        lava.settings['CI_LAVA_SEND_ADMIN_EMAIL'] = False
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend,
+            target=self.project)
+        resubmitted_job = TestJob(
+            job_id='1235',
+            backend=self.backend,
+            target=self.project,
+            resubmitted_count=1)
+        resubmitted_job.save()
+        lava.resubmit = MagicMock(return_value=resubmitted_job)
+        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+        lava.resubmit.assert_called()
+        # there should not be an admin email sent after resubmission
+        self.assertEqual(0, len(mail.outbox))
+
+    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT)
     @patch("squad.ci.backend.lava.Backend.__resubmit__", return_value="1235")
     def test_automated_resubmit(self, lava_resubmit, get_results, get_details, get_logs):
         lava = LAVABackend(self.backend)
