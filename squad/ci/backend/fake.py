@@ -30,7 +30,8 @@ class Backend(object):
             submitted=True,
             job_id=new_jobid,
             resubmitted_count=count,
-            definition=test_job.definition
+            definition=test_job.definition,
+            parent_job=test_job
         )
         return new_job
 

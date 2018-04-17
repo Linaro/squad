@@ -54,6 +54,7 @@ class Backend(object):
               that could be gone in the future (e.g. a server-side issue or a
               maintainance window).
         """
+        pass
 
     def fetch(self, test_job):
         """

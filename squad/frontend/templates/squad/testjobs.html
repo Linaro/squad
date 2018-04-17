@@ -32,6 +32,9 @@
             {% if testjob.testrun %}
                 <a href="{% project_url testjob.testrun %}">Test run #{{testjob.testrun.job_id}}</a>
             {% endif %}
+            {% if testjob.parent_job %}
+                <a href="{{ testjob.parent_job.url }}">Resubmitted from #{{testjob.parent_job.job_id}}</a>
+            {% endif %}
             {% if testjob.failure %}
             <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-failure-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-failure-{{testjob.pk}}"><span class="glyphicon glyphicon-alert" aria-hidden="true"></span></button>
             {% endif %}

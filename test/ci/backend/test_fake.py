@@ -37,6 +37,7 @@ class FakeBackendTest(TestCase):
         self.assertIsInstance(new_job, TestJob)
         self.assertIsNot(job, new_job)
         self.assertEqual('22.1', new_job.job_id)
+        self.assertEqual(job, new_job.parent_job)
 
     def test_resubmit_resubmitted(self):
         job = TestJob.objects.create(backend=self.backend, target=self.project, job_id='22.1')
