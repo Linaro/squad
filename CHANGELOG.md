@@ -1,3 +1,31 @@
+# 0.41
+
+* api:
+  * allow write-only access to backend tokens
+  * add 'email' method to the Build object
+  * added tests for build/email REST api
+  * add Group and UserGroup objects to REST api
+  * add tests for Group REST API
+  * allow changing slug in UserGroups
+  * add 'id' and 'metadata' fields to Build object
+  * add all Project fields to REST API
+  * allow filtering on most of the Project fields
+  * add search and sorting features
+* ci:
+  * add reference to resubmitted TestJob
+  * make `parent_job` read-only in admin
+  * lava: allow supressing resubmit emails with backend settings
+* core: add Group.description
+* frontend:
+  * display list of groups in home page
+  * add link to TestJob's parent
+  * display model.name instead of model.slug
+* doc:
+  * install.rst: document installation of RabbitMQ
+  * restructure docs and include ci setup
+* scripts/git-build: allow building package without having runtime dependencies
+  installed
+
 # 0.40
 
 * ci:
