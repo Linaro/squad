@@ -3,8 +3,8 @@
 {% block content %}
 
 <h1>
-    <a href="{% group_url project.group %}">{{project.group}}</a>
-    » <a href="{% project_url project %}">{{project.slug}}</a>
+    <a href="{% group_url project.group %}">{{project.group.name}}</a>
+    » <a href="{% project_url project %}">{{project.name}}</a>
     » <a href="{% build_url build %}">Build {{build.version}}</a>
     » <a href="{% project_url test_run %}">Test run {{test_run.job_id}}</a>
     » Test results for {{suite}}

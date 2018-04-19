@@ -1,7 +1,7 @@
 {% load squad %}
 <h1>
-    <a class="h1 text-primary" href="{% group_url project.group %}">{{project.group}}</a>
-    » <a class="h1 text-primary" href="{% project_url project %}">{{project.slug}}</a>
+    <a class="h1 text-primary" href="{% group_url project.group %}">{{project.group.name}}</a>
+    » <a class="h1 text-primary" href="{% project_url project %}">{{project.name}}</a>
     » <a class="h1 text-primary" href="{% build_url build %}">Build {{build.version}}</a>
 </h1>
 
