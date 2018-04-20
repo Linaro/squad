@@ -92,10 +92,12 @@ class Project(models.Model):
     wait_before_notification = models.IntegerField(
         help_text='Wait this many seconds before sending notifications',
         null=True,
+        blank=True,
     )
     notification_timeout = models.IntegerField(
         help_text='Force sending build notifications after this many seconds',
         null=True,
+        blank=True,
     )
 
     NOTIFY_ALL_BUILDS = 'all'
@@ -296,8 +298,8 @@ class Build(models.Model):
 class Environment(models.Model):
     project = models.ForeignKey(Project, related_name='environments')
     slug = models.CharField(max_length=100, validators=[slug_validator])
-    name = models.CharField(max_length=100, null=True)
-    expected_test_runs = models.IntegerField(default=None, null=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
+    expected_test_runs = models.IntegerField(default=None, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
     class Meta:
