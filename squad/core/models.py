@@ -33,7 +33,7 @@ class GroupManager(models.Manager):
 class Group(models.Model):
     objects = GroupManager()
 
-    slug = models.CharField(max_length=100, unique=True, validators=[slug_validator])
+    slug = models.CharField(max_length=100, unique=True, validators=[slug_validator], db_index=True)
     name = models.CharField(max_length=100, null=True)
     description = models.TextField(null=True)
     user_groups = models.ManyToManyField(UserGroup)
@@ -75,7 +75,7 @@ class Project(models.Model):
     objects = ProjectManager()
 
     group = models.ForeignKey(Group, related_name='projects')
-    slug = models.CharField(max_length=100, validators=[slug_validator])
+    slug = models.CharField(max_length=100, validators=[slug_validator], db_index=True)
     name = models.CharField(max_length=100, null=True)
     is_public = models.BooleanField(default=True)
     html_mail = models.BooleanField(default=True)
@@ -297,7 +297,7 @@ class Build(models.Model):
 
 class Environment(models.Model):
     project = models.ForeignKey(Project, related_name='environments')
-    slug = models.CharField(max_length=100, validators=[slug_validator])
+    slug = models.CharField(max_length=100, validators=[slug_validator], db_index=True)
     name = models.CharField(max_length=100, null=True, blank=True)
     expected_test_runs = models.IntegerField(default=None, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -368,16 +368,17 @@ class Attachment(models.Model):
 
 
 class SuiteMetadata(models.Model):
-    suite = models.CharField(max_length=256)
+    suite = models.CharField(max_length=256, db_index=True)
     kind = models.CharField(
         max_length=6,
         choices=(
             ('suite', 'Suite'),
             ('test', 'Test'),
             ('metric', 'Metric'),
-        )
+        ),
+        db_index=True,
     )
-    name = models.CharField(max_length=256, null=True)
+    name = models.CharField(max_length=256, null=True, db_index=True)
     description = models.TextField(null=True, blank=True)
     instructions_to_reproduce = models.TextField(null=True, blank=True)
 
@@ -394,7 +395,7 @@ class SuiteMetadata(models.Model):
 
 class Suite(models.Model):
     project = models.ForeignKey(Project, related_name='suites')
-    slug = models.CharField(max_length=256, validators=[slug_validator])
+    slug = models.CharField(max_length=256, validators=[slug_validator], db_index=True)
     name = models.CharField(max_length=256, null=True, blank=True)
     metadata = models.ForeignKey(
         SuiteMetadata,
@@ -431,7 +432,7 @@ class Test(models.Model):
         related_name='+',
         limit_choices_to={'kind': 'test'},
     )
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=256, db_index=True)
     result = models.NullBooleanField()
     log = models.TextField(null=True, blank=True)
 
