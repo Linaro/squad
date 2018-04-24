@@ -453,6 +453,8 @@ class Test(models.Model):
             'test_run',
             'test_run__environment',
             'test_run__build',
+            'test_run__build__project',
+            'test_run__build__project__group',
         )
 
     class History(object):
