@@ -1,3 +1,11 @@
+# 0.42
+
+* core:
+  * Mark optional fields optional
+  * fetch project and group for Test
+  * add DB indices for identifier-like fields
+  * comparison: avoid extra, slow database query
+
 # 0.41
 
 * api:
