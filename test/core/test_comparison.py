@@ -62,6 +62,7 @@ class TestComparisonTest(TestCase):
             'd/e': 'pass',
         })
 
+        self.build0 = self.project1.builds.first()
         self.build1 = self.project1.builds.last()
         self.build2 = self.project2.builds.last()
 
@@ -76,7 +77,7 @@ class TestComparisonTest(TestCase):
         self.assertEqual(['myenv', 'otherenv'], comp.environments[self.build2])
 
     def test_tests_are_sorted(self):
-        comp = compare(self.build1, self.build2)
+        comp = compare(self.build0, self.build1)
         self.assertEqual(['a', 'b', 'c', 'd/e', 'z'], list(comp.results.keys()))
 
     def test_test_results(self):

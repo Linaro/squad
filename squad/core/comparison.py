@@ -76,16 +76,12 @@ class TestComparison(object):
             self.results[test.full_name][key] = test.status
 
     def __all_tests__(self):
-        data = Test.objects.filter(
-            test_run__build__project__in=[b.project for b in self.builds]
-        ).order_by(
-            'suite__slug',
-            'name',
-        ).values(
-            'suite__slug',
-            'name',
-        ).distinct()
-        return sorted([join_name(item['suite__slug'], item['name']) for item in data])
+        test_set = set()
+        for build in self.builds:
+            for testrun in build.test_runs.all():
+                for test in testrun.tests.all():
+                    test_set.add(test.full_name)
+        return sorted(test_set)
 
     __diff__ = None
 
