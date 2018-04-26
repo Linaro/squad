@@ -55,7 +55,7 @@ class UserGroupSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = UserGroup
-        fields = ('id', 'name',)
+        fields = ('id', 'name', 'url')
 
 
 class UserGroupViewSet(viewsets.ModelViewSet):
@@ -74,7 +74,7 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField()
     user_groups = serializers.HyperlinkedRelatedField(
         many=True,
-        queryset=UserGroup.objects,
+        read_only=True,
         view_name='usergroups-detail')
 
     class Meta:
@@ -432,7 +432,9 @@ class TestJobViewSet(ModelViewSet):
         return HttpResponse(definition, content_type='text/plain')
 
 
-class EmailTemplateSerializer(serializers.ModelSerializer):
+class EmailTemplateSerializer(serializers.HyperlinkedModelSerializer):
+
+    id = serializers.IntegerField()
 
     class Meta:
         model = EmailTemplate
