@@ -161,7 +161,12 @@ def test_history(request, group_slug, project_slug, full_test_name):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
 
-    history = TestHistory(project, full_test_name)
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+
+    history = TestHistory(project, full_test_name, page=page)
     context = {
         "project": project,
         "history": history,

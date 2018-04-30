@@ -9,6 +9,8 @@
     history for <u>{{history.test}}</u>
   </h2>
 
+  {% include "squad/_pagination.html" with items=history %}
+
   <table class='test-results'>
 
     <thead>
@@ -38,5 +40,7 @@
     {% endfor %}
 
   </table>
+
+  {% include "squad/_pagination.html" with items=history %}
 
 {% endblock %}
