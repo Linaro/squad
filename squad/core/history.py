@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from django.core.paginator import Paginator
 
 
 from squad.core.utils import parse_name
@@ -14,20 +15,26 @@ class TestResult(object):
 
 class TestHistory(object):
 
-    def __init__(self, project, full_test_name):
+    def __init__(self, project, full_test_name, page=1, per_page=20):
         suite, test_name = parse_name(full_test_name)
         self.test = full_test_name
 
+        self.number = page
+        self.paginator = Paginator(project.builds.reverse(), per_page)
+        builds = self.paginator.page(page)
+
+        suite = project.suites.get(slug=suite)
+
         tests = Test.objects.filter(
-            suite__slug=suite,
+            suite=suite,
             name=test_name,
-            test_run__build__project=project,
+            test_run__build__in=builds,
         )
         Test.prefetch_related(tests)
 
         environments = OrderedDict()
         results = OrderedDict()
-        for build in project.builds.reverse():
+        for build in builds:
             results[build] = {}
 
         for test in tests:

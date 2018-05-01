@@ -77,3 +77,11 @@ class TestHistoryTest(TestCase):
         history = TestHistory(self.project1, 'root')
 
         self.assertIn(build0, history.results)
+
+    def test_pagination(self):
+        build1 = self.project1.builds.get(version='1')
+        build2 = self.project1.builds.get(version='2')
+
+        history = TestHistory(self.project1, 'root', page=1, per_page=1)
+        self.assertIn(build2, history.results.keys())
+        self.assertNotIn(build1, history.results.keys())
