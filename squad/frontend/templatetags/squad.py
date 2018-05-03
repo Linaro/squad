@@ -165,4 +165,4 @@ def add_class(field, class_name):
 @register.simple_tag
 def avatar_url(email, size=150):
     h = md5(email.encode('utf-8').strip().lower()).hexdigest()
-    return 'https://seccdn.libravatar.org/avatar/%s?s=%s&default=mm' % (h, size)
+    return 'https://www.gravatar.com/avatar/%s?s=%s&default=mm' % (h, size)
