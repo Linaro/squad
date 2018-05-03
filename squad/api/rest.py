@@ -172,8 +172,6 @@ class BuildSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField()
     testruns = serializers.HyperlinkedIdentityField(view_name='build-testruns')
     testjobs = serializers.HyperlinkedIdentityField(view_name='build-testjobs')
-    # not sure if 'finished' field is needed when status is exposed
-    finished = serializers.BooleanField(read_only=True)
     status = serializers.HyperlinkedIdentityField(read_only=True, view_name='build-status', allow_null=True)
     metadata = serializers.JSONField(read_only=True)
 
