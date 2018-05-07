@@ -12,13 +12,17 @@ Options:
   -h, --help            show this help message and exit
   -v, --version         show program's version number and exit
 
-  ALL other options are passed as-is to gunicorn. See gunicorn(1), gunicorn3(1)
-  `gunicorn --help`, or `gunicorn3 --help` for details.
+  ALL other options are passed as-is to gunicorn. See gunicorn(1),
+  gunicorn3(1), or http://docs.gunicorn.org/ for details.
+
+gunicorn options:\
 """
 
 
 def usage():
     print(__usage__)
+    sys.stdout.flush()
+    os.system('%s -m gunicorn.app.wsgiapp --help | sed -e "/^\S/d"' % sys.executable)
 
 
 def main():
