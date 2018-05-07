@@ -9,6 +9,8 @@ __usage__ = """usage: squad [OPTIONS]
 
 Options:
 
+  -f, --fast            Fast startup: skip potentially slow operations, such as
+                        running database migrations and compiling static assets
   -h, --help            show this help message and exit
   -v, --version         show program's version number and exit
 
@@ -27,6 +29,12 @@ def usage():
 
 def main():
     argv = sys.argv
+    fast = False
+
+    for f in ['--fast', '-f']:
+        if f in argv:
+            argv.remove(f)
+            fast = True
 
     if '--help' in argv or '-h' in argv:
         usage()
@@ -38,11 +46,11 @@ def main():
 
     os.environ.setdefault("ENV", "production")
 
-    sys.argv = ['squad-admin', 'migrate']
-    manage()
-
-    sys.argv = ['squad-admin', 'collectstatic', '--no-input', '-v', '0']
-    manage()
+    if not fast:
+      sys.argv = ['squad-admin', 'migrate']
+      manage()
+      sys.argv = ['squad-admin', 'collectstatic', '--no-input', '-v', '0']
+      manage()
 
     argv = [sys.executable, '-m', 'gunicorn.app.wsgiapp', 'squad.wsgi'] + argv[1:]
     os.execv(sys.executable, argv)
