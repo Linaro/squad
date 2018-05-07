@@ -47,10 +47,10 @@ def main():
     os.environ.setdefault("ENV", "production")
 
     if not fast:
-      sys.argv = ['squad-admin', 'migrate']
-      manage()
-      sys.argv = ['squad-admin', 'collectstatic', '--no-input', '-v', '0']
-      manage()
+        sys.argv = ['squad-admin', 'migrate']
+        manage()
+        sys.argv = ['squad-admin', 'collectstatic', '--no-input', '-v', '0']
+        manage()
 
     argv = [sys.executable, '-m', 'gunicorn.app.wsgiapp', 'squad.wsgi'] + argv[1:]
     os.execv(sys.executable, argv)
