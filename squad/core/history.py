@@ -44,5 +44,5 @@ class TestHistory(object):
             environments[environment] = True
             results[build][environment] = TestResult(test)
 
-        self.environments = list(environments.keys())
+        self.environments = sorted(environments.keys(), key=lambda env: env.slug)
         self.results = results
