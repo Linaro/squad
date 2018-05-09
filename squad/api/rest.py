@@ -407,7 +407,7 @@ class TestJobViewSet(ModelViewSet):
     List of CI test jobs. Only testjobs for public projects, and for projects
     you have access to, are available.
     """
-    queryset = TestJob.objects.order_by('-id')
+    queryset = TestJob.objects.prefetch_related('backend').order_by('-id')
     serializer_class = TestJobSerializer
     filter_fields = (
         "name",
