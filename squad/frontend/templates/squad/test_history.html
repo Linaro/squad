@@ -7,6 +7,13 @@
     Test results
     »
     history for <u>{{history.test}}</u>
+    {% if request.GET.top %}
+    up to {{history.top.version}}
+    {% else %}
+      {% if history.top %}
+      <small>(<a href="?top={{history.top.version}}">permalink</a>)</small>
+      {% endif %}
+    {% endif %}
   </h2>
 
   {% include "squad/_pagination.html" with items=history %}
