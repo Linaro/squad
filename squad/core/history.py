@@ -15,13 +15,17 @@ class TestResult(object):
 
 class TestHistory(object):
 
-    def __init__(self, project, full_test_name, page=1, per_page=20):
+    def __init__(self, project, full_test_name, top=None, page=1, per_page=20):
         suite, test_name = parse_name(full_test_name)
         self.test = full_test_name
 
-        self.number = page
         self.paginator = Paginator(project.builds.reverse(), per_page)
-        builds = self.paginator.page(page)
+        if top:
+            self.number = 0
+            builds = project.builds.filter(datetime__lte=top.datetime).reverse()[0:per_page - 1]
+        else:
+            self.number = page
+            builds = self.paginator.page(page)
 
         suite = project.suites.get(slug=suite)
 
@@ -36,6 +40,7 @@ class TestHistory(object):
         results = OrderedDict()
         for build in builds:
             results[build] = {}
+        self.top = builds[0]
 
         for test in tests:
             build = test.test_run.build
