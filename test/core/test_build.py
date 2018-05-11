@@ -78,6 +78,18 @@ class BuildTest(TestCase):
         build.test_runs.create(environment=env, metadata_file='{"foo": "bar"}')
         self.assertEqual({"foo": [["bar"], "bar"]}, build.metadata)
 
+    def test_metadata_is_cached(self):
+        build = Build.objects.create(project=self.project, version='1.1')
+        env = self.project.environments.create(slug='env')
+
+        build.test_runs.create(environment=env, metadata_file='{"foo": "bar"}')
+        metadata1 = build.metadata
+
+        build.test_runs.create(environment=env, metadata_file='{"foo": "baz"}')
+        metadata2 = build.metadata
+
+        self.assertEqual(metadata1, metadata2)
+
     def test_not_finished(self):
         env1 = self.project.environments.create(slug='env1')
         self.project.environments.create(slug='env2')

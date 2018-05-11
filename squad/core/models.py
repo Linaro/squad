@@ -190,6 +190,8 @@ class Build(models.Model):
     def test_summary(self):
         return TestSummary(self)
 
+    __metadata__ = None
+
     @property
     def metadata(self):
         """
@@ -197,18 +199,20 @@ class Build(models.Model):
         Common keys with different values are transformed into a list with each
         of the different values.
         """
-        metadata = {}
-        for test_run in self.test_runs.all():
-            for key, value in test_run.metadata.items():
-                metadata.setdefault(key, [])
-                if value not in metadata[key]:
-                    metadata[key].append(value)
-        for key in metadata.keys():
-            if len(metadata[key]) == 1:
-                metadata[key] = metadata[key][0]
-            else:
-                metadata[key] = sorted(metadata[key], key=str)
-        return metadata
+        if self.__metadata__ is None:
+            metadata = {}
+            for test_run in self.test_runs.defer(None).all():
+                for key, value in test_run.metadata.items():
+                    metadata.setdefault(key, [])
+                    if value not in metadata[key]:
+                        metadata[key].append(value)
+            for key in metadata.keys():
+                if len(metadata[key]) == 1:
+                    metadata[key] = metadata[key][0]
+                else:
+                    metadata[key] = sorted(metadata[key], key=str)
+            self.__metadata__ = metadata
+        return self.__metadata__
 
     @property
     def important_metadata(self):
@@ -309,14 +313,32 @@ class Environment(models.Model):
         return self.name or self.slug
 
 
+class TestRunManager(models.Manager):
+
+    use_for_related_fields = True
+
+    def get_queryset(self, *args, **kwargs):
+        return super(TestRunManager, self).get_queryset(*args, **kwargs).defer(
+            "tests_file",
+            "metrics_file",
+            "log_file",
+            "metadata_file",
+        )
+
+
 class TestRun(models.Model):
     build = models.ForeignKey(Build, related_name='test_runs')
     environment = models.ForeignKey(Environment, related_name='test_runs')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # these fields are potentially very large
     tests_file = models.TextField(null=True)
     metrics_file = models.TextField(null=True)
     log_file = models.TextField(null=True)
     metadata_file = models.TextField(null=True)
+
+    # custom manager to skip potentially large fields by default
+    objects = TestRunManager()
 
     completed = models.BooleanField(default=True)
 

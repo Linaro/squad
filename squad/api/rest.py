@@ -173,7 +173,7 @@ class BuildSerializer(serializers.HyperlinkedModelSerializer):
     testruns = serializers.HyperlinkedIdentityField(view_name='build-testruns')
     testjobs = serializers.HyperlinkedIdentityField(view_name='build-testjobs')
     status = serializers.HyperlinkedIdentityField(read_only=True, view_name='build-status', allow_null=True)
-    metadata = serializers.JSONField(read_only=True)
+    metadata = serializers.HyperlinkedIdentityField(read_only=True, view_name='build-metadata')
 
     class Meta:
         model = Build
@@ -193,6 +193,11 @@ class BuildViewSet(ModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(project__in=self.get_project_ids())
+
+    @detail_route(methods=['get'], suffix='metadata')
+    def metadata(self, request, pk=None):
+        build = self.get_object()
+        return Response(build.metadata)
 
     @detail_route(methods=['get'], suffix='status')
     def status(self, request, pk=None):
@@ -402,7 +407,7 @@ class TestJobViewSet(ModelViewSet):
     List of CI test jobs. Only testjobs for public projects, and for projects
     you have access to, are available.
     """
-    queryset = TestJob.objects.order_by('-id')
+    queryset = TestJob.objects.prefetch_related('backend').order_by('-id')
     serializer_class = TestJobSerializer
     filter_fields = (
         "name",

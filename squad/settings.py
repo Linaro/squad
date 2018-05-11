@@ -264,7 +264,7 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework.filters.OrderingFilter',
         'rest_framework.filters.SearchFilter',
-        'django_filters.rest_framework.DjangoFilterBackend',
+        'squad.api.utils.DisabledHTMLFilterBackend',
     ),
     'PAGE_SIZE': 50,
     'DEFAULT_AUTHENTICATION_CLASSES': (
