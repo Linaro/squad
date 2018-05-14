@@ -1,3 +1,15 @@
+# 0.44
+
+* api:
+  * disable HTML controls for filtering
+  * only expose Build.metadata on specialized endpoint
+  * testjobs: prefetch backend objects
+* core:
+  * prevent fetching large text fields from TestRun by default
+  * TestHistory: allow pinning the top build
+  * TestHistory: sort environments by slug
+* frontend: test history: add permalink with pinned top build
+
 # 0.43
 
 * Drop Django 1.10 support
