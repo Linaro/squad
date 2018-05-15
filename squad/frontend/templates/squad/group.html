@@ -4,11 +4,10 @@
 {% load static %}
 
 {% block content %}
-<h1>{{group.name}}</h1>
-
-<p>
-{{group.description|default:""}}
-</p>
+<h2 class="page-header well">
+  {{group.name}}  <br>
+  <small>{{group.description|default:""}}</small>
+</h2>
 
 {% include "squad/_project_list.html" with hide_group=True %}
 {% endblock %}

@@ -8,13 +8,12 @@
 
 {% include "squad/project-nav.html" %}
 
-{% if last_build %}
-<h2>Last build - <a class="h2 text-primary" href="{% project_url last_build %}">{{last_build.version}}</a> {{last_build.datetime}} {{last_build.datetime|naturaltime}}</h2>
+<h3> Metadata </h3>
+
 {% include "squad/_metadata.html" %}
 
-<h2>Latest builds</h2>
+<h3>Latest builds</h3>
 {% include "squad/_builds_table.html" %}
-{% endif %}
 
 {% endwith %}
 {% endblock %}

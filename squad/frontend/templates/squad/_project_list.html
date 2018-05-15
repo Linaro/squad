@@ -8,7 +8,7 @@
     <a href="{% project_url project %}">
     <div class="col-md-4 col-sm-4">
         <strong>
-            {% if not hide_group %}{{project.group.name}}/{% endif %}{{project.name}}
+          {% if not hide_group %}{{project.group.name}}/{% endif %}{{project.name}}
         </strong>
         {% if project.description%}
         <div class='description-{{project.id}}'>

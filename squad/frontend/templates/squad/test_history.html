@@ -3,14 +3,13 @@
 
 {% block content %}
 
-  <h2>
-    Test results
-    »
-    history for <u>{{history.test}}</u>
+  <h2 class="page-header well">
+    <a class="text-primary"> {{history.test}} </a>
   </h2>
 
-  {% include "squad/_pagination.html" with items=history %}
-
+  <h3>
+    Test Results History
+  </h3>
   <table class='test-results'>
 
     <thead>
