@@ -11,6 +11,14 @@
 {% if last_build %}
 
 <h3> Metadata </h3>
+{% include "squad/_metadata.html" %}
+
+<h2>Latest builds</h2>
+{% include "squad/_builds_table.html" %}
+{% endif %}
+
+
+
 
 {% include "squad/_metadata.html" %}
 
@@ -22,8 +30,8 @@
 
 {% block javascript %}
 <script>
-$(document).ready(function(){
-    $('[data-toggle="tooltip"]').tooltip();
-});
+  $(document).ready(function(){
+  $('[data-toggle="tooltip"]').tooltip();
+  });
 </script>
 {% endblock %}
