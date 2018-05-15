@@ -5,8 +5,8 @@
 <h2 class="page-header well">
     <a class="h2 text-primitive" href="{% group_url project.group %}">{{project.group.name}}</a>
     » <a class="h2 text-primitive" href="{% project_url project %}">{{project.name}}</a>
-    » <a class="h2 text-primitive" href="{% build_url build %}">Build {{build.version}}</a>
-    » <a href="{% project_url test_run %}">Test run {{test_run.job_id}}</a>
+    » <a class="h2 text-primitive" href="{% build_url build %}">{{build.version}}</a>
+    » Test run <a href="{% project_url test_run %}">{{test_run.job_id}}</a>
 <br>
 <small>
     <strong>Test environment:</strong> {{test_run.environment}}
