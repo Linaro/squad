@@ -3,14 +3,22 @@
 
 {% block content %}
 
-  <h2 class="page-header well">
-    <a class="text-primary"> {{history.test}} </a>
-  </h2>
+<h2 class="page-header well">
+  <a class="text-primary"> {{history.test}} </a>
+  {% if request.GET.top %}
+  up to {{history.top.version}}
+  {% else %}
+  {% if history.top %}
+  <small>(<a href="?top={{history.top.version}}">permalink</a>)</small>
+  {% endif %}
+  {% endif %}
+</h2>
 
-  <h3>
-    Test Results History
-  </h3>
-  <table class='test-results'>
+<h3>
+  Test Results History
+</h3>
+
+<table class='test-results'>
 
     <thead>
       <th>Build</th>
@@ -40,6 +48,8 @@
 
   </table>
 
-  {% include "squad/_pagination.html" with items=history %}
+<div class="text-right">
+{% include "squad/_pagination.html" with items=history %}
+</div>
 
 {% endblock %}

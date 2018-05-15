@@ -1,3 +1,34 @@
+# 0.44
+
+* api:
+  * disable HTML controls for filtering
+  * only expose Build.metadata on specialized endpoint
+  * testjobs: prefetch backend objects
+* core:
+  * prevent fetching large text fields from TestRun by default
+  * TestHistory: allow pinning the top build
+  * TestHistory: sort environments by slug
+* frontend: test history: add permalink with pinned top build
+
+# 0.43
+
+* Drop Django 1.10 support
+* core:
+  * add pagination support to TestHistory
+* api:
+  * minor fixes to make API more uniform
+  * omit Build.finished
+  * prefetch test runs when handling builds
+* frontend:
+  * paginate test history page
+  * get user avatars from gravatar.com
+  * add TestJob count numbers to build view
+* ci:
+  * admin: display TestJob submission date
+* squad.run:
+  * display unicorn options
+  * add --fast option for fast startup
+
 # 0.42
 
 * core:

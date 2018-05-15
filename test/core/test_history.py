@@ -1,5 +1,7 @@
 import json
 from django.test import TestCase
+from dateutil.relativedelta import relativedelta
+from django.utils import timezone
 
 
 from squad.core.tasks import ReceiveTestRun
@@ -22,6 +24,10 @@ class TestHistoryTest(TestCase):
             # missing `root` on purpose
         })
 
+        now = timezone.now()
+        past = now - relativedelta(hours=1)
+        self.project1.builds.create(version='1', datetime=past)
+
         self.receive_test_run(self.project1, '1', 'env1', {
             'foo/bar': 'fail',
             'root': 'fail',
@@ -30,6 +36,8 @@ class TestHistoryTest(TestCase):
             'foo/bar': 'pass',
             'root': 'pass',
         })
+
+        self.project1.builds.create(version='2', datetime=now)
 
         self.receive_test_run(self.project1, '2', 'env1', {
             'foo/bar': 'pass',
@@ -85,3 +93,13 @@ class TestHistoryTest(TestCase):
         history = TestHistory(self.project1, 'root', page=1, per_page=1)
         self.assertIn(build2, history.results.keys())
         self.assertNotIn(build1, history.results.keys())
+
+    def test_pin_top_build(self):
+        build1 = self.project1.builds.get(version='1')
+        build2 = self.project1.builds.get(version='2')
+
+        history = TestHistory(self.project1, 'root', top=build1)
+        self.assertIn(build1, history.results.keys())
+        self.assertNotIn(build2, history.results.keys())
+
+        self.assertEqual(build1, history.top)

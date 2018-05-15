@@ -138,7 +138,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         """
         List of builds for the current project.
         """
-        builds = self.get_object().builds.order_by('-datetime')
+        builds = self.get_object().builds.prefetch_related('test_runs').order_by('-datetime')
         page = self.paginate_queryset(builds)
         serializer = BuildSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
@@ -172,10 +172,8 @@ class BuildSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField()
     testruns = serializers.HyperlinkedIdentityField(view_name='build-testruns')
     testjobs = serializers.HyperlinkedIdentityField(view_name='build-testjobs')
-    # not sure if 'finished' field is needed when status is exposed
-    finished = serializers.BooleanField(read_only=True)
     status = serializers.HyperlinkedIdentityField(read_only=True, view_name='build-status', allow_null=True)
-    metadata = serializers.JSONField(read_only=True)
+    metadata = serializers.HyperlinkedIdentityField(read_only=True, view_name='build-metadata')
 
     class Meta:
         model = Build
@@ -187,7 +185,7 @@ class BuildViewSet(ModelViewSet):
     List of all builds in the system. Only builds belonging to public projects
     and to projects you have access to are available.
     """
-    queryset = Build.objects.all()
+    queryset = Build.objects.prefetch_related('test_runs').all()
     serializer_class = BuildSerializer
     filter_fields = ('version', 'project')
     search_fields = ('version',)
@@ -195,6 +193,11 @@ class BuildViewSet(ModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(project__in=self.get_project_ids())
+
+    @detail_route(methods=['get'], suffix='metadata')
+    def metadata(self, request, pk=None):
+        build = self.get_object()
+        return Response(build.metadata)
 
     @detail_route(methods=['get'], suffix='status')
     def status(self, request, pk=None):
@@ -404,7 +407,7 @@ class TestJobViewSet(ModelViewSet):
     List of CI test jobs. Only testjobs for public projects, and for projects
     you have access to, are available.
     """
-    queryset = TestJob.objects.order_by('-id')
+    queryset = TestJob.objects.prefetch_related('backend').order_by('-id')
     serializer_class = TestJobSerializer
     filter_fields = (
         "name",

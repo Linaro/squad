@@ -166,7 +166,11 @@ def test_history(request, group_slug, project_slug, full_test_name):
     except ValueError:
         page = 1
 
-    history = TestHistory(project, full_test_name, page=page)
+    top = request.GET.get('top', None)
+    if top:
+        top = project.builds.get(version=top)
+
+    history = TestHistory(project, full_test_name, top=top, page=page)
     context = {
         "project": project,
         "history": history,
