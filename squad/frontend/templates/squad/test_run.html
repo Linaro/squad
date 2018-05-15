@@ -4,30 +4,34 @@
 {% block content %}
 
 {% load squad %}
-<h1>
-    <a href="{% group_url project.group %}">{{project.group.name}}</a>
-    » <a href="{% project_url project %}">{{project.name}}</a>
-    » <a href="{% build_url build %}">Build {{build.version}}</a>
-    »
-    Test run {{test_run.job_id}}
-</h1>
-
-<h2>
-    Test environment: {{test_run.environment}}
-    {% if test_run.environment.description %}
-    <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
-    {% endif %}
+<h2 class="page-header well">
+    <a class="h2 text-primitive" href="{% group_url project.group %}">{{project.group.name}}</a>
+    » <a class="h2 text-primitive" href="{% project_url project %}">{{project.name}}</a>
+    » <a class="h2 text-primitive" href="{% build_url build %}">Build {{build.version}}</a>
+    » <a class="h2 text-primary"> Test run {{test_run.job_id}} </a>
+    <small>
+      
+      <br>
+      <strong> Test environment: </strong> {{test_run.environment}}
+      
+      <br>
+      {% if test_run.environment.description %}
+      
+      <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
+      {% endif %}
+      
+      {% if test_run.environment.description %}
+      <div class='alert alert-info' id='environment-description' style='display: none'>
+	{{test_run.environment.description|markdown}}
+      </div>
+      {% endif %}
+    </small>
 </h2>
-{% if test_run.environment.description %}
-<div class='alert alert-info' id='environment-description' style='display: none'>
-    {{test_run.environment.description|markdown}}
-</div>
-{% endif %}
 
-<h2>Test run metadata</h2>
+<h3>Test run metadata</h3>
 {% include "squad/_metadata.html" %}
 
-<h2>Related downloads</h2>
+<h3>Related downloads</h3>
 
 {% if test_run.log_file|length > 0 %}
 <a href="log" class='btn btn-default'>
@@ -71,7 +75,7 @@
 {% endfor %}
 {% endif %}
 
-<h2>Test results</h2>
+<h3>Test results</h3>
 <div class='test-results highlight-row'>
 {% for status in tests_status %}
 <a href="{% testrun_suite_tests_url status %}" class="status-fail{{status.tests_fail}}" id='tests-{{status.id}}'>
@@ -109,7 +113,7 @@
 {% endfor %}
 </div>
 
-<h2>Metrics</h2>
+<h3>Metrics</h3>
 <div class='metrics highlight-row'>
 {% for status in metrics_status %}
 <a href="{% testrun_suite_metrics_url status %}" id="metrics-{{status.id}}" ng-show="match('metrics-{{status.id}}')">
