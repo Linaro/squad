@@ -88,7 +88,7 @@ TEST_RESULTS_INFRA_FAILURE_RESUBMIT = [
     },
 ]
 
-RESUBMIT_STRING2 = "auto-login-action timed out"
+RESUBMIT_STRING2 = "auto-login-action timed out after [0-9]+ seconds"
 TEST_RESULTS_INFRA_FAILURE_RESUBMIT2 = [
     {
         'suite': 'lava',
@@ -109,6 +109,19 @@ TEST_RESULTS_INFRA_FAILURE_RESUBMIT3 = [
         'metadata': {
             'error_type': 'Job',
             'error_msg': 'auto-login-action timed out after 321 seconds'
+        },
+    },
+]
+
+RESUBMIT_STRING4 = "adb device [A-Za-z0-9]+ lost!"
+TEST_RESULTS_INFRA_FAILURE_RESUBMIT4 = [
+    {
+        'suite': 'lava',
+        'name': 'job',
+        'result': 'fail',
+        'metadata': {
+            'error_type': 'Test',
+            'error_msg': 'adb device 16CA9F780038E32D lost!'
         },
     },
 ]
@@ -209,12 +222,13 @@ HTTP_401 = xmlrpc.client.ProtocolError('http://example.com', 401, 'Unauthorized'
 class LavaTest(TestCase):
 
     def setUp(self):
+        ci_infra_error_messages = [RESUBMIT_STRING, RESUBMIT_STRING2, RESUBMIT_STRING4]
         self.backend = Backend.objects.create(
             url='http://example.com/',
             username='myuser',
             token='mypassword',
             implementation_type='lava',
-            backend_settings='{"CI_LAVA_INFRA_ERROR_MESSAGES": ["%s", "%s"]}' % (RESUBMIT_STRING, RESUBMIT_STRING2),
+            backend_settings='{"CI_LAVA_INFRA_ERROR_MESSAGES": %s}' % ci_infra_error_messages,
         )
         self.group = Group.objects.create(
             name="group_foo"
@@ -422,6 +436,22 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT3)
     @patch("squad.ci.backend.lava.Backend.__resubmit__", return_value="1235")
     def test_automated_resubmit3(self, lava_resubmit, get_results, get_details, get_logs):
+        lava = LAVABackend(self.backend)
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend,
+            target=self.project)
+        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+        lava_resubmit.assert_called()
+        new_test_job = TestJob.objects.all().last()
+        self.assertEqual(1, new_test_job.resubmitted_count)
+        self.assertFalse(testjob.can_resubmit)
+
+    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT4)
+    @patch("squad.ci.backend.lava.Backend.__resubmit__", return_value="1235")
+    def test_automated_resubmit4(self, lava_resubmit, get_results, get_details, get_logs):
         lava = LAVABackend(self.backend)
         testjob = TestJob(
             job_id='1234',

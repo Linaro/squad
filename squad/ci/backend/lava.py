@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import requests
 import ssl
 import traceback
@@ -327,15 +328,27 @@ class Backend(BaseBackend):
                         if metadata['error_type'] in ['Infrastructure', 'Lava', 'Job']:
                             completed = False
                         # automatically resubmit in some cases
-                        if metadata['error_type'] in ['Infrastructure', 'Job'] and \
-                                any(substring.lower() in metadata['error_msg'].lower() for substring in lava_infra_error_messages):
-                            if test_job.resubmitted_count < 3:
-                                resubmitted_job = self.resubmit(test_job)
-                                if self.settings.get('CI_LAVA_SEND_ADMIN_EMAIL', True):
-                                    # delay sending email by 15 seconds to allow the database object to be saved
-                                    send_testjob_resubmit_admin_email.apply_async(args=[test_job.pk, resubmitted_job.pk], countdown=15)
-                                # don't send admin_email
+                        infra_messages_re_list = []
+                        for message_re in lava_infra_error_messages:
+                            try:
+                                r = re.compile(message_re, re.I)
+                                infra_messages_re_list.append(r)
+                            except re.error:
+                                # ignore incorrect expressions
+                                self.log_debug("'%s' is not a valid regex" % message_re)
                                 continue
+                        if metadata['error_type'] in ['Infrastructure', 'Job', 'Test'] and \
+                                len(infra_messages_re_list) > 0:
+                            for regex in infra_messages_re_list:
+                                if regex.search(metadata['error_msg']) is not None and \
+                                        test_job.resubmitted_count < 3:
+                                    resubmitted_job = self.resubmit(test_job)
+                                    if self.settings.get('CI_LAVA_SEND_ADMIN_EMAIL', True):
+                                        # delay sending email by 15 seconds to allow the database object to be saved
+                                        send_testjob_resubmit_admin_email.apply_async(args=[test_job.pk, resubmitted_job.pk], countdown=15)
+                                    # re-submit the job only once
+                                    # even if there are more matches
+                                    break
 
         return (data['status'], completed, job_metadata, results, metrics)
 
