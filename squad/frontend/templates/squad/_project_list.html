@@ -8,7 +8,7 @@
     <a href="{% project_url project %}">
     <div class="col-md-4 col-sm-4">
         <strong>
-            {% if not hide_group %}{{project.group.name}}/{% endif %}{{project.name}}
+          {% if not hide_group %}{{project.group.name}}/{% endif %}{{project.name}}
         </strong>
         {% if project.description%}
         <div class='description-{{project.id}}'>
@@ -22,16 +22,15 @@
     <div class="col-md-5 col-sm-5 project-listing-info">
         {% if status.has_tests %}
         <div title='Test results'>
-            <i class='fa fa-check-square-o'></i>
-            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}} total</span>
+            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total Tests">{{status.tests_total}}</span>
             {% if status.tests_pass > 0 %}
-            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} pass</span>
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Passed Tests">{{status.tests_pass}}</span>
             {% endif %}
             {% if status.tests_skip > 0 %}
-            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}} skip</span>
+            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skipped Tests">{{status.tests_skip}}</span>
             {% endif %}
             {% if status.tests_fail > 0 %}
-            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} fail</span>
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Failed Tests">{{status.tests_fail}}</span>
             {% endif %}
         </div>
         {% endif %}
@@ -46,11 +45,9 @@
     <div class="col-md-3 col-sm-3 project-listing-info">
         {% if status.last_updated %}
         <div>
-            <i class='fa fa-clock-o'>&nbsp;</i>
             {{status.last_updated|naturaltime}}
         </div>
         <div>
-            <i class='fa fa-clock-o' style='color: transparent'>&nbsp;</i>
             {{status.last_updated}}
         </div>
         {% endif %}

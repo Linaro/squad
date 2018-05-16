@@ -2,27 +2,27 @@
 {% load squad %}
 {% block content %}
 
-<h1>
+<h2 class="page-header well">
     <a href="{% group_url project.group %}">{{project.group.name}}</a>
     » <a href="{% project_url project %}">{{project.name}}</a>
     » <a href="{% build_url build %}">Build {{build.version}}</a>
     » <a href="{% project_url test_run %}">Test run {{test_run.job_id}}</a>
     » Test results for {{suite}}
-</h1>
+</h2>
 
-<h2>
+<h3>
     Test environment: {{test_run.environment}}
     {% if test_run.environment.description %}
     <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
     {% endif %}
-</h2>
+</h3>
 {% if test_run.environment.description %}
 <div class='alert alert-info' id='environment-description' style='display: none'>
     {{test_run.environment.description|markdown}}
 </div>
 {% endif %}
 
-<h2>
+<h3>
     Suite: {{suite}}
     {% if status.suite_version %}
     {{status.suite_version.version}}
@@ -30,7 +30,7 @@
     {% if suite.metadata.description %}
     <a href='#' onclick="$('#tests-{{suite.slug}}-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
     {% endif %}
-</h2>
+</h3>
 
 {% if suite.metadata.description %}
 <div class='alert alert-info' id='tests-{{suite.slug}}-description' style='display: none'>
@@ -39,9 +39,9 @@
 {% endif %}
 
 <a name="tests"></a>
-<h2>
+<h3>
     Metrics
-</h2>
+</h3>
 
 {% include "squad/_pagination.html" with items=metrics %}
 

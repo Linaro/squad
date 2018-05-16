@@ -2,53 +2,56 @@
 {% load squad %}
 {% block content %}
 
-<h1>
-    <a href="{% group_url project.group %}">{{project.group.name}}</a>
-    » <a href="{% project_url project %}">{{project.name}}</a>
-    » <a href="{% build_url build %}">Build {{build.version}}</a>
-    » <a href="{% project_url test_run %}">Test run {{test_run.job_id}}</a>
-    » Test results for {{suite}}
-</h1>
-
-<h2>
-    Test environment: {{test_run.environment}}
+<h2 class="page-header well">
+    <a class="h2 text-primitive" href="{% group_url project.group %}">{{project.group.name}}</a>
+    » <a class="h2 text-primitive" href="{% project_url project %}">{{project.name}}</a>
+    » <a class="h2 text-primitive" href="{% build_url build %}">{{build.version}}</a>
+    » Test run <a href="{% project_url test_run %}">{{test_run.job_id}}</a>
+<br>
+<small>
+    <strong>Test environment:</strong> {{test_run.environment}}
     {% if test_run.environment.description %}
     <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
     {% endif %}
-</h2>
-{% if test_run.environment.description %}
-<div class='alert alert-info' id='environment-description' style='display: none'>
-    {{test_run.environment.description|markdown}}
-</div>
-{% endif %}
+    
+    {% if test_run.environment.description %}
+    <div class='alert alert-info' id='environment-description' style='display: none'>
+      {{test_run.environment.description|markdown}}
+    </div>
+    {% endif %}
 
-<h2>
-    Suite: {{suite}}
+    <br>
+    
+    <strong>Suite:</strong> {{suite}}
     {% if status.suite_version %}
     {{status.suite_version.version}}
     {% endif %}
     {% if suite.metadata.description %}
     <a href='#' onclick="$('#tests-{{suite.slug}}-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
     {% endif %}
+
+    <br>
+    
+    {% if suite.metadata.description %}
+    <div class='alert alert-info' id='tests-{{suite.slug}}-description' style='display: none'>
+      {{suite.metadata.description|markdown}}
+    </div>
+    {% endif %}
+    
+</small>
 </h2>
-
-{% if suite.metadata.description %}
-<div class='alert alert-info' id='tests-{{suite.slug}}-description' style='display: none'>
-    {{suite.metadata.description|markdown}}
-</div>
-{% endif %}
-
 <a name="tests"></a>
-<h2>
-    Test results
-</h2>
 
-{% include "squad/_pagination.html" with items=tests %}
+<h3>
+  Test results
+</h3>
 
 {% for test in tests %}
     {% include "squad/_test_run_test.html" with suite=status.suite %}
 {% endfor %}
 
-{% include "squad/_pagination.html" with items=tests %}
+<div class="text-right">
+  {% include "squad/_pagination.html" with items=tests %}
+</div>
 
 {% endblock %}
