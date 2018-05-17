@@ -1,5 +1,5 @@
 from django.db import models
-from django.forms import MultipleChoiceField, ChoiceField
+from django.forms import MultipleChoiceField, ChoiceField, CheckboxSelectMultiple
 from pkg_resources import EntryPoint, iter_entry_points
 from pkgutil import iter_modules
 
@@ -150,4 +150,8 @@ class PluginListField(models.TextField):
 
     def formfield(self, **kwargs):
         plugins = ((v, v) for v in get_all_plugins())
-        return MultipleChoiceField(choices=plugins)
+        required = not self.null
+        return MultipleChoiceField(
+            required=required,
+            choices=plugins,
+        )
