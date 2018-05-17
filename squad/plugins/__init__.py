@@ -154,4 +154,5 @@ class PluginListField(models.TextField):
         return MultipleChoiceField(
             required=required,
             choices=plugins,
+            widget=CheckboxSelectMultiple,
         )
