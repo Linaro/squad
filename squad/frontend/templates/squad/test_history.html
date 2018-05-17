@@ -3,10 +3,8 @@
 
 {% block content %}
 
-  <h2>
-    Test results
-    »
-    history for <u>{{history.test}}</u>
+  <h2 class="page-header well">
+    {{history.test}}
     {% if request.GET.top %}
     up to {{history.top.version}}
     {% else %}
@@ -17,6 +15,8 @@
   </h2>
 
   {% include "squad/_pagination.html" with items=history %}
+
+<h2> Test results history </h2>
 
   <table class='test-results'>
 
