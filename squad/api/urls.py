@@ -14,6 +14,7 @@ from squad.core.models import slug_pattern
 urlpatterns = [
     url(r'^', include(rest.router.urls)),
     url(r'^auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^createbuild/(%s)/(%s)/(%s)' % ((slug_pattern,) * 3), views.create_build),
     url(r'^submit/(%s)/(%s)/(%s)/(%s)' % ((slug_pattern,) * 4), views.add_test_run),
     url(r'^submitjob/(%s)/(%s)/(%s)/(%s)' % ((slug_pattern,) * 4), ci.submit_job),
     url(r'^watchjob/(%s)/(%s)/(%s)/(%s)' % ((slug_pattern,) * 4), ci.watch_job),

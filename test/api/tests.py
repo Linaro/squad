@@ -1,3 +1,4 @@
+import json
 import os
 from io import StringIO
 
@@ -37,6 +38,9 @@ class ApiTest(TestCase):
         self.global_token = Token.objects.create(user=self.global_submission_user)
 
         self.client = APIClient('thekey')
+
+
+class CreateTestRunApiTest(ApiTest):
 
     def test_create_object_hierarchy(self):
         response = self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
@@ -267,3 +271,55 @@ class ApiTest(TestCase):
         self.project.save()
         response = self.client.post('/api/submit/MyGroup/MyProject/1.0.0/MyEnvironment')
         self.assertEqual(response.status_code, 201)
+
+
+class CreateBuildApiTest(ApiTest):
+
+    def setUp(self):
+        super(CreateBuildApiTest, self).setUp()
+        self.github = models.PatchSource.objects.create(
+            name='github',
+            username='foo',
+            url='https://github.com/',
+            token='*********',
+            implementation='example'
+        )
+
+    def test_patch_source(self):
+        response = self.client.post(
+            '/api/createbuild/mygroup/myproject/1.0.0',
+            {
+                'patch_source': 'github',
+                'patch_id': '999',
+            }
+        )
+        self.assertEqual(response.status_code, 201)
+
+        build = self.project.builds.get(version='1.0.0')
+        self.assertEqual(self.github, build.patch_source)
+        self.assertEqual(build.patch_id, "999")
+
+    def test_patch_baseline(self):
+        baseline = self.project.builds.create(version='0')
+        response = self.client.post(
+            '/api/createbuild/mygroup/myproject/1',
+            {
+                'patch_source': 'github',
+                'patch_id': '999',
+                'patch_baseline': '0',
+            }
+        )
+        self.assertEqual(response.status_code, 201)
+
+        build = self.project.builds.get(version='1')
+        self.assertEqual(build.patch_baseline, baseline)
+
+    def test_unexisting_patch_source(self):
+        response = self.client.post(
+            '/api/createbuild/mygroup/myproject/1.0.0',
+            {
+                'patch_source': 'foobarbaz',  # does not exist
+                'patch_id': '999',
+            }
+        )
+        self.assertEqual(response.status_code, 400)
