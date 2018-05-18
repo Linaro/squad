@@ -7,7 +7,7 @@ from django.utils import timezone
 from unittest.mock import patch, PropertyMock
 
 
-from squad.core.models import Group, TestRun, Status, Build, ProjectStatus, SuiteVersion
+from squad.core.models import Group, TestRun, Status, Build, ProjectStatus, SuiteVersion, PatchSource
 from squad.core.tasks import ParseTestRunData
 from squad.core.tasks import PostProcessTestRun
 from squad.core.tasks import RecordTestRunStatus
@@ -16,6 +16,7 @@ from squad.core.tasks import ProcessTestRun
 from squad.core.tasks import ProcessAllTestRuns
 from squad.core.tasks import ReceiveTestRun
 from squad.core.tasks import ValidateTestRun
+from squad.core.tasks import CreateBuild
 from squad.core.tasks import exceptions
 
 
@@ -367,3 +368,42 @@ class TestValidateTestRun(TestCase):
 
     def test_invalid_tests_type(self):
         self.assertInvalidTests('[]')
+
+
+class CreateBuildTest(TestCase):
+
+    def setUp(self):
+        group = Group.objects.create(slug='mygroup')
+        self.project = group.projects.create(slug='mygroup')
+        self.patch_source = PatchSource.objects.create(
+            name='github',
+            username='foo',
+            url='https://github.com/',
+            token='*********',
+            implementation='example'
+        )
+
+    def test_basics(self):
+        create_build = CreateBuild(self.project)
+        baseline = create_build('0.0')
+        build = create_build(
+            version='1.0',
+            patch_source=self.patch_source,
+            patch_id='111',
+            patch_baseline=baseline,
+        )
+        self.assertEqual(build.patch_source, self.patch_source)
+        self.assertEqual(build.patch_id, '111')
+        self.assertEqual(build.patch_baseline, baseline)
+
+    @patch('squad.core.tasks.notify_patch_build_created')
+    def test_notify_patch_source(self, notify_patch_build_created):
+        create_build = CreateBuild(self.project)
+        build = create_build('1.0', patch_source=self.patch_source, patch_id='111')
+        notify_patch_build_created.delay.assert_called_with(build.id)
+
+    @patch('squad.core.tasks.notify_patch_build_created')
+    def test_dont_notify_without_patch_source(self, notify_patch_build_created):
+        create_build = CreateBuild(self.project)
+        create_build('1.0')  # no patch_source or patch_id
+        notify_patch_build_created.delay.assert_not_called()
