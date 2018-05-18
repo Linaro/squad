@@ -4,7 +4,7 @@
   » <a class="h2 text-primary" href="{% project_url project %}">{{project.name}}</a>
   {{pagetitle}}
 </h1>
-<ul class="nav nav-tabs">
+<ul class="page-header nav nav-pills">
   {% with url_name=request.resolver_match.url_name %}
   <li role="presentation" {% if url_name == 'project' %}class="active"{% endif %}>
     <a href="{% project_url project %}">
