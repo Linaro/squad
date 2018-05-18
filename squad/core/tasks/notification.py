@@ -2,7 +2,7 @@ from django.db.models import Max
 from django.utils import timezone
 
 from squad.celery import app as celery
-from squad.core.models import Project, ProjectStatus
+from squad.core.models import Project, ProjectStatus, Build
 from squad.core.notification import send_status_notification
 
 
@@ -32,6 +32,7 @@ def maybe_notify_project_status(status_id):
             return
 
     if projectstatus.finished and not projectstatus.notified:
+        notify_patch_build_finished.delay(projectstatus.build_id)
         send_status_notification(projectstatus)
 
 
@@ -48,3 +49,21 @@ def notification_timeout(status_id):
         send_status_notification(projectstatus)
         projectstatus.notified_on_timeout = True
         projectstatus.save()
+
+
+@celery.task
+def notify_patch_build_created(build_id):
+    build = Build.objects.get(pk=build_id)
+    patch_source = build.patch_source
+    if patch_source:
+        plugin = patch_source.get_implementation()
+        plugin.notify_patch_build_created(build)
+
+
+@celery.task
+def notify_patch_build_finished(build_id):
+    build = Build.objects.get(pk=build_id)
+    patch_source = build.patch_source
+    if patch_source:
+        plugin = patch_source.get_implementation()
+        plugin.notify_patch_build_finished(build)
