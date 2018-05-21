@@ -1,6 +1,6 @@
 from django.test import TestCase
 from squad.core.models import PatchSource
-from squad.plugins import Plugin
+from squad.core.plugins import Plugin
 
 
 class TestPatchSource(TestCase):

@@ -1,5 +1,5 @@
 from collections import namedtuple
-from squad.plugins import Plugin as BasePlugin
+from squad.core.plugins import Plugin as BasePlugin
 
 
 class Issue(object):

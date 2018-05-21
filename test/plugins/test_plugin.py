@@ -1,6 +1,6 @@
 from django.test import TestCase
-from squad.plugins import get_plugin_instance, apply_plugins
-from squad.plugins import Plugin, PluginNotFound
+from squad.core.plugins import get_plugin_instance, apply_plugins
+from squad.core.plugins import Plugin, PluginNotFound
 
 
 class TestGetPuginInstance(TestCase):

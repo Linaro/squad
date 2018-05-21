@@ -12,7 +12,7 @@ from squad.celery import app as celery
 from squad.core.models import TestRun, Suite, SuiteVersion, SuiteMetadata, Test, Metric, Status, ProjectStatus
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
 from squad.core.statistics import geomean
-from squad.plugins import apply_plugins
+from squad.core.plugins import apply_plugins
 from . import exceptions
 
 

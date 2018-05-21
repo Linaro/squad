@@ -1,7 +1,7 @@
 from django.contrib import admin
 from . import models
 from .tasks import notify_project_status, postprocess_test_run
-from squad.plugins import PluginLoader
+from squad.core.plugins import PluginLoader
 
 
 class TokenAdmin(admin.ModelAdmin):

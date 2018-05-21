@@ -1,4 +1,4 @@
-from squad.plugins import Plugin as BasePlugin
+from squad.core.plugins import Plugin as BasePlugin
 
 
 class Plugin(BasePlugin):

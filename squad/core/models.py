@@ -15,9 +15,9 @@ from django.utils import timezone
 
 from squad.core.utils import random_token, parse_name, join_name
 from squad.core.statistics import geomean
-from squad.plugins import PluginListField
-from squad.plugins import PluginField
-from squad.plugins import get_plugin_instance
+from squad.core.plugins import PluginListField
+from squad.core.plugins import PluginField
+from squad.core.plugins import get_plugin_instance
 
 
 slug_pattern = '[a-zA-Z0-9][a-zA-Z0-9_.-]*'

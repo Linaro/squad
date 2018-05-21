@@ -10,7 +10,7 @@ from dateutil.relativedelta import relativedelta
 
 from squad.core.tasks import ReceiveTestRun, UpdateProjectStatus
 from squad.core.models import Project, Build, TestRun, slug_validator
-from squad.plugins import apply_plugins
+from squad.core.plugins import apply_plugins
 
 
 from squad.ci.backend import get_backend_implementation, ALL_BACKENDS
