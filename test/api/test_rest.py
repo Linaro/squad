@@ -29,6 +29,18 @@ class RestApiTest(TestCase):
             subject="abc",
             plain_text="def",
         )
+        self.validemailtemplate = models.EmailTemplate.objects.create(
+            name="validTemplate",
+            subject="subject",
+            plain_text="{% if foo %}bar{% endif %}",
+            html="{% if foo %}bar{% endif %}"
+        )
+        self.invalidemailtemplate = models.EmailTemplate.objects.create(
+            name="invalidTemplate",
+            subject="subject",
+            plain_text="{% if foo %}bar",
+            html="{% if foo %}bar"
+        )
 
     def hit(self, url):
         response = self.client.get(url)
@@ -55,18 +67,35 @@ class RestApiTest(TestCase):
         self.assertEqual(1, len(data['results']))
 
     def test_builds_status(self):
-        response = self.client.get('/api/builds/%d/status/')
+        response = self.client.get('/api/builds/%d/status/' % self.build.id)
         self.assertEqual(404, response.status_code)
         # create ProjectStatus
         UpdateProjectStatus()(self.testrun)
         self.hit('/api/builds/%d/status/' % self.build.id)
 
     def test_builds_email(self):
-        response = self.client.get('/api/builds/%d/email/')
+        response = self.client.get('/api/builds/%d/email/' % self.build.id)
         self.assertEqual(404, response.status_code)
         # create ProjectStatus
         UpdateProjectStatus()(self.testrun)
         self.hit('/api/builds/%d/email/' % self.build.id)
+
+    def test_builds_email_custom_template(self):
+        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build.id, self.validemailtemplate.pk))
+        self.assertEqual(404, response.status_code)
+        # create ProjectStatus
+        UpdateProjectStatus()(self.testrun)
+        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build.id, self.validemailtemplate.pk))
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("text/plain", response['Content-Type'])
+
+    def test_builds_email_custom_invalid_template(self):
+        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build.id, self.invalidemailtemplate.pk))
+        self.assertEqual(404, response.status_code)
+        # create ProjectStatus
+        UpdateProjectStatus()(self.testrun)
+        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build.id, self.invalidemailtemplate.pk))
+        self.assertEqual(500, response.status_code)
 
     def test_build_testruns(self):
         data = self.hit('/api/builds/%d/testruns/' % self.build.id)
