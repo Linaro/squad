@@ -148,6 +148,7 @@ class PluginField(models.CharField):
     def __init__(self, **args):
         defaults = {'max_length': 256}
         defaults.update(args)
+        self.features = defaults.pop('features', None)
         return super(PluginField, self).__init__(**defaults)
 
     def deconstruct(self):
@@ -156,11 +157,15 @@ class PluginField(models.CharField):
         return name, path, args, kwargs
 
     def formfield(self, **kwargs):
-        plugins = ((v, v) for v in get_all_plugins())
+        plugins = ((v, v) for v in get_plugins_by_feature(self.features))
         return ChoiceField(choices=plugins)
 
 
 class PluginListField(models.TextField):
+
+    def __init__(self, **args):
+        self.features = args.pop('features', None)
+        return super(PluginListField, self).__init__(**args)
 
     def from_db_value(self, value, expression, connection, context):
         if value is None:
@@ -180,7 +185,7 @@ class PluginListField(models.TextField):
         return ', '.join(value)
 
     def formfield(self, **kwargs):
-        plugins = ((v, v) for v in get_all_plugins())
+        plugins = ((v, v) for v in get_plugins_by_feature(self.features))
         required = not self.null
         return MultipleChoiceField(
             required=required,
