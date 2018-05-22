@@ -15,15 +15,48 @@ from squad.core.models import Group
 from squad.core.models import Project
 from squad.core.models import Build
 from squad.core.models import Environment
+from squad.core.models import PatchSource
 from squad.core.models import TestRun
 from squad.core.models import Token
 
 
+from squad.core.tasks import CreateBuild
 from squad.core.tasks import ReceiveTestRun
 from squad.core.tasks import exceptions
 
 
 logger = logging.getLogger()
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@auth_write
+def create_build(request, group_slug, project_slug, version):
+    group = get_object_or_404(Group, slug=group_slug)
+    project = get_object_or_404(group.projects, slug=project_slug)
+
+    fields = {}
+    patch_source = request.POST.get('patch_source', None)
+    try:
+        if patch_source:
+            fields['patch_source'] = PatchSource.objects.get(name=patch_source)
+    except PatchSource.DoesNotExist:
+        return HttpResponse('Unknown patch source: %s' % patch_source, status=400)
+
+    patch_baseline = request.POST.get('patch_baseline', None)
+    try:
+        if patch_baseline:
+            fields['patch_baseline'] = project.builds.get(version=patch_baseline)
+    except Build.DoesNotExist:
+        return HttpResponse('Unknown patch baseline: %s' % patch_baseline, status=400)
+
+    patch_id = request.POST.get('patch_id', None)
+    if patch_id:
+        fields['patch_id'] = patch_id
+
+    create_build = CreateBuild(project)
+    create_build(version=version, **fields)
+    return HttpResponse('', status=201)
 
 
 @csrf_exempt

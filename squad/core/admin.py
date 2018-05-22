@@ -150,6 +150,11 @@ class TestRunAdmin(admin.ModelAdmin):
         return False
 
 
+class PatchSourceAdmin(admin.ModelAdmin):
+    models = models.PatchSource
+    list_display = ['name', 'url', 'implementation']
+
+
 admin.site.register(models.Group)
 admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.EmailTemplate)
@@ -158,3 +163,4 @@ admin.site.register(models.ProjectStatus, ProjectStatusAdmin)
 admin.site.register(models.Build, BuildAdmin)
 admin.site.register(models.SuiteMetadata, SuiteMetadataAdmin)
 admin.site.register(models.TestRun, TestRunAdmin)
+admin.site.register(models.PatchSource, PatchSourceAdmin)

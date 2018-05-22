@@ -111,6 +111,24 @@ class Plugin(object):
         """
         pass
 
+    def notify_patch_build_created(self, build):
+        """
+        This method is called when a patch build is created. It should notify
+        the corresponding patch source that the checks are in progress.
+
+        The ``build`` argument is an instance of ``squad.core.Build``.
+        """
+        pass
+
+    def notify_patch_build_finished(self, build):
+        """
+        This method is called when a patch build is finished. It should notify
+        the patch source about the status of the tests (success, failure, etc).
+
+        The ``build`` argument is an instance of ``squad.core.Build``.
+        """
+        pass
+
 
 class PluginField(models.CharField):
 
