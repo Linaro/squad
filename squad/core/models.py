@@ -15,6 +15,7 @@ from django.utils import timezone
 
 from squad.core.utils import random_token, parse_name, join_name
 from squad.core.statistics import geomean
+from squad.core.plugins import Plugin
 from squad.core.plugins import PluginListField
 from squad.core.plugins import PluginField
 from squad.core.plugins import get_plugin_instance
@@ -161,7 +162,13 @@ class PatchSource(models.Model):
     username = models.CharField(max_length=128)
     url = models.URLField()
     token = models.CharField(max_length=1024)
-    implementation = PluginField(default='null')
+    implementation = PluginField(
+        default='null',
+        features=[
+            Plugin.notify_patch_build_created,
+            Plugin.notify_patch_build_finished,
+        ],
+    )
 
     def get_implementation(self):
         return get_plugin_instance(self.implementation)
