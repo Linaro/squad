@@ -82,7 +82,13 @@ class Project(models.Model):
     custom_email_template = models.ForeignKey(EmailTemplate, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     important_metadata_keys = models.TextField(null=True, blank=True)
-    enabled_plugins_list = PluginListField(null=True)
+    enabled_plugins_list = PluginListField(
+        null=True,
+        features=[
+            Plugin.postprocess_testrun,
+            Plugin.postprocess_testjob,
+        ],
+    )
 
     wait_before_notification = models.IntegerField(
         help_text='Wait this many seconds before sending notifications',
