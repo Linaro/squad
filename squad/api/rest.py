@@ -3,10 +3,12 @@ from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Env
 from squad.core.notification import Notification
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
-from rest_framework import routers, serializers, views, viewsets
+from rest_framework import routers, serializers, views, viewsets, status
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
+
+from jinja2 import TemplateSyntaxError
 
 
 class API(routers.APIRootView):
@@ -242,15 +244,38 @@ class BuildViewSet(ModelViewSet):
                 template = EmailTemplate.objects.get(pk=template_id)
             except EmailTemplate.DoesNotExist:
                 pass
-        status = self.get_object().status
-        notification = Notification(status)
-        produce_html = self.get_object().project.html_mail
-        if output_format == "text/html":
-            produce_html = True
-        txt, html = notification.message(produce_html, template)
-        if len(html) > 0:
-            return HttpResponse(html, content_type=output_format)
-        return HttpResponse(txt, content_type=output_format)
+        if hasattr(self.get_object(), "status"):
+            pr_status = self.get_object().status
+            notification = Notification(pr_status)
+            produce_html = self.get_object().project.html_mail
+            if output_format == "text/html":
+                produce_html = True
+            try:
+                txt, html = notification.message(produce_html, template)
+                if len(html) > 0:
+                    return HttpResponse(html, content_type=output_format)
+                return HttpResponse(txt, content_type=output_format)
+            except TemplateSyntaxError as e:
+                data = {
+                    "lineno": e.lineno,
+                    "message": e.message
+                }
+                if template is not None:
+                    data.update({
+                        "txt": template.plain_text,
+                        "html": template.html
+                    })
+                return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            except TypeError as te:
+                data = {"message": str(te)}
+                if template is not None:
+                    data.update({
+                        "txt": template.plain_text,
+                        "html": template.html
+                    })
+                return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({}, status=status.HTTP_404_NOT_FOUND)
 
 
 class EnvironmentSerializer(serializers.HyperlinkedModelSerializer):
