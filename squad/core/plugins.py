@@ -45,6 +45,19 @@ def get_all_plugins():
     return plugins.keys()
 
 
+def get_plugins_by_feature(features):
+    """
+    Returns a list of plugin names where the plugins implement at least one of
+    the *features*. *features* must a list of Plugin methods, e.g.
+    [Plugin.postprocess_testrun, Plugin.postprocess_testjob]
+    """
+    if not features:
+        return get_all_plugins()
+    plugins = PluginLoader.load_all().items()
+    names = set([f.__name__ for f in features])
+    return [e for e, plugin in plugins if names & set(plugin.__dict__.keys())]
+
+
 def apply_plugins(plugin_names):
     """
     This function should be used by code in the SQUAD core to trigger
