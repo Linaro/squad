@@ -1,7 +1,7 @@
 SQUAD - Software Quality Dashboard
 ==================================
 
-SQUAD is a Software Quality Dashboard written in Python 3. It uses
+SQUAD is a Software Quality Dashboard written in Python 3, with
 Django.
 
 See `the documentation folder`_ for more documentation, or go `browse the
