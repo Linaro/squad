@@ -18,7 +18,7 @@ urlpatterns = [
     url(r'^_/settings/', include(user_settings.urls)),
     url(r'^(%s)/$' % slug_pattern, views.group, name='group'),
     url(r'^(%s)/(%s)/$' % ((slug_pattern,) * 2), views.project, name='project'),
-    url(r'^(%s)/(%s)/tests/(.*)$' % ((slug_pattern,) * 2), tests.test_history, name='test_history'),
+    url(r'^(%s)/(%s)/tests/(.+)$' % ((slug_pattern,) * 2), tests.test_history, name='test_history'),
     url(r'^(%s)/(%s)/metrics/$' % ((slug_pattern,) * 2), views.metrics, name='metrics'),
     url(r'^(%s)/(%s)/builds/$' % ((slug_pattern,) * 2), views.builds, name='builds'),
     url(r'^(%s)/(%s)/build/([^/]+)/$' % ((slug_pattern,) * 2), views.build, name='build'),
