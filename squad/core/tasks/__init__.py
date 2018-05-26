@@ -17,6 +17,7 @@ from . import exceptions
 
 
 from .notification import notify_project_status, maybe_notify_project_status
+from .notification import notify_patch_build_created
 
 
 test_parser = JSONTestDataParser
@@ -323,3 +324,23 @@ class ProcessAllTestRuns(object):
         for testrun in TestRun.objects.filter(status_recorded=False).all():
             recorder = RecordTestRunStatus()
             recorder(testrun)
+
+
+class CreateBuild(object):
+
+    def __init__(self, project):
+        self.project = project
+
+    def __call__(self, version, patch_source=None, patch_id=None, patch_baseline=None):
+        defaults = {
+            'patch_source': patch_source,
+            'patch_id': patch_id,
+            'patch_baseline': patch_baseline,
+        }
+        build, _ = self.project.builds.get_or_create(
+            version=version,
+            defaults=defaults,
+        )
+        if build.patch_source and build.patch_id:
+            notify_patch_build_created.delay(build.id)
+        return build

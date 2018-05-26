@@ -16,6 +16,8 @@ from django.utils import timezone
 from squad.core.utils import random_token, parse_name, join_name
 from squad.core.statistics import geomean
 from squad.plugins import PluginListField
+from squad.plugins import PluginField
+from squad.plugins import get_plugin_instance
 
 
 slug_pattern = '[a-zA-Z0-9][a-zA-Z0-9_.-]*'
@@ -148,11 +150,32 @@ class Token(models.Model):
         return self.description
 
 
+class PatchSource(models.Model):
+    """
+    A patch is source is a platform from where a patch comes from, e.g. github,
+    a gitlab instance, a gerrit instance. The *implementation* field specifies
+    which plugin should handle the implementation details for that given patch
+    source.
+    """
+    name = models.CharField(max_length=256, unique=True)
+    username = models.CharField(max_length=128)
+    url = models.URLField()
+    token = models.CharField(max_length=1024)
+    implementation = PluginField(default='null')
+
+    def get_implementation(self):
+        return get_plugin_instance(self.implementation)
+
+
 class Build(models.Model):
     project = models.ForeignKey(Project, related_name='builds')
     version = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     datetime = models.DateTimeField()
+
+    patch_source = models.ForeignKey(PatchSource, null=True, blank=True)
+    patch_baseline = models.ForeignKey('Build', null=True, blank=True)
+    patch_id = models.CharField(max_length=1024, null=True, blank=True)
 
     class Meta:
         unique_together = ('project', 'version',)

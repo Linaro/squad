@@ -5,10 +5,12 @@ from django.test import TestCase
 from django.utils import timezone
 
 
-from squad.core.models import Group, ProjectStatus
+from squad.core.models import Group, ProjectStatus, PatchSource
 from squad.core.tasks.notification import maybe_notify_project_status
 from squad.core.tasks.notification import notify_project_status
 from squad.core.tasks.notification import notification_timeout
+from squad.core.tasks.notification import notify_patch_build_created
+from squad.core.tasks.notification import notify_patch_build_finished
 
 
 class TestNotificationTasks(TestCase):
@@ -38,6 +40,16 @@ class TestNotificationTasks(TestCase):
 
         maybe_notify_project_status(status.id)
         send_status_notification.assert_called_with(status)
+
+    @patch("squad.core.tasks.notification.notify_patch_build_finished")
+    def test_maybe_notify_project_status_notify_patch_build_finished(self, notify_patch_build_finished):
+        build = self.project1.builds.create(datetime=timezone.now())
+        environment = self.project1.environments.create(slug='env')
+        build.test_runs.create(environment=environment)
+        status = ProjectStatus.create_or_update(build)
+
+        maybe_notify_project_status(status.id)
+        notify_patch_build_finished.delay.assert_called_with(build.id)
 
     @patch("squad.core.tasks.notification.send_status_notification")
     def test_maybe_notify_project_status_do_not_send_dup_notification(self, send_status_notification):
@@ -154,3 +166,42 @@ class TestNotificationTasks(TestCase):
         notification_timeout(status.id)
         notification_timeout(status.id)
         self.assertEqual(1, len(send_status_notification.call_args_list))
+
+
+class TestPatchNotificationTasks(TestCase):
+
+    def setUp(self):
+        group = Group.objects.create(slug='mygroup')
+        self.project = group.projects.create(slug='myproject')
+        self.patch_source = PatchSource.objects.create(
+            name='foo',
+            implementation='example',
+        )
+
+    @patch("squad.core.models.PatchSource.get_implementation")
+    def test_notify_patch_build_created(self, get_implementation):
+        build = self.project.builds.create(
+            version='1',
+            patch_source=self.patch_source,
+            patch_id='0123456789',
+        )
+
+        plugin = MagicMock()
+        get_implementation.return_value = plugin
+
+        notify_patch_build_created(build.id)
+        plugin.notify_patch_build_created.assert_called_with(build)
+
+    @patch("squad.core.models.PatchSource.get_implementation")
+    def test_notify_patch_build_finished(self, get_implementation):
+        build = self.project.builds.create(
+            version='1',
+            patch_source=self.patch_source,
+            patch_id='0123456789',
+        )
+
+        plugin = MagicMock()
+        get_implementation.return_value = plugin
+
+        notify_patch_build_finished(build.id)
+        plugin.notify_patch_build_finished.assert_called_with(build)
