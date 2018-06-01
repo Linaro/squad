@@ -1,3 +1,24 @@
+# 0.45
+
+* api:
+  * add endpoint for creating builds
+  * report issues with email templates without crashing
+* ci/lava:
+  * allow resubmitting LAVA Test failures
+* core:
+  * add base infrastructure for patch builds
+  * add CreateBuild task
+  * add tasks to notify patch builds
+  * change Project.enabled_plugins_list to PluginListField
+* plugins:
+  * add API for patch source notifications
+  * add PluginListField and PluginField
+* frontend:
+  * improve the readabiliy of the headers
+  * switch tabs to pills so they are easier to locate visually
+  * handle missing suite names in test history page
+  * link to test run from build page (insted of to details of each suite)
+
 # 0.44
 
 * api:
