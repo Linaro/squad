@@ -60,7 +60,10 @@ class TestJobAdmin(admin.ModelAdmin):
     actions = [submit_job, fetch_job]
 
     def job_id_link(self, test_job):
-        return '<a href="%s">%s</a>' % (test_job.url, test_job.job_id)
+        if test_job.url:
+            return '<a href="%s">%s</a>' % (test_job.url, test_job.job_id)
+        else:
+            return test_job.job_id
     job_id_link.allow_tags = True
     job_id_link.short_description = 'Job ID ⇒'
 
