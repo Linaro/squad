@@ -20,10 +20,11 @@
         </form>
     </div>
 </div>
+
 <div class='test-results highlight-row'>
 {% for status in statuses %}
 {% if status.suite and status.has_tests %}
-<a href="{% testrun_suite_tests_url status %}" class="status-fail{{status.tests_fail}}" {% if status.tests_fail == 0%}style='display: none'{% endif%} id='tests-{{status.id}}' ng-show='match("tests-" + {{status.id}})'>
+<a href="{% project_url status.test_run %}" class="status-fail{{status.tests_fail}}" {% if status.tests_fail == 0%}style='display: none'{% endif%} id='tests-{{status.id}}' ng-show='match("tests-" + {{status.id}})'>
 <div class='row row-bordered {% if status.tests_fail%}fail{% else %}nofail{%endif%}'>
     <div class='col-md-3 col-sm-3' title='Test suite'>
         <i class='fa fa-list'></i>

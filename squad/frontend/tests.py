@@ -3,9 +3,10 @@ from django.db.models import Q
 from django.shortcuts import render
 
 from squad.http import auth
-from squad.core.models import Group, Test
+from squad.core.models import Group, Test, Suite
 from squad.core.history import TestHistory
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 
 
 class TestResult(list):
@@ -170,9 +171,12 @@ def test_history(request, group_slug, project_slug, full_test_name):
     if top:
         top = project.builds.get(version=top)
 
-    history = TestHistory(project, full_test_name, top=top, page=page)
-    context = {
-        "project": project,
-        "history": history,
-    }
-    return render(request, 'squad/test_history.html', context)
+    try:
+        history = TestHistory(project, full_test_name, top=top, page=page)
+        context = {
+            "project": project,
+            "history": history,
+        }
+        return render(request, 'squad/test_history.html', context)
+    except Suite.DoesNotExist:
+        raise Http404("No such suite for test: %s")
