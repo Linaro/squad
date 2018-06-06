@@ -249,7 +249,7 @@ CELERY_BROKER_URL = os.getenv('SQUAD_CELERY_BROKER_URL')
 CELERYD_HIJACK_ROOT_LOGGER = False
 CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
 CELERY_TASK_SERIALIZER = 'msgpack'
-CELERYBEAT_SCHEDULE = {
+CELERY_BEAT_SCHEDULE = {
     'poll-every-hour': {
         'task': 'squad.ci.tasks.poll',
         'schedule': crontab(hour='*/1', minute=17),
