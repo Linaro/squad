@@ -4,6 +4,14 @@
         <i class='fa fa-{% if test.status == "fail" %}times{% elif test.status == "pass" %}check{% else %}question-circle-o{% endif %}'></i>
         <a href="{% url 'test_history' project.group.slug project.slug test.full_name %}">{{test.name}} — {{test.status|upper}}
         </a>
+        {% if known_issue %}
+            Known issue:
+            {% if known_issue.url %}
+                <a href="{{known_issue.url}}">{{known_issue.title}}</a>
+            {% else %}
+                {{known_issue.title}}
+            {% endif %}
+        {% endif %}
     </div>
     <div class='col-md-2 col-sm-2'>
         {% if test.metadata.description or suite.metadata.instructions_to_reproduce or test.metadata.instructions_to_reproduce or test.log %}
