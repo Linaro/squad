@@ -1,3 +1,8 @@
+# 0.45.1
+
+* ci/admin: only link to test job with valid URL
+* settings: fix periodic tasks schedule
+
 # 0.45
 
 * api:
