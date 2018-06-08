@@ -98,8 +98,10 @@ class Notification(object):
             'notification': self,
             'previous_build': self.previous_build,
             'regressions_grouped_by_suite': self.comparison.regressions_grouped_by_suite,
+            'fixes_grouped_by_suite': self.comparison.fixes_grouped_by_suite,
             'known_issues': self.known_issues,
             'regressions': self.comparison.regressions,
+            'fixes': self.comparison.fixes,
             'settings': settings,
             'summary': self.summary,
         }

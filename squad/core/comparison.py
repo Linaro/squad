@@ -108,37 +108,53 @@ class TestComparison(object):
         return self.__diff__
 
     __regressions__ = None
+    __fixes__ = None
 
     @property
     def regressions(self):
-        if self.__regressions__ is not None:
-            return self.__regressions__
-
-        if len(self.builds) < 2:
-            self.__regressions__ = {}
-            return self.__regressions__
-
-        regressions = OrderedDict()
-        after = self.builds[-1]  # last
-        before = self.builds[-2]  # second to last
-        for env in self.environments[after]:
-            regression_list = []
-            for test, results in self.diff.items():
-                results_after = results.get((after, env))
-                results_before = results.get((before, env))
-                if (results_before, results_after) == ('pass', 'fail'):
-                    regression_list.append(test)
-            if regression_list:
-                regressions[env] = regression_list
-
-        self.__regressions__ = regressions
+        if self.__regressions__ is None:
+            self.__regressions__ = self.__status_changes__()
         return self.__regressions__
 
     @property
+    def fixes(self):
+        if self.__fixes__ is None:
+            self.__fixes__ = self.__status_changes__(('fail', 'pass'))
+        return self.__fixes__
+
+    def __status_changes__(self, comparison_tuple=('pass', 'fail')):
+        if len(self.builds) < 2:
+            return {}
+
+        comparisons = OrderedDict()
+        after = self.builds[-1]  # last
+        before = self.builds[-2]  # second to last
+        for env in self.environments[after]:
+            comparison_list = []
+            for test, results in self.diff.items():
+                results_after = results.get((after, env))
+                results_before = results.get((before, env))
+                if (results_before, results_after) == comparison_tuple:
+                    comparison_list.append(test)
+            if comparison_list:
+                comparisons[env] = comparison_list
+
+        return comparisons
+
+    @property
     def regressions_grouped_by_suite(self):
-        regressions = self.regressions
+        return self.__status_changes_by_suite__()
+
+    @property
+    def fixes_grouped_by_suite(self):
+        return self.__status_changes_by_suite__(False)
+
+    def __status_changes_by_suite__(self, regression=True):
+        comparisons = self.regressions
+        if not regression:
+            comparisons = self.fixes
         result = OrderedDict()
-        for env, tests in regressions.items():
+        for env, tests in comparisons.items():
             this_env = OrderedDict()
             for test in tests:
                 suite, testname = parse_name(test)

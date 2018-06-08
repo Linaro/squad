@@ -122,12 +122,32 @@ class TestComparisonTest(TestCase):
         self.assertEqual(['a'], regressions['myenv'])
         self.assertEqual(['a'], regressions['otherenv'])
 
+    def test_fixes(self):
+        """
+        This test is using builds from different projects because the relevant
+        test data is already prepared in setUp(), but usually regressions is
+        only used when comparing subsequent builds from the same project.
+        """
+        comparison = TestComparison.compare_builds(self.build1, self.build2)
+        fixes = comparison.fixes
+        self.assertEqual(['c'], fixes['myenv'])
+
     def test_regressions_no_previous_build(self):
         comparison = TestComparison.compare_builds(self.build1, None)
         regressions = comparison.regressions
         self.assertEqual({}, regressions)
 
+    def test_fixes_no_previous_build(self):
+        comparison = TestComparison.compare_builds(self.build1, None)
+        fixes = comparison.fixes
+        self.assertEqual({}, fixes)
+
     def test_regressions_no_regressions(self):
         # same build! so no regressions, by definition
         comparison = TestComparison.compare_builds(self.build1, self.build1)
         self.assertEqual({}, comparison.regressions)
+
+    def test_fixes_no_fixes(self):
+        # same build! so no fixes, by definition
+        comparison = TestComparison.compare_builds(self.build1, self.build1)
+        self.assertEqual({}, comparison.fixes)
