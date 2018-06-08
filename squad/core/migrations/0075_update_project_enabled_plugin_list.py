@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
-import squad.plugins
+import squad.core.plugins
 
 
 class Migration(migrations.Migration):
@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='project',
             name='enabled_plugins_list',
-            field=squad.plugins.PluginListField(null=True),
+            field=squad.core.plugins.PluginListField(null=True),
         ),
     ]

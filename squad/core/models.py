@@ -15,9 +15,10 @@ from django.utils import timezone
 
 from squad.core.utils import random_token, parse_name, join_name
 from squad.core.statistics import geomean
-from squad.plugins import PluginListField
-from squad.plugins import PluginField
-from squad.plugins import get_plugin_instance
+from squad.core.plugins import Plugin
+from squad.core.plugins import PluginListField
+from squad.core.plugins import PluginField
+from squad.core.plugins import get_plugin_instance
 
 
 slug_pattern = '[a-zA-Z0-9][a-zA-Z0-9_.-]*'
@@ -81,7 +82,13 @@ class Project(models.Model):
     custom_email_template = models.ForeignKey(EmailTemplate, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     important_metadata_keys = models.TextField(null=True, blank=True)
-    enabled_plugins_list = PluginListField(null=True)
+    enabled_plugins_list = PluginListField(
+        null=True,
+        features=[
+            Plugin.postprocess_testrun,
+            Plugin.postprocess_testjob,
+        ],
+    )
 
     wait_before_notification = models.IntegerField(
         help_text='Wait this many seconds before sending notifications',
@@ -161,7 +168,13 @@ class PatchSource(models.Model):
     username = models.CharField(max_length=128)
     url = models.URLField()
     token = models.CharField(max_length=1024)
-    implementation = PluginField(default='null')
+    implementation = PluginField(
+        default='null',
+        features=[
+            Plugin.notify_patch_build_created,
+            Plugin.notify_patch_build_finished,
+        ],
+    )
 
     def get_implementation(self):
         return get_plugin_instance(self.implementation)

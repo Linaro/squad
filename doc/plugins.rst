@@ -12,7 +12,7 @@ add the wanted plugin names to the "Enabled plugin list" field.
 Declaring plugins in your Python package
 ----------------------------------------
 
-SQUAD plugins are Python classes that are a subclass of `squad.plugins.Plugin`,
+SQUAD plugins are Python classes that are a subclass of `squad.core.plugins.Plugin`,
 and can be provided by any Python package installed in the system. To register
 the plugin with SQUAD, you need to use the "entry points" system. In the
 setup.py for your package, use the following::
@@ -33,7 +33,7 @@ setup.py for your package, use the following::
 
 Now, the plugin itself can be implemented in `mypluginpackage.py`, like this::
 
-    from squad.plugins import Plugin
+    from squad.core.plugins import Plugin
 
     class Plugin1(Plugin):
         # implementation of the plugin methods ...
@@ -47,7 +47,7 @@ in your plugin class in order to provide extra functionality to the SQUAD core.
 The plugin API
 --------------
 
-.. autoclass:: squad.plugins.Plugin
+.. autoclass:: squad.core.plugins.Plugin
     :members:
 
 Adding plugin usage to the SQUAD core
@@ -56,7 +56,7 @@ Adding plugin usage to the SQUAD core
 Code from the SQUAD core that wants to invoke functionality from plugins should
 use the ``apply_plugins`` function.
 
-.. autofunction:: squad.plugins.apply_plugins
+.. autofunction:: squad.core.plugins.apply_plugins
 
 Full plugin package example
 ---------------------------
@@ -94,7 +94,7 @@ provides one SQUAD plugin. It is made of only two files: ``setup.py`` and
 
 ``examplepluginpackage/__init__.py``::
 
-    from squad.plugins import Plugin
+    from squad.core.plugins import Plugin
 
     class MyPlugin(Plugin):
 

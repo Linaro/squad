@@ -13,9 +13,9 @@ ALLOWED_MODULE_DEPENDENCIES = (
     ('squad.api', 'squad.http'),
     ('squad.ci', 'squad.ci'),
     ('squad.ci', 'squad.core'),
-    ('squad.ci', 'squad.plugins'),
+    ('squad.ci', 'squad.core.plugins'),
     ('squad.core', 'squad.core'),
-    ('squad.core', 'squad.plugins'),
+    ('squad.core', 'squad.core.plugins'),
     ('squad.frontend', 'squad.core'),
     ('squad.frontend', 'squad.frontend'),
     ('squad.frontend', 'squad.http'),
@@ -23,7 +23,7 @@ ALLOWED_MODULE_DEPENDENCIES = (
     ('squad.http', 'squad.core'),
     ('squad.run', 'squad.manage'),
     ('squad.run', 'squad.version'),
-    ('squad.plugins.*', 'squad.plugins'),
+    ('squad.plugins', 'squad.core.plugins'),
     ('squad.settings', 'squad.core'),
 )
 

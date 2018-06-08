@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 import django.db.models.deletion
-import squad.plugins
+import squad.core.plugins
 
 
 class Migration(migrations.Migration):
@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('username', models.CharField(max_length=128)),
                 ('url', models.URLField()),
                 ('token', models.CharField(max_length=1024)),
-                ('implementation', squad.plugins.PluginField(default='null')),
+                ('implementation', squad.core.plugins.PluginField(default='null')),
             ],
         ),
         migrations.AddField(
