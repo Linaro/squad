@@ -100,7 +100,7 @@ def build(request, group_slug, project_slug, version):
         'test_run',
         'test_run__environment',
         'suite',
-    ).order_by('-tests_fail')
+    ).order_by('-tests_fail', 'suite__slug')
 
     count_statuses_nofail = len([s for s in statuses if s.has_tests and s.tests_fail == 0])
     count_statuses_fail = len([s for s in statuses if s.has_tests and s.tests_fail > 0])
