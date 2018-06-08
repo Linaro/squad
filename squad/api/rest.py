@@ -187,7 +187,7 @@ class BuildViewSet(ModelViewSet):
     List of all builds in the system. Only builds belonging to public projects
     and to projects you have access to are available.
     """
-    queryset = Build.objects.prefetch_related('test_runs').all()
+    queryset = Build.objects.prefetch_related('test_runs').order_by('-datetime').all()
     serializer_class = BuildSerializer
     filter_fields = ('version', 'project')
     search_fields = ('version',)
