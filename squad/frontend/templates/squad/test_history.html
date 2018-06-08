@@ -28,6 +28,24 @@
       {% endfor %}
     </thead>
 
+    {% if history.known_issues %}
+    <tr>
+      <th colspan="2">Known Issues</th>
+      {% for environment in history.environments %}
+        <td>
+          {% for issue in history.known_issues|get_value:environment %}
+            {% if issue.url %}
+              <a href="{{issue.url}}">{{issue.title}}</a>
+            {% else %}
+              {{issue.title}}
+            {% endif %}
+            <br/>
+          {% endfor %}
+        </td>
+      {% endfor %}
+    </tr>
+    {% endif %}
+
     {% for build, results in history.results.items %}
     <tr>
       <td><a href="{% project_url build %}">{{build.version}}</a></td>

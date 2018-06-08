@@ -3,7 +3,7 @@ from django.core.paginator import Paginator
 
 
 from squad.core.utils import parse_name
-from squad.core.models import Test
+from squad.core.models import Test, KnownIssue
 
 
 class TestResult(object):
@@ -41,6 +41,13 @@ class TestHistory(object):
         for build in builds:
             results[build] = {}
         self.top = builds[0]
+
+        known_issues = {}
+        for issue in KnownIssue.active_by_project_and_test(project, full_test_name):
+            for env in issue.environment.all():
+                known_issues.setdefault(env, [])
+                known_issues[env].append(issue)
+        self.known_issues = known_issues
 
         for test in tests:
             build = test.test_run.build

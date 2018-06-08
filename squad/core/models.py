@@ -809,3 +809,7 @@ class KnownIssue(models.Model):
     @classmethod
     def active_by_environment(cls, environment):
         return cls.objects.filter(active=True, environment=environment)
+
+    @classmethod
+    def active_by_project_and_test(cls, project, test_name):
+        return cls.objects.filter(active=True, environment__project=project, test_name=test_name).distinct()
