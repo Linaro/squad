@@ -53,8 +53,11 @@ class Backend(models.Model):
     )
     poll_interval = models.IntegerField(default=60)  # minutes
     max_fetch_attempts = models.IntegerField(default=3)
+    poll_enabled = models.BooleanField(default=True)
 
     def poll(self):
+        if not self.poll_enabled:
+            return
         test_jobs = self.test_jobs.filter(
             submitted=True,
             fetched=False,

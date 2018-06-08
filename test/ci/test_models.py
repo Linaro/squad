@@ -47,6 +47,12 @@ class BackendPollTest(BackendTestBase):
         jobs = list(self.backend.poll())
         self.assertEqual([test_job], jobs)
 
+    def test_poll_enabled(self):
+        self.create_test_job(submitted=True)
+        self.backend.poll_enabled = False
+        jobs = list(self.backend.poll())
+        self.assertEqual([], jobs)
+
     def test_poll_wont_fetch_non_submitted_job(self):
         self.create_test_job(submitted=False)
         jobs = list(self.backend.poll())
