@@ -11,6 +11,9 @@
             {% else %}
                 {{known_issue.title}}
             {% endif %}
+            {% if known_issue.intermittent %}
+            (intermittent)
+            {% endif %}
         {% endif %}
     </div>
     <div class='col-md-2 col-sm-2'>

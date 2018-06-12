@@ -39,6 +39,9 @@
             {% else %}
               {{issue.title}}
             {% endif %}
+            {% if issue.intermittent %}
+            (intermittent)
+            {% endif %}
             <br/>
           {% endfor %}
         </td>
