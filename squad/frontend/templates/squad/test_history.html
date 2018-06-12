@@ -52,13 +52,15 @@
       <td>{{build.datetime}}</td>
       {% for environment in history.environments %}
       {% with result=results|get_value:environment%}
-      <td class='{{result.status|slugify}}'>
+      {% with known_issue=history.known_issues|get_value:environment %}
+      <td class='{{result.status|slugify}}{% if result.status == "fail" and known_issue %} known-issue{% endif %}'>
         {% if result %}
         <a href="{% project_url result.test_run %}">{{result.status}}</a>
         {% else %}
         <i>n/a</i>
         {% endif %}
       </td>
+      {% endwith %}
       {% endwith %}
       {% endfor %}
     </tr>

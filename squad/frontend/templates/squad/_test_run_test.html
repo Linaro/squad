@@ -1,5 +1,5 @@
 {% load squad %}
-<div class='row row-bordered {{test.status}} tests-{{status.id}}-{{test.status}}'>
+<div class='row row-bordered {{test.status}} tests-{{status.id}}-{{test.status}}{% if known_issue %} known-issue{% endif %}'>
     <div class='col-md-10 col-sm-10'>
         <i class='fa fa-{% if test.status == "fail" %}times{% elif test.status == "pass" %}check{% else %}question-circle-o{% endif %}'></i>
         <a href="{% url 'test_history' project.group.slug project.slug test.full_name %}">{{test.name}} — {{test.status|upper}}
