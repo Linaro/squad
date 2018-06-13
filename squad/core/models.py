@@ -811,5 +811,8 @@ class KnownIssue(models.Model):
         return cls.objects.filter(active=True, environment=environment)
 
     @classmethod
-    def active_by_project_and_test(cls, project, test_name):
-        return cls.objects.filter(active=True, environment__project=project, test_name=test_name).distinct()
+    def active_by_project_and_test(cls, project, test_name=None):
+        qs = cls.objects.filter(active=True, environment__project=project).prefetch_related('environment')
+        if test_name:
+            qs = qs.filter(test_name=test_name)
+        return qs.distinct()
