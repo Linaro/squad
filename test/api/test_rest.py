@@ -15,6 +15,7 @@ class RestApiTest(TestCase):
         self.environment = self.project.environments.create(slug='myenv')
         self.testrun = self.build.test_runs.create(environment=self.environment, build=self.build)
         self.backend = ci_models.Backend.objects.create(name='foobar')
+        self.patchsource = models.PatchSource.objects.create(name='baz_source', username='u', url='http://example.com', token='secret')
         self.testjob = self.build.test_jobs.create(
             definition="foo: bar",
             backend=self.backend,
@@ -128,3 +129,7 @@ class RestApiTest(TestCase):
     def test_groups(self):
         data = self.hit('/api/groups/')
         self.assertEqual('mygroup', data['results'][0]['slug'])
+
+    def test_patch_source(self):
+        data = self.hit('/api/patchsources/')
+        self.assertEqual(1, len(data['results']))
