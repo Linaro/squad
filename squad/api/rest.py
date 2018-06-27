@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group as UserGroup
-from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate, KnownIssue
+from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate, KnownIssue, PatchSource
 from squad.core.notification import Notification
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
@@ -168,6 +168,23 @@ class ProjectStatusViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectStatusSerializer
     filter_fields = ('build',)
     ordering_fields = ('created_at', 'last_updated')
+
+
+class PatchSourceSerializer(serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = PatchSource
+        fields = '__all__'
+        extra_kwargs = {
+            'token': {'write_only': True},
+            'username': {'write_only': True}
+        }
+
+
+class PatchSourceViewSet(viewsets.ModelViewSet):
+    queryset = PatchSource.objects
+    serializer_class = PatchSourceSerializer
+    filter_fields = ('implementation', 'url', 'name')
 
 
 class BuildSerializer(serializers.HyperlinkedModelSerializer):
@@ -507,3 +524,4 @@ router.register(r'environments', EnvironmentViewSet)
 router.register(r'backends', BackendViewSet)
 router.register(r'emailtemplates', EmailTemplateViewSet)
 router.register(r'knownissues', KnownIssueViewSet)
+router.register(r'patchsources', PatchSourceViewSet)
