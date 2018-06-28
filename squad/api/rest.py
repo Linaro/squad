@@ -8,7 +8,85 @@ from rest_framework.decorators import detail_route
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
+import rest_framework_filters as filters
+
 from jinja2 import TemplateSyntaxError
+
+
+class GroupFilter(filters.FilterSet):
+    class Meta:
+        model = Group
+        fields = {'name': ['exact', 'in', 'startswith'],
+                  'slug': ['exact', 'in', 'startswith']}
+
+
+class ProjectFilter(filters.FilterSet):
+    group = filters.RelatedFilter(GroupFilter, name="group", queryset=Group.objects.all())
+
+    class Meta:
+        model = Project
+        fields = {'name': ['exact', 'in', 'startswith'],
+                  'slug': ['exact', 'in', 'startswith']}
+
+
+class EnvironmentFilter(filters.FilterSet):
+    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all())
+
+    class Meta:
+        model = Environment
+        fields = {'name': ['exact', 'in', 'startswith'],
+                  'slug': ['exact', 'in', 'startswith'],
+                  'id': ['exact']}
+
+
+class ProjectStatusFilter(filters.FilterSet):
+
+    class Meta:
+        model = ProjectStatus
+        fields = {'finished': ['exact', 'in'],
+                  'approved': ['exact', 'in'],
+                  'notified': ['exact', 'in'],
+                  'has_metrics': ['exact', 'in']}
+
+
+class BuildFilter(filters.FilterSet):
+    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all())
+    status = filters.RelatedFilter(ProjectStatusFilter, name="status", queryset=ProjectStatus.objects.all())
+
+    class Meta:
+        model = Build
+        fields = {'version': ['exact', 'in', 'startswith'],
+                  'id': ['exact']}
+
+
+class TestRunFilter(filters.FilterSet):
+    build = filters.RelatedFilter(BuildFilter, name="build", queryset=Build.objects.all())
+    environment = filters.RelatedFilter(EnvironmentFilter, name="environment", queryset=Environment.objects.all())
+
+    class Meta:
+        model = TestRun
+        fields = {'job_id': ['exact', 'in', 'startswith'],
+                  'job_status': ['exact', 'in', 'startswith'],
+                  'data_processed': ['exact', 'in'],
+                  'status_recorded': ['exact', 'in']}
+
+
+class TestJobFilter(filters.FilterSet):
+    test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all())
+    target_build = filters.RelatedFilter(BuildFilter, name="target_build", queryset=Build.objects.all())
+
+    class Meta:
+        model = TestJob
+        fields = {'name': ['exact', 'in', 'startswith']}
+
+
+class TestFilter(filters.FilterSet):
+    test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all())
+
+    class Meta:
+        model = Test
+        fields = {'name': ['exact', 'in', 'startswith'],
+                  'result': ['exact', 'in']}
 
 
 class API(routers.APIRootView):
@@ -94,6 +172,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects
     serializer_class = GroupSerializer
     filter_fields = ('slug', 'name')
+    filter_class = GroupFilter
     search_fields = ('slug', 'name')
     ordering_fields = ('slug', 'name')
 
@@ -128,6 +207,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                      'custom_email_template',
                      'moderate_notifications',
                      'notification_strategy')
+    filter_class = ProjectFilter
     search_fields = ('slug',
                      'name',)
     ordering_fields = ('slug',
@@ -168,6 +248,8 @@ class ProjectStatusViewSet(viewsets.ModelViewSet):
     queryset = ProjectStatus.objects
     serializer_class = ProjectStatusSerializer
     filter_fields = ('build',)
+    filter_class = ProjectStatusFilter
+
     ordering_fields = ('created_at', 'last_updated')
 
 
@@ -209,6 +291,7 @@ class BuildViewSet(ModelViewSet):
     queryset = Build.objects.prefetch_related('test_runs').order_by('-datetime').all()
     serializer_class = BuildSerializer
     filter_fields = ('version', 'project')
+    filter_class = BuildFilter
     search_fields = ('version',)
     ordering_fields = ('id', 'version', 'created_at', 'datetime')
 
@@ -313,6 +396,7 @@ class EnvironmentViewSet(ModelViewSet):
     queryset = Environment.objects
     serializer_class = EnvironmentSerializer
     filter_fields = ('project', 'slug', 'name')
+    filter_class = EnvironmentFilter
     search_fields = ('slug', 'name')
     ordering_fields = ('id', 'slug', 'name')
 
@@ -341,7 +425,17 @@ class TestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Test
-        exclude = ('id', 'suite', 'test_run',)
+        exclude = ('test_run',)
+
+
+class TestViewSet(ModelViewSet):
+
+    queryset = Test.objects.all()
+    serializer_class = TestSerializer
+    filter_class = TestFilter
+
+    def get_queryset(self):
+        return self.queryset.filter(test_run__build__project__in=self.get_project_ids())
 
 
 class MetricSerializer(serializers.ModelSerializer):
@@ -371,6 +465,7 @@ class TestRunViewSet(ModelViewSet):
         "status_recorded",
         "environment",
     )
+    filter_class = TestRunFilter
     search_fields = ('environment',)
     ordering_fields = ('id', 'created_at', 'environment', 'datetime')
 
@@ -467,6 +562,7 @@ class TestJobViewSet(ModelViewSet):
         "backend",
         "target",
     )
+    filter_class = TestJobFilter
     search_fields = ("name", "environment", "last_fetch_attempt")
     ordering_fields = ("id", "name", "environment", "last_fetch_attempt")
 
@@ -522,6 +618,7 @@ router.register(r'projects', ProjectViewSet)
 router.register(r'builds', BuildViewSet)
 router.register(r'testjobs', TestJobViewSet)
 router.register(r'testruns', TestRunViewSet)
+router.register(r'tests', TestViewSet)
 router.register(r'environments', EnvironmentViewSet)
 router.register(r'backends', BackendViewSet)
 router.register(r'emailtemplates', EmailTemplateViewSet)

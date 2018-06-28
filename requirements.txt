@@ -3,6 +3,7 @@ Django>=1.11,<1.12
 django-cors-headers
 django_filter
 djangorestframework
+djangorestframework-filters
 gunicorn
 Jinja2
 markdown

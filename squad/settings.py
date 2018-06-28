@@ -72,6 +72,7 @@ __apps__ = [
     django_extensions,  # OPTIONAL
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_filters',
     'django_filters',
     'squad.core',
     'squad.api',
@@ -262,6 +263,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'DEFAULT_FILTER_BACKENDS': (
+        'rest_framework_filters.backends.DjangoFilterBackend',
         'rest_framework.filters.OrderingFilter',
         'rest_framework.filters.SearchFilter',
         'squad.api.utils.DisabledHTMLFilterBackend',
