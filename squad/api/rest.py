@@ -331,7 +331,7 @@ class MetricSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Metric
-        exclude = ('id', 'name', 'suite', 'test_run', 'measurements')
+        exclude = ('id', 'suite', 'test_run', 'measurements')
 
 
 class TestRunViewSet(ModelViewSet):
