@@ -793,3 +793,26 @@ class AdminSubscription(models.Model):
 
     def __str__(self):
         return '%s on %s' % (self.email, self.project)
+
+
+class KnownIssue(models.Model):
+    title = models.CharField(max_length=1024)
+    test_name = models.CharField(max_length=1024)
+
+    url = models.URLField(null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
+
+    active = models.BooleanField(default=True)
+    intermittent = models.BooleanField(default=False)
+    environment = models.ManyToManyField(Environment)
+
+    @classmethod
+    def active_by_environment(cls, environment):
+        return cls.objects.filter(active=True, environment=environment)
+
+    @classmethod
+    def active_by_project_and_test(cls, project, test_name=None):
+        qs = cls.objects.filter(active=True, environment__project=project).prefetch_related('environment')
+        if test_name:
+            qs = qs.filter(test_name=test_name)
+        return qs.distinct()

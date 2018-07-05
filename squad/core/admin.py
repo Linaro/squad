@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.forms import ModelForm, ModelMultipleChoiceField, CheckboxSelectMultiple
 from . import models
 from .tasks import notify_project_status, postprocess_test_run
 from squad.core.plugins import PluginLoader
@@ -149,6 +150,46 @@ class PatchSourceAdmin(admin.ModelAdmin):
     list_display = ['name', 'url', 'implementation']
 
 
+class SelectEnvironment(ModelMultipleChoiceField):
+
+    def label_from_instance(self, e):
+        return e.project.full_name + ' - ' + e.slug
+
+
+class KnownIssueAdminForm(ModelForm):
+    environment = SelectEnvironment(
+        models.Environment.objects.prefetch_related('project', 'project__group').order_by('project__group__slug', 'project__slug'),
+        widget=CheckboxSelectMultiple,
+    )
+
+    class Meta:
+        model = models.KnownIssue
+        fields = "__all__"
+
+
+class KnownIssueGroupFilter(admin.SimpleListFilter):
+
+    title = 'group'
+    parameter_name = 'group'
+
+    def lookups(self, request, model_admin):
+        return ((g.id, g.slug) for g in models.Group.objects.order_by('slug').all())
+
+    def queryset(self, request, queryset):
+        group = request.GET.get('group')
+        if group:
+            return queryset.filter(environment__project__group__id=group).distinct()
+        else:
+            return queryset
+
+
+class KnownIssueAdmin(admin.ModelAdmin):
+    models = models.KnownIssue
+    list_display = ['title', 'url', 'active', 'intermittent']
+    list_filter = [KnownIssueGroupFilter]
+    form = KnownIssueAdminForm
+
+
 admin.site.register(models.Group)
 admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.EmailTemplate)
@@ -158,3 +199,4 @@ admin.site.register(models.Build, BuildAdmin)
 admin.site.register(models.SuiteMetadata, SuiteMetadataAdmin)
 admin.site.register(models.TestRun, TestRunAdmin)
 admin.site.register(models.PatchSource, PatchSourceAdmin)
+admin.site.register(models.KnownIssue, KnownIssueAdmin)

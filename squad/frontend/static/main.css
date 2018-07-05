@@ -30,6 +30,10 @@
   border-color: #a94442;
   color: #a40000;
 }
+.row-bordered.fail.known-issue {
+  background-color: #fffff0;
+  border-color: #d0d099;
+}
 .row-bordered.pass i {
   color: #00a400;
 }
@@ -118,6 +122,10 @@ table.test-results td.fail {
   background-color: #f2dede;
   border-color: #a94442;
   color: #a40000;
+}
+table.test-results td.fail.known-issue {
+  background-color: #fffff0;
+  border-color: #d0d099;
 }
 table.test-results td.pass {
   background-color: #def2de;

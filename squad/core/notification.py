@@ -6,7 +6,7 @@ from django.template.loader import render_to_string
 from re import sub
 
 
-from squad.core.models import Project, ProjectStatus, Build
+from squad.core.models import Project, ProjectStatus, Build, KnownIssue
 from squad.core.comparison import TestComparison
 
 
@@ -64,6 +64,10 @@ class Notification(object):
         return [r.email for r in self.project.subscriptions.all()]
 
     @property
+    def known_issues(self):
+        return KnownIssue.active_by_project_and_test(self.project)
+
+    @property
     def subject(self):
         summary = self.summary
         subject_data = {
@@ -94,6 +98,7 @@ class Notification(object):
             'notification': self,
             'previous_build': self.previous_build,
             'regressions_grouped_by_suite': self.comparison.regressions_grouped_by_suite,
+            'known_issues': self.known_issues,
             'regressions': self.comparison.regressions,
             'settings': settings,
             'summary': self.summary,

@@ -10,7 +10,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
-from squad.core.models import Group, Project, Metric, ProjectStatus, Status
+from squad.core.models import Group, Project, Metric, ProjectStatus, Status, KnownIssue
 from squad.core.queries import get_metric_data
 from squad.core.utils import join_name
 from squad.frontend.utils import file_type
@@ -184,6 +184,10 @@ def test_run_suite_tests(request, group_slug, project_slug, build_version, job_i
     paginator = Paginator(all_tests, 100)
     page = request.GET.get('page', '1')
     context['tests'] = paginator.page(page)
+    context['known_issues'] = {
+        i.test_name: i
+        for i in KnownIssue.active_by_environment(context['test_run'].environment)
+    }
 
     return render(request, 'squad/test_run_suite_tests.html', context)
 
