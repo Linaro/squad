@@ -1,3 +1,31 @@
+# 0.46
+
+* api:
+  * fix crash when accessing TestRun.Metrics
+  * add endpoint for KnownIssue object
+  * order build results by ascending instead of descending
+* ci/Backend: allow disabling polls
+* ci/admin: show poll_interval and max_fetch_attempts in Backend listing
+* core:
+  * add tests for KnownIssues
+  * display known issues in email notifications
+  * limit Project.enabled_plugins_list to applicable plugins
+  * limit PatchSource.implementation to related plugins
+  * Add KnownIssue model class
+* frontend:
+  * Improve TestRun and TestSuite pages
+  * remove 'Build' and 'Test Run' from the page header
+  * display when known issue is intermittent
+  * display known issues in light orange
+  * test history: display known issues
+  * display Known issues in test results page
+  * build page: sort test runs by suite slug
+* plugins:
+  * add Github build status notification plugin
+  * add optional `features` option to plugin fields
+  * add get_plugins_by_feature
+  * split core plugin support from builtin plugins
+
 # 0.45.1
 
 * ci/admin: only link to test job with valid URL
