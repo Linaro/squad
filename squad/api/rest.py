@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group as UserGroup
-from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate
+from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate, KnownIssue
 from squad.core.notification import Notification
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
@@ -479,6 +479,23 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
     ordering_fields = ('name', 'id')
 
 
+class KnownIssueSerializer(serializers.HyperlinkedModelSerializer):
+
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = KnownIssue
+        fields = '__all__'
+
+
+class KnownIssueViewSet(viewsets.ModelViewSet):
+
+    queryset = KnownIssue.objects.all()
+    serializer_class = KnownIssueSerializer
+    filter_fields = ('title', 'test_name', 'active', 'intermittent', 'environment')
+    ordering_fields = ('title', 'id')
+
+
 router = APIRouter()
 router.register(r'groups', GroupViewSet)
 router.register(r'usergroups', UserGroupViewSet, 'usergroups')
@@ -489,3 +506,4 @@ router.register(r'testruns', TestRunViewSet)
 router.register(r'environments', EnvironmentViewSet)
 router.register(r'backends', BackendViewSet)
 router.register(r'emailtemplates', EmailTemplateViewSet)
+router.register(r'knownissues', KnownIssueViewSet)
