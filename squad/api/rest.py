@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group as UserGroup
-from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate, KnownIssue, PatchSource
+from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate, KnownIssue, PatchSource, Suite
 from squad.core.notification import Notification
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
@@ -79,6 +79,14 @@ class TestJobFilter(filters.FilterSet):
         model = TestJob
         fields = {'name': ['exact', 'in', 'startswith']}
 
+
+class SuiteFilter(filters.FilterSet):
+    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all())
+
+    class Meta:
+        model = Suite
+        fields = {'name': ['exact', 'in', 'startswith'],
+                  'slug': ['exact', 'in', 'startswith']}
 
 class TestFilter(filters.FilterSet):
     test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all())
@@ -437,6 +445,20 @@ class TestRunSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
+class SuiteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Suite
+        exclude = ('metadata',)
+
+
+class SuiteViewSet(viewsets.ModelViewSet):
+
+    queryset = Suite.objects.all()
+    serializer_class = SuiteSerializer
+    filter_class = SuiteFilter
+
+
 class TestSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='full_name', read_only=True)
     status = serializers.CharField(read_only=True)
@@ -637,6 +659,7 @@ router.register(r'builds', BuildViewSet)
 router.register(r'testjobs', TestJobViewSet)
 router.register(r'testruns', TestRunViewSet)
 router.register(r'tests', TestViewSet)
+router.register(r'suites', SuiteViewSet)
 router.register(r'environments', EnvironmentViewSet)
 router.register(r'backends', BackendViewSet)
 router.register(r'emailtemplates', EmailTemplateViewSet)
