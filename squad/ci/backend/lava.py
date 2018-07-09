@@ -36,15 +36,15 @@ class Backend(BaseBackend):
             test_job.name = self.__lava_job_name(test_job.definition)
             return job_id
         except xmlrpc.client.ProtocolError as error:
-            raise TemporarySubmissionIssue(str(error))
+            raise TemporarySubmissionIssue(self.url_remove_token(str(error)))
         except xmlrpc.client.Fault as fault:
             if fault.faultCode // 100 == 5:
                 # assume HTTP errors 5xx are temporary issues
-                raise TemporarySubmissionIssue(str(fault))
+                raise TemporarySubmissionIssue(self.url_remove_token(str(fault)))
             else:
-                raise SubmissionIssue(str(fault))
+                raise SubmissionIssue(self.url_remove_token(str(fault)))
         except ssl.SSLError as fault:
-            raise SubmissionIssue(str(fault))
+            raise SubmissionIssue(self.url_remove_token(str(fault)))
 
     def fetch(self, test_job):
         try:
@@ -62,15 +62,15 @@ class Backend(BaseBackend):
 
                 return self.__parse_results__(data, test_job) + (logs,)
         except xmlrpc.client.ProtocolError as error:
-            raise TemporaryFetchIssue(str(error))
+            raise TemporaryFetchIssue(self.url_remove_token(str(error)))
         except xmlrpc.client.Fault as fault:
             if fault.faultCode // 100 == 5:
                 # assume HTTP errors 5xx are temporary issues
-                raise TemporaryFetchIssue(str(fault))
+                raise TemporaryFetchIssue(self.url_remove_token(str(fault)))
             else:
-                raise FetchIssue(str(fault))
+                raise FetchIssue(self.url_remove_token(str(fault)))
         except ssl.SSLError as fault:
-            raise FetchIssue(str(fault))
+            raise FetchIssue(self.url_remove_token(str(fault)))
 
     def listen(self):
         listener_url = self.get_listener_url()
@@ -117,6 +117,11 @@ class Backend(BaseBackend):
         super(Backend, self).__init__(data)
         self.complete_statuses = ['Complete', 'Incomplete', 'Canceled']
         self.__proxy__ = None
+
+    def url_remove_token(self, text):
+        if self.data is not None and self.data.token is not None:
+            return text.replace(self.data.token, "*****")
+        return text
 
     @property
     def proxy(self):
