@@ -12,4 +12,5 @@ PyYAML
 pyzmq
 requests
 sqlparse
+svgwrite
 whitenoise

@@ -44,6 +44,9 @@ class FrontendTest(TestCase):
     def test_project(self):
         self.hit('/mygroup/myproject/')
 
+    def test_project_badge(self):
+        self.hit('/mygroup/myproject/badge')
+
     def test_project_404(self):
         self.hit('/mygroup/unexistingproject/', 404)
 
