@@ -203,6 +203,26 @@ When sending a proper metadata JSON file, other fields may also be
 submitted. They will be stored, but will not be handled in any specific
 way.
 
+
+Badges
+~~~~~~
+
+SQUAD offers project badges that can be used in the webpages
+
+::
+
+  https://<squad_instance_tld>/group/project/badge
+
+The colour of the badge matches the passed/failed condition.
+Following colours are presented:
+
+  * green (#5cb85c) when there are no failed results
+  * orange (#f0ad4e) when there are both passed and failed results
+  * red (#d9534f) when there are no passed results
+
+If there are no results, the badge colour is grey (#999)
+
+
 CI loop integration (optional)
 ------------------------------
 
