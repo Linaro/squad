@@ -1,4 +1,14 @@
+# 0.46.2
+
+This release provides the proper artifacts for SQUAD 0.46
+
+# 0.46.1
+
+The release artifacts for this version are incorrect, and should not be used.
+
 # 0.46
+
+The release artifacts for this version are incorrect, and should not be used.
 
 * api:
   * fix crash when accessing TestRun.Metrics
