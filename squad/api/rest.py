@@ -55,6 +55,8 @@ class ModelViewSet(viewsets.ModelViewSet):
 
 class UserGroupSerializer(serializers.HyperlinkedModelSerializer):
 
+    url = serializers.HyperlinkedIdentityField(view_name='usergroups-detail')
+
     class Meta:
         model = UserGroup
         fields = ('id', 'name', 'url')
@@ -73,10 +75,10 @@ class UserGroupViewSet(viewsets.ModelViewSet):
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
 
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(read_only=True)
     user_groups = serializers.HyperlinkedRelatedField(
         many=True,
-        read_only=True,
+        queryset=UserGroup.objects.all(),
         view_name='usergroups-detail')
 
     class Meta:
@@ -104,8 +106,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
     builds = serializers.HyperlinkedIdentityField(
         view_name='project-builds',
     )
-    slug = serializers.CharField(read_only=True)
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Project
@@ -188,7 +189,7 @@ class PatchSourceViewSet(viewsets.ModelViewSet):
 
 
 class BuildSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(read_only=True)
     testruns = serializers.HyperlinkedIdentityField(view_name='build-testruns')
     testjobs = serializers.HyperlinkedIdentityField(view_name='build-testjobs')
     status = serializers.HyperlinkedIdentityField(read_only=True, view_name='build-status', allow_null=True)
@@ -296,7 +297,7 @@ class BuildViewSet(ModelViewSet):
 
 
 class EnvironmentSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Environment
@@ -320,7 +321,7 @@ class EnvironmentViewSet(ModelViewSet):
 
 class TestRunSerializer(serializers.HyperlinkedModelSerializer):
 
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(read_only=True)
     tests_file = serializers.HyperlinkedIdentityField(view_name='testrun-tests-file')
     metrics_file = serializers.HyperlinkedIdentityField(view_name='testrun-metrics-file')
     metadata_file = serializers.HyperlinkedIdentityField(view_name='testrun-metadata-file')
@@ -413,7 +414,7 @@ class TestRunViewSet(ModelViewSet):
 
 
 class BackendSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Backend
@@ -479,7 +480,7 @@ class TestJobViewSet(ModelViewSet):
 
 class EmailTemplateSerializer(serializers.HyperlinkedModelSerializer):
 
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = EmailTemplate
