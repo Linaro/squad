@@ -17,14 +17,14 @@ class TestResult(list):
 
     def __init__(self, name):
         self.name = name
-        self.totals = {"pass": 0, "fail": 0, "skip": 0, "n/a": 0}
+        self.totals = {"pass": 0, "fail": 0, "known_failure": 0, "skip": 0, "n/a": 0}
 
     def append(self, item):
         self.totals[item] += 1
         return super(TestResult, self).append(item)
 
     def ordering(self):
-        return tuple((-self.totals[k] for k in ("fail", "skip", "pass", "n/a")))
+        return tuple((-self.totals[k] for k in ("fail", "skip", "pass", "known_failure", "n/a")))
 
     def __lt__(self, other):
         return self.ordering() < other.ordering()
@@ -83,19 +83,20 @@ class TestResultTable(list):
           suite_id,
           name,
           SUM(CASE when result is null then 1 else 0 end) as skips,
-          SUM(CASE when result is null then 0 when result then 0 else 1 end) as fails,
-          SUM(CASE when result is null then 0 when result then 1 else 0 end) as passes
+          SUM(CASE when result is null then 0 when result = 0 then 0 else 1 end) as fails,
+          SUM(CASE when result is null then 0 when result = 1 then 1 else 0 end) as passes,
+          SUM(CASE when result is null then 0 when result = 2 then 1 else 0 end) as known_failure
         FROM core_test
         JOIN core_testrun ON core_testrun.id = core_test.test_run_id
         WHERE core_testrun.build_id = %s
         GROUP BY suite_id, name
-        ORDER BY fails DESC, skips DESC, passes DESC, suite_id, name
+        ORDER BY fails DESC, skips DESC, passes DESC, known_failure DESC, suite_id, name
         LIMIT %s
         OFFSET %s
         """
         with connection.cursor() as cursor:
             cursor.execute(query, [build_id, per_page, offset])
-            for suite_id, name, _, _, _ in cursor.fetchall():
+            for suite_id, name, _, _, _, _ in cursor.fetchall():
                 conditions.setdefault(suite_id, [])
                 conditions[suite_id].append(name)
 

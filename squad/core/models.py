@@ -316,7 +316,7 @@ class Build(models.Model):
                 if t.suite in result[tr.environment].keys():
                     result[tr.environment][t.suite][t.status] += 1
                 else:
-                    result[tr.environment].setdefault(t.suite, {'fail': 0, 'pass': 0, 'skip': 0})
+                    result[tr.environment].setdefault(t.suite, {'fail': 0, 'pass': 0, 'skip': 0, 'known_failure': 0})
                     result[tr.environment][t.suite][t.status] += 1
         for env in result.keys():
             # there should only be one key in the most nested dict
@@ -483,7 +483,7 @@ class Test(models.Model):
         limit_choices_to={'kind': 'test'},
     )
     name = models.CharField(max_length=256, db_index=True)
-    result = models.NullBooleanField()
+    result = models.IntegerField(blank=True, null=True)
     log = models.TextField(null=True, blank=True)
 
     def __str__(self):
@@ -491,7 +491,7 @@ class Test(models.Model):
 
     @property
     def status(self):
-        return {True: 'pass', False: 'fail', None: 'skip'}[self.result]
+        return {1: 'pass', 0: 'fail', 2: 'known_failure', None: 'skip'}[self.result]
 
     @property
     def full_name(self):
@@ -616,6 +616,10 @@ class TestSummaryBase(object):
         return self.__percent__(self.tests_skip)
 
     @property
+    def known_failure_percentage(self):
+        return self.__percent__(self.tests_known_failure)
+
+    @property
     def has_tests(self):
         return self.tests_total > 0
 
@@ -628,6 +632,7 @@ class Status(models.Model, TestSummaryBase):
     tests_pass = models.IntegerField(default=0)
     tests_fail = models.IntegerField(default=0)
     tests_skip = models.IntegerField(default=0)
+    tests_known_failure = models.IntegerField(default=0)
     metrics_summary = models.FloatField(default=0.0)
 
     objects = StatusManager()
@@ -645,7 +650,7 @@ class Status(models.Model, TestSummaryBase):
 
     @property
     def tests_by_result(self):
-        result = {'pass': [], 'fail': [], 'skip': []}
+        result = {'pass': [], 'fail': [], 'skip': [], 'known_failure': []}
         for test in self.tests:
             result[test.status].append(test)
         return result
@@ -686,6 +691,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
     tests_pass = models.IntegerField()
     tests_fail = models.IntegerField()
     tests_skip = models.IntegerField()
+    tests_known_failure = models.IntegerField(default=0)
 
     class Meta:
         verbose_name_plural = "Project statuses"
@@ -704,6 +710,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             'tests_pass': test_summary.tests_pass,
             'tests_fail': test_summary.tests_fail,
             'tests_skip': test_summary.tests_skip,
+            'tests_known_failure': test_summary.tests_known_failure,
             'metrics_summary': metrics_summary.value,
             'has_metrics': metrics_summary.has_metrics,
             'last_updated': now,
@@ -719,6 +726,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.tests_pass = test_summary.tests_pass
             status.tests_fail = test_summary.tests_fail
             status.tests_skip = test_summary.tests_skip
+            status.tests_known_failure = test_summary.tests_known_failure
             status.metrics_summary = metrics_summary.value
             status.has_metrics = metrics_summary.has_metrics
             status.last_updated = now
@@ -743,6 +751,7 @@ class TestSummary(TestSummaryBase):
         self.tests_pass = 0
         self.tests_fail = 0
         self.tests_skip = 0
+        self.tests_known_failure = 0
         self.failures = OrderedDict()
 
         tests = {}
@@ -757,10 +766,12 @@ class TestSummary(TestSummaryBase):
                 tests[(run.environment, test.suite, test.name)] = test
 
         for context, test in tests.items():
-            if test.result is True:
+            if test.result == 1:
                 self.tests_pass += 1
-            elif test.result is False:
+            elif test.result == 0:
                 self.tests_fail += 1
+            elif test.result == 2:
+                self.tests_known_failure += 1
             else:
                 self.tests_skip += 1
             if not test.result and test.result is not None:

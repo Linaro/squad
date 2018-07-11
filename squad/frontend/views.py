@@ -257,7 +257,8 @@ def test_run_suite_tests(request, group_slug, project_slug, build_version, job_i
         'suite',
         'metadata',
         'suite__metadata'
-    ).order_by(Case(When(result=False, then=0), When(result=True, then=2), default=1), 'name')
+    ).order_by(Case(When(result=0, then=0),  When(result=2, then=1), When(result=1, then=2), default=3), 'name')
+    print (all_tests)
 
     paginator = Paginator(all_tests, 100)
     page = request.GET.get('page', '1')
