@@ -158,3 +158,11 @@ class ProjectStatusTest(TestCase):
         build = self.create_build('2', datetime=h(0))
         status = ProjectStatus.create_or_update(build)
         self.assertEqual(previous, status.get_previous())
+
+    def test_zero_expected_test_runs(self):
+        self.project.environments.create(slug='other_env', expected_test_runs=0)
+
+        build = self.create_build('1')
+
+        status = ProjectStatus.create_or_update(build)
+        self.assertTrue(status.finished)
