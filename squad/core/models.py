@@ -267,8 +267,10 @@ class Build(models.Model):
           the project environments, where N is configured in
           Environment.expected_test_runs.  the expected number of completed
           test runs per environment. If an environment does not have
-          expected_test_runs set, or has it set to 0, then there must be at
-          least one test run for that environment.
+          expected_test_runs set, then there must be at least one test run for
+          that environment. Setting expected_test_runs to 0 causes the
+          environment to be ignored, i.e. any amount of test runs will be ok,
+          including 0.
         """
         # XXX note that by using test_jobs here, we are adding an implicit
         # dependency on squad.ci, what in theory violates our architecture.
@@ -294,6 +296,8 @@ class Build(models.Model):
         for env, count in testruns.items():
             expected = count['expected']
             received = count['received']
+            if expected == 0:
+                continue
             if received == 0:
                 return False
             if expected and received < expected:
