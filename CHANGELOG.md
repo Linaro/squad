@@ -1,3 +1,19 @@
+# 0.47
+
+* core:
+  * ProjectStatus: correctly handle 0 `expected_test_runs`
+  * detect changes from 'fail' to 'pass'
+* frontend:
+  * add SVG badge as separate view
+* api:
+  * add endpoint for PatchSource object
+  * make all 'id' fields read-only
+  * expose 'finished' flag to Build
+* ci:
+  * lava: prevent password leaking in error messages
+* scripts:
+  * add squad-config script for managing external config
+
 # 0.46.2
 
 This release provides the proper artifacts for SQUAD 0.46
