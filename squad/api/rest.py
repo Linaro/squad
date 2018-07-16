@@ -194,6 +194,7 @@ class BuildSerializer(serializers.HyperlinkedModelSerializer):
     testjobs = serializers.HyperlinkedIdentityField(view_name='build-testjobs')
     status = serializers.HyperlinkedIdentityField(read_only=True, view_name='build-status', allow_null=True)
     metadata = serializers.HyperlinkedIdentityField(read_only=True, view_name='build-metadata')
+    finished = serializers.BooleanField(read_only=True, source='status.finished')
 
     class Meta:
         model = Build
