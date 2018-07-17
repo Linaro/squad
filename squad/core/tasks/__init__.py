@@ -256,12 +256,15 @@ class RecordTestRunStatus(object):
 
         for test in testrun.tests.all():
             sid = test.suite_id
-            if test.result is True:
+            if test.result == 1:
                 status[None].tests_pass = status[None].tests_pass + 1
                 status[sid].tests_pass = status[sid].tests_pass + 1
-            elif test.result is False:
+            elif test.result == 0:
                 status[None].tests_fail = status[None].tests_fail + 1
                 status[sid].tests_fail = status[sid].tests_fail + 1
+            elif test.result == 2:
+                status[None].tests_known_failure = status[None].tests_known_failure + 1
+                status[sid].tests_known_failure = status[sid].tests_known_failure + 1
             else:
                 status[None].tests_skip = status[None].tests_skip + 1
                 status[sid].tests_skip = status[sid].tests_skip + 1

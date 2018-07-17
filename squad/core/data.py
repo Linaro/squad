@@ -6,7 +6,7 @@ from statistics import mean
 from squad.core.utils import parse_name
 
 
-test_result_mapping = {'pass': True, 'fail': False}
+test_result_mapping = {'pass': 1, 'fail': 0, 'known_failure': 2}
 
 
 def parse_test_result(value):

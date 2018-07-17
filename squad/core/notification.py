@@ -78,13 +78,14 @@ class Notification(object):
             'regressions': len(self.comparison.regressions),
             'tests_fail': summary.tests_fail,
             'tests_pass': summary.tests_pass,
+            'tests_known_failure': summary.tests_known_failure,
             'tests_total': summary.tests_total,
         }
         custom_email_template = self.project.custom_email_template
         if custom_email_template and custom_email_template.subject:
             template = custom_email_template.subject
         else:
-            template = '{{project}}: {{tests_total}} tests, {{tests_fail}} failed, {{tests_pass}} passed (build {{build}})'
+            template = '{{project}}: {{tests_total}} tests, {{tests_fail}} failed, {{tests_pass}} passed, {{tests_known_failure}} known failure (build {{build}})'
         return jinja2.from_string(template).render(subject_data)
 
     def message(self, do_html=True, custom_email_template=None):

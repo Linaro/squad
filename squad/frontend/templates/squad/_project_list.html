@@ -33,6 +33,9 @@
             {% if status.tests_fail > 0 %}
             <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} fail</span>
             {% endif %}
+            {% if status.tests_known_failure > 0 %}
+            <span class="badge alert-info" data-toggle="tooltip" data-placement="top" title="Known failures">{{status.tests_known_failure}} known failure</span>
+            {% endif %}
         </div>
         {% endif %}
 

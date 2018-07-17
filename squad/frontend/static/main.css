@@ -137,14 +137,18 @@ table.test-results td.skip {
   border-color: #a9a942;
   color: #a4a400;
 }
-
+table.test-results td.known_failure {
+  background-color: #d9edf7;
+  border-color: #2d9bd2;
+  color: #31708f;
+}
 table.test-results a:only-child {
   display: block;
   margin: -4px;
   padding: 4px;
 }
 
-.pass a, .fail a, .skip a {
+.pass a, .fail a, .skip a, .known_failure a{
   font-weight: bold;
 }
 
@@ -154,6 +158,8 @@ table.test-results a:only-child {
 .pass a:hover { background-color: #ddffdd; text-decoration: none; }
 .skip a       { color: #a4a400; }
 .skip a:hover { background-color: #ffffdd; text-decoration: none; }
+.known_failure a       { color: #00ccff; }
+.known_failure a:hover { background-color: #e6faff; text-decoration: none; }
 
 .test-description, .metric-description {
   margin-top: 1em;
