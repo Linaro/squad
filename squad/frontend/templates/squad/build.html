@@ -13,66 +13,73 @@
 <div ng-controller='FilterController' data-param="filter-tests">
 <h2>Test results</h2>
 <div class='row row-bordered'>
-    <div class='col-md-12 col-sm-12'>
+    <div class='col-md-4 col-sm-4'>
         <form class='filter'>
             <span class='fa fa-search'></span>
             <input ng-model='filter' name='filter' type='text' placeholder='Filter results ...'/>
         </form>
     </div>
 </div>
-
-<div class='test-results highlight-row'>
-{% for status in statuses %}
-{% if status.suite and status.has_tests %}
-<a href="{% project_url status.test_run %}" class="status-fail{{status.tests_fail}}" {% if status.tests_fail == 0%}style='display: none'{% endif%} id='tests-{{status.id}}' ng-show='match("tests-" + {{status.id}})'>
-<div class='row row-bordered {% if status.tests_fail%}fail{% else %}nofail{%endif%}'>
-    <div class='col-md-3 col-sm-3' title='Test suite'>
-        <i class='fa fa-list'></i>
-        <strong>{{status.suite}}</strong>
-    </div>
-
-    <div class='col-md-3 col-sm-3' title='Environment'>
-        <i class='fa fa-microchip'></i>
-        {{status.test_run.environment}}
-    </div>
-
-    <div class='col-md-4 col-sm-4' title='Test results'>
-        <i class='fa fa-check-square-o'></i>
-        <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}} tests</span>
-        {% if status.tests_pass > 0 %}
-        <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} pass</span>
-        {% endif %}
-        {% if status.tests_skip > 0 %}
-        <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}} skip</span>
-        {% endif %}
-        {% if status.tests_fail > 0 %}
-        <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} fail</span>
-        {% endif %}
-    </div>
-
-    <div class='col-md-2 col-sm-2' title='Test run'>
-        <i class='fa fa-cog'></i>
-        {{status.test_run.job_id}}
-    </div>
+<div class="panel-group" id="results-accordion">
+    {% for suite, details in grouped_statuses.items %}
+        <div class="panel panel-default" >
+            <div class="panel-heading row row-bordered ">
+                <div class="panel-title col-md-2 col-sm-2">
+                    <a data-toggle="collapse" data-parent="#results-accordion" data-target="#suite-{{suite.id}}">
+                        <i class='fa fa-list'></i>
+                        <strong>{{suite}}</strong>
+                    </a>
+                </div>
+                <div class='col-md-1 col-sm-1'>
+                    <i class=' {% if suite in suite_fails %}fa fa-times text-danger {% else %} fa fa-check text-success {% endif %}'></i>
+                </div>
+            </div>
+            <div id="suite-{{suite.id}}" class="panel-collapse collapse">
+                <div class="panel-body">
+                    {% for env, statuses in details.items %}
+                            <div class="panel-group" id="accordion-{{env.id}}">
+                                <div class="panel">
+                                    <a data-toggle="collapse" data-parent="#accordion-{{env.id}}" data-target="#{{env.id}}-{{suite.id}}">
+                                        <i class='fa fa-microchip'></i>
+                                        {{env}}&raquo;
+                                        <i class='{% if env in suite_fails|get_value:suite %}fa fa-times text-danger {% else %}
+                                        fa fa-check text-success {% endif %}'></i>
+                                    </a>
+                                    <div id="{{env.id}}-{{suite.id}}" class="panel-collapse collapse">
+                                        {% for status in statuses %}
+                                        <div class="panel-body">
+                                            <a href="{% testrun_suite_tests_url status %}">
+                                                <div class='col-lg-10 col-sm-10' title='Test results'>
+                                                    <i class='fa fa-check-square-o'></i>
+                                                    <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}} tests</span>
+                                                    {% if status.tests_pass > 0 %}
+                                                    <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} pass</span>
+                                                    {% endif %}
+                                                    {% if status.tests_skip > 0 %}
+                                                    <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}} skip</span>
+                                                    {% endif %}
+                                                    {% if status.tests_fail > 0 %}
+                                                    <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} fail</span>
+                                                    {% endif %}
+                                                </div>
+                                            </a>
+                                            <a href="{% project_url status.test_run %}">
+                                                <div class='col-md-2 col-sm-2' title='Test run'>
+                                                    <i class='fa fa-cog'></i>
+                                                    {{status.test_run.job_id}}
+                                                </div>
+                                            </a>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
 </div>
-</a>
-{% endif %}
-{% endfor %}
-</div>
-{% if count_statuses_nofail > 0 %}
-<div class='row row-bordered'>
-    <div class='col-md-12 col-sm-12'>
-        <em>
-            <span class='badge alert-success'><span ng-bind='count_visible({{count_statuses_fail}})'></span>/{{count_statuses_nofail}}</span>
-            test suites with no failures
-            <span class='status-fail0-show'>hidden</span>
-            <span class='status-fail0' style='display: none'>shown</span>
-        </em>
-        <a href='#' class='status-fail0-show' onclick="$('.status-fail0, .status-fail0-show').toggle(); return false">Show</a>
-        <a href='#' class='status-fail0'      onclick="$('.status-fail0, .status-fail0-show').toggle(); return false" style='display: none'>Hide</a>
-    </div>
-</div>
-{% endif %}
 </div> <!-- ng-controller=FilterController -->
 
 <div ng-controller='FilterController' data-param="filter-metrics">
