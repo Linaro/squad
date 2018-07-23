@@ -16,6 +16,7 @@ from squad.core.queries import get_metric_data
 from squad.core.utils import join_name
 from squad.frontend.utils import file_type
 from squad.http import auth
+from collections import OrderedDict
 
 
 def home(request):
@@ -171,24 +172,35 @@ def build(request, group_slug, project_slug, version):
         version=version,
     )
 
-    statuses = Status.objects.filter(
+    _statuses = Status.objects.filter(
         test_run__build=build,
         suite__isnull=False,
     ).prefetch_related(
         'test_run',
         'test_run__environment',
         'suite',
-    ).order_by('-tests_fail', 'suite__slug')
+    ).order_by('-tests_fail', 'suite__slug', '-test_run__environment__slug')
 
-    count_statuses_nofail = len([s for s in statuses if s.has_tests and s.tests_fail == 0])
-    count_statuses_fail = len([s for s in statuses if s.has_tests and s.tests_fail > 0])
+    grouped_statuses = OrderedDict()
+    suite_fails = dict()
+
+    for s in _statuses:
+        if s.has_tests:
+            if s.tests_fail > 0:
+                if s.suite not in suite_fails.keys():
+                    suite_fails[s.suite] = []
+                suite_fails[s.suite].append(s.test_run.environment)
+            if s.suite not in grouped_statuses.keys():
+                grouped_statuses[s.suite] = {s.test_run.environment: []}
+            if s.test_run.environment not in grouped_statuses[s.suite].keys():
+                grouped_statuses[s.suite][s.test_run.environment] = []
+            grouped_statuses[s.suite][s.test_run.environment].append(s)
 
     context = {
         'project': project,
         'build': build,
-        'statuses': statuses,
-        'count_statuses_nofail': count_statuses_nofail,
-        'count_statuses_fail': count_statuses_fail,
+        'grouped_statuses': grouped_statuses,
+        'suite_fails': suite_fails,
         'metadata': sorted(build.important_metadata.items()),
         'extra_metadata': sorted(build.non_important_metadata.items()),
     }
