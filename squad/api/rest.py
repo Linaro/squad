@@ -3,13 +3,14 @@ from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Env
 from squad.core.notification import Notification
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
+from django.urls import reverse
+from django import forms
 from rest_framework import routers, serializers, views, viewsets, status
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 import rest_framework_filters as filters
-
 from jinja2 import TemplateSyntaxError
 
 
@@ -30,7 +31,7 @@ class ProjectFilter(filters.FilterSet):
 
 
 class EnvironmentFilter(filters.FilterSet):
-    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all())
+    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = Environment
@@ -60,8 +61,8 @@ class BuildFilter(filters.FilterSet):
 
 
 class TestRunFilter(filters.FilterSet):
-    build = filters.RelatedFilter(BuildFilter, name="build", queryset=Build.objects.all())
-    environment = filters.RelatedFilter(EnvironmentFilter, name="environment", queryset=Environment.objects.all())
+    build = filters.RelatedFilter(BuildFilter, name="build", queryset=Build.objects.all(), widget=forms.TextInput)
+    environment = filters.RelatedFilter(EnvironmentFilter, name="environment", queryset=Environment.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = TestRun
@@ -72,8 +73,8 @@ class TestRunFilter(filters.FilterSet):
 
 
 class TestJobFilter(filters.FilterSet):
-    test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all())
-    target_build = filters.RelatedFilter(BuildFilter, name="target_build", queryset=Build.objects.all())
+    test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
+    target_build = filters.RelatedFilter(BuildFilter, name="target_build", queryset=Build.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = TestJob
@@ -81,7 +82,7 @@ class TestJobFilter(filters.FilterSet):
 
 
 class SuiteFilter(filters.FilterSet):
-    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all())
+    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = Suite
@@ -89,7 +90,8 @@ class SuiteFilter(filters.FilterSet):
                   'slug': ['exact', 'in', 'startswith']}
 
 class TestFilter(filters.FilterSet):
-    test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all())
+    test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
+    suite = filters.RelatedFilter(SuiteFilter, name="suite", queryset=Suite.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = Test
