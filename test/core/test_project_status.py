@@ -166,3 +166,26 @@ class ProjectStatusTest(TestCase):
 
         status = ProjectStatus.create_or_update(build)
         self.assertTrue(status.finished)
+
+    def test_cache_test_run_counts(self):
+        build = self.create_build('1', create_test_run=False)
+        build.test_runs.create(environment=self.environment, completed=True)
+        build.test_runs.create(environment=self.environment, completed=True)
+        build.test_runs.create(environment=self.environment, completed=False)
+
+        status = ProjectStatus.create_or_update(build)
+
+        self.assertEqual(3, status.test_runs_total)
+        self.assertEqual(2, status.test_runs_completed)
+        self.assertEqual(1, status.test_runs_incomplete)
+
+    def test_cache_test_run_counts_on_update(self):
+        build = self.create_build('1', create_test_run=False)
+        ProjectStatus.create_or_update(build)
+
+        build.test_runs.create(environment=self.environment, completed=True)
+        build.test_runs.create(environment=self.environment, completed=False)
+        status = ProjectStatus.create_or_update(build)
+        self.assertEqual(2, status.test_runs_total)
+        self.assertEqual(1, status.test_runs_completed)
+        self.assertEqual(1, status.test_runs_incomplete)
