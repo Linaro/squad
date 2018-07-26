@@ -12,8 +12,12 @@ class RestApiTest(TestCase):
         self.group = models.Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
         self.build = self.project.builds.create(version='1')
+        self.build2 = self.project.builds.create(version='2')
+        self.build3 = self.project.builds.create(version='3')
         self.environment = self.project.environments.create(slug='myenv')
         self.testrun = self.build.test_runs.create(environment=self.environment, build=self.build)
+        self.testrun2 = self.build2.test_runs.create(environment=self.environment, build=self.build2)
+        self.testrun3 = self.build3.test_runs.create(environment=self.environment, build=self.build3)
         self.backend = ci_models.Backend.objects.create(name='foobar')
         self.patchsource = models.PatchSource.objects.create(name='baz_source', username='u', url='http://example.com', token='secret')
         self.testjob = self.build.test_jobs.create(
@@ -24,6 +28,24 @@ class RestApiTest(TestCase):
             build='1',
             environment='myenv',
             testrun=self.testrun
+        )
+        self.testjob2 = self.build.test_jobs.create(
+            definition="foo: bar",
+            backend=self.backend,
+            target=self.project,
+            target_build=self.build2,
+            build='2',
+            environment='myenv',
+            testrun=self.testrun2
+        )
+        self.testjob3 = self.build.test_jobs.create(
+            definition="foo: bar",
+            backend=self.backend,
+            target=self.project,
+            target_build=self.build3,
+            build='3',
+            environment='myenv',
+            testrun=self.testrun3
         )
         self.emailtemplate = models.EmailTemplate.objects.create(
             name="fooTemplate",
@@ -61,11 +83,11 @@ class RestApiTest(TestCase):
 
     def test_project_builds(self):
         data = self.hit('/api/projects/%d/builds/' % self.project.id)
-        self.assertEqual(1, len(data['results']))
+        self.assertEqual(3, len(data['results']))
 
     def test_builds(self):
         data = self.hit('/api/builds/')
-        self.assertEqual(1, len(data['results']))
+        self.assertEqual(3, len(data['results']))
 
     def test_builds_status(self):
         response = self.client.get('/api/builds/%d/status/' % self.build.id)
@@ -96,6 +118,21 @@ class RestApiTest(TestCase):
         # create ProjectStatus
         UpdateProjectStatus()(self.testrun)
         response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build.id, self.invalidemailtemplate.pk))
+        self.assertEqual(500, response.status_code)
+
+    def test_builds_email_custom_baseline(self):
+        UpdateProjectStatus()(self.testrun)
+        UpdateProjectStatus()(self.testrun3)
+        self.hit('/api/builds/%d/email/?baseline=%s' % (self.build.id, self.build3.id))
+
+    def test_builds_email_custom_baseline_missing_status(self):
+        UpdateProjectStatus()(self.testrun)
+        response = self.client.get('/api/builds/%d/email/?baseline=%s' % (self.build.id, self.build2.id))
+        self.assertEqual(500, response.status_code)
+
+    def test_builds_email_custom_invalid_baseline(self):
+        UpdateProjectStatus()(self.testrun)
+        response = self.client.get('/api/builds/%d/email/?baseline=999' % (self.build.id))
         self.assertEqual(500, response.status_code)
 
     def test_build_testruns(self):

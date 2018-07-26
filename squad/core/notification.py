@@ -19,10 +19,11 @@ class Notification(object):
     not need to be sent.
     """
 
-    def __init__(self, status):
+    def __init__(self, status, previous=None):
         self.status = status
         self.build = status.build
-        previous = status.get_previous()
+        if previous is None:
+            previous = status.get_previous()
         self.previous_build = previous and previous.build or None
 
     __comparison__ = None
