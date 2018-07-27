@@ -4,7 +4,7 @@ import mimetypes
 import os
 import svgwrite
 
-from django.db.models import Count, Case, When, Q
+from django.db.models import Case, When, Q
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
@@ -41,10 +41,6 @@ def __get_statuses__(project, limit=None):
     ).prefetch_related(
         'build',
         'build__project'
-    ).annotate(
-        test_runs_total=Count('build__test_runs'),
-        test_runs_completed=Count(Case(When(build__test_runs__completed=True, then=1))),
-        test_runs_incomplete=Count(Case(When(build__test_runs__completed=False, then=1))),
     ).order_by('-build__datetime')
     if limit:
         statuses = statuses[:limit]

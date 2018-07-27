@@ -691,6 +691,10 @@ class ProjectStatus(models.Model, TestSummaryBase):
     tests_fail = models.IntegerField()
     tests_skip = models.IntegerField()
 
+    test_runs_total = models.IntegerField(default=0)
+    test_runs_completed = models.IntegerField(default=0)
+    test_runs_incomplete = models.IntegerField(default=0)
+
     class Meta:
         verbose_name_plural = "Project statuses"
 
@@ -704,6 +708,11 @@ class ProjectStatus(models.Model, TestSummaryBase):
         test_summary = build.test_summary
         metrics_summary = MetricsSummary(build)
         now = timezone.now()
+        test_runs_total = build.test_runs.count()
+        test_runs_completed = build.test_runs.filter(completed=True).count()
+        test_runs_incomplete = build.test_runs.filter(completed=False).count()
+        test_runs_total = build.test_runs.count()
+
         data = {
             'tests_pass': test_summary.tests_pass,
             'tests_fail': test_summary.tests_fail,
@@ -712,6 +721,9 @@ class ProjectStatus(models.Model, TestSummaryBase):
             'has_metrics': metrics_summary.has_metrics,
             'last_updated': now,
             'finished': build.finished,
+            'test_runs_total': test_runs_total,
+            'test_runs_completed': test_runs_completed,
+            'test_runs_incomplete': test_runs_incomplete
         }
 
         status, created = cls.objects.get_or_create(build=build, defaults=data)
@@ -728,6 +740,9 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.last_updated = now
             status.finished = build.finished
             status.build = build
+            status.test_runs_total = test_runs_total
+            status.test_runs_completed = test_runs_completed
+            status.test_runs_incomplete = test_runs_incomplete
             status.save()
         return status
 
