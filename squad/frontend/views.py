@@ -163,10 +163,20 @@ def builds(request, group_slug, project_slug):
 def build(request, group_slug, project_slug, version):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    build = get_object_or_404(
-        project.builds.prefetch_related('test_runs'),
-        version=version,
-    )
+
+    if version == 'latest-finished':
+        status = ProjectStatus.objects.prefetch_related('build').filter(
+            build__project=project,
+            finished=True,
+        ).order_by('build__datetime').last()
+        if status is None:
+            raise Http404()
+        build = status.build
+    else:
+        build = get_object_or_404(
+            project.builds.prefetch_related('test_runs'),
+            version=version,
+        )
 
     _statuses = Status.objects.filter(
         test_run__build=build,

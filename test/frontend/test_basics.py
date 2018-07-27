@@ -60,6 +60,14 @@ class FrontendTest(TestCase):
     def test_build_404(self):
         self.hit('/mygroup/myproject/build/999/', 404)
 
+    def test_build_latest_finished(self):
+        self.hit('/mygroup/myproject/build/latest-finished/')
+
+    def test_build_latest_finished_404(self):
+        self.group.projects.create(slug='otherproject')
+        self.hit('/mygroup/otherproject/')
+        self.hit('/mygroup/otherproject/build/latest-finished/', 404)
+
     def test_test_run_build_404(self):
         self.hit('/mygroup/myproject/build/2.0.missing/testrun/999/', 404)
 
