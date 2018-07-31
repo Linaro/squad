@@ -10,6 +10,8 @@ from django.db import models
 from django.db.models import Q, Count
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import Group as UserGroup
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator
 from django.core.validators import RegexValidator
 from django.utils import timezone
@@ -867,10 +869,40 @@ class MetricsSummary(object):
 
 class Subscription(models.Model):
     project = models.ForeignKey(Project, related_name='subscriptions')
-    email = models.CharField(max_length=1024, validators=[EmailValidator()])
+    email = models.CharField(
+        max_length=1024,
+        null=True,
+        blank=True,
+        validators=[EmailValidator()]
+    )
+    user = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        default=None
+    )
+
+    class Meta:
+        unique_together = ('project', 'user',)
+
+    def _validate_email(self):
+        if (not self.email) == (not self.user):
+            raise ValidationError("Subscription object must have exactly one of 'user' and 'email' fields populated.")
+
+    def save(self, *args, **kwargs):
+        self._validate_email()
+        super().save(*args, **kwargs)
+
+    def clean(self):
+        self._validate_email()
+
+    def get_email(self):
+        if self.user and self.user.email:
+            return self.user.email
+        return self.email
 
     def __str__(self):
-        return '%s on %s' % (self.email, self.project)
+        return '%s on %s' % (self.get_email(), self.project)
 
 
 class AdminSubscription(models.Model):

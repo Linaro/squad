@@ -63,7 +63,12 @@ class Notification(object):
 
     @property
     def recipients(self):
-        return [r.email for r in self.project.subscriptions.all()]
+        emails = []
+        for sub in self.project.subscriptions.all():
+            email = sub.get_email()
+            if email:
+                emails.append(email)
+        return emails
 
     @property
     def known_issues(self):
