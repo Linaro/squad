@@ -38,7 +38,7 @@ class TokenInline(admin.StackedInline):
 
 class SubscriptionInline(admin.StackedInline):
     model = models.Subscription
-    fields = ['email']
+    fields = ['email', 'user']
     extra = 0
 
 

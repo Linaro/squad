@@ -72,7 +72,7 @@ while read destination url sha1; do
   mkdir -p "$(dirname "$destination")"
   name="$(basename "$destination")"
   case "$url" in
-    *.js)
+    *.js|*.css)
       download "$destination" "$url" "$sha1"
       if [ -z "$sha1" ]; then
         sha1="$(get_sha1 "$destination")"
