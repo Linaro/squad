@@ -31,10 +31,11 @@ hardware platform, hardware configuration, OS, build settings (e.g.
 regular compilers vcs optimized compilers), etc. Results are always
 organized by environments, so we can compare apples to apples.
 
-Projects can have subscriptions, which are email address that should be
-notified about important events such as changing test results. ProjectStatus
-records the most recent build of a project, against which future results should
-be compared in search for important events to notify subscribers about.
+Projects can have subscriptions, which are either users or manually-entered
+email addreses that should be notified about important events such as changing
+test results. ProjectStatus records the most recent build of a project, against
+which future results should be compared in search for important events to
+notify subscribers about.
 
 Submitting results
 ------------------

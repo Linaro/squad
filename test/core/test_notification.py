@@ -1,5 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core import mail
 from django.utils import timezone
 from django.test import TestCase
@@ -68,6 +69,8 @@ class TestSendNotification(TestCase):
         t = timezone.now() - relativedelta(hours=2.75)
 
         self.group = Group.objects.create(slug='mygroup')
+        self.user = User.objects.create(username='myuser',
+                                        email="user@example.com")
         self.project = self.group.projects.create(slug='myproject')
         self.build1 = self.project.builds.create(version='1', datetime=t0)
         status = ProjectStatus.create_or_update(self.build1)
@@ -123,6 +126,14 @@ class TestSendNotification(TestCase):
         status = ProjectStatus.create_or_update(self.build2)
         send_status_notification(status)
         self.assertEqual(0, len(mail.outbox))
+
+    @patch("squad.core.comparison.TestComparison.diff", new_callable=PropertyMock)
+    def test_send_notification_to_user(self, diff):
+        self.project.subscriptions.create(user=self.user)
+        diff.return_value = fake_diff()
+        status = ProjectStatus.create_or_update(self.build2)
+        send_status_notification(status)
+        self.assertEqual(1, len(mail.outbox))
 
     def test_send_a_single_notification_email(self):
         self.project.subscriptions.create(email='foo@example.com')
