@@ -329,8 +329,9 @@ class Backend(BaseBackend):
                         metadata = result['metadata']
                         test_job.failure = str(metadata)
                         test_job.save()
+                        error_type = metadata.get('error_type', None)
                         # detect jobs failed because of infrastructure issues
-                        if metadata['error_type'] in ['Infrastructure', 'Lava', 'Job']:
+                        if error_type in ['Infrastructure', 'Lava', 'Job']:
                             completed = False
                         # automatically resubmit in some cases
                         infra_messages_re_list = []
@@ -342,7 +343,7 @@ class Backend(BaseBackend):
                                 # ignore incorrect expressions
                                 self.log_debug("'%s' is not a valid regex" % message_re)
                                 continue
-                        if metadata['error_type'] in ['Infrastructure', 'Job', 'Test'] and \
+                        if error_type in ['Infrastructure', 'Job', 'Test'] and \
                                 len(infra_messages_re_list) > 0:
                             for regex in infra_messages_re_list:
                                 if regex.search(metadata['error_msg']) is not None and \
