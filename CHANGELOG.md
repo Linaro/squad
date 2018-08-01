@@ -1,3 +1,16 @@
+# 0.48
+
+* frontend:
+  * improve footer wording
+  * Group testresults by suite and env in build page
+* api:
+  * add Test object and more filtering options
+* core:
+  * ProjectStatus: cache test run counts. This provides a large speedup to the
+    project page.
+* ci:
+  * lava: fix case when LAVA fails to provide `error_type`
+
 # 0.47
 
 * core:
