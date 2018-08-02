@@ -54,7 +54,7 @@ class TestJobFailureFilter(admin.SimpleListFilter):
 
 
 class TestJobAdmin(admin.ModelAdmin):
-    list_display = ('backend', 'target', 'submitted', 'submitted_at', 'fetched', 'last_fetch_attempt', 'success', 'job_id_link',)
+    list_display = ('backend', 'target', 'created_at', 'submitted', 'submitted_at', 'fetched', 'last_fetch_attempt', 'success', 'job_id_link',)
     list_filter = ('backend', 'target', 'submitted', 'fetched', TestJobFailureFilter)
     readonly_fields = ('testrun', 'target_build', 'parent_job')
     actions = [submit_job, fetch_job]
