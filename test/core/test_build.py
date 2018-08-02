@@ -133,11 +133,15 @@ class BuildTest(TestCase):
         build.test_runs.create(environment=env1, completed=False)
         self.assertFalse(build.finished)
 
-    def test_not_finished_with_pending_ci_jobs(self):
+    @patch('squad.ci.backend.null.Backend.fetch')
+    def test_not_finished_with_pending_ci_jobs(self, fetch):
         build = self.project.builds.create(version='1')
         env1 = self.project.environments.create(slug='env1', expected_test_runs=1)
         backend = Backend.objects.create(name='foobar', implementation_type='null')
-        TestJob.objects.create(
+
+        fetch.return_value = ('OK', True, {}, {'test1': 'pass'}, {}, '...')
+
+        t1 = TestJob.objects.create(
             job_id='1',
             backend=backend,
             definition='blablabla',
@@ -145,8 +149,10 @@ class BuildTest(TestCase):
             build=build.version,
             environment=env1.slug,
             submitted=True,
-            fetched=True,
+            fetched=False,
         )
+        t1.backend.fetch(t1)
+
         t2 = TestJob.objects.create(
             job_id='2',
             backend=backend,
@@ -158,9 +164,32 @@ class BuildTest(TestCase):
             fetched=False,
         )
         self.assertFalse(build.finished)
-        t2.fetched = True
-        t2.save()
+
+        t2.backend.fetch(t2)
         self.assertTrue(build.finished)
+
+    @patch('squad.ci.backend.null.Backend.fetch')
+    def test_not_finished_no_pending_testjobs_but_not_enough_of_them(self, fetch):
+        build = self.project.builds.create(version='1')
+        env1 = self.project.environments.create(slug='env1', expected_test_runs=2)
+        backend = Backend.objects.create(name='foobar', implementation_type='null')
+
+        fetch.return_value = ('OK', True, {}, {'test1': 'pass'}, {}, '...')
+
+        t1 = TestJob.objects.create(
+            job_id='1',
+            backend=backend,
+            definition='blablabla',
+            target=build.project,
+            build=build.version,
+            environment=env1.slug,
+            submitted=True,
+            fetched=False,
+        )
+        t1.backend.fetch(t1)
+
+        # expect 2, only 1 received
+        self.assertFalse(build.finished)
 
     def test_get_or_create_with_version_twice(self):
         self.project.builds.get_or_create(version='1.0-rc1')

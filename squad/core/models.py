@@ -276,9 +276,13 @@ class Build(models.Model):
         # dependency on squad.ci, what in theory violates our architecture.
         testjobs = self.test_jobs
         if testjobs.count() > 0:
-            # If this build has CI jobs, then it's finished if there are no
-            # outstanding test jobs.
-            return testjobs.filter(fetched=False).count() == 0
+            if testjobs.filter(fetched=False).count() > 0:
+                # a build that has pending CI jobs is NOT finished
+                return False
+            else:
+                # carry on, and check whether the number of expected test runs
+                # per environment is satisfied.
+                pass
 
         # builds with no CI jobs are finished when each environment has
         # received the expected amount of test runs
