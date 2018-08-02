@@ -338,6 +338,7 @@ class BuildViewSet(ModelViewSet):
         """
         output_format = request.query_params.get("output", "text/plain")
         template_id = request.query_params.get("template", None)
+        baseline_id = request.query_params.get("baseline", None)
         template = None
         if template_id != "default":
             template = self.get_object().project.custom_email_template
@@ -346,9 +347,26 @@ class BuildViewSet(ModelViewSet):
                 template = EmailTemplate.objects.get(pk=template_id)
             except EmailTemplate.DoesNotExist:
                 pass
+
+        baseline = None
+        if baseline_id is not None:
+            try:
+                previous_build = Build.objects.get(pk=baseline_id)
+                baseline = previous_build.status
+            except Build.DoesNotExist:
+                data = {
+                    "message": "Build %s does not exist" % baseline_id
+                }
+                return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            except ProjectStatus.DoesNotExist:
+                data = {
+                    "message": "Build %s has no status" % baseline_id
+                }
+                return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         if hasattr(self.get_object(), "status"):
             pr_status = self.get_object().status
-            notification = Notification(pr_status)
+            notification = Notification(pr_status, baseline)
             produce_html = self.get_object().project.html_mail
             if output_format == "text/html":
                 produce_html = True
