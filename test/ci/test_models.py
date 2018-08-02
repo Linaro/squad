@@ -158,6 +158,41 @@ class BackendFetchTest(BackendTestBase):
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
+    def test_really_fetch_sets_fetched_on_invalid_metadata(self, get_implementation, __now__):
+        metadata = {"foo": "bar"}
+        tests = {"foo": "pass"}
+        metrics = {"bar": 1}
+        results = ('Complete', True, metadata, tests, metrics, "abc")
+
+        impl = MagicMock()
+        impl.fetch = MagicMock(return_value=results)
+        impl.job_url = MagicMock(return_value="http://www.example.com")
+        get_implementation.return_value = impl
+
+        build = self.project.builds.create(version='1')
+        environment = self.project.environments.create(slug='myenv')
+        build.test_runs.create(
+            environment=environment,
+            job_id='999',
+            job_status='Complete',
+            completed=True,
+        )
+
+        test_job = self.create_test_job(
+            backend=self.backend,
+            definition='foo: 1',
+            build='1',
+            environment='myenv',
+            job_id='999',
+        )
+
+        self.backend.really_fetch(test_job)
+
+        self.assertTrue(test_job.fetched)
+        self.assertIsNotNone(test_job.failure)
+
+    @patch('django.utils.timezone.now', return_value=NOW)
+    @patch('squad.ci.models.Backend.get_implementation')
     def test_really_fetch_with_empty_results(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {}
