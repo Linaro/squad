@@ -11,6 +11,7 @@ from dateutil.relativedelta import relativedelta
 from squad.core.tasks import ReceiveTestRun, UpdateProjectStatus
 from squad.core.models import Project, Build, TestRun, slug_validator
 from squad.core.plugins import apply_plugins
+from squad.core.tasks.exceptions import InvalidMetadata
 
 
 from squad.ci.backend import get_backend_implementation, ALL_BACKENDS
@@ -108,24 +109,32 @@ class Backend(models.Model):
             if test_job.url is not None:
                 metadata['job_url'] = test_job.url
 
-            receive = ReceiveTestRun(test_job.target, update_project_status=False)
-            testrun = receive(
-                version=test_job.build,
-                environment_slug=test_job.environment,
-                metadata_file=json.dumps(metadata),
-                tests_file=json.dumps(tests),
-                metrics_file=json.dumps(metrics),
-                log_file=logs,
-                completed=completed,
-            )
-            test_job.testrun = testrun
-            test_job.fetched = True
-            test_job.fetched_at = timezone.now()
-            test_job.save()
+            try:
+                receive = ReceiveTestRun(test_job.target, update_project_status=False)
+                testrun = receive(
+                    version=test_job.build,
+                    environment_slug=test_job.environment,
+                    metadata_file=json.dumps(metadata),
+                    tests_file=json.dumps(tests),
+                    metrics_file=json.dumps(metrics),
+                    log_file=logs,
+                    completed=completed,
+                )
+                test_job.testrun = testrun
+                test_job.fetched = True
+                test_job.fetched_at = timezone.now()
+                test_job.save()
 
-            self.__postprocess_testjob__(test_job)
+                self.__postprocess_testjob__(test_job)
 
-            UpdateProjectStatus()(testrun)
+                UpdateProjectStatus()(testrun)
+            except InvalidMetadata as exception:
+                # mark test job as fetched to prevent resubmission
+                # on next fetch attempt
+                test_job.fetched = True
+                test_job.failure = str(exception)
+                test_job.fetched_at = timezone.now()
+                test_job.save()
 
     def __postprocess_testjob__(self, test_job):
         project = test_job.target
