@@ -1,3 +1,20 @@
+# 0.49
+
+* frontend:
+  * add shortcut to latest finished build
+  * add compare test page with dynamic content
+* api:
+  * allow for baseline selection with build/<id>/email API
+  * add Suite endpoint
+  * make API web frontend more responsive
+  * add pagination to `test_result` route
+  * add `full_name` to project
+* ci:
+  * admin: list testjob creation timestamp
+  * make sure test job is marked fetched
+* core:
+  * Build: check expected test runs even with CI jobs
+
 # 0.48
 
 * frontend:
