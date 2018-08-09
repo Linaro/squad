@@ -90,6 +90,7 @@ class SuiteFilter(filters.FilterSet):
         fields = {'name': ['exact', 'in', 'startswith'],
                   'slug': ['exact', 'in', 'startswith']}
 
+
 class TestFilter(filters.FilterSet):
     test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
     suite = filters.RelatedFilter(SuiteFilter, name="suite", queryset=Suite.objects.all(), widget=forms.TextInput)
@@ -526,6 +527,7 @@ class SuiteViewSet(viewsets.ModelViewSet):
 
 class TestSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='full_name', read_only=True)
+    short_name = serializers.CharField(source='name')
     status = serializers.CharField(read_only=True)
 
     class Meta:

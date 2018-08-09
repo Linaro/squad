@@ -37,6 +37,7 @@
         <ul class="nav navbar-nav collapse navbar-collapse">
           <li class="{% active 'home'%}"><a href="{% url 'home' %}">Explore</a></li>
           <li class="{% active 'compare_projects' %}"><a href="{% url 'compare_projects' %}">Compare</a></li>
+          <li class="{% active 'compare_test' %}"><a href="{% url 'compare_test' %}">Compare Test</a></li>
           <li class="{% active 'api-root' %}"><a href="{% url 'api-root' %}">API</a></li>
         </ul>
 
@@ -73,7 +74,6 @@
     <script type="text/javascript" src="{% static "lodash.js" %}"></script>
     <script type="text/javascript" src="{% static "chartjs/Chart.bundle.js" %}"></script>
     <script type="text/javascript" src="{% static "floatThread/dist/jquery.floatThead.js" %}"></script>
-    <script type="text/javascript" src='{% static "squad/table.js" %}'></script>
     {% block javascript %}{% endblock %}
 
   </body>

@@ -1,4 +1,5 @@
 {% extends "squad/base.html" %}
+{% load static %}
 
 {% block content %}
 <h1>Compare projects</h1>
@@ -21,4 +22,7 @@
   {% endfor %}
   <input type='submit' value='Compare' class='btn btn-default'/>
 </form>
+{% endblock %}
+{% block javascript %}
+<script type="text/javascript" src='{% static "squad/table.js" %}'></script>
 {% endblock %}

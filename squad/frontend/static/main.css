@@ -192,3 +192,13 @@ table.test-results a:only-child {
   background-color: #f2dede;
   border-color: #ebccd1;
 }
+
+.search-dropdown-display {
+  margin-left: 0.2em;
+  margin-bottom: 0.2em;
+  padding: 0.5em;
+}
+
+.search-dropdown-display:hover {
+  background: #eee;
+}
