@@ -15,6 +15,7 @@
             (intermittent)
             {% endif %}
         {% endif %}
+        <a class="pull-right" href="/_/comparetest/?project={{ test.test_run.build.project.pk }}&suite={{ test.suite.slug }}&test={{ test.name }}">compare</a>
     </div>
     <div class='col-md-2 col-sm-2'>
         {% if test.metadata.description or suite.metadata.instructions_to_reproduce or test.metadata.instructions_to_reproduce or test.log %}

@@ -1,5 +1,6 @@
 {% extends "squad/base.html" %}
 {% load squad %}
+{% load static %}
 
 {% block content %}
 
@@ -73,4 +74,7 @@
 
   {% include "squad/_pagination.html" with items=history %}
 
+{% endblock %}
+{% block javascript %}
+<script type="text/javascript" src='{% static "squad/table.js" %}'></script>
 {% endblock %}

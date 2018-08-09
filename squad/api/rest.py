@@ -1,15 +1,16 @@
 from django.contrib.auth.models import Group as UserGroup
-from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate, KnownIssue, PatchSource
+from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate, KnownIssue, PatchSource, Suite
 from squad.core.notification import Notification
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
+from django.urls import reverse
+from django import forms
 from rest_framework import routers, serializers, views, viewsets, status
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 import rest_framework_filters as filters
-
 from jinja2 import TemplateSyntaxError
 
 
@@ -26,11 +27,12 @@ class ProjectFilter(filters.FilterSet):
     class Meta:
         model = Project
         fields = {'name': ['exact', 'in', 'startswith'],
-                  'slug': ['exact', 'in', 'startswith']}
+                  'slug': ['exact', 'in', 'startswith'],
+                  'id': ['exact', 'in']}
 
 
 class EnvironmentFilter(filters.FilterSet):
-    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all())
+    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = Environment
@@ -60,8 +62,8 @@ class BuildFilter(filters.FilterSet):
 
 
 class TestRunFilter(filters.FilterSet):
-    build = filters.RelatedFilter(BuildFilter, name="build", queryset=Build.objects.all())
-    environment = filters.RelatedFilter(EnvironmentFilter, name="environment", queryset=Environment.objects.all())
+    build = filters.RelatedFilter(BuildFilter, name="build", queryset=Build.objects.all(), widget=forms.TextInput)
+    environment = filters.RelatedFilter(EnvironmentFilter, name="environment", queryset=Environment.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = TestRun
@@ -72,16 +74,26 @@ class TestRunFilter(filters.FilterSet):
 
 
 class TestJobFilter(filters.FilterSet):
-    test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all())
-    target_build = filters.RelatedFilter(BuildFilter, name="target_build", queryset=Build.objects.all())
+    test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
+    target_build = filters.RelatedFilter(BuildFilter, name="target_build", queryset=Build.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = TestJob
         fields = {'name': ['exact', 'in', 'startswith']}
 
 
+class SuiteFilter(filters.FilterSet):
+    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all(), widget=forms.TextInput)
+
+    class Meta:
+        model = Suite
+        fields = {'name': ['exact', 'in', 'startswith'],
+                  'slug': ['exact', 'in', 'startswith']}
+
+
 class TestFilter(filters.FilterSet):
-    test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all())
+    test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
+    suite = filters.RelatedFilter(SuiteFilter, name="suite", queryset=Suite.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = Test
@@ -186,10 +198,59 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
         view_name='project-builds',
     )
     id = serializers.IntegerField(read_only=True)
+    full_name = serializers.CharField(read_only=True)
 
     class Meta:
         model = Project
         fields = '__all__'
+
+
+class LatestTestResults(object):
+    def __init__(self, build, test_name):
+        self.build = build
+        self.environments = build.project.environments.all()
+        test_suite_name, test_case_name = test_name.split("/", 1)
+        self.test_list = Test.objects.filter(
+            test_run__build=self.build,
+            test_run__environment__in=self.environments,
+            name=test_case_name,
+            suite__slug=test_suite_name)
+
+
+class LatestTestResultsSerializer(serializers.BaseSerializer):
+    def to_representation(self, obj):
+        test_name = self.context.get('test_name')
+        latest_result = LatestTestResults(obj, test_name)
+        environments = []
+        for environment in latest_result.environments.order_by("name", "slug"):
+            test = latest_result.test_list.filter(test_run__environment=environment).first()
+            entry = {
+                'environment': EnvironmentSerializer(environment, context=self.context).data,
+                'test': TestSerializer(test, context=self.context).data,
+            }
+            if test is not None:
+                entry.update(
+                    {'test_url_path': reverse(
+                        'test_history',
+                        args=[
+                            latest_result.build.project.group.slug,
+                            latest_result.build.project.slug,
+                            test.full_name
+                        ])}
+                )
+            environments.append(entry)
+        serialized_obj = {
+            'build': BuildSerializer(latest_result.build, context=self.context).data,
+            'build_url_path': reverse(
+                'build',
+                args=[
+                    latest_result.build.project.group.slug,
+                    latest_result.build.project.slug,
+                    latest_result.build.version
+                ]),
+            'environments': environments
+        }
+        return serialized_obj
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -225,6 +286,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
         page = self.paginate_queryset(builds)
         serializer = BuildSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
+
+    @detail_route(methods=['get'], suffix='test_results')
+    def test_results(self, request, pk=None):
+        test_name = request.query_params.get("test_name", None)
+
+        builds = self.get_object().builds.prefetch_related('test_runs').order_by('-datetime')
+        page = self.paginate_queryset(builds)
+        serializer = LatestTestResultsSerializer(
+            page,
+            many=True,
+            context={'request': request, 'test_name': test_name}
+        )
+        return Response(serializer.data)
 
 
 class ProjectStatusSerializer(serializers.HyperlinkedModelSerializer):
@@ -437,8 +511,23 @@ class TestRunSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
+class SuiteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Suite
+        exclude = ('metadata',)
+
+
+class SuiteViewSet(viewsets.ModelViewSet):
+
+    queryset = Suite.objects.all()
+    serializer_class = SuiteSerializer
+    filter_class = SuiteFilter
+
+
 class TestSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='full_name', read_only=True)
+    short_name = serializers.CharField(source='name')
     status = serializers.CharField(read_only=True)
 
     class Meta:
@@ -637,6 +726,7 @@ router.register(r'builds', BuildViewSet)
 router.register(r'testjobs', TestJobViewSet)
 router.register(r'testruns', TestRunViewSet)
 router.register(r'tests', TestViewSet)
+router.register(r'suites', SuiteViewSet)
 router.register(r'environments', EnvironmentViewSet)
 router.register(r'backends', BackendViewSet)
 router.register(r'emailtemplates', EmailTemplateViewSet)

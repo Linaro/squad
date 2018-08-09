@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^robots.txt$', lambda _: HttpResponse("User-agent: *\nDisallow: /\n", content_type='text/plain')),
     url(r'^$', views.home, name='home'),
     url(r'^_/compare/$', comparison.compare_projects, name='compare_projects'),
+    url(r'^_/comparetest/$', comparison.compare_test, name='compare_test'),
     url(r'^_/settings/', include(user_settings.urls)),
     url(r'^(%s)/$' % slug_pattern, views.group, name='group'),
     url(r'^(%s)/(%s)/$' % ((slug_pattern,) * 2), views.project, name='project'),

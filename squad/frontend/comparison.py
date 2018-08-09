@@ -21,3 +21,9 @@ def compare_projects(request):
     }
 
     return render(request, 'squad/compare_projects.html', context)
+
+
+def compare_test(request):
+
+    context = {}
+    return render(request, 'squad/compare.html', context)
