@@ -27,7 +27,8 @@ class ProjectFilter(filters.FilterSet):
     class Meta:
         model = Project
         fields = {'name': ['exact', 'in', 'startswith'],
-                  'slug': ['exact', 'in', 'startswith']}
+                  'slug': ['exact', 'in', 'startswith'],
+                  'id': ['exact', 'in']}
 
 
 class EnvironmentFilter(filters.FilterSet):
@@ -196,6 +197,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
         view_name='project-builds',
     )
     id = serializers.IntegerField(read_only=True)
+    full_name = serializers.CharField(read_only=True)
 
     class Meta:
         model = Project
