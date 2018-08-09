@@ -202,6 +202,54 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
+class LatestTestResults(object):
+    def __init__(self, build, test_name):
+        self.build = build
+        self.environments = build.project.environments.all()
+        test_suite_name, test_case_name = test_name.split("/", 1)
+        self.test_list = Test.objects.filter(
+            test_run__build=self.build,
+            test_run__environment__in=self.environments,
+            name=test_case_name,
+            suite__slug=test_suite_name)
+
+
+class LatestTestResultsSerializer(serializers.BaseSerializer):
+    def to_representation(self, obj):
+        test_name = self.context.get('test_name')
+        latest_result = LatestTestResults(obj, test_name)
+        environments = []
+        for environment in latest_result.environments.order_by("name", "slug"):
+            test = latest_result.test_list.filter(test_run__environment=environment).first()
+            entry = {
+                'environment': EnvironmentSerializer(environment, context=self.context).data,
+                'test': TestSerializer(test, context=self.context).data,
+            }
+            if test is not None:
+                entry.update(
+                    {'test_url_path': reverse(
+                        'test_history',
+                        args=[
+                            latest_result.build.project.group.slug,
+                            latest_result.build.project.slug,
+                            test.full_name
+                        ])}
+                )
+            environments.append(entry)
+        serialized_obj = {
+            'build': BuildSerializer(latest_result.build, context=self.context).data,
+            'build_url_path': reverse(
+                'build',
+                args=[
+                    latest_result.build.project.group.slug,
+                    latest_result.build.project.slug,
+                    latest_result.build.version
+                ]),
+            'environments': environments
+        }
+        return serialized_obj
+
+
 class ProjectViewSet(viewsets.ModelViewSet):
     """
     List of projects. Includes public projects and projects that the current
@@ -235,6 +283,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
         page = self.paginate_queryset(builds)
         serializer = BuildSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
+
+    @detail_route(methods=['get'], suffix='test_results')
+    def test_results(self, request, pk=None):
+        test_name = request.query_params.get("test_name", None)
+
+        builds = self.get_object().builds.prefetch_related('test_runs').order_by('-datetime')
+        page = self.paginate_queryset(builds)
+        serializer = LatestTestResultsSerializer(
+            page,
+            many=True,
+            context={'request': request, 'test_name': test_name}
+        )
+        return Response(serializer.data)
 
 
 class ProjectStatusSerializer(serializers.HyperlinkedModelSerializer):
