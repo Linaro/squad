@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from django.db import models
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
@@ -48,9 +49,9 @@ class Notification(object):
     @property
     def metadata(self):
         if self.build.metadata is not None:
-            return dict(sorted(self.build.metadata.items()))
+            return OrderedDict(sorted(self.build.metadata.items()))
         else:
-            return dict()
+            return {}
 
     @property
     def important_metadata(self):
