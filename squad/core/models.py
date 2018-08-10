@@ -1,6 +1,7 @@
 import re
 import json
 from collections import OrderedDict
+from hashlib import sha1
 
 
 from dateutil.relativedelta import relativedelta
@@ -758,6 +759,30 @@ class ProjectStatus(models.Model, TestSummaryBase):
             build__datetime__lt=self.build.datetime,
             build__project=self.build.project,
         ).order_by('build__datetime').last()
+
+
+class NotificationDelivery(models.Model):
+
+    status = models.OneToOneField('ProjectStatus', related_name='delivery')
+    subject = models.CharField(max_length=40, null=True, blank=True)
+    txt = models.CharField(max_length=40, null=True, blank=True)
+    html = models.CharField(max_length=40, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('status', 'subject', 'txt', 'html')
+
+    @classmethod
+    def exists(cls, status, subject, txt, html):
+        subject_hash = sha1(subject.encode()).hexdigest()
+        txt_hash = sha1(txt.encode()).hexdigest()
+        html_hash = sha1(html.encode()).hexdigest()
+        obj, created = cls.objects.get_or_create(
+            status=status,
+            subject=subject_hash,
+            txt=txt_hash,
+            html=html_hash,
+        )
+        return (not created)
 
 
 class TestSummary(TestSummaryBase):
