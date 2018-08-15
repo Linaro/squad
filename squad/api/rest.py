@@ -52,8 +52,8 @@ class ProjectStatusFilter(filters.FilterSet):
 
 
 class BuildFilter(filters.FilterSet):
-    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all())
-    status = filters.RelatedFilter(ProjectStatusFilter, name="status", queryset=ProjectStatus.objects.all())
+    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all(), widget=forms.TextInput)
+    status = filters.RelatedFilter(ProjectStatusFilter, name="status", queryset=ProjectStatus.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = Build
@@ -362,7 +362,7 @@ class BuildViewSet(ModelViewSet):
     List of all builds in the system. Only builds belonging to public projects
     and to projects you have access to are available.
     """
-    queryset = Build.objects.prefetch_related('test_runs').order_by('-datetime').all()
+    queryset = Build.objects.prefetch_related('status', 'test_runs').order_by('-datetime').all()
     serializer_class = BuildSerializer
     filter_fields = ('version', 'project')
     filter_class = BuildFilter
