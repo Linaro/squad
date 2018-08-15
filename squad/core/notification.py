@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from django.db import models
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
@@ -6,7 +7,7 @@ from django.template.loader import render_to_string
 from re import sub
 
 
-from squad.core.models import Project, ProjectStatus, Build, KnownIssue
+from squad.core.models import Project, ProjectStatus, Build, KnownIssue, NotificationDelivery
 from squad.core.comparison import TestComparison
 
 
@@ -48,9 +49,9 @@ class Notification(object):
     @property
     def metadata(self):
         if self.build.metadata is not None:
-            return dict(sorted(self.build.metadata.items()))
+            return OrderedDict(sorted(self.build.metadata.items()))
         else:
-            return dict()
+            return {}
 
     @property
     def important_metadata(self):
@@ -136,6 +137,9 @@ class Notification(object):
         sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
         subject = self.subject
         txt, html = self.message(self.project.html_mail, self.project.custom_email_template)
+
+        if NotificationDelivery.exists(self.status, subject, txt, html):
+            return
 
         message = EmailMultiAlternatives(subject, txt, sender, recipients)
         if self.project.html_mail:
