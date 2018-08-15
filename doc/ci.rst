@@ -37,6 +37,73 @@ So for example you can have multiple backends of the same type (e.g. different
 For the CI loop integration to work, you need to run a few extra
 processes beyond the web interface. See :ref:`install_python` for details.
 
+.. _ci_job_ref_label:
+
+Submitting test job requests
+----------------------------
+
+The API is the following
+
+**POST** /api/submitjob/:team/:project/:build/:environment
+
+* ``team``, ``project``, ``build`` and ``environment`` are used to
+  identify which project/build/environment will be used to record the
+  results of the test job.
+* The following data must be submitted as POST parameters:
+
+  * ``backend``: name of a registered backend, to which this test job
+    will be submitted.
+  * ``definition``: test job definition. The contents and format are
+    backend-specific. If it is more convenient, the definition can also
+    be submitted as a file upload instead of as a POST parameter.
+
+Example (with test job definition as POST parameter)::
+
+    $ DEFINITION="$(cat /path/to/definition.txt)"
+    $ curl \
+        --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+        --form backend=lava \
+        --form definition="$DEFINITION" \
+        https://squad.example.com/api/submitjob/my-team/my-project/x.y.z/my-ci-env
+
+Example (with test job definition as file upload)::
+
+    $ curl \
+        --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+        --form backend=lava \
+        --form definition=@/path/to/definition.txt \
+        https://squad.example.com/api/submitjob/my-team/my-project/x.y.z/my-ci-env
+
+.. _ci_watch_ref_label:
+
+Submitting test job watch requests
+----------------------------------
+
+Test job watch request are similar to test job requests. The only difference is
+that some other service submitted the test job for execution and SQUAD is
+requested to track the progress. After test job is finished SQUAD will retrieve
+the results and do post processing. The API is following:
+
+**POST** /api/submitjob/:team/:project/:build/:environment
+
+* ``team``, ``project``, ``build`` and ``environment`` are used to
+  identify which project/build/environment will be used to record the
+  results of the test job.
+* The following data must be submitted as POST parameters:
+
+  * ``backend``: name of a registered backend, to which this test job
+    was be submitted.
+  * ``testjob_id``: test job ID. The contents and format are
+    backend-specific.
+
+Example (with test job definition as POST parameter)::
+
+    $ curl \
+        --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+        --form backend=lava \
+        --form testjob_id=123456 \
+        https://squad.example.com/api/watchjob/my-team/my-project/x.y.z/my-ci-env
+
 Backend settings
 ----------------
 

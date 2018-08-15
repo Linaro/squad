@@ -7,7 +7,7 @@ SQUAD — Software Quality Dashboard
 ==================================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
    :caption: Contents:
 
    intro
@@ -16,6 +16,7 @@ SQUAD — Software Quality Dashboard
    plugins
    install
    ci
+   api
 
 Indices and tables
 ==================

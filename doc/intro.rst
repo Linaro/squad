@@ -36,6 +36,8 @@ notified about important events such as changing test results. ProjectStatus
 records the most recent build of a project, against which future results should
 be compared in search for important events to notify subscribers about.
 
+.. _result_submit_ref_label:
+
 Submitting results
 ------------------
 
@@ -204,93 +206,9 @@ submitted. They will be stored, but will not be handled in any specific
 way.
 
 
-Badges
-~~~~~~
-
-SQUAD offers project badges that can be used in the webpages
-
-::
-
-  https://<squad_instance_tld>/group/project/badge
-
-The colour of the badge matches the passed/failed condition.
-Following colours are presented:
-
-  * green (#5cb85c) when there are no failed results
-  * orange (#f0ad4e) when there are both passed and failed results
-  * red (#d9534f) when there are no passed results
-
-If there are no results, the badge colour is grey (#999)
-
-
 CI loop integration (optional)
 ------------------------------
 
 SQUAD can integrate with existing automation systems to participate in a
 Continuous Integration (CI) loop through its CI subsystem. For more details
 check :ref:`ci_ref_label`.
-
-Submitting test job requests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The API is the following
-
-**POST** /api/submitjob/:team/:project/:build/:environment
-
-* ``team``, ``project``, ``build`` and ``environment`` are used to
-  identify which project/build/environment will be used to record the
-  results of the test job.
-* The following data must be submitted as POST parameters:
-
-  * ``backend``: name of a registered backend, to which this test job
-    will be submitted.
-  * ``definition``: test job definition. The contents and format are
-    backend-specific. If it is more convenient, the definition can also
-    be submitted as a file upload instead of as a POST parameter.
-
-Example (with test job definition as POST parameter)::
-
-    $ DEFINITION="$(cat /path/to/definition.txt)"
-    $ curl \
-        --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
-        --form backend=lava \
-        --form definition="$DEFINITION" \
-        https://squad.example.com/api/submitjob/my-team/my-project/x.y.z/my-ci-env
-
-Example (with test job definition as file upload)::
-
-    $ curl \
-        --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
-        --form backend=lava \
-        --form definition=@/path/to/definition.txt \
-        https://squad.example.com/api/submitjob/my-team/my-project/x.y.z/my-ci-env
-
-
-Submitting test job watch requests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Test job watch request are similar to test job requests. The only difference is
-that some other service submitted the test job for execution and SQAD is
-requested to track the progress. After test job is finished SQUAD will retrieve
-the results and do post processing. The API is following:
-
-**POST** /api/submitjob/:team/:project/:build/:environment
-
-* ``team``, ``project``, ``build`` and ``environment`` are used to
-  identify which project/build/environment will be used to record the
-  results of the test job.
-* The following data must be submitted as POST parameters:
-
-  * ``backend``: name of a registered backend, to which this test job
-    was be submitted.
-  * ``testjob_id``: test job ID. The contents and format are
-    backend-specific.
-
-Example (with test job definition as POST parameter)::
-
-    $ curl \
-        --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
-        --form backend=lava \
-        --form testjob_id=123456 \
-        https://squad.example.com/api/watchjob/my-team/my-project/x.y.z/my-ci-env
-
