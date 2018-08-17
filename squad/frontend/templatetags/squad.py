@@ -1,7 +1,11 @@
+import json
+import yaml
+
 from django import template
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import safe
+from django.utils.html import mark_safe
 from hashlib import md5
 from markdown import markdown as to_markdown
 
