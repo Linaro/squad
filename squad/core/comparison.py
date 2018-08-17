@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 
 from squad.core.utils import join_name, parse_name
-from squad.core.models import Build, Test
+from squad.core import models
 
 
 class TestComparison(object):
@@ -45,7 +45,7 @@ class TestComparison(object):
         self.all_environments = set()
         self.results = OrderedDict()
 
-        Build.prefetch_related(self.builds)
+        models.Build.prefetch_related(self.builds)
         self.__extract_results__()
 
     @classmethod

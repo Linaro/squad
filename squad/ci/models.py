@@ -1,8 +1,6 @@
 import json
 import logging
 import traceback
-import yaml
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
@@ -12,24 +10,13 @@ from squad.core.tasks import ReceiveTestRun, UpdateProjectStatus
 from squad.core.models import Project, Build, TestRun, slug_validator
 from squad.core.plugins import apply_plugins
 from squad.core.tasks.exceptions import InvalidMetadata
+from squad.core.utils import yaml_validator
 
 
 from squad.ci.backend import get_backend_implementation, ALL_BACKENDS
 
 
 logger = logging.getLogger()
-
-
-def yaml_validator(value):
-    if value is None:
-        return
-    if len(value) == 0:
-        return
-    try:
-        if not isinstance(yaml.load(value), dict):
-            raise ValidationError("Dictionary object expected")
-    except yaml.YAMLError as e:
-        raise ValidationError(e)
 
 
 def list_backends():

@@ -1,6 +1,8 @@
 import random
 import string
+import yaml
 from django.template.defaultfilters import safe, escape
+from django.core.exceptions import ValidationError
 
 
 def random_key(length, chars=string.printable):
@@ -51,3 +53,15 @@ def format_metadata(v, separator):
         return safe(separator.join([escape(t) for t in v]))
     else:
         return escape(v)
+
+
+def yaml_validator(value):
+    if value is None:
+        return
+    if len(value) == 0:
+        return
+    try:
+        if not isinstance(yaml.load(value), dict):
+            raise ValidationError("Dictionary object expected")
+    except yaml.YAMLError as e:
+        raise ValidationError(e)

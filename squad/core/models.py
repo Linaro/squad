@@ -1,5 +1,6 @@
 import re
 import json
+import yaml
 from collections import OrderedDict
 from hashlib import sha1
 
@@ -14,7 +15,8 @@ from django.core.validators import RegexValidator
 from django.utils import timezone
 
 
-from squad.core.utils import random_token, parse_name, join_name
+from squad.core.utils import random_token, parse_name, join_name, yaml_validator
+from squad.core.comparison import TestComparison
 from squad.core.statistics import geomean
 from squad.core.plugins import Plugin
 from squad.core.plugins import PluginListField
@@ -697,6 +699,17 @@ class ProjectStatus(models.Model, TestSummaryBase):
     test_runs_completed = models.IntegerField(default=0)
     test_runs_incomplete = models.IntegerField(default=0)
 
+    regressions = models.TextField(
+        null=True,
+        blank=True,
+        validators=[yaml_validator]
+    )
+    fixes = models.TextField(
+        null=True,
+        blank=True,
+        validators=[yaml_validator]
+    )
+
     class Meta:
         verbose_name_plural = "Project statuses"
 
@@ -713,6 +726,20 @@ class ProjectStatus(models.Model, TestSummaryBase):
         test_runs_total = build.test_runs.count()
         test_runs_completed = build.test_runs.filter(completed=True).count()
         test_runs_incomplete = build.test_runs.filter(completed=False).count()
+        regressions = None
+        fixes = None
+
+        previous_build = Build.objects.filter(
+            status__finished=True,
+            datetime__lt=build.datetime,
+            project=build.project,
+        ).order_by('build__datetime').last()
+        if previous_build is not None:
+            comparison = TestComparison(previous_build, build)
+            if comparison.regressions:
+                regressions = yaml.dump(comparison.regressions)
+            if comparison.fixes:
+                fixes = yaml.dump(comparison.fixes)
 
         data = {
             'tests_pass': test_summary.tests_pass,
@@ -724,7 +751,9 @@ class ProjectStatus(models.Model, TestSummaryBase):
             'finished': build.finished,
             'test_runs_total': test_runs_total,
             'test_runs_completed': test_runs_completed,
-            'test_runs_incomplete': test_runs_incomplete
+            'test_runs_incomplete': test_runs_incomplete,
+            'regressions': regressions,
+            'fixes': fixes
         }
 
         status, created = cls.objects.get_or_create(build=build, defaults=data)
@@ -744,6 +773,8 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.test_runs_total = test_runs_total
             status.test_runs_completed = test_runs_completed
             status.test_runs_incomplete = test_runs_incomplete
+            status.regressions = regressions
+            status.fixes = fixes
             status.save()
         return status
 
@@ -756,6 +787,17 @@ class ProjectStatus(models.Model, TestSummaryBase):
             build__datetime__lt=self.build.datetime,
             build__project=self.build.project,
         ).order_by('build__datetime').last()
+
+    def __get_yaml_field__(self, field_value):
+        if field_value is not None:
+            return yaml.load(field_value)
+        return {}
+
+    def get_regressions(self):
+        return self.__get_yaml_field__(self.regressions)
+
+    def get_fixes(self):
+        return self.__get_yaml_field__(self.fixes)
 
 
 class NotificationDelivery(models.Model):
