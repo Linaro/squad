@@ -100,8 +100,14 @@ h1 {
   margin-top: 0px;
 }
 
+form.filter .fa {
+  float: left;
+  padding-top: 5px;
+}
+
 .filter input {
-  width: 90%;
+  margin-left: 14px;
+  width: 95%;
   border: none;
 }
 

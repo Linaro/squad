@@ -159,6 +159,40 @@ def builds(request, group_slug, project_slug):
     return render(request, 'squad/builds.html', context)
 
 
+class TestResulTable(object):
+
+    class Cell(object):
+
+        def __init__(self):
+            self.has_failures = False
+            self.statuses = []
+
+        @property
+        def has_data(self):
+            return len(self.statuses) > 0
+
+    def __init__(self):
+        self.data = OrderedDict()
+        self.environments = []
+        self.test_runs = set()
+
+    def add_status(self, status):
+        suite = status.suite
+        environment = status.environment
+        if environment not in self.environments:
+            self.environments.append(environment)
+        if suite not in self.data:
+            self.data[suite] = OrderedDict()
+        if environment not in self.data[suite]:
+            self.data[suite][environment] = TestResulTable.Cell()
+
+        entry = self.data[suite][environment]
+        if status.tests_fail > 0:
+            entry.has_failures = True
+        entry.statuses.append(status)
+        self.test_runs.add(status.test_run)
+
+
 @auth
 def build(request, group_slug, project_slug, version):
     group = Group.objects.get(slug=group_slug)
@@ -178,35 +212,23 @@ def build(request, group_slug, project_slug, version):
             version=version,
         )
 
-    _statuses = Status.objects.filter(
+    __statuses__ = Status.objects.filter(
         test_run__build=build,
         suite__isnull=False,
     ).prefetch_related(
+        'suite',
         'test_run',
         'test_run__environment',
-        'suite',
     ).order_by('-tests_fail', 'suite__slug', '-test_run__environment__slug')
 
-    grouped_statuses = OrderedDict()
-    suite_fails = dict()
-
-    for s in _statuses:
-        if s.has_tests:
-            if s.tests_fail > 0:
-                if s.suite not in suite_fails.keys():
-                    suite_fails[s.suite] = []
-                suite_fails[s.suite].append(s.test_run.environment)
-            if s.suite not in grouped_statuses.keys():
-                grouped_statuses[s.suite] = {s.test_run.environment: []}
-            if s.test_run.environment not in grouped_statuses[s.suite].keys():
-                grouped_statuses[s.suite][s.test_run.environment] = []
-            grouped_statuses[s.suite][s.test_run.environment].append(s)
+    test_results = TestResulTable()
+    for status in __statuses__:
+        test_results.add_status(status)
 
     context = {
         'project': project,
         'build': build,
-        'grouped_statuses': grouped_statuses,
-        'suite_fails': suite_fails,
+        'test_results': test_results,
         'metadata': sorted(build.important_metadata.items()),
         'extra_metadata': sorted(build.non_important_metadata.items()),
     }
