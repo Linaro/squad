@@ -31,7 +31,7 @@
             </tr>
             {% for suite, results in test_results.data.items %}
 	    <tr id='tests-{{suite.id}}' ng-show='match("tests-{{suite.id}}") || match("details-{{suite.id}}")'>
-                <td>{{suite}}</td>
+                <td ng-click='toggle_details("details-{{suite.id}}")'>{{suite}}</td>
                 {% for environment in test_results.environments %}
                     {% with entry=results|get_value:environment %}
                         {% if not entry.has_data %}
