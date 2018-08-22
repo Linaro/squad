@@ -24,7 +24,7 @@
 
           <div class="input-group">
             <input class="form-control" ng-model="project" ng-change="doProjectSearch()"></input>
-            <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+            <span class="input-group-addon"><i class="fa fa-search"></i></span>
 
             <div id="projects-dropdown" class="col-md-12 dropdown-menu">
               <div class="search-dropdown-display" ng-repeat="project in projects" ng-click="addProject(project)" ng-model="project">
@@ -48,7 +48,7 @@
 
           <div class="input-group">
             <input class="form-control" ng-model="suite" ng-change="doSuiteSearch()"></input>
-            <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+            <span class="input-group-addon"><i class="fa fa-search"></i></span>
             <div id="suites-dropdown" class="col-md-12 dropdown-menu">
               <div class="search-dropdown-display" ng-repeat="suite in suites" ng-click="addSuite(suite)" ng-model="suite">
                 <span ng-bind="suite"></span>
@@ -72,7 +72,7 @@
 
           <div class="input-group">
             <input class="form-control" ng-model="test" ng-change="doTestSearch()"></input>
-            <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+            <span class="input-group-addon"><i class="fa fa-search"></i></span>
             <div id="tests-dropdown" class="col-md-12 dropdown-menu">
               <div class="search-dropdown-display" ng-repeat="test in tests" ng-click="addTest(test)" ng-model="test">
                 <span ng-bind="test"></span>

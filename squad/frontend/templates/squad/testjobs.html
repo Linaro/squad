@@ -36,10 +36,10 @@
                 <a href="{{ testjob.parent_job.url }}">Resubmitted from #{{testjob.parent_job.job_id}}</a>
             {% endif %}
             {% if testjob.failure %}
-            <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-failure-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-failure-{{testjob.pk}}"><span class="glyphicon glyphicon-alert" aria-hidden="true"></span></button>
+            <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-failure-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-failure-{{testjob.pk}}"><span class="fa fa-exclamation-triangle" aria-hidden="true"></span></button>
             {% endif %}
             {% if testjob.definition %}
-            <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-definition-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-definition-{{testjob.pk}}"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></button>
+            <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-definition-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-definition-{{testjob.pk}}"><span class="fa fa-list-alt" aria-hidden="true"></span></button>
             {% endif %}
             {% if user.is_staff or user.is_superuser %}
             <div class='pull-right' ng-controller='ResubmitController'>
