@@ -3,7 +3,6 @@ var app = angular.module('Filter', []);
 var URL = {}
 
 function FilterController($scope, $attrs, $location) {
-  $scope.visibility = {}
   $scope.match = function(id) {
     var filter = $scope.filter
     var visible
@@ -13,24 +12,37 @@ function FilterController($scope, $attrs, $location) {
     } else {
       visible = true
     }
-    $scope.visibility[id] = visible
-    $scope.update()
     return visible
   }
 
-  $scope.count_visible = function(always_visible) {
-    return Math.max(0, _.filter($scope.visibility).length - always_visible)
+  $scope.details_visible = {}
+  $scope.toggle_details = function(id) {
+    var element = document.getElementById(id)
+    if ($scope.details_visible[id]) {
+      delete $scope.details_visible[id]
+    } else {
+      $scope.details_visible[id] = true
+    }
+    $scope.update()
+    return false
   }
 
   $scope.update = function() {
-    var search_update = {}
     URL[$attrs.param] = $scope.filter
+    URL.details = _.map($scope.details_visible, function(v, k) {
+      return k.replace('details-', '')
+    }).join(',')
     $location.search(URL)
   }
 
   $scope.init = function() {
     var params = $location.search()
     $scope.filter = params[$attrs.param]
+    if (params.details) {
+      _.each(params.details.split(','), function(d) {
+        $scope.details_visible["details-" + d] = true
+      })
+    }
   }
 
   $scope.init()

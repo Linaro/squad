@@ -275,6 +275,7 @@ class RecordTestRunStatus(object):
 
         for sid, values in metrics.items():
             status[sid].metrics_summary = geomean(values)
+            status[sid].has_metrics = True
 
         for sid, s in status.items():
             s.suite_id = sid

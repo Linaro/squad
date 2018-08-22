@@ -638,6 +638,7 @@ class Status(models.Model, TestSummaryBase):
     tests_fail = models.IntegerField(default=0)
     tests_skip = models.IntegerField(default=0)
     metrics_summary = models.FloatField(default=0.0)
+    has_metrics = models.BooleanField(default=False)
 
     objects = StatusManager()
 
@@ -662,10 +663,6 @@ class Status(models.Model, TestSummaryBase):
     @property
     def metrics(self):
         return self.test_run.metrics.filter(suite=self.suite)
-
-    @property
-    def has_metrics(self):
-        return len(self.metrics) > 0
 
     def __str__(self):
         if self.suite:
