@@ -17,8 +17,8 @@ from jinja2 import TemplateSyntaxError
 class GroupFilter(filters.FilterSet):
     class Meta:
         model = Group
-        fields = {'name': ['exact', 'in', 'startswith'],
-                  'slug': ['exact', 'in', 'startswith']}
+        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'slug': ['exact', 'in', 'startswith', 'contains', 'icontains']}
 
 
 class ProjectFilter(filters.FilterSet):
@@ -26,8 +26,8 @@ class ProjectFilter(filters.FilterSet):
 
     class Meta:
         model = Project
-        fields = {'name': ['exact', 'in', 'startswith'],
-                  'slug': ['exact', 'in', 'startswith'],
+        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'slug': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'id': ['exact', 'in']}
 
 
@@ -36,8 +36,8 @@ class EnvironmentFilter(filters.FilterSet):
 
     class Meta:
         model = Environment
-        fields = {'name': ['exact', 'in', 'startswith'],
-                  'slug': ['exact', 'in', 'startswith'],
+        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'slug': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'id': ['exact']}
 
 
@@ -79,7 +79,7 @@ class TestJobFilter(filters.FilterSet):
 
     class Meta:
         model = TestJob
-        fields = {'name': ['exact', 'in', 'startswith']}
+        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains']}
 
 
 class SuiteFilter(filters.FilterSet):
@@ -87,8 +87,8 @@ class SuiteFilter(filters.FilterSet):
 
     class Meta:
         model = Suite
-        fields = {'name': ['exact', 'in', 'startswith'],
-                  'slug': ['exact', 'in', 'startswith']}
+        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'slug': ['exact', 'in', 'startswith', 'contains', 'icontains']}
 
 
 class TestFilter(filters.FilterSet):
@@ -97,7 +97,7 @@ class TestFilter(filters.FilterSet):
 
     class Meta:
         model = Test
-        fields = {'name': ['exact', 'in', 'startswith'],
+        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'result': ['exact', 'in']}
 
 
