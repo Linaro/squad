@@ -65,15 +65,27 @@ function CompareController($scope, $http, $location) {
 
     $scope.doProjectSearch = function() {
         var params = new Array();
-        params['name__startswith'] = $scope.project;
+        params['name__icontains'] = $scope.project;
         $scope.projectSearchResponses = 0;
         $http.get('/api/projects', {params: params})
         .then(function(response) {
             $scope.projectSearchUpdate(response.data.results);
         });
         var params2 = new Array();
-        params2['slug__startswith'] = $scope.project;
+        params2['slug__icontains'] = $scope.project;
         $http.get('/api/projects', {params: params2})
+        .then(function(response) {
+            $scope.projectSearchUpdate(response.data.results);
+        });
+        var params3 = new Array();
+        params3['group__name__icontains'] = $scope.project;
+        $http.get('/api/projects', {params: params3})
+        .then(function(response) {
+            $scope.projectSearchUpdate(response.data.results);
+        });
+        var params4 = new Array();
+        params4['group__slug__icontains'] = $scope.project;
+        $http.get('/api/projects', {params: params4})
         .then(function(response) {
             $scope.projectSearchUpdate(response.data.results);
         });
