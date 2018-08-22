@@ -9,6 +9,7 @@ from rest_framework import routers, serializers, views, viewsets, status
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
+from rest_framework.pagination import CursorPagination
 
 import rest_framework_filters as filters
 from jinja2 import TemplateSyntaxError
@@ -540,6 +541,8 @@ class TestViewSet(ModelViewSet):
     queryset = Test.objects.all()
     serializer_class = TestSerializer
     filter_class = TestFilter
+    pagination_class = CursorPagination
+    ordering = ('id',)
 
     def get_queryset(self):
         return self.queryset.filter(test_run__build__project__in=self.get_project_ids())
@@ -575,6 +578,8 @@ class TestRunViewSet(ModelViewSet):
     filter_class = TestRunFilter
     search_fields = ('environment',)
     ordering_fields = ('id', 'created_at', 'environment', 'datetime')
+    pagination_class = CursorPagination
+    ordering = ('created_at',)
 
     def get_queryset(self):
         return self.queryset.filter(build__project__in=self.get_project_ids())
@@ -672,6 +677,8 @@ class TestJobViewSet(ModelViewSet):
     filter_class = TestJobFilter
     search_fields = ("name", "environment", "last_fetch_attempt")
     ordering_fields = ("id", "name", "environment", "last_fetch_attempt")
+    pagination_class = CursorPagination
+    ordering = ('id',)
 
     def get_queryset(self):
         return self.queryset.filter(target_build__project__in=self.get_project_ids())
