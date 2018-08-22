@@ -9,7 +9,8 @@
 {% include "squad/project-nav.html" %}
 
 {% if last_build %}
-<h2>Last build - <a class="h2 text-primary" href="{% project_url last_build %}">{{last_build.version}}</a> {{last_build.datetime}} {{last_build.datetime|naturaltime}}</h2>
+<h2>Last build - {% if not last_build.status.finished %}<i title="Build/testing in progress" class="fa fa-cog fa-spin"></i>{% endif %}
+<a class="h2 text-primary" href="{% project_url last_build %}">{{last_build.version}}</a> {{last_build.datetime}} {{last_build.datetime|naturaltime}}</h2>
 {% include "squad/_metadata.html" %}
 
 <h2>Latest builds</h2>
