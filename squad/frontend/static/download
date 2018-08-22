@@ -86,6 +86,11 @@ while read destination url sha1; do
         sha1="$(get_sha1 "$tmpdir/$zip")"
       fi
       (cd "$tmpdir/$name" && uncompress "../$zip")
+      files=$(ls -1 "$tmpdir/$name"/ | wc -l)
+      if [ "$files" -gt 1 ]; then
+        # not a single directory inside package, create target directory first
+        mkdir "$destination"
+      fi
       mv "$tmpdir/$name"/* "$destination"
       ;;
     *)
