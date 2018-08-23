@@ -1,0 +1,25 @@
+{% load squad %}
+    <nav id='navbar' class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container container-fluid">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls=".navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="/">
+          <span class="fa fa-line-chart" aria-hidden="true"></span>
+          {% site_name %}
+        </a>
+
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav mr-auto">
+            <li class="nav-item {% active 'home'%}"><a class="nav-link" href="{% url 'home' %}">Explore</a></li>
+            <li class="nav-item {% active 'compare_projects' %}"><a class="nav-link" href="{% url 'compare_projects' %}">Compare</a></li>
+            <li class="nav-item {% active 'compare_test' %}"><a class="nav-link" href="{% url 'compare_test' %}">Compare Test</a></li>
+            <li class="nav-item {% active 'api-root' %}"><a class="nav-link" href="{% url 'api-root' %}">API</a></li>
+          </ul>
+
+          <ul class="nav navbar-nav">
+            {% include "squad/_user_menu.html" %}
+          </ul>
+        </div>
+      </div>
+    </nav>

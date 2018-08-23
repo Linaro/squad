@@ -1,0 +1,21 @@
+<ul class="pagination">
+  {% if previous_url %}
+    <li class="page-item previous">
+      <a class="page-link" href="{{ previous_url }}">&laquo; Previous</a>
+    </li>
+  {% else %}
+    <li class="page-item previous disabled">
+      <a class="page-link" href="#">&laquo; Previous</a>
+    </li>
+  {% endif %}
+
+  {% if next_url %}
+    <li class="page-item next">
+      <a class="page-link" href="{{ next_url }}">Next &raquo;</a>
+    </li>
+  {% else %}
+    <li class="page-item next disabled">
+      <a class="page-link" href="#">Next &raquo;</a>
+    </li>
+  {% endif %}
+</ul>

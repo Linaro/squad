@@ -1,34 +1,40 @@
 {% load squad %}
-<h2 class="page-header well">
-    <a class="h2 text-primitive" href="{% group_url project.group %}">{{project.group.name}}</a>
-    » <a class="h2 text-primitive" href="{% project_url project %}">{{project.name}}</a>
-    » {% include "squad/_unfinished_build.html" %} <a class="h2 text-primary" href="{% build_url build %}">Build {{build.version}}</a>
-</h2>
+<div class="card bg-light mb-3">
+  <div class="card-header">
+    <h2>
+        <a class="h2 text-dark" href="{% group_url project.group %}">{{project.group.name}}</a>
+        » <a class="h2 text-dark" href="{% project_url project %}">{{project.name}}</a>
+        » {% include "squad/_unfinished_build.html" %} <a class="h2 text-primary" href="{% build_url build %}">Build {{build.version}}</a>
+    </h2>
+  </div>
+  <div class="card-body">
 
-<ul class="page-header nav nav-pills">
-    {% with url_name=request.resolver_match.url_name %}
+    <ul class="page-header nav nav-pills">
+        {% with url_name=request.resolver_match.url_name %}
 
-    <li role="presentation" {% if url_name == 'build' %}class="active"{% endif %}>
-        <a href="{% build_url build %}">
-            Build summary
-        </a>
-    </li>
-    <li role="presentation" {% if url_name == 'tests' or url_name == 'test_history' %}class="active"{% endif %}>
-        <a href="{% build_section_url build 'tests' %}">
-            All test results
-        </a>
-    </li>
-    {% if build.test_jobs.count %}
-    {% load filter_jobs %}
-    <li role="presentation" {% if url_name == 'testjobs' %}class="active"{% endif %}>
-        <a href="{% build_section_url build 'testjobs' %}">
-            Test jobs
-        {% for i in build|filter_jobs %}
-        <span class="badge badge-{{ i.0 }}" data-toggle="tooltip" data-placement="top" title="{{ i.0 }}">{{ i.1 }}</span>
-        {% endfor %}
-        </a>
-    </li>
-    {% endif %}
+        <li class="nav-item" >
+            <a class="nav-link {% if url_name == 'build' %}active{% endif %}"  href="{% build_url build %}">
+                Build summary
+            </a>
+        </li>
+        <li class="nav-item" >
+            <a class="nav-link {% if url_name == 'tests' or url_name == 'test_history' %}active{% endif %}"  href="{% build_section_url build 'tests' %}">
+                All test results
+            </a>
+        </li>
+        {% if build.test_jobs.count %}
+        {% load filter_jobs %}
+        <li class="nav-item">
+            <a class="nav-link {% if url_name == 'testjobs' %}active{% endif %}"  href="{% build_section_url build 'testjobs' %}">
+                Test jobs
+            {% for i in build|filter_jobs %}
+            <span class="badge badge-{{ i.0 }}" data-toggle="tooltip" data-placement="top" title="{{ i.0 }}">{{ i.1 }}</span>
+            {% endfor %}
+            </a>
+        </li>
+        {% endif %}
 
-    {% endwith %}
-</ul>
+        {% endwith %}
+    </ul>
+  </div>
+</div>

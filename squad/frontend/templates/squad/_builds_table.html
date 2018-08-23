@@ -8,8 +8,8 @@
     <div class="col-md-2 col-sm-2">
         {% include "squad/_unfinished_build.html" %}
         <span>
-            <i class="fa fa-exclamation-triangle text-danger popover-regressions {% if not status.get_regressions %}hidden{% endif %}"></i>
-            <button title="Regressions" class="hidden">
+            <i class="fa fa-exclamation-triangle text-danger popover-regressions" {% if not status.get_regressions %}hidden{% endif %}></i>
+            <button title="Regressions" hidden>
                 {% for regression_key, regression_value in status.get_regressions.items %}
                 <div>
                     <h3>{{ regression_key }}</h3>
@@ -23,8 +23,8 @@
             </button>
         </span>
         <span>
-            <i class="fa fa-check-circle text-success popover-fixes {% if not status.get_fixes %}hidden{% endif %}"></i>
-            <button title="Fixes" class="hidden">
+            <i class="fa fa-check-circle text-success popover-fixes" {% if not status.get_fixes %}hidden{% endif %}></i>
+            <button title="Fixes" hidden>
                 {% for fix_key, fix_value in status.get_fixes.items %}
                 <div>
                     <h3>{{ fix_key }}</h3>

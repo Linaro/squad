@@ -1,27 +1,33 @@
 {% load squad %}
-<h2 class="page-header well">
-  <a class="h2 text-primitive" href="{% group_url project.group %}">{{project.group.name}}</a>
-  » <a class="h2 text-primary" href="{% project_url project %}">{{project.name}}</a>
-  {{pagetitle}}
-</h1>
-<ul class="page-header nav nav-pills">
-  {% with url_name=request.resolver_match.url_name %}
-  <li role="presentation" {% if url_name == 'project' %}class="active"{% endif %}>
-    <a href="{% project_url project %}">
-      Project Summary
-    </a>
-  </li>
-  <li role="presentation" {% if url_name == 'build' or url_name == 'builds' or url_name == 'testrun' %}class="active"{% endif %}>
-    <a href="{% project_section_url project 'builds' %}">
-      Builds
-    </a>
-  </li>
+<div class="card bg-light mb-3">
+  <div class="card-header">
+    <h2>
+      <a class="text-dark" href="{% group_url project.group %}">{{project.group.name}}</a>
+      » <a class="text-primary" href="{% project_url project %}">{{project.name}}</a>
+      {{pagetitle}}
+    </h2>
+  </div>
+  <div class="card-body">
+    <ul class="nav nav-pills">
+      {% with url_name=request.resolver_match.url_name %}
+      <li class="nav-item">
+        <a class="nav-link {% if url_name == 'project' %}active{% endif %}" href="{% project_url project %}">
+          Project Summary
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if url_name == 'build' or url_name == 'builds' or url_name == 'testrun' %}active{% endif %}" href="{% project_section_url project 'builds' %}">
+          Builds
+        </a>
+      </li>
 
-  <li role="presentation" {% if url_name == 'metrics' %}class="active"{% endif %}>
-    <a href="{% project_section_url project 'metrics' %}">
-      Metrics
-    </a>
-  </li>
+      <li class="nav-item">
+        <a class="nav-link {% if url_name == 'metrics' %}active{% endif %}" href="{% project_section_url project 'metrics' %}">
+          Metrics
+        </a>
+      </li>
 
-  {% endwith %}
-</ul>
+      {% endwith %}
+    </ul>
+  </div>
+</div>

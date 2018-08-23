@@ -2,43 +2,47 @@
 {% load squad %}
 {% block content %}
 
-<h2 class="page-header well">
-    <a class="h2 text-primitive" href="{% group_url project.group %}">{{project.group.name}}</a>
-    » <a class="h2 text-primitive" href="{% project_url project %}">{{project.name}}</a>
-    » <a class="h2 text-primitive" href="{% build_url build %}"> {{build.version}}</a>
-    » <a class="h2 text-primitive" href="{% project_url test_run %}">{{test_run.job_id}}</a>
-    » <a class="h2 text-primary" href="{% project_url test_run %}">{{suite}}</a>
-    <br>
+<div class="card bg-light mb-3">
+  <div class="card-header">
+    <h2>
+        <a class="h2 text-dark" href="{% group_url project.group %}">{{project.group.name}}</a>
+        » <a class="h2 text-dark" href="{% project_url project %}">{{project.name}}</a>
+        » <a class="h2 text-dark" href="{% build_url build %}"> {{build.version}}</a>
+        » <a class="h2 text-dark" href="{% project_url test_run %}">{{test_run.job_id}}</a>
+        » <a class="h2 text-primary" href="{% project_url test_run %}">{{suite}}</a>
+        <br>
 
-    <small>
-      <i class='fa fa-microchip'></i>
-      Test environment: <strong> {{test_run.environment}} </strong>
-      {% if test_run.environment.description %}
-      <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
-      {% endif %}
-      {% if test_run.environment.description %}
-      <div class='alert alert-info' id='environment-description' style='display: none'>
-	{{test_run.environment.description|markdown}}
-      </div>
-      {% endif %}
-      <br>
-      <i class='fa fa-list'></i>
-      Suite: <strong> {{suite}} </strong>
-      {% if status.suite_version %}
-      {{status.suite_version.version}}
-      {% endif %}
-      {% if suite.metadata.description %}
-      <a href='#' onclick="$('#tests-{{suite.slug}}-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
-      {% endif %}
-      
-      {% if suite.metadata.description %}
-      <div class='alert alert-info' id='tests-{{suite.slug}}-description' style='display: none'>
-	{{suite.metadata.description|markdown}}
-      </div>
-      {% endif %}
-    </small> 
-      <a name="tests"></a>
-</h2>
+        <small>
+          <i class='fa fa-microchip'></i>
+          Test environment: <strong> {{test_run.environment}} </strong>
+          {% if test_run.environment.description %}
+          <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
+          {% endif %}
+          {% if test_run.environment.description %}
+          <div class='alert alert-info' id='environment-description' style='display: none'>
+        {{test_run.environment.description|markdown}}
+          </div>
+          {% endif %}
+          <br>
+          <i class='fa fa-list'></i>
+          Suite: <strong> {{suite}} </strong>
+          {% if status.suite_version %}
+          {{status.suite_version.version}}
+          {% endif %}
+          {% if suite.metadata.description %}
+          <a href='#' onclick="$('#tests-{{suite.slug}}-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
+          {% endif %}
+          
+          {% if suite.metadata.description %}
+          <div class='alert alert-info' id='tests-{{suite.slug}}-description' style='display: none'>
+        {{suite.metadata.description|markdown}}
+          </div>
+          {% endif %}
+        </small> 
+          <a name="tests"></a>
+    </h2>
+  </div>
+</div>
 
 <h2>
     Test results

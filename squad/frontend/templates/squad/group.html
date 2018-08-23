@@ -4,7 +4,9 @@
 {% load static %}
 
 {% block content %}
-<h2 class="page-header well">{{group.name}}</h2>
+<div class="card bg-light mb-3">
+  <div class="card-header"><h2>{{group.name}}</h2></div>
+</div>
 
 <p>
 {{group.description|default:""}}

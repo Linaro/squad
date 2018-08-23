@@ -4,34 +4,34 @@
     <ul class="pagination">
         {% with page_list=items|get_page_list %}
         {% if page_list.link_first %}
-        <li>
-            <a href="?page=1" aria-label="page 1">
+        <li class="page-item">
+            <a class="page-link" href="?page=1" aria-label="page 1">
                 <span aria-hidden="true">1</span>
             </a>
         </li>
         {% endif %}
 
         {% if page_list.head_ellipsis %}
-        <li class='disabled'>
+        <li class='page-item disabled'>
             <span aria-hidden="true">...</span>
         </li>
         {% endif %}
 
         {% for page in page_list.pages %}
-        <li {% if items.number == page %}class="active"{% endif %}>
-            <a href="?page={{page}}" aria-label="page {{page}}">{{page}}</a>
+        <li class="page-item {% if items.number == page %}active{% endif %}">
+            <a class="page-link" href="?page={{page}}" aria-label="page {{page}}">{{page}}</a>
         </li>
         {% endfor %}
 
         {% if page_list.tail_ellipsis %}
-        <li class='disabled'>
+        <li class='page-item disabled'>
             <span aria-hidden="true">...</span>
         </li>
         {% endif %}
 
         {% if page_list.link_last %}
-        <li>
-            <a href="?page={{ items.paginator.num_pages }}" aria-label="page {{items.paginator.num_pages}}">
+        <li class="page-item">
+            <a class="page-link" href="?page={{ items.paginator.num_pages }}" aria-label="page {{items.paginator.num_pages}}">
                 <span aria-hidden="true">{{items.paginator.num_pages}}</span>
             </a>
         </li>

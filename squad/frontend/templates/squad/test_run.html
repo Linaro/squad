@@ -4,23 +4,27 @@
 {% block content %}
 
 {% load squad %}
-<h2 class="page-header well">
-    <a class="h2 text-primitive" href="{% group_url project.group %}">{{project.group.name}}</a>
-    » <a class="h2 text-primitive" href="{% project_url project %}">{{project.name}}</a>
-    » <a class="h2 text-prmitive" href="{% build_url build %}">{{build.version}}</a>
-    » <a class="h2 text-primary" href="{% project_url test_run %}">{{test_run.job_id}} </a>
-    <br>
-      <i class='fa fa-microchip'></i>
-      Test environment: <strong>{{test_run.environment}}</strong>
-      {% if test_run.environment.description %}
-      <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
+<div class="card bg-light mb-3">
+  <div class="card-header">
+    <h2>
+      <a class="h2 text-dark" href="{% group_url project.group %}">{{project.group.name}}</a>
+      » <a class="h2 text-dark" href="{% project_url project %}">{{project.name}}</a>
+      » <a class="h2 text-dark" href="{% build_url build %}">{{build.version}}</a>
+      » <a class="h2 text-dark" href="{% project_url test_run %}">{{test_run.job_id}} </a>
+      <br>
+        <i class='fa fa-microchip'></i>
+        Test environment: <strong>{{test_run.environment}}</strong>
+        {% if test_run.environment.description %}
+        <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
+        {% endif %}
+        {% if test_run.environment.description %}
+        <div class='alert alert-info' id='environment-description' style='display: none'>
+      {{test_run.environment.description|markdown}}
+        </div>
       {% endif %}
-      {% if test_run.environment.description %}
-      <div class='alert alert-info' id='environment-description' style='display: none'>
-	{{test_run.environment.description|markdown}}
-      </div>
-    {% endif %}
-</h2>
+    </h2>
+  </div>
+</div>
 
 <h2>Test run metadata</h2>
 {% include "squad/_metadata.html" %}

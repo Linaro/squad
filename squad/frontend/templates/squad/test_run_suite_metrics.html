@@ -2,13 +2,17 @@
 {% load squad %}
 {% block content %}
 
-<h2 class="page-header well">
-    <a class="h2 text-primitive" href="{% group_url project.group %}">{{project.group.name}}</a>
-    » <a class="h2 text-primitive" href="{% project_url project %}">{{project.name}}</a>
-    » <a class="h2 text-primitive" href="{% build_url build %}">Build {{build.version}}</a>
-    » <a class="h2 text-primitive" href="{% project_url test_run %}">Test run {{test_run.job_id}}</a>
-    » Test results for {{Suite}}
-</h2>
+<div class="card bg-light mb-3">
+  <div class="card-header">
+	<h2>
+		<a class="h2 text-dark" href="{% group_url project.group %}">{{project.group.name}}</a>
+		» <a class="h2 text-dark" href="{% project_url project %}">{{project.name}}</a>
+		» <a class="h2 text-dark" href="{% build_url build %}">Build {{build.version}}</a>
+		» <a class="h2 text-dark" href="{% project_url test_run %}">Test run {{test_run.job_id}}</a>
+		» Test results for {{suite}}
+	</h2>
+  </div>
+</div>
 
 <h2>
     Test environment: {{test_run.environment}}

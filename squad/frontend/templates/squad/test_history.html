@@ -4,16 +4,20 @@
 
 {% block content %}
 
-  <h2 class="page-header well">
-    {{history.test}}
-    {% if request.GET.top %}
-    up to {{history.top.version}}
-    {% else %}
-      {% if history.top %}
-      <small>(<a href="?top={{history.top.version}}">permalink</a>)</small>
+<div class="card bg-light mb-3">
+  <div class="card-header">
+    <h2>
+      {{history.test}}
+      {% if request.GET.top %}
+      up to {{history.top.version}}
+      {% else %}
+        {% if history.top %}
+        <small>(<a href="?top={{history.top.version}}">permalink</a>)</small>
+        {% endif %}
       {% endif %}
-    {% endif %}
-  </h2>
+    </h2>
+  </div>
+</div>
 
   {% include "squad/_pagination.html" with items=history %}
 

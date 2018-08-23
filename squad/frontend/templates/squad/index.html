@@ -4,30 +4,29 @@
 {% load static %}
 
 {% block content %}
-<h2 class="page-header well">All groups</h2>
-
+<div class="card bg-light mb-3">
+  <div class="card-header"><h2>All groups</h2></div>
+</div>
 <div class='highlight-row'>
 {% for group in groups %}
-<div class="row row-bordered project">
-    <a href="{% group_url group %}">
-    <div class="col-md-3 col-sm-3">
-        <strong>
-            {{group.name}}
-        </strong>
-    </div>
-    <div class="col-md-6 col-sm-6">
-        <p>
-        {{group.description|default:""|truncatechars_html:250}}
-        </p>
-    </div>
-    <div class="col-md-3 col-sm-3">
-        <span class="badge" data-toggle="tooltip" data-placement="top" title="">{{group.project_count}}</span>
-        projects
-    </div>
-    </a>
-</div>
+<a href="{% group_url group %}">
+	<div class="row row-bordered project">
+		<div class="col-3">
+			<strong>
+				{{group.name}}
+			</strong>
+		</div>
+		<div class="col-6">
+			<p>
+			{{group.description|default:""|truncatechars_html:250}}
+			</p>
+		</div>
+		<div class="col-3">
+			<span class="badge" data-toggle="tooltip" data-placement="top" title="">{{group.project_count}}</span>
+			projects
+		</div>
+	</div>
+</a>
 {% endfor %}
 </div>
-
-
 {% endblock %}

@@ -3,9 +3,9 @@
 
 <div class='highlight-row'>
 {% for project in projects %}
+<a href="{% project_url project %}">
 <div class="row row-bordered project">
     {% with status=project.status %}
-    <a href="{% project_url project %}">
     <div class="col-md-4 col-sm-4">
         <strong>
             {% if not hide_group %}{{project.group.name}}/{% endif %}{{project.name}}
@@ -55,7 +55,6 @@
         </div>
         {% endif %}
     </div>
-    </a>
 
     {% if project.description and project.description|length > 50 %}
     <div class='description-{{project.id}} description col-md-12 col-sm-12' style='display: none'>
@@ -66,5 +65,6 @@
 
     {% endwith %}
 </div>
+</a>
 {% endfor %}
 </div>

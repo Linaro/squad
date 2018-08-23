@@ -6,28 +6,27 @@
 
 {% block bootstrap_theme %}
     <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.css" %}">
-    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap-theme.css" %}">
     <link rel="stylesheet" href="{% static "font-awesome/css/font-awesome.css" %}">
     <link rel="stylesheet" href="{% static "main.css" %}">
 {% endblock %}
-{% block bootstrap_navbar_variant %}navbar-default{% endblock %}
 
-{% block branding %}
-<a class='navbar-brand' rel="nofollow" href='{% url "home" %}'>
-    <span class="fa fa-line-chart" aria-hidden="true"></span>
-    {% site_name %}
-</a>
-<ul class="nav navbar-nav">
-    <li class="{% active 'home'%}"><a href="{% url 'home' %}">Explore</a></li>
-    <li class="{% active 'compare_projects' %}"><a href="{% url 'compare_projects' %}">Compare</a></li>
-    <li class="{% active 'api-root' %}"><a href="{% url 'api-root' %}">API</a></li>
-</ul>
+{% block navbar %}
+  {% include "squad/_navbar.html" %}
+{% endblock navbar %}
+
+{% block breadcrumbs %}
+  <ul class="breadcrumb">
+    {% for breadcrumb_name, breadcrumb_url in breadcrumblist %}
+      {% if forloop.last %}
+        <li class="breadcrumb-item active"><a href="{{ breadcrumb_url }}">{{ breadcrumb_name }}</a></li>
+      {% else %}
+        <li class="breadcrumb-item"><a href="{{ breadcrumb_url }}">{{ breadcrumb_name }}</a></li>
+      {% endif %}
+    {% empty %}
+      {% block breadcrumbs_empty %}&nbsp;{% endblock breadcrumbs_empty %}
+    {% endfor %}
+  </ul>
 {% endblock %}
-
-{% block userlinks %}
-    {% include "squad/_user_menu.html" %}
-{% endblock %}
-
 
 {% block body %}
     {{block.super}}
@@ -41,3 +40,8 @@
     </footer>
     </div><!-- id="wrapper" -->
 {% endblock %}
+
+{% block script %}
+{{ block.super }}
+      <script src="{% static "bootstrap/js/bootstrap.min.js" %}"></script>
+{% endblock script %}

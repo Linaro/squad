@@ -12,8 +12,8 @@
     <form><!-- TODO -->
 
       {% verbatim %}
-      <div class='panel panel-default'>
-        <div class='panel-heading'>
+      <div class='card'>
+        <div class='card-header'>
           <span ng-show='getEnvironmentIds().length > 0'>
             Environment
           </span>
@@ -21,7 +21,7 @@
             <strong>Select environment(s)</strong>
           </span>
           <span class='pull-right'>
-            <small><a style='cursor: pointer' ng-click='toggleEnvironments()'>toggle all</a></small>
+			<small><a style='cursor: pointer' ng-click='toggleEnvironments()'><span class='badge badge-secondary'>toggle all</span></a></small>
           </span>
         </div>
         <ul class='list-group'>
@@ -40,14 +40,14 @@
         </ul>
       </div>
 
-      <div class='panel panel-default' ng-show='getEnvironmentIds().length > 0'>
-        <div class='panel-heading'>
+      <div class='card' ng-show='getEnvironmentIds().length > 0'>
+        <div class='card-header'>
           Metrics
         </div>
-        <div class='panel-body'>
+        <div class='card-body'>
           <div class='metric-selected' ng-repeat='metric in selectedMetrics'>
             <small>{{metric.label}}</small>
-            <a class='pull-right label label-default' ng-click='removeMetric(metric)'><strong>×</strong></a>
+			<a class='pull-right' ng-click='removeMetric(metric)'><span class='badge badge-secondary'><strong>×</strong></span></a>
           </div>
 
           Add metric:
