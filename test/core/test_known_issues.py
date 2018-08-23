@@ -27,7 +27,7 @@ class KnownIssueTest(TestCase):
             test_name=test.full_name
         )
         known_issue.save()
-        known_issue.environment.add(test_run.environment)
+        known_issue.environments.add(test_run.environment)
         self.assertEqual(1, len(KnownIssue.active_by_environment(test_run.environment)))
 
     def test_inactive_known_issue(self):
@@ -43,7 +43,7 @@ class KnownIssueTest(TestCase):
             test_name=test.full_name
         )
         known_issue.save()
-        known_issue.environment.add(test_run.environment)
+        known_issue.environments.add(test_run.environment)
         known_issue.active = False
         known_issue.save()
 
@@ -62,7 +62,7 @@ class KnownIssueTest(TestCase):
             test_name=test.full_name
         )
         known_issue.save()
-        known_issue.environment.add(test_run.environment)
+        known_issue.environments.add(test_run.environment)
         self.assertEqual(1, len(KnownIssue.active_by_project_and_test(self.project, test.full_name)))
 
     def test_inactive_by_project(self):
@@ -78,7 +78,7 @@ class KnownIssueTest(TestCase):
             test_name=test.full_name
         )
         known_issue.save()
-        known_issue.environment.add(test_run.environment)
+        known_issue.environments.add(test_run.environment)
         known_issue.active = False
         known_issue.save()
 
