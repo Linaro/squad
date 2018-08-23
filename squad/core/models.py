@@ -848,15 +848,15 @@ class KnownIssue(models.Model):
 
     active = models.BooleanField(default=True)
     intermittent = models.BooleanField(default=False)
-    environment = models.ManyToManyField(Environment)
+    environments = models.ManyToManyField(Environment)
 
     @classmethod
     def active_by_environment(cls, environment):
-        return cls.objects.filter(active=True, environment=environment)
+        return cls.objects.filter(active=True, environments=environment)
 
     @classmethod
     def active_by_project_and_test(cls, project, test_name=None):
-        qs = cls.objects.filter(active=True, environment__project=project).prefetch_related('environment')
+        qs = cls.objects.filter(active=True, environments__project=project).prefetch_related('environments')
         if test_name:
             qs = qs.filter(test_name=test_name)
         return qs.distinct()

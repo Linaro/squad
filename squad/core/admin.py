@@ -157,7 +157,7 @@ class SelectEnvironment(ModelMultipleChoiceField):
 
 
 class KnownIssueAdminForm(ModelForm):
-    environment = SelectEnvironment(
+    environments = SelectEnvironment(
         models.Environment.objects.prefetch_related('project', 'project__group').order_by('project__group__slug', 'project__slug'),
         widget=CheckboxSelectMultiple,
     )
@@ -178,7 +178,7 @@ class KnownIssueGroupFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         group = request.GET.get('group')
         if group:
-            return queryset.filter(environment__project__group__id=group).distinct()
+            return queryset.filter(environments__project__group__id=group).distinct()
         else:
             return queryset
 
