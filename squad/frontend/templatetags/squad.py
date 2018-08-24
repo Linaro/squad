@@ -47,21 +47,18 @@ def project_url(the_object):
 
 
 @register.simple_tag
-def testrun_suite_tests_url(status):
-    return testrun_suite_url(status, 'testrun_suite_tests')
+def testrun_suite_tests_url(group, project, build, status):
+    return testrun_suite_url(group, project, build, status, 'testrun_suite_tests')
 
 
 @register.simple_tag
-def testrun_suite_metrics_url(status):
-    return testrun_suite_url(status, 'testrun_suite_metrics')
+def testrun_suite_metrics_url(group, project, build, status):
+    return testrun_suite_url(group, project, build, status, 'testrun_suite_metrics')
 
 
-def testrun_suite_url(status, kind):
+def testrun_suite_url(group, project, build, status, kind):
     testrun = status.test_run
     suite = status.suite
-    build = testrun.build
-    project = build.project
-    group = project.group
     args = (
         group.slug,
         project.slug,

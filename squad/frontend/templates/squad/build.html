@@ -77,7 +77,7 @@
 					</a>
                                     </td>
                                     <td>
-					<a href="{% url "testrun_suite_tests" project.group.slug project.slug build.version status.test_run.job_id suite.slug %}">
+					<a href="{% testrun_suite_tests_url project.group project build status %}">
                                                 <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}} tests</span>
                                                 {% if status.tests_pass > 0 %}
                                                 <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} pass</span>
@@ -118,7 +118,7 @@
 	{% for environment, entry in results.items %}
 	{% for status in entry.statuses %}
 	{% if status.suite and status.has_metrics %}
-	<a href="{% url "testrun_suite_metrics" project.group.slug project.slug build.version status.test_run.job_id suite.slug %}" id="metrics-{{status.id}}" ng-show="match('metrics-{{status.id}}')">
+	<a href="{% testrun_suite_metrics_url project.group project build status %}" id="metrics-{{status.id}}" ng-show="match('metrics-{{status.id}}')">
 	    <div class='row row-bordered'>
 		<div class='col-md-3 col-sm-3' title='Metrics suite'>
 		    <i class='fa fa-list'></i>
