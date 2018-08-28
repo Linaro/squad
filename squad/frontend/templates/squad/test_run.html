@@ -74,7 +74,7 @@
 <h2>Test results</h2>
 <div class='test-results highlight-row'>
 {% for status in tests_status %}
-<a href="{% testrun_suite_tests_url status %}" class="status-fail{{status.tests_fail}}" id='tests-{{status.id}}'>
+<a href="{% testrun_suite_tests_url status.test_run.build.project.group status.test_run.build.project status.test_run.build status %}" class="status-fail{{status.tests_fail}}" id='tests-{{status.id}}'>
 <div class='row row-bordered {% if status.tests_fail%}fail{% else %}nofail{%endif%}'>
     <div class='col-md-3 col-sm-3' title='Test suite'>
         <i class='fa fa-list'></i>
@@ -112,7 +112,7 @@
 <h2>Metrics</h2>
 <div class='metrics highlight-row'>
 {% for status in metrics_status %}
-<a href="{% testrun_suite_metrics_url status %}" id="metrics-{{status.id}}" ng-show="match('metrics-{{status.id}}')">
+<a href="{% testrun_suite_metrics_url status.test_run.build.project.group status.test_run.build.project status.test_run.build status %}" id="metrics-{{status.id}}" ng-show="match('metrics-{{status.id}}')">
 <div class='row row-bordered'>
     <div class='col-md-3 col-sm-3' title='Metrics suite'>
         <i class='fa fa-list'></i>
