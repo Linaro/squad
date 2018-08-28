@@ -691,9 +691,9 @@ class ProjectStatus(models.Model, TestSummaryBase):
     metrics_summary = models.FloatField()
     has_metrics = models.BooleanField(default=False)
 
-    tests_pass = models.IntegerField()
-    tests_fail = models.IntegerField()
-    tests_skip = models.IntegerField()
+    tests_pass = models.IntegerField(default=0)
+    tests_fail = models.IntegerField(default=0)
+    tests_skip = models.IntegerField(default=0)
 
     test_runs_total = models.IntegerField(default=0)
     test_runs_completed = models.IntegerField(default=0)
