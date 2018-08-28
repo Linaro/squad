@@ -606,7 +606,7 @@ class TestSummaryBase(object):
 
     @property
     def tests_total(self):
-        return self.tests_pass + self.tests_fail + self.tests_skip
+        return self.tests_pass + self.tests_fail + self.tests_xfail + self.tests_skip
 
     def __percent__(self, ntests):
         if ntests > 0:
@@ -620,7 +620,7 @@ class TestSummaryBase(object):
 
     @property
     def fail_percentage(self):
-        return self.__percent__(self.tests_fail)
+        return self.__percent__(self.tests_fail + self.tests_xfail)
 
     @property
     def skip_percentage(self):
@@ -638,6 +638,7 @@ class Status(models.Model, TestSummaryBase):
 
     tests_pass = models.IntegerField(default=0)
     tests_fail = models.IntegerField(default=0)
+    tests_xfail = models.IntegerField(default=0)
     tests_skip = models.IntegerField(default=0)
     metrics_summary = models.FloatField(default=0.0)
     has_metrics = models.BooleanField(default=False)
@@ -693,6 +694,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
 
     tests_pass = models.IntegerField(default=0)
     tests_fail = models.IntegerField(default=0)
+    tests_xfail = models.IntegerField(default=0)
     tests_skip = models.IntegerField(default=0)
 
     test_runs_total = models.IntegerField(default=0)
@@ -744,6 +746,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
         data = {
             'tests_pass': test_summary.tests_pass,
             'tests_fail': test_summary.tests_fail,
+            'tests_xfail': test_summary.tests_xfail,
             'tests_skip': test_summary.tests_skip,
             'metrics_summary': metrics_summary.value,
             'has_metrics': metrics_summary.has_metrics,
@@ -764,6 +767,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             # later but were already processed.
             status.tests_pass = test_summary.tests_pass
             status.tests_fail = test_summary.tests_fail
+            status.tests_xfail = test_summary.tests_xfail
             status.tests_skip = test_summary.tests_skip
             status.metrics_summary = metrics_summary.value
             status.has_metrics = metrics_summary.has_metrics
@@ -828,6 +832,7 @@ class TestSummary(TestSummaryBase):
     def __init__(self, build):
         self.tests_pass = 0
         self.tests_fail = 0
+        self.tests_xfail = 0
         self.tests_skip = 0
         self.failures = OrderedDict()
 
