@@ -257,14 +257,14 @@ class RecordTestRunStatus(object):
         for test in testrun.tests.all():
             sid = test.suite_id
             if test.result is True:
-                status[None].tests_pass = status[None].tests_pass + 1
-                status[sid].tests_pass = status[sid].tests_pass + 1
+                status[None].tests_pass += 1
+                status[sid].tests_pass += 1
             elif test.result is False:
-                status[None].tests_fail = status[None].tests_fail + 1
-                status[sid].tests_fail = status[sid].tests_fail + 1
+                status[None].tests_fail += 1
+                status[sid].tests_fail += 1
             else:
-                status[None].tests_skip = status[None].tests_skip + 1
-                status[sid].tests_skip = status[sid].tests_skip + 1
+                status[None].tests_skip += 1
+                status[sid].tests_skip += 1
 
         metrics = defaultdict(lambda: [])
         for metric in testrun.metrics.all():
