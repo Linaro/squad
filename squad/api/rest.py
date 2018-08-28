@@ -721,7 +721,7 @@ class KnownIssueViewSet(viewsets.ModelViewSet):
 
     queryset = KnownIssue.objects.all()
     serializer_class = KnownIssueSerializer
-    filter_fields = ('title', 'test_name', 'active', 'intermittent', 'environment')
+    filter_fields = ('title', 'test_name', 'active', 'intermittent', 'environments')
     ordering_fields = ('title', 'id')
 
 
