@@ -20,6 +20,9 @@ class RestApiTest(TestCase):
         self.testrun3 = self.build3.test_runs.create(environment=self.environment, build=self.build3)
         self.backend = ci_models.Backend.objects.create(name='foobar')
         self.patchsource = models.PatchSource.objects.create(name='baz_source', username='u', url='http://example.com', token='secret')
+        self.knownissue = models.KnownIssue.objects.create(title='knownissue_foo', test_name='test/bar', active=True)
+        self.knownissue.environments.add(self.environment)
+
         self.testjob = self.build.test_jobs.create(
             definition="foo: bar",
             backend=self.backend,
@@ -169,4 +172,8 @@ class RestApiTest(TestCase):
 
     def test_patch_source(self):
         data = self.hit('/api/patchsources/')
+        self.assertEqual(1, len(data['results']))
+
+    def test_known_issues(self):
+        data = self.hit('/api/knownissues/')
         self.assertEqual(1, len(data['results']))
