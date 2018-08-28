@@ -159,7 +159,7 @@ def builds(request, group_slug, project_slug):
     return render(request, 'squad/builds.html', context)
 
 
-class TestResulTable(object):
+class TestResultTable(object):
 
     class Cell(object):
 
@@ -184,7 +184,7 @@ class TestResulTable(object):
         if suite not in self.data:
             self.data[suite] = OrderedDict()
         if environment not in self.data[suite]:
-            self.data[suite][environment] = TestResulTable.Cell()
+            self.data[suite][environment] = TestResultTable.Cell()
 
         entry = self.data[suite][environment]
         if status.tests_fail > 0:
@@ -221,7 +221,7 @@ def build(request, group_slug, project_slug, version):
         'test_run__environment',
     ).order_by('-tests_fail', 'suite__slug', '-test_run__environment__slug')
 
-    test_results = TestResulTable()
+    test_results = TestResultTable()
     for status in __statuses__:
         test_results.add_status(status)
 
