@@ -23,7 +23,7 @@
           </div>
 
           <div class="input-group">
-            <input class="form-control" ng-model="project" ng-change="doProjectSearch()"></input>
+            <input class="form-control" ng-model="project" ng-change="doProjectSearch()" ng-blur="hideDropdown('#projects-dropdown')"></input>
             <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
 
             <div id="projects-dropdown" class="col-md-12 dropdown-menu">
@@ -47,7 +47,7 @@
           </div>
 
           <div class="input-group">
-            <input class="form-control" ng-model="suite" ng-change="doSuiteSearch()"></input>
+            <input class="form-control" ng-model="suite" ng-change="doSuiteSearch()" ng-blur="hideDropdown('#suites-dropdown')"></input>
             <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
             <div id="suites-dropdown" class="col-md-12 dropdown-menu">
               <div class="search-dropdown-display" ng-repeat="suite in suites" ng-click="addSuite(suite)" ng-model="suite">
@@ -71,7 +71,7 @@
           </div>
 
           <div class="input-group">
-            <input class="form-control" ng-model="test" ng-change="doTestSearch()"></input>
+            <input class="form-control" ng-model="test" ng-change="doTestSearch()" ng-blur="hideDropdown('#tests-dropdown')"></input>
             <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
             <div id="tests-dropdown" class="col-md-12 dropdown-menu">
               <div class="search-dropdown-display" ng-repeat="test in tests" ng-click="addTest(test)" ng-model="test">
