@@ -150,6 +150,10 @@ table.test-results a:only-child {
   padding: 4px;
 }
 
+table.test-results-details {
+  min-width: 640px;
+}
+
 .pass a, .fail a, .skip a {
   font-weight: bold;
 }

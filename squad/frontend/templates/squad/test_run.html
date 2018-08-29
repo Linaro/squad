@@ -10,7 +10,6 @@
     » <a class="h2 text-prmitive" href="{% build_url build %}">{{build.version}}</a>
     » <a class="h2 text-primary" href="{% project_url test_run %}">{{test_run.job_id}} </a>
     <br>
-    <small>
       <i class='fa fa-microchip'></i>
       Test environment: <strong>{{test_run.environment}}</strong>
       {% if test_run.environment.description %}
@@ -20,7 +19,6 @@
       <div class='alert alert-info' id='environment-description' style='display: none'>
 	{{test_run.environment.description|markdown}}
       </div>
-</small>
     {% endif %}
 </h2>
 

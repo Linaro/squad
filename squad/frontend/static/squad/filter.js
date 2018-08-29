@@ -29,9 +29,9 @@ function FilterController($scope, $attrs, $location) {
 
   $scope.update = function() {
     URL[$attrs.param] = $scope.filter
-    URL.details = _.map($scope.details_visible, function(v, k) {
+    URL.details = _.sortBy(_.map($scope.details_visible, function(v, k) {
       return k.replace('details-', '')
-    }).join(',')
+    })).join(',')
     $location.search(URL)
   }
 

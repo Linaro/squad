@@ -24,9 +24,9 @@
     <div class='col-md-12 col-sm-12'>
         <table class='test-results'>
             <tr>
-                <th>Suite</th>
+                <th style='width: 150px'>Suite</th>
                 {% for environment in test_results.environments  %}
-                <th style='width: 120px'>{{environment}}</th>
+                <th>{{environment}}</th>
                 {% endfor %}
             </tr>
             {% for suite, results in test_results.data.items %}
@@ -48,7 +48,7 @@
                 <td></td>
                 <td colspan="{{test_results.environments|length}}">
 		    {% with entries=results.values %}
-                        <table>
+                        <table class='test-results-details'>
                             <tr>
                                 <th>
 				    <i class='fa fa-microchip'></i>
