@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0083_rename_knownissue_environments'),
+        ('core', '0084_projectstatus_regressions_fixes'),
     ]
 
     operations = [

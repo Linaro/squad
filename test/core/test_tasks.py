@@ -1,4 +1,5 @@
 import json
+import re
 
 
 from dateutil.relativedelta import relativedelta
@@ -7,7 +8,7 @@ from django.utils import timezone
 from unittest.mock import patch, PropertyMock
 
 
-from squad.core.models import Group, TestRun, Status, Build, ProjectStatus, SuiteVersion, PatchSource
+from squad.core.models import Group, TestRun, Status, Build, ProjectStatus, SuiteVersion, PatchSource, KnownIssue
 from squad.core.tasks import ParseTestRunData
 from squad.core.tasks import PostProcessTestRun
 from squad.core.tasks import RecordTestRunStatus
@@ -26,10 +27,10 @@ class CommonTestCase(TestCase):
         group = Group.objects.create(slug='mygroup')
         project = group.projects.create(slug='mygroup')
         build = project.builds.create(version='1.0.0')
-        env = project.environments.create(slug='myenv')
+        self.environment = project.environments.create(slug='myenv')
         self.testrun = TestRun.objects.create(
             build=build,
-            environment=env,
+            environment=self.environment,
             tests_file='{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
             metrics_file='{"metric0": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}',
         )
@@ -107,6 +108,36 @@ class RecordTestRunStatusTest(CommonTestCase):
         self.assertEqual(status.tests_fail, 1)
         self.assertEqual(status.tests_skip, 1)
         self.assertIsInstance(status.metrics_summary, float)
+
+    def test_xfail(self):
+        issue = KnownIssue.objects.create(
+            title='some known issue',
+            test_name='test0',
+        )
+        issue.environments.add(self.environment)
+        ParseTestRunData()(self.testrun)
+        RecordTestRunStatus()(self.testrun)
+
+        global_status = Status.objects.filter(suite=None).last()
+        suite_status = Status.objects.filter(suite__slug='/').last()
+        self.assertEqual(global_status.tests_xfail, 1)
+        self.assertEqual(suite_status.tests_xfail, 1)
+
+    def test_xfail_with_suite_name(self):
+        issue = KnownIssue.objects.create(
+            title='some known issue',
+            test_name='foobar/test1',
+        )
+        issue.environments.add(self.environment)
+        self.testrun.tests_file = re.sub('"pass"', '"fail"', self.testrun.tests_file)
+        self.testrun.save()
+        ParseTestRunData()(self.testrun)
+        RecordTestRunStatus()(self.testrun)
+
+        global_status = Status.objects.filter(suite=None).last()
+        suite_status = Status.objects.filter(suite__slug='foobar').last()
+        self.assertEqual(global_status.tests_xfail, 1)
+        self.assertEqual(suite_status.tests_xfail, 1)
 
     def test_does_not_process_twice(self):
         ParseTestRunData()(self.testrun)

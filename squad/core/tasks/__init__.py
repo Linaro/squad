@@ -9,10 +9,11 @@ from django.db import transaction
 
 
 from squad.celery import app as celery
-from squad.core.models import TestRun, Suite, SuiteVersion, SuiteMetadata, Test, Metric, Status, ProjectStatus
+from squad.core.models import TestRun, Suite, SuiteVersion, SuiteMetadata, Test, Metric, Status, ProjectStatus, KnownIssue
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
 from squad.core.statistics import geomean
 from squad.core.plugins import apply_plugins
+from squad.core.utils import join_name
 from . import exceptions
 
 
@@ -176,19 +177,28 @@ class ParseTestRunData(object):
         if test_run.data_processed:
             return
 
+        issues = {}
+        for issue in KnownIssue.active_by_environment(test_run.environment):
+            issues.setdefault(issue.test_name, [])
+            issues[issue.test_name].append(issue)
+
         for test in test_parser()(test_run.tests_file):
             suite = get_suite(
                 test_run,
                 test['group_name']
             )
             metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=test['test_name'], kind='test')
-            Test.objects.create(
+            full_name = join_name(suite.slug, test['test_name'])
+            test = Test.objects.create(
                 test_run=test_run,
                 suite=suite,
                 metadata=metadata,
                 name=test['test_name'],
                 result=test['pass'],
             )
+            for issue in issues.get(full_name, []):
+                test.known_issues.add(issue)
+
         for metric in metric_parser()(test_run.metrics_file):
             suite = get_suite(
                 test_run,
@@ -260,8 +270,12 @@ class RecordTestRunStatus(object):
                 status[None].tests_pass += 1
                 status[sid].tests_pass += 1
             elif test.result is False:
-                status[None].tests_fail += 1
-                status[sid].tests_fail += 1
+                if test.known_issues.exists():
+                    status[None].tests_xfail += 1
+                    status[sid].tests_xfail += 1
+                else:
+                    status[None].tests_fail += 1
+                    status[sid].tests_fail += 1
             else:
                 status[None].tests_skip += 1
                 status[sid].tests_skip += 1

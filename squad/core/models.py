@@ -496,13 +496,22 @@ class Test(models.Model):
     name = models.CharField(max_length=256, db_index=True)
     result = models.NullBooleanField()
     log = models.TextField(null=True, blank=True)
+    known_issues = models.ManyToManyField('KnownIssue')
 
     def __str__(self):
-        return "%s: %s" % (self.name, self.status)
+        return self.name
 
     @property
     def status(self):
-        return {True: 'pass', False: 'fail', None: 'skip'}[self.result]
+        if self.result:
+            return 'pass'
+        elif self.result is None:
+            return 'skip'
+        else:
+            if self.known_issues.exists():
+                return 'xfail'
+            else:
+                return 'fail'
 
     @property
     def full_name(self):
@@ -828,6 +837,12 @@ class NotificationDelivery(models.Model):
         return (not created)
 
 
+class InvalidTestStatus(Exception):
+
+    def __init__(self, status):
+        super(InvalidTestStatus, self).__init__('Invalid status: %s' % status)
+
+
 class TestSummary(TestSummaryBase):
     def __init__(self, build):
         self.tests_pass = 0
@@ -848,13 +863,17 @@ class TestSummary(TestSummaryBase):
                 tests[(run.environment, test.suite, test.name)] = test
 
         for context, test in tests.items():
-            if test.result is True:
+            if test.status == 'pass':
                 self.tests_pass += 1
-            elif test.result is False:
+            elif test.status == 'fail':
                 self.tests_fail += 1
-            else:
+            elif test.status == 'xfail':
+                self.tests_xfail += 1
+            elif test.status == 'skip':
                 self.tests_skip += 1
-            if not test.result and test.result is not None:
+            else:
+                raise InvalidTestStatus(test.status)
+            if test.status == 'fail':
                 env = test.test_run.environment.slug
                 if env not in self.failures:
                     self.failures[env] = []
