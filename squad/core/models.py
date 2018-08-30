@@ -521,6 +521,7 @@ class Test(models.Model):
     def prefetch_related(tests):
         prefetch_related_objects(
             tests,
+            'known_issues',
             'test_run',
             'test_run__environment',
             'test_run__build',

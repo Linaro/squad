@@ -9,6 +9,7 @@ from squad.core.models import Test, KnownIssue
 class TestResult(object):
 
     def __init__(self, test):
+        self.known_issues = test.known_issues.all()
         self.status = test.status
         self.test_run = test.test_run
 
@@ -41,13 +42,6 @@ class TestHistory(object):
         for build in builds:
             results[build] = {}
         self.top = builds[0]
-
-        known_issues = {}
-        for issue in KnownIssue.active_by_project_and_test(project, full_test_name):
-            for env in issue.environment.all():
-                known_issues.setdefault(env, [])
-                known_issues[env].append(issue)
-        self.known_issues = known_issues
 
         for test in tests:
             build = test.test_run.build

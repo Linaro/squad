@@ -25,30 +25,9 @@
       <th>Build</th>
       <th>Date</th>
       {% for environment in history.environments %}
-      <th>{{environment}}</th>
+      <th colspan='2'>{{environment}}</th>
       {% endfor %}
     </thead>
-
-    {% if history.known_issues %}
-    <tr>
-      <th colspan="2">Known Issues</th>
-      {% for environment in history.environments %}
-        <td>
-          {% for issue in history.known_issues|get_value:environment %}
-            {% if issue.url %}
-              <a href="{{issue.url}}">{{issue.title}}</a>
-            {% else %}
-              {{issue.title}}
-            {% endif %}
-            {% if issue.intermittent %}
-            (intermittent)
-            {% endif %}
-            <br/>
-          {% endfor %}
-        </td>
-      {% endfor %}
-    </tr>
-    {% endif %}
 
     {% for build, results in history.results.items %}
     <tr>
@@ -56,14 +35,32 @@
       <td>{{build.datetime}}</td>
       {% for environment in history.environments %}
       {% with result=results|get_value:environment%}
-      {% with known_issue=history.known_issues|get_value:environment %}
-      <td class='{{result.status|slugify}}{% if result.status == "fail" and known_issue %} known-issue{% endif %}'>
+      {% with known_issues=result.known_issues %}
+      <td class='{{result.status|slugify}}' colspan='{% if known_issues %}1{% else %}2{% endif %}'>
         {% if result %}
         <a href="{% project_url result.test_run %}">{{result.status}}</a>
         {% else %}
         <i>n/a</i>
         {% endif %}
       </td>
+      {% if known_issues %}
+      <td width='32px' class='known-issue'>
+        <button type='button' class='btn btn-xs btn-info' data-toggle='popover'><i title='Known issue' class='fa fa-info-circle'></i></button>
+        <div class='known-issue-details' style='display: none'>
+        {% for known_issue in known_issues %}
+        Known issue:
+        {% if known_issue.url %}
+            <a href="{{known_issue.url}}">{{known_issue.title}}</a>
+        {% else %}
+            {{known_issue.title}}
+        {% endif %}
+        {% if known_issue.intermittent %}
+        (intermittent)
+        {% endif %}
+        {% endfor %}
+        </div>
+      </td>
+      {% endif %}
       {% endwith %}
       {% endwith %}
       {% endfor %}
@@ -77,4 +74,15 @@
 {% endblock %}
 {% block javascript %}
 <script type="text/javascript" src='{% static "squad/table.js" %}'></script>
+<script type="text/javascript">
+  jQuery(function($) {
+    $('.known-issue button').popover({
+      placement: 'left',
+      html: true,
+      content: function() {
+        return $(this).parent().find('.known-issue-details').html()
+      }
+    })
+  })
+</script>
 {% endblock %}
