@@ -1,0 +1,10 @@
+{% extends "squad/base.html" %}
+{% load squad %}
+{% load static %}
+
+{% block content %}
+{% include "squad/build-nav.html" %}
+
+<h2>Metadata</h2>
+{% include "squad/_metadata.html" %}
+{% endblock %}

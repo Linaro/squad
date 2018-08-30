@@ -18,6 +18,11 @@
             All test results
         </a>
     </li>
+    <li role="presentation" {% if url_name == 'build_metadata' %}class="active"{% endif %}>
+        <a href="{% build_section_url build 'build_metadata' %}">
+        Metadata
+        </a>
+    </li>
     {% if build.test_jobs.count %}
     {% load filter_jobs %}
     <li role="presentation" {% if url_name == 'testjobs' %}class="active"{% endif %}>

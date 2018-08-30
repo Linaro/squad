@@ -87,6 +87,9 @@ class FrontendTest(TestCase):
     def test_build_latest_finished(self):
         self.hit('/mygroup/myproject/build/latest-finished/')
 
+    def test_build_metadata(self):
+        self.hit('/mygroup/myproject/build/1.0/metadata/')
+
     def test_build_latest_finished_404(self):
         self.group.projects.create(slug='otherproject')
         self.hit('/mygroup/otherproject/')

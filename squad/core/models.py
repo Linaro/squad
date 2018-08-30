@@ -257,10 +257,10 @@ class Build(models.Model):
             return self.metadata
 
     @property
-    def non_important_metadata(self):
-        m = self.metadata
-        important = self.important_metadata.keys()
-        return {k: m[k] for k in m.keys() if k not in important}
+    def has_extra_metadata(self):
+        if set(self.important_metadata.keys()) == set(self.metadata.keys()):
+            return False
+        return True
 
     @property
     def finished(self):
