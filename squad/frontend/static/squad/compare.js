@@ -44,6 +44,10 @@ function CompareController($scope, $http, $location) {
         return _.map($scope.selectedProjects, function(pr) {return pr.id})
     }
 
+    $scope.hideDropdown = function(dropdown_id) {
+        $(dropdown_id).collapse('hide');
+    }
+
     $scope.projectSearchUpdate = function(project_list) {
         if ($scope.projectSearchResponses > 0) {
             for (var i = 0; i < project_list.length; i++) {
