@@ -26,6 +26,8 @@ class FrontendTest(TestCase):
             metadata_file='{ "job_id" : "1" }',
         )
         self.test_run = models.TestRun.objects.last()
+        attachment_data = "bar".encode()
+        self.test_run.attachments.create(filename="foo", data=attachment_data, length=len(attachment_data))
 
     def hit(self, url, expected_status=200):
         response = self.client.get(url)
@@ -34,6 +36,16 @@ class FrontendTest(TestCase):
 
     def test_home(self):
         self.hit('/')
+
+    def test_compare(self):
+        self.hit('/_/compare/')
+
+    def test_comparetest(self):
+        self.hit('/_/comparetest/')
+
+    def test_settings(self):
+        # check if redirection to /_/settings/profile/ works
+        self.hit('/_/settings/', 302)
 
     def test_group(self):
         self.hit('/mygroup/')
@@ -47,6 +59,12 @@ class FrontendTest(TestCase):
     def test_project_badge(self):
         self.hit('/mygroup/myproject/badge')
 
+    def test_project_metrics(self):
+        self.hit('/mygroup/myproject/metrics/')
+
+    def test_project_test_history_404(self):
+        self.hit('/mygroup/myproject/tests/foo', 404)
+
     def test_project_404(self):
         self.hit('/mygroup/unexistingproject/', 404)
 
@@ -59,6 +77,12 @@ class FrontendTest(TestCase):
 
     def test_build_404(self):
         self.hit('/mygroup/myproject/build/999/', 404)
+
+    def test_build_tests_404(self):
+        self.hit('/mygroup/myproject/build/999/tests/', 404)
+
+    def test_build_testjobs_404(self):
+        self.hit('/mygroup/myproject/build/999/testjobs/', 404)
 
     def test_build_latest_finished(self):
         self.hit('/mygroup/myproject/build/latest-finished/')
