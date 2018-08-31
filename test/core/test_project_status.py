@@ -189,3 +189,75 @@ class ProjectStatusTest(TestCase):
         self.assertEqual(2, status.test_runs_total)
         self.assertEqual(1, status.test_runs_completed)
         self.assertEqual(1, status.test_runs_incomplete)
+
+    def test_cache_regressions(self):
+        build1 = self.create_build('1', datetime=h(10))
+        test_run1 = build1.test_runs.first()
+        test_run1.tests.create(name='foo', suite=self.suite, result=True)
+        ProjectStatus.create_or_update(build1)
+
+        build2 = self.create_build('2', datetime=h(9))
+        test_run2 = build2.test_runs.first()
+        test_run2.tests.create(name='foo', suite=self.suite, result=False)
+        status = ProjectStatus.create_or_update(build2)
+
+        self.assertIsNotNone(status.regressions)
+        self.assertIsNone(status.fixes)
+
+    def test_cache_regressions_update(self):
+        build1 = self.create_build('1', datetime=h(10))
+        test_run1 = build1.test_runs.first()
+        test_run1.tests.create(name='foo', suite=self.suite, result=True)
+        ProjectStatus.create_or_update(build1)
+
+        build2 = self.create_build('2', datetime=h(9))
+        test_run2 = build2.test_runs.first()
+        test_run2.tests.create(name='foo', suite=self.suite, result=True)
+        status1 = ProjectStatus.create_or_update(build2)
+
+        self.assertIsNone(status1.regressions)
+        self.assertIsNone(status1.fixes)
+
+        build3 = self.create_build('3', datetime=h(8))
+        test_run3 = build3.test_runs.first()
+        test_run3.tests.create(name='foo', suite=self.suite, result=False)
+        status2 = ProjectStatus.create_or_update(build3)
+
+        self.assertIsNotNone(status2.regressions)
+        self.assertIsNone(status2.fixes)
+
+    def test_cache_fixes(self):
+        build1 = self.create_build('1', datetime=h(10))
+        test_run1 = build1.test_runs.first()
+        test_run1.tests.create(name='foo', suite=self.suite, result=False)
+        ProjectStatus.create_or_update(build1)
+
+        build2 = self.create_build('2', datetime=h(9))
+        test_run2 = build2.test_runs.first()
+        test_run2.tests.create(name='foo', suite=self.suite, result=True)
+        status = ProjectStatus.create_or_update(build2)
+
+        self.assertIsNotNone(status.fixes)
+        self.assertIsNone(status.regressions)
+
+    def test_cache_fixes_update(self):
+        build1 = self.create_build('1', datetime=h(10))
+        test_run1 = build1.test_runs.first()
+        test_run1.tests.create(name='foo', suite=self.suite, result=False)
+        ProjectStatus.create_or_update(build1)
+
+        build2 = self.create_build('2', datetime=h(9))
+        test_run2 = build2.test_runs.first()
+        test_run2.tests.create(name='foo', suite=self.suite, result=False)
+        status1 = ProjectStatus.create_or_update(build2)
+
+        self.assertIsNone(status1.fixes)
+        self.assertIsNone(status1.regressions)
+
+        build3 = self.create_build('3', datetime=h(8))
+        test_run3 = build3.test_runs.first()
+        test_run3.tests.create(name='foo', suite=self.suite, result=True)
+        status2 = ProjectStatus.create_or_update(build3)
+
+        self.assertIsNotNone(status2.fixes)
+        self.assertIsNone(status2.regressions)

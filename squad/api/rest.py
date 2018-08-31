@@ -1,3 +1,6 @@
+import json
+import yaml
+
 from django.contrib.auth.models import Group as UserGroup
 from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate, KnownIssue, PatchSource, Suite
 from squad.core.notification import Notification
@@ -303,6 +306,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
 
 class ProjectStatusSerializer(serializers.HyperlinkedModelSerializer):
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.regressions is not None:
+            ret['regressions'] = json.dumps(yaml.load(ret['regressions']))
+        if instance.fixes is not None:
+            ret['fixes'] = json.dumps(yaml.load(ret['fixes']))
+        return ret
+
     class Meta:
         model = ProjectStatus
         fields = ('last_updated',
@@ -316,7 +328,9 @@ class ProjectStatusSerializer(serializers.HyperlinkedModelSerializer):
                   'has_metrics',
                   'metrics_summary',
                   'build',
-                  'created_at')
+                  'created_at',
+                  'regressions',
+                  'fixes')
 
 
 class ProjectStatusViewSet(viewsets.ModelViewSet):
