@@ -78,7 +78,7 @@ class TestRunFilter(filters.FilterSet):
 
 
 class TestJobFilter(filters.FilterSet):
-    test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
+    testrun = filters.RelatedFilter(TestRunFilter, name="testrun", queryset=TestRun.objects.all(), widget=forms.TextInput)
     target_build = filters.RelatedFilter(BuildFilter, name="target_build", queryset=Build.objects.all(), widget=forms.TextInput)
 
     class Meta:
@@ -687,6 +687,7 @@ class TestJobViewSet(ModelViewSet):
         "job_status",
         "backend",
         "target",
+        "testrun",
     )
     filter_class = TestJobFilter
     search_fields = ("name", "environment", "last_fetch_attempt")
