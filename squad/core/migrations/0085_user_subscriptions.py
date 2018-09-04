@@ -8,6 +8,32 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
+def existing_subscriptions(apps, schema_editor):
+    # Go through existing subscriptions and convert them from email to user
+    Subscription = apps.get_model("core", "Subscription")
+    User = apps.get_model("auth", "User")
+    db_alias = schema_editor.connection.alias
+    users = User.objects.using(db_alias).all()
+    for subscription in Subscription.objects.using(db_alias).all():
+        for user in users:
+            # WARNING: User email is not unique.
+            if subscription.email == user.email:
+                subscription.email = None
+                subscription.user = user
+                subscription.save()
+
+
+def reverse_existing_subscriptions(apps, schema_editor):
+    # Go through existing subscriptions and convert them from email to user
+    Subscription = apps.get_model("core", "Subscription")
+    db_alias = schema_editor.connection.alias
+    for subscription in Subscription.objects.using(db_alias).all():
+        if subscription.user and subscription.user.email:
+            subscription.email = subscription.user.email
+            subscription.user = None
+            subscription.save()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -30,4 +56,6 @@ class Migration(migrations.Migration):
             name='subscription',
             unique_together=set([('project', 'user')]),
         ),
+        migrations.RunPython(existing_subscriptions,
+                             reverse_existing_subscriptions),
     ]
