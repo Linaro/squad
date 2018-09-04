@@ -70,7 +70,7 @@ def subscriptions(request):
                     project_id=project_id,
                     user=request.user)
             except IntegrityError:
-                #log that object was not added.
+                # log that object was not added.
                 pass
 
         return redirect(reverse('settings-subscriptions'))
