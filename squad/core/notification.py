@@ -64,8 +64,8 @@ class Notification(object):
     @property
     def recipients(self):
         emails = []
-        for sub in self.project.subscriptions.all():
-            email = sub.get_email()
+        for subscription in self.project.subscriptions.all():
+            email = subscription.get_email()
             if email:
                 emails.append(email)
         return emails
