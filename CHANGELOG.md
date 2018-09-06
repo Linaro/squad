@@ -1,3 +1,40 @@
+# 0.50
+
+* api:
+  * add regressions and fixes to ProjectStatus
+  * add test for api/knownissues/ endpoint
+  * allow for filtering with substrings
+  * change pagination for some views
+  * fix KnownIssuesViewSet filter fields
+  * fix TestJobFilter to allow TestRun relation
+  * speed up API UI for builds
+* core:
+  * add counter for tests with status xfail
+  * cache `Status.has_metrics`
+  * notification: avoid duplicate notifications
+  * notification: ensure metadata is sorted
+  * ProjectStatus: make test count fields default to 0
+  * rename KnownIssue.environment to `environments`
+  * tasks/RecordTestRunStatus: reduce code duplication
+  * Test: record xfail when matching any active known issue
+* doc: added docs on REST API
+* frontend:
+  * add indication of unfinished builds
+  * allow substring searches in compare test view
+  * allow users to subscribe/unsubscribe to email notifications in a project
+  * build: improve column widths in test results table
+  * build: make "details" URL parameter independent of selection order
+  * build page: also expand details when clicking suite name
+  * display known issues across the UI
+  * download: handle packages without a top-level directory
+  * fix 500 when accessing nonexisting build testjobs
+  * fix links to test run details
+  * fix `test_run.html` after changes to templatetags
+  * present regressions and fixes in the build list
+  * redesign build page for speed
+  * `test_run`: remove `<small>` from UI
+  * add tests to cover all basic URLs
+
 # 0.49
 
 * frontend:
