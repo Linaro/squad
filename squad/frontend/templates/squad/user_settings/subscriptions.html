@@ -30,7 +30,7 @@
 <p style="margin-top: 10px;">Your current subscriptions:</p>
 {% if subscriptions %}
 {% for sub in subscriptions %}
-<pre>{{ sub.project.name }}<a href="{% url 'settings-subscription-remove' sub.id %}" class="btn btn-xs btn-danger btn-group-vertical pull-right" title="Remove subscription">
+<pre>{{ sub.project.group.name }}/{{ sub.project.name }}<a href="{% url 'settings-subscription-remove' sub.id %}" class="btn btn-xs btn-danger btn-group-vertical pull-right" title="Remove subscription">
     <span class="glyphicon glyphicon-trash"></span>
   </a>
 </pre>

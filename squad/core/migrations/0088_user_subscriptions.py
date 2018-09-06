@@ -21,7 +21,9 @@ def existing_subscriptions(apps, schema_editor):
                 subscription.email = None
                 subscription.user = user
                 subscription.save()
- def reverse_existing_subscriptions(apps, schema_editor):
+
+
+def reverse_existing_subscriptions(apps, schema_editor):
     # Go through existing subscriptions and convert them from email to user
     Subscription = apps.get_model("core", "Subscription")
     db_alias = schema_editor.connection.alias
