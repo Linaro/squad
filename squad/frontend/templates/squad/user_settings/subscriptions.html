@@ -1,0 +1,55 @@
+{% extends "squad/user_settings/base.html" %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static "select2.js/select2.css" %}">
+{% endblock %}
+
+{% block settings %}
+<h1>Subscriptions</h1>
+
+<p>Add subscriptions:</p>
+<form method="POST">
+  {% csrf_token %}
+  <div>
+    <select id="project_subscriptions" name="subscriptions[]" multiple="multiple" style="width: 100%;">
+      {% for group in groups %}
+      <optgroup label="{{ group.name }}">
+        {% for project in group.projects.all %}
+        <option value="{{ project.id }}">{{ project.name }}</option>
+        {% endfor %}
+      </optgroup>
+      {% endfor %}
+    </select>
+  </div>
+  <div style="margin-top: 10px;">
+    <input type="submit" class="btn btn-primary" value="Submit"/>
+  </div>
+</form>
+
+<p style="margin-top: 10px;">Your current subscriptions:</p>
+{% if subscriptions %}
+{% for sub in subscriptions %}
+<pre>{{ sub.project.group.name }}/{{ sub.project.name }}<a href="{% url 'settings-subscription-remove' sub.id %}" class="btn btn-xs btn-danger btn-group-vertical pull-right" title="Remove subscription">
+    <span class="glyphicon glyphicon-trash"></span>
+  </a>
+</pre>
+{% endfor %}
+{% else %}
+    <div class="info">
+      <p>
+        You do not have an subscriptions yet.
+      </p>
+    </div>
+{% endif %}
+
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src='{% static "select2.js/select2.min.js" %}'></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    $("#project_subscriptions").select2();
+  });
+</script>
+{% endblock %}
