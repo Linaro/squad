@@ -1,20 +1,19 @@
 {% load squad %}
-<div class='row row-bordered {{test.status}} tests-{{status.id}}-{{test.status}}{% if known_issue %} known-issue{% endif %}'>
-    <div class='col-md-10 col-sm-10'>
+<div class='row row-bordered {{test.status}} tests-{{status.id}}-{{test.status}}{% if test.known_issues.exist %} known-issue{% endif %}'>
+    <div class='col-md-9 col-sm-9'>
         <i class='fa fa-{% if test.status == "fail" %}times{% elif test.status == "pass" %}check{% else %}question-circle-o{% endif %}'></i>
         <a href="{% url 'test_history' project.group.slug project.slug test.full_name %}">{{test.name}} — {{test.status|upper}}
         </a>
-        {% if known_issue %}
+        {% for known_issue in test.known_issues.all %}
             Known issue:
             {% if known_issue.url %}
-                <a href="{{known_issue.url}}">{{known_issue.title}}</a>
+                <a href="{{known_issue.url}}">{{known_issue.title}}</a>{% if known_issue.intermittent %} (intermittent){% endif %}.
             {% else %}
-                {{known_issue.title}}
+                {{known_issue.title}}{% if known_issue.intermittent %} (intermittent){% endif %}.
             {% endif %}
-            {% if known_issue.intermittent %}
-            (intermittent)
-            {% endif %}
-        {% endif %}
+        {% endfor %}
+    </div>
+    <div class='col-md-1 col-sm-1'>
         <a class="pull-right" href="/_/comparetest/?project={{ test.test_run.build.project.pk }}&suite={{ test.suite.slug }}&test={{ test.name }}">compare</a>
     </div>
     <div class='col-md-2 col-sm-2'>

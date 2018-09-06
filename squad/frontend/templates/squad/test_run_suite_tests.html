@@ -47,9 +47,7 @@
 {% include "squad/_pagination.html" with items=tests %}
 
 {% for test in tests %}
-    {% with known_issue=known_issues|get_value:test.full_name %}
     {% include "squad/_test_run_test.html" with suite=status.suite %}
-    {% endwith %}
 {% endfor %}
 
 {% include "squad/_pagination.html" with items=tests %}

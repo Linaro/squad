@@ -3,28 +3,45 @@ from django.test import TestCase
 from django.utils import timezone
 
 from unittest.mock import patch
-from squad.core.models import Group, Test, Suite
+from squad.core.models import Group, Test, Suite, KnownIssue
+
+
+def test(**kwargs):
+    group = Group.objects.create(slug='mygroup')
+    project = group.projects.create(slug='myproject')
+    build = project.builds.create(version='1')
+    environment = project.environments.create(slug='myenv')
+    test_run = build.test_runs.create(environment=environment)
+    suite = Suite.objects.create(slug='the-suite', project=project)
+    opts = {'test_run': test_run, 'suite': suite}
+    opts.update(kwargs)
+    return Test.objects.create(**opts)
 
 
 class TestTest(TestCase):
 
     @patch("squad.core.models.join_name", lambda x, y: 'woooops')
     def test_full_name(self):
-        s = Suite()
-        t = Test(suite=s)
+        t = test()
         self.assertEqual('woooops', t.full_name)
 
     def test_status_na(self):
-        t = Test(result=None)
+        t = test(result=None)
         self.assertEqual('skip', t.status)
 
     def test_status_pass(self):
-        t = Test(result=True)
+        t = test(result=True)
         self.assertEqual('pass', t.status)
 
     def test_status_fail(self):
-        t = Test(result=False)
+        t = test(result=False)
         self.assertEqual('fail', t.status)
+
+    def test_status_xfail(self):
+        issue = KnownIssue.objects.create(title='foo fails', test_name='fo')
+        t = test(result=False)
+        t.known_issues.add(issue)
+        self.assertEqual('xfail', t.status)
 
 
 class TestFailureHistoryTest(TestCase):

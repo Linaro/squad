@@ -2,7 +2,7 @@ from django.test import TestCase
 from unittest.mock import patch
 
 
-from squad.core.models import Group, Build, TestSummary
+from squad.core.models import Group, Build, TestSummary, KnownIssue
 
 
 class TestSummaryTest(TestCase):
@@ -21,11 +21,16 @@ class TestSummaryTest(TestCase):
         test_run.tests.create(name='baz', suite=suite, result=None)
         test_run.tests.create(name='qux', suite=suite, result=False)
 
+        issue = KnownIssue.objects.create(title='pla is broken', test_name='qux')
+        xfail_test = test_run.tests.create(name='pla', suite=suite, result=False)
+        xfail_test.known_issues.add(issue)
+
         summary = TestSummary(build)
-        self.assertEqual(4, summary.tests_total)
+        self.assertEqual(5, summary.tests_total)
         self.assertEqual(1, summary.tests_pass)
         self.assertEqual(2, summary.tests_fail)
         self.assertEqual(1, summary.tests_skip)
+        self.assertEqual(1, summary.tests_xfail)
         self.assertEqual(['tests/bar', 'tests/qux'], sorted([t.full_name for t in summary.failures['env']]))
 
     def test_test_summary_retried_tests(self):

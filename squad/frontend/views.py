@@ -296,16 +296,13 @@ def test_run_suite_tests(request, group_slug, project_slug, build_version, job_i
     all_tests = context['status'].tests.prefetch_related(
         'suite',
         'metadata',
+        'known_issues',
         'suite__metadata'
     ).order_by(Case(When(result=False, then=0), When(result=True, then=2), default=1), 'name')
 
     paginator = Paginator(all_tests, 100)
     page = request.GET.get('page', '1')
     context['tests'] = paginator.page(page)
-    context['known_issues'] = {
-        i.test_name: i
-        for i in KnownIssue.active_by_environment(context['test_run'].environment)
-    }
 
     return render(request, 'squad/test_run_suite_tests.html', context)
 

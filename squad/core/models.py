@@ -496,13 +496,22 @@ class Test(models.Model):
     name = models.CharField(max_length=256, db_index=True)
     result = models.NullBooleanField()
     log = models.TextField(null=True, blank=True)
+    known_issues = models.ManyToManyField('KnownIssue')
 
     def __str__(self):
-        return "%s: %s" % (self.name, self.status)
+        return self.name
 
     @property
     def status(self):
-        return {True: 'pass', False: 'fail', None: 'skip'}[self.result]
+        if self.result:
+            return 'pass'
+        elif self.result is None:
+            return 'skip'
+        else:
+            if self.known_issues.exists():
+                return 'xfail'
+            else:
+                return 'fail'
 
     @property
     def full_name(self):
@@ -512,6 +521,7 @@ class Test(models.Model):
     def prefetch_related(tests):
         prefetch_related_objects(
             tests,
+            'known_issues',
             'test_run',
             'test_run__environment',
             'test_run__build',
@@ -606,7 +616,7 @@ class TestSummaryBase(object):
 
     @property
     def tests_total(self):
-        return self.tests_pass + self.tests_fail + self.tests_skip
+        return self.tests_pass + self.tests_fail + self.tests_xfail + self.tests_skip
 
     def __percent__(self, ntests):
         if ntests > 0:
@@ -620,7 +630,7 @@ class TestSummaryBase(object):
 
     @property
     def fail_percentage(self):
-        return self.__percent__(self.tests_fail)
+        return self.__percent__(self.tests_fail + self.tests_xfail)
 
     @property
     def skip_percentage(self):
@@ -638,6 +648,7 @@ class Status(models.Model, TestSummaryBase):
 
     tests_pass = models.IntegerField(default=0)
     tests_fail = models.IntegerField(default=0)
+    tests_xfail = models.IntegerField(default=0)
     tests_skip = models.IntegerField(default=0)
     metrics_summary = models.FloatField(default=0.0)
     has_metrics = models.BooleanField(default=False)
@@ -691,9 +702,10 @@ class ProjectStatus(models.Model, TestSummaryBase):
     metrics_summary = models.FloatField()
     has_metrics = models.BooleanField(default=False)
 
-    tests_pass = models.IntegerField()
-    tests_fail = models.IntegerField()
-    tests_skip = models.IntegerField()
+    tests_pass = models.IntegerField(default=0)
+    tests_fail = models.IntegerField(default=0)
+    tests_xfail = models.IntegerField(default=0)
+    tests_skip = models.IntegerField(default=0)
 
     test_runs_total = models.IntegerField(default=0)
     test_runs_completed = models.IntegerField(default=0)
@@ -744,6 +756,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
         data = {
             'tests_pass': test_summary.tests_pass,
             'tests_fail': test_summary.tests_fail,
+            'tests_xfail': test_summary.tests_xfail,
             'tests_skip': test_summary.tests_skip,
             'metrics_summary': metrics_summary.value,
             'has_metrics': metrics_summary.has_metrics,
@@ -764,6 +777,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             # later but were already processed.
             status.tests_pass = test_summary.tests_pass
             status.tests_fail = test_summary.tests_fail
+            status.tests_xfail = test_summary.tests_xfail
             status.tests_skip = test_summary.tests_skip
             status.metrics_summary = metrics_summary.value
             status.has_metrics = metrics_summary.has_metrics
@@ -824,10 +838,17 @@ class NotificationDelivery(models.Model):
         return (not created)
 
 
+class InvalidTestStatus(Exception):
+
+    def __init__(self, status):
+        super(InvalidTestStatus, self).__init__('Invalid status: %s' % status)
+
+
 class TestSummary(TestSummaryBase):
     def __init__(self, build):
         self.tests_pass = 0
         self.tests_fail = 0
+        self.tests_xfail = 0
         self.tests_skip = 0
         self.failures = OrderedDict()
 
@@ -843,13 +864,17 @@ class TestSummary(TestSummaryBase):
                 tests[(run.environment, test.suite, test.name)] = test
 
         for context, test in tests.items():
-            if test.result is True:
+            if test.status == 'pass':
                 self.tests_pass += 1
-            elif test.result is False:
+            elif test.status == 'fail':
                 self.tests_fail += 1
-            else:
+            elif test.status == 'xfail':
+                self.tests_xfail += 1
+            elif test.status == 'skip':
                 self.tests_skip += 1
-            if not test.result and test.result is not None:
+            else:
+                raise InvalidTestStatus(test.status)
+            if test.status == 'fail':
                 env = test.test_run.environment.slug
                 if env not in self.failures:
                     self.failures[env] = []
