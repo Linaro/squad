@@ -248,24 +248,20 @@ class Backend(BaseBackend):
         for suite in y:
             limit = 500
             offset = 0
-            results = self.proxy.results.get_testsuite_results_yaml(
-                job_id,
-                suite['name'],
-                limit,
-                offset)
-            yaml_results = yaml.load(results, Loader=yaml.CLoader)
             while True:
-                if len(yaml_results) > 0:
-                    lava_job_results = lava_job_results + yaml_results
+                logger.debug(
+                    "requesting results for %s with offset of %s"
+                    % (suite['name'], offset)
+                )
+                results = self.proxy.results.get_testsuite_results_yaml(
+                    job_id,
+                    suite['name'],
+                    limit,
+                    offset)
+                yaml_results = yaml.load(results, Loader=yaml.CLoader)
+                lava_job_results = lava_job_results + yaml_results
+                if len(yaml_results) == limit:
                     offset = offset + limit
-                    logger.debug("requesting results for %s with offset of %s"
-                                 % (suite['name'], offset))
-                    results = self.proxy.results.get_testsuite_results_yaml(
-                        job_id,
-                        suite['name'],
-                        limit,
-                        offset)
-                    yaml_results = yaml.load(results, Loader=yaml.CLoader)
                 else:
                     break
 
