@@ -20,12 +20,12 @@
             {% if testjob.submitted %}
                 <span class="badge alert-success">Submitted <i class='fa fa-check'></i></span>
             {% else %}
-                <span class="badge alert-danger">Submitted <i class="fa fa-close"></i></span>
+                <span class="badge alert-danger">Not submitted <i class="fa fa-close"></i></span>
             {% endif %}
             {% if testjob.fetched %}
                 <span class="badge alert-success">Fetched <i class='fa fa-check'></i></span>
             {% else %}
-                <span class="badge alert-danger">Fetched <i class="fa fa-close"></i></span>
+                <span class="badge alert-danger">Not fetched <i class="fa fa-close"></i></span>
                 Last fetch attempt: {{ testjob.last_fetch_attempt|naturaltime }}
             {% endif %}
 
