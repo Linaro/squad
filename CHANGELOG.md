@@ -1,3 +1,13 @@
+# 0.50.1
+
+* frontend:
+  * display "Not submitted and" "Not fetched" is list of test jobs
+* core:
+  * admin: List test counts for ProjectStatus
+  * add 'xfail' to default test statuses
+* ci:
+  * lava: avoid extra request when fetching results
+
 # 0.50
 
 * api:
