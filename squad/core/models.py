@@ -329,7 +329,7 @@ class Build(models.Model):
                 if t.suite in result[tr.environment].keys():
                     result[tr.environment][t.suite][t.status] += 1
                 else:
-                    result[tr.environment].setdefault(t.suite, {'fail': 0, 'pass': 0, 'skip': 0})
+                    result[tr.environment].setdefault(t.suite, {'fail': 0, 'pass': 0, 'skip': 0, 'xfail': 0})
                     result[tr.environment][t.suite][t.status] += 1
         for env in result.keys():
             # there should only be one key in the most nested dict
