@@ -4,7 +4,7 @@ from django.utils import timezone
 from unittest.mock import patch
 
 
-from squad.core.models import Group, Project, Build
+from squad.core.models import Group, Project, Build, KnownIssue
 from squad.ci.models import TestJob, Backend
 
 
@@ -204,8 +204,14 @@ class BuildTest(TestCase):
         testrun1 = build.test_runs.create(environment=env1)
         testrun2 = build.test_runs.create(environment=env2)
         testrun1.tests.create(suite=foo, name='test1', result=True)
+        testrun1.tests.create(suite=foo, name='pla', result=True)
         testrun1.tests.create(suite=bar, name='test1', result=False)
         testrun2.tests.create(suite=foo, name='test1', result=True)
+
+        # make sure 'xfail' is covered by test
+        issue = KnownIssue.objects.create(title='pla is broken', test_name='qux')
+        xfail_test = testrun2.tests.create(suite=foo, name='pla', result=False)
+        xfail_test.known_issues.add(issue)
 
         test_suites = build.test_suites_by_environment
 
