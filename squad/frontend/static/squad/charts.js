@@ -7,7 +7,7 @@ app.config(['$locationProvider', function($locationProvider) {
     })
 }])
 
-function ChartsController($scope, $http, $location) {
+function ChartsController($scope, $http, $location, $compile) {
 
     var ChartPanel = function(metric, data) {
         this.metric = metric
@@ -52,7 +52,7 @@ function ChartsController($scope, $http, $location) {
             },
             options: {
                 title: {
-                    display: true,
+                    display: false,
                     text: metric.label
                 },
                 tooltips: {
@@ -179,7 +179,18 @@ function ChartsController($scope, $http, $location) {
                 } else {
                     var target = document.createElement('div')
                     target.id = target_id
+                    target.classList.add('chart-container')
                     document.getElementById('charts').appendChild(target)
+
+                    var title_container = "<div class='row'><div " +
+                        "class='h4 col-md-11 text-center'>" + metric.label +
+                        "</div><div class='h4 col-md-1 text-right'><button " +
+                        "ng-click='toggleFullScreen(\"" + target_id +
+                        "\")' class='btn btn-default btn-xs' " +
+                        "title='Toggle Fullscreen'><i class='fa fa-expand' " +
+                        "aria-hidden='true'></i></button></div></div>"
+                    var elem = $compile(title_container)($scope)
+                    $(target).append(elem)
                 }
 
                 chart.draw(target)
@@ -247,6 +258,32 @@ function ChartsController($scope, $http, $location) {
         $scope.redraw()
     }
 
+    $scope.toggleFullScreen = function (elem_id) {
+        elem = document.getElementById(elem_id) || document.documentElement;
+        if (!document.fullscreenElement && !document.mozFullScreenElement &&
+            !document.webkitFullscreenElement && !document.msFullscreenElement) {
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            } else if (elem.mozRequestFullScreen) {
+                elem.mozRequestFullScreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+    }
+
     $scope.initPage()
 }
 
@@ -256,6 +293,7 @@ app.controller(
         '$scope',
         '$http',
         '$location',
+        '$compile',
         ChartsController
     ]
 );
