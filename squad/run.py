@@ -1,5 +1,4 @@
 import os
-from pkg_resources import load_entry_point
 import sys
 from squad.version import __version__
 from squad.manage import main as manage
