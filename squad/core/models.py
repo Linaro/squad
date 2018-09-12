@@ -854,7 +854,7 @@ class TestSummary(TestSummaryBase):
         self.tests_skip = 0
         self.failures = OrderedDict()
 
-        tests = {}
+        tests = OrderedDict()
         test_runs = build.test_runs.prefetch_related(
             'environment',
             'tests',
