@@ -165,6 +165,7 @@ class TestResultTable(object):
 
         def __init__(self):
             self.has_failures = False
+            self.has_known_failures = False
             self.statuses = []
 
         @property
@@ -189,6 +190,8 @@ class TestResultTable(object):
         entry = self.data[suite][environment]
         if status.tests_fail > 0:
             entry.has_failures = True
+        if status.tests_xfail > 0:
+            entry.has_known_failures = True
         entry.statuses.append(status)
         self.test_runs.add(status.test_run)
 

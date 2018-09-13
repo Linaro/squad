@@ -30,9 +30,9 @@
   border-color: #a94442;
   color: #a40000;
 }
-.row-bordered.fail.known-issue {
-  background-color: #fffff0;
-  border-color: #d0d099;
+.row-bordered.xfail {
+  background-color: #d9edf7;
+  border-color: #9acfea;
 }
 .row-bordered.pass i {
   color: #00a400;
@@ -129,9 +129,9 @@ table.test-results td.fail {
   border-color: #a94442;
   color: #a40000;
 }
-table.test-results td.fail.known-issue {
-  background-color: #fffff0;
-  border-color: #d0d099;
+table.test-results td.xfail {
+  background-color: #d9edf7;
+  border-color: #9acfea;
 }
 table.test-results td.pass {
   background-color: #def2de;
@@ -154,12 +154,14 @@ table.test-results-details {
   min-width: 640px;
 }
 
-.pass a, .fail a, .skip a {
+.pass a, .fail a, .xfail a, .skip a {
   font-weight: bold;
 }
 
 .fail a       { color: #a40000; }
 .fail a:hover { background-color: #ffeeee; text-decoration: none; }
+.xfail a      { color: #31708f; }
+.xfail a:hover{ background-color: #bbefff; text-decoration: none; }
 .pass a       { color: #00a400; }
 .pass a:hover { background-color: #ddffdd; text-decoration: none; }
 .skip a       { color: #a4a400; }
