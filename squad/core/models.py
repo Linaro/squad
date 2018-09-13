@@ -270,12 +270,15 @@ class Build(models.Model):
         * it has no pending CI test jobs.
         * it has no submitted CI test jobs, and has at least N test runs for each of
           the project environments, where N is configured in
-          Environment.expected_test_runs.  the expected number of completed
-          test runs per environment. If an environment does not have
-          expected_test_runs set, then there must be at least one test run for
-          that environment. Setting expected_test_runs to 0 causes the
-          environment to be ignored, i.e. any amount of test runs will be ok,
-          including 0.
+          Environment.expected_test_runs. Environment.expected_test_runs is
+          interpreted as follows:
+
+            * None (empty):  there must be at least one test run for that
+              environment.
+            * 0: the environment is ignored, i.e. any amount of test runs will
+              be ok, including 0.
+            * N > 0: at least N test runs are expected for that environment
+
         """
         # XXX note that by using test_jobs here, we are adding an implicit
         # dependency on squad.ci, what in theory violates our architecture.
