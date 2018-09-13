@@ -44,6 +44,8 @@
                         <td>{{entry.has_data}}</td>
                         {% elif entry.has_failures %}
                         <td class='fail'><a class='fa fa-times text-danger' href='#' onclick='return false' ng-click='toggle_details("details-{{suite.id}}")'></a></td>
+                        {% elif entry.has_known_failures %}
+                        <td class='xfail'><a class='fa fa-bug text-info' href='#' onclick='return false' ng-click='toggle_details("details-{{suite.id}}")'></a></td>
                         {% else %}
                         <td class='pass'><a class='fa fa-check text-success' href='#' onclick='return false' ng-click='toggle_details("details-{{suite.id}}")'></a></td>
                         {% endif %}
