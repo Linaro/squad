@@ -2,7 +2,7 @@
 <h2 class="page-header well">
     <a class="h2 text-primitive" href="{% group_url project.group %}">{{project.group.name}}</a>
     » <a class="h2 text-primitive" href="{% project_url project %}">{{project.name}}</a>
-    » {% if not build.status.finished %}<i title="Build/testing in progress" class="fa fa-cog fa-spin"></i> {% endif %}<a class="h2 text-primary" href="{% build_url build %}">Build {{build.version}}</a>
+    » {% include "squad/_unfinished_build.html" %} <a class="h2 text-primary" href="{% build_url build %}">Build {{build.version}}</a>
 </h2>
 
 <ul class="page-header nav nav-pills">

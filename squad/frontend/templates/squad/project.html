@@ -11,7 +11,7 @@
 
 {% if last_build %}
 <div>
-<h2>Last build - {% if not last_build.status.finished %}<i title="Build/testing in progress" class="fa fa-cog fa-spin"></i>{% endif %}
+<h2>Last build - {% include "squad/_unfinished_build.html" with build=last_build %}
   <span><i class="fa fa-exclamation-triangle text-danger popover-regressions {% if not last_build.status.get_regressions %}hidden{% endif %}"></i>
   <button title="Regressions" class="hidden">
       {% for regression_key, regression_value in last_build.status.get_regressions.items %}
