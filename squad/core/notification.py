@@ -230,8 +230,12 @@ def send_admin_notification(status, project):
     txt = render_to_string('squad/notification/failed_test_jobs.txt', data)
 
     message = EmailMultiAlternatives(subject, txt, sender, recipients)
+    html = ''
     if project.html_mail:
         html = render_to_string('squad/notification/failed_test_jobs.html', data)
         message.attach_alternative(html, "text/html")
+
+    if NotificationDelivery.exists(status, subject, txt, html):
+        return
 
     message.send()
