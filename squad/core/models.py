@@ -280,13 +280,15 @@ class Build(models.Model):
             * N > 0: at least N test runs are expected for that environment
 
         """
+        reasons = []
+
         # XXX note that by using test_jobs here, we are adding an implicit
         # dependency on squad.ci, what in theory violates our architecture.
         testjobs = self.test_jobs
         if testjobs.count() > 0:
             if testjobs.filter(fetched=False).count() > 0:
                 # a build that has pending CI jobs is NOT finished
-                return False
+                reasons.append("There are unfinished CI jobs")
             else:
                 # carry on, and check whether the number of expected test runs
                 # per environment is satisfied.
@@ -296,6 +298,7 @@ class Build(models.Model):
         # received the expected amount of test runs
         testruns = {
             e.id: {
+                'name': str(e),
                 'expected': e.expected_test_runs,
                 'received': 0
             }
@@ -311,10 +314,16 @@ class Build(models.Model):
             if expected == 0:
                 continue
             if received == 0:
-                return False
+                reasons.append("No test runs for %s received so far" % env)
             if expected and received < expected:
-                return False
-        return True
+                reasons.append(
+                    "%d test runs expected for %s, but only %d received so far" % (
+                        expected,
+                        count['name'],
+                        received,
+                    )
+                )
+        return (len(reasons) == 0, reasons)
 
     @property
     def test_suites_by_environment(self):
@@ -758,6 +767,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             if comparison.fixes:
                 fixes = yaml.dump(comparison.fixes)
 
+        finished, _ = build.finished
         data = {
             'tests_pass': test_summary.tests_pass,
             'tests_fail': test_summary.tests_fail,
@@ -766,7 +776,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             'metrics_summary': metrics_summary.value,
             'has_metrics': metrics_summary.has_metrics,
             'last_updated': now,
-            'finished': build.finished,
+            'finished': finished,
             'test_runs_total': test_runs_total,
             'test_runs_completed': test_runs_completed,
             'test_runs_incomplete': test_runs_incomplete,
@@ -787,7 +797,8 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.metrics_summary = metrics_summary.value
             status.has_metrics = metrics_summary.has_metrics
             status.last_updated = now
-            status.finished = build.finished
+            finished, _ = build.finished
+            status.finished = finished
             status.build = build
             status.test_runs_total = test_runs_total
             status.test_runs_completed = test_runs_completed

@@ -95,7 +95,8 @@ class BuildTest(TestCase):
         self.project.environments.create(slug='env2')
         build = self.project.builds.create(version='1')
         build.test_runs.create(environment=env1)
-        self.assertFalse(build.finished)
+        finished, _ = build.finished
+        self.assertFalse(finished)
 
     def test_finished(self):
         env1 = self.project.environments.create(slug='env1')
@@ -103,7 +104,8 @@ class BuildTest(TestCase):
         build = self.project.builds.create(version='1')
         build.test_runs.create(environment=env1)
         build.test_runs.create(environment=env2)
-        self.assertTrue(build.finished)
+        finished, _ = build.finished
+        self.assertTrue(finished)
 
     def test_finished_multiple_test_runs(self):
         env1 = self.project.environments.create(slug='env1')
@@ -112,26 +114,30 @@ class BuildTest(TestCase):
         build.test_runs.create(environment=env1)
         build.test_runs.create(environment=env2)
         build.test_runs.create(environment=env2)
-        self.assertTrue(build.finished)
+        finished, _ = build.finished
+        self.assertTrue(finished)
 
     def test_unfinished_with_expected_test_runs(self):
         build = self.project.builds.create(version='1')
         env1 = self.project.environments.create(slug='env1', expected_test_runs=2)
         build.test_runs.create(environment=env1)
-        self.assertFalse(build.finished)
+        finished, _ = build.finished
+        self.assertFalse(finished)
 
     def test_finished_with_expected_test_runs(self):
         build = self.project.builds.create(version='1')
         env1 = self.project.environments.create(slug='env1', expected_test_runs=2)
         build.test_runs.create(environment=env1)
         build.test_runs.create(environment=env1)
-        self.assertTrue(build.finished)
+        finished, _ = build.finished
+        self.assertTrue(finished)
 
     def test_not_finished_when_test_run_not_completed(self):
         build = self.project.builds.create(version='1')
         env1 = self.project.environments.create(slug='env1', expected_test_runs=1)
         build.test_runs.create(environment=env1, completed=False)
-        self.assertFalse(build.finished)
+        finished, _ = build.finished
+        self.assertFalse(finished)
 
     @patch('squad.ci.backend.null.Backend.fetch')
     def test_not_finished_with_pending_ci_jobs(self, fetch):
@@ -163,10 +169,12 @@ class BuildTest(TestCase):
             submitted=True,
             fetched=False,
         )
-        self.assertFalse(build.finished)
+        finished, _ = build.finished
+        self.assertFalse(finished)
 
         t2.backend.fetch(t2)
-        self.assertTrue(build.finished)
+        finished, _ = build.finished
+        self.assertTrue(finished)
 
     @patch('squad.ci.backend.null.Backend.fetch')
     def test_not_finished_no_pending_testjobs_but_not_enough_of_them(self, fetch):
@@ -189,7 +197,8 @@ class BuildTest(TestCase):
         t1.backend.fetch(t1)
 
         # expect 2, only 1 received
-        self.assertFalse(build.finished)
+        finished, _ = build.finished
+        self.assertFalse(finished)
 
     def test_get_or_create_with_version_twice(self):
         self.project.builds.get_or_create(version='1.0-rc1')
