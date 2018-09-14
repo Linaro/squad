@@ -17,14 +17,14 @@ class TestResult(list):
 
     def __init__(self, name):
         self.name = name
-        self.totals = {"pass": 0, "fail": 0, "skip": 0, "n/a": 0}
+        self.totals = {"pass": 0, "fail": 0, "xfail": 0, "skip": 0, "n/a": 0}
 
     def append(self, item):
         self.totals[item] += 1
         return super(TestResult, self).append(item)
 
     def ordering(self):
-        return tuple((-self.totals[k] for k in ("fail", "skip", "pass", "n/a")))
+        return tuple((-self.totals[k] for k in ("fail", "xfail", "skip", "pass", "n/a")))
 
     def __lt__(self, other):
         return self.ordering() < other.ordering()
