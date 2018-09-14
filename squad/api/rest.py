@@ -2,7 +2,8 @@ import json
 import yaml
 
 from django.contrib.auth.models import Group as UserGroup
-from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate, KnownIssue, PatchSource, Suite
+from squad.api.filters import ComplexFilterBackend
+from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata
 from squad.core.notification import Notification
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
@@ -258,6 +259,13 @@ class LatestTestResultsSerializer(serializers.BaseSerializer):
         return serialized_obj
 
 
+class SuiteMetadataSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SuiteMetadata
+        fields = ('id', 'name', 'suite', 'kind', 'description', 'instructions_to_reproduce')
+
+
 class ProjectViewSet(viewsets.ModelViewSet):
     """
     List of projects. Includes public projects and projects that the current
@@ -273,6 +281,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                      'custom_email_template',
                      'moderate_notifications',
                      'notification_strategy')
+    filter_backends = (ComplexFilterBackend, )
     filter_class = ProjectFilter
     search_fields = ('slug',
                      'name',)
@@ -290,6 +299,32 @@ class ProjectViewSet(viewsets.ModelViewSet):
         builds = self.get_object().builds.prefetch_related('test_runs').order_by('-datetime')
         page = self.paginate_queryset(builds)
         serializer = BuildSerializer(page, many=True, context={'request': request})
+        return self.get_paginated_response(serializer.data)
+
+    @detail_route(methods=['get'], suffix='suites')
+    def suites(self, request, pk=None):
+        """
+        List of test suite names available in this project
+        """
+        suites_names = self.get_object().suites.values_list('slug')
+        suites_metadata = SuiteMetadata.objects.filter(kind='suite', suite__in=suites_names)
+        page = self.paginate_queryset(suites_metadata)
+        serializer = SuiteMetadataSerializer(page, many=True, context={'request': request})
+        return self.get_paginated_response(serializer.data)
+
+    @detail_route(methods=['get'], suffix='tests')
+    def tests(self, request, pk=None):
+        """
+        List of test names available in this project
+        """
+        suite_name = request.query_params.get("suite_name", None)
+        if suite_name is None:
+            suites_names = self.get_object().suites.values_list('slug')
+        else:
+            suites_names = [suite_name]
+        suites_metadata = SuiteMetadata.objects.filter(kind='test', suite__in=suites_names)
+        page = self.paginate_queryset(suites_metadata)
+        serializer = SuiteMetadataSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
     @detail_route(methods=['get'], suffix='test_results')
@@ -534,11 +569,20 @@ class SuiteSerializer(serializers.ModelSerializer):
         exclude = ('metadata',)
 
 
+class TestNameSerializer(serializers.BaseSerializer):
+    name = serializers.CharField(read_only=True)
+
+
 class SuiteViewSet(viewsets.ModelViewSet):
 
     queryset = Suite.objects.all()
     serializer_class = SuiteSerializer
     filter_class = SuiteFilter
+
+    @detail_route(methods=['get'], suffix='testnames')
+    def testnames(self, request, pk=None):
+        # In [4]: [t.name for t in SuiteMetadata.objects.filter(kind='test', suite='testsuite1')]
+        pass
 
 
 class TestSerializer(serializers.ModelSerializer):
