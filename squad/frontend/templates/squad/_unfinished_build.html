@@ -1,0 +1,6 @@
+{% if build and not build.status.finished %}
+{% with reasons=build.finished.1 %}
+<i title='Build/testing in progress ({{reasons|join:"; "}})' class="fa fa-cog fa-spin"></i>
+{% endwith %}
+{% endif %}
+

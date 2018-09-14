@@ -6,7 +6,7 @@
 <a href="{% build_url build %}">
 <div class="row row-bordered build">
     <div class="col-md-2 col-sm-2">
-        {% if not build.status.finished %}<i title="Build/testing in progress" class="fa fa-cog fa-spin"></i>{% endif %}
+        {% include "squad/_unfinished_build.html" %}
         <span>
             <i class="fa fa-exclamation-triangle text-danger popover-regressions {% if not status.get_regressions %}hidden{% endif %}"></i>
             <button title="Regressions" class="hidden">
