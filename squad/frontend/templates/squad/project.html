@@ -11,37 +11,11 @@
 
 {% if last_build %}
 <div>
-<h2>Last build - {% include "squad/_unfinished_build.html" with build=last_build %}
-  <span><i class="fa fa-exclamation-triangle text-danger popover-regressions {% if not last_build.status.get_regressions %}hidden{% endif %}"></i>
-  <button title="Regressions" class="hidden">
-      {% for regression_key, regression_value in last_build.status.get_regressions.items %}
-      <div>
-          <h3>{{ regression_key }}</h3>
-          <ul>
-              {% for test in regression_value %}
-              <li>{{ test }}</li>
-              {% endfor %}
-          </ul>
-      </div>
-      {% endfor %}
-  </button>
-</span>
-<span>
-  <i class="fa fa-check-circle text-success popover-fixes {% if not last_build.status.get_fixes %}hidden{% endif %}"></i>
-  <button title="Fixes" class="hidden">
-      {% for fix_key, fix_value in status.get_fixes.items %}
-      <div>
-          <h3>{{ fix_key }}</h3>
-          <ul>
-              {% for test in fix_value %}
-              <li>{{ test }}</li>
-              {% endfor %}
-          </ul>
-      </div>
-      {% endfor %}
-  </button>
-</span>
-<a class="h2 text-primary" href="{% project_url last_build %}">{{last_build.version}}</a> {{last_build.datetime}} {{last_build.datetime|naturaltime}}</h2>
+<h2>
+  Last build - {% include "squad/_unfinished_build.html" with build=last_build %}
+  {% include "squad/_regressions_and_fixes.html" with build=last_build %}
+  <a class="h2 text-primary" href="{% project_url last_build %}">{{last_build.version}}</a> {{last_build.datetime}} {{last_build.datetime|naturaltime}}
+</h2>
 
 {% include "squad/_metadata.html" %}
 
@@ -51,20 +25,4 @@
 {% endif %}
 
 {% endwith %}
-{% endblock %}
-
-{% block javascript %}
-<script>
-$(document).ready(function(){
-    $('[data-toggle="tooltip"]').tooltip();
-    $('.popover-regressions, .popover-fixes').popover({
-            placement: 'right',
-            trigger: 'hover',
-            container: 'body',
-            html: true,
-            title: function() { return $(this).parent().find('.hidden').attr('title') },
-            content: function() { return $(this).parent().find('.hidden').html() }
-    });
-});
-</script>
 {% endblock %}
