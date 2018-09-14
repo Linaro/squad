@@ -60,11 +60,12 @@ METRICS
 tests=$(mktemp)
 "$(dirname $0)"/gen-tests > "$tests"
 
+job_id=${JOB_ID:-1.${ENVIRONMENT}}
 metadata=$(mktemp)
 cat > "${metadata}" <<METADATA
 {
   "datetime": "$(date --iso-8601=seconds)",
-  "job_id": "1.$ENVIRONMENT",
+  "job_id": "${job_id}",
   "job_url": "http://example.com/$BUILD/1",
   "resubmit_url": "http://example.com/$BUILD/1/resubmit"
 }
