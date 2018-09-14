@@ -18,7 +18,7 @@ class Command(BaseCommand):
         groupname, projectname = options['PROJECT'].split('/')
 
         group, _ = Group.objects.get_or_create(slug=groupname)
-        project, _ = group.projects.get_or_create(slug=projectname)
+        project, _ = group.projects.get_or_create(slug=projectname, defaults={'name': projectname})
         user_group, _ = group.user_groups.get_or_create(name='%s-%s-submitters' % (groupname, projectname))
         user, _ = User.objects.get_or_create(username='%s-%s-submitter' % (groupname, projectname))
         user.groups.add(user_group)
