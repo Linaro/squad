@@ -97,6 +97,15 @@ class SuiteFilter(filters.FilterSet):
                   'slug': ['exact', 'in', 'startswith', 'contains', 'icontains']}
 
 
+class SuiteMetadataFilter(filters.FilterSet):
+
+    class Meta:
+        model = SuiteMetadata
+        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'suite': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'kind': ['exact', 'in', 'startswith', 'contains', 'icontains']}
+
+
 class TestFilter(filters.FilterSet):
     test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
     suite = filters.RelatedFilter(SuiteFilter, name="suite", queryset=Suite.objects.all(), widget=forms.TextInput)
@@ -264,6 +273,26 @@ class SuiteMetadataSerializer(serializers.ModelSerializer):
     class Meta:
         model = SuiteMetadata
         fields = ('id', 'name', 'suite', 'kind', 'description', 'instructions_to_reproduce')
+
+
+class SuiteMetadataViewset(viewsets.ModelViewSet):
+    queryset = SuiteMetadata.objects
+    serializer_class = SuiteMetadataSerializer
+    filter_fields = ('suite', 'kind', 'name')
+    filter_class = SuiteMetadataFilter
+    ordering_fields = ('name', 'suite')
+
+    def get_queryset(self):
+        request = self.request
+        suites_qs = self.queryset
+        project_ids = request.query_params.get("project", None)
+        project_qs = Project.objects.all()
+        if project_ids is not None:
+            projects = project_ids.split(",")
+            project_qs = project_qs.filter(id__in=projects)
+            suites_names = Suite.objects.filter(project__in=project_qs).values_list('slug')
+            suites_qs = suites_qs.filter(suite__in=suites_names)
+        return suites_qs
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -799,3 +828,4 @@ router.register(r'backends', BackendViewSet)
 router.register(r'emailtemplates', EmailTemplateViewSet)
 router.register(r'knownissues', KnownIssueViewSet)
 router.register(r'patchsources', PatchSourceViewSet)
+router.register(r'suitemetadata', SuiteMetadataViewset)
