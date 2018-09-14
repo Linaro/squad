@@ -84,15 +84,14 @@ def project_badge(request, group_slug, project_slug):
 
     badge_text = "no results found"
     if status:
-        badge_text = "pass: %s, fail: %s, skip: %s" % \
-            (status.tests_pass, status.tests_fail, status.tests_skip)
+        badge_text = "pass: %s, fail: %s, xfail: %s, skip: %s" % \
+            (status.tests_pass, status.tests_fail, status.tests_xfail, status.tests_skip)
 
     badge_colour = "#999"
 
     pass_rate = -1
-    if status and (status.tests_pass or status.tests_fail or status.tests_skip):
-        pass_rate = 100 * float(status.tests_pass) / \
-            float(status.tests_pass + status.tests_fail + status.tests_skip)
+    if status and status.tests_total:
+        pass_rate = 100 * float(status.tests_pass) / float(status.tests_total)
         badge_colour = "#f0ad4e"
         if status.tests_fail == 0:
             badge_colour = "#5cb85c"
