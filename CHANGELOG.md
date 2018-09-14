@@ -1,3 +1,7 @@
+# 0.50.2
+
+* frontend: fix crash on "All test results" page with xfail results
+
 # 0.50.1
 
 * frontend:
