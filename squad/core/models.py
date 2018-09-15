@@ -511,6 +511,7 @@ class Test(models.Model):
     result = models.NullBooleanField()
     log = models.TextField(null=True, blank=True)
     known_issues = models.ManyToManyField('KnownIssue')
+    has_known_issues = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -522,7 +523,7 @@ class Test(models.Model):
         elif self.result is None:
             return 'skip'
         else:
-            if self.known_issues.exists():
+            if self.has_known_issues:
                 return 'xfail'
             else:
                 return 'fail'
