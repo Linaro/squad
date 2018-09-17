@@ -233,7 +233,7 @@ class BuildTest(TestCase):
         build = Build(project=project)
         with patch('squad.core.models.Build.metadata', {'foo': 'bar'}):
             self.assertEqual({'foo': 'bar'}, build.important_metadata)
-            self.assertEqual({}, build.non_important_metadata)
+            self.assertEqual(False, build.has_extra_metadata)
 
     def test_important_metadata(self):
         project = Project(important_metadata_keys='foo1\nfoo2\nmissingkey\n')
@@ -245,7 +245,7 @@ class BuildTest(TestCase):
         }
         with patch('squad.core.models.Build.metadata', m):
             self.assertEqual({'foo1': 'bar1', 'foo2': 'bar2'}, build.important_metadata)
-            self.assertEqual({'foo3': 'bar3'}, build.non_important_metadata)
+            self.assertEqual(True, build.has_extra_metadata)
 
     def test_important_metadata_keys_with_spaces(self):
         project = Project(important_metadata_keys='my key\n')
