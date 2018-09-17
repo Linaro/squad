@@ -52,7 +52,8 @@ class ProjectStatusFilter(filters.FilterSet):
         fields = {'finished': ['exact', 'in'],
                   'approved': ['exact', 'in'],
                   'notified': ['exact', 'in'],
-                  'has_metrics': ['exact', 'in']}
+                  'has_metrics': ['exact', 'in'],
+                  'last_updated': ['gt', 'lt']}
 
 
 class BuildFilter(filters.FilterSet):
