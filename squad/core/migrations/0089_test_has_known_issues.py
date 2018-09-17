@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='test',
             name='has_known_issues',
-            field=models.BooleanField(default=False),
+            field=models.NullBooleanField(),
         ),
     ]

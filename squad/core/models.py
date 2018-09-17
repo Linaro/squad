@@ -511,7 +511,7 @@ class Test(models.Model):
     result = models.NullBooleanField()
     log = models.TextField(null=True, blank=True)
     known_issues = models.ManyToManyField('KnownIssue')
-    has_known_issues = models.BooleanField(default=False)
+    has_known_issues = models.NullBooleanField()
 
     def __str__(self):
         return self.name
