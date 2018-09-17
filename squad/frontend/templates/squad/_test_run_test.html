@@ -1,10 +1,11 @@
 {% load squad %}
-<div class='row row-bordered {{test.status}} tests-{{status.id}}-{{test.status}}{% if test.known_issues.exist %} known-issue{% endif %}'>
+<div class='row row-bordered {{test.status}} tests-{{status.id}}-{{test.status}}{% if test.has_known_issues %} known-issue{% endif %}'>
     <div class='col-md-9 col-sm-9'>
         <a href="{% url 'test_history' project.group.slug project.slug test.full_name %}">
             <i class='fa fa-{% if test.status == "fail" %}times{% elif test.status == "pass" %}check{% else %}bug{% endif %}'></i>
             {{test.name}} — {{test.status|upper}}
         </a>
+        {% if test.has_known_issues %}
         {% for known_issue in test.known_issues.all %}
             Known issue:
             {% if known_issue.url %}
@@ -13,6 +14,7 @@
                 {{known_issue.title}}{% if known_issue.intermittent %} (intermittent){% endif %}.
             {% endif %}
         {% endfor %}
+        {% endif %}
     </div>
     <div class='col-md-1 col-sm-1'>
         <a class="pull-right" href="/_/comparetest/?project={{ test.test_run.build.project.pk }}&suite={{ test.suite.slug }}&test={{ test.name }}">compare</a>

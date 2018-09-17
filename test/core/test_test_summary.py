@@ -20,10 +20,7 @@ class TestSummaryTest(TestCase):
         test_run.tests.create(name='bar', suite=suite, result=False)
         test_run.tests.create(name='baz', suite=suite, result=None)
         test_run.tests.create(name='qux', suite=suite, result=False)
-
-        issue = KnownIssue.objects.create(title='pla is broken', test_name='qux')
-        xfail_test = test_run.tests.create(name='pla', suite=suite, result=False)
-        xfail_test.known_issues.add(issue)
+        test_run.tests.create(name='pla', suite=suite, result=False, has_known_issues=True)
 
         summary = TestSummary(build)
         self.assertEqual(5, summary.tests_total)

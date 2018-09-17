@@ -189,14 +189,16 @@ class ParseTestRunData(object):
             )
             metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=test['test_name'], kind='test')
             full_name = join_name(suite.slug, test['test_name'])
+            test_issues = issues.get(full_name, [])
             test = Test.objects.create(
                 test_run=test_run,
                 suite=suite,
                 metadata=metadata,
                 name=test['test_name'],
                 result=test['pass'],
+                has_known_issues=bool(test_issues),
             )
-            for issue in issues.get(full_name, []):
+            for issue in test_issues:
                 test.known_issues.add(issue)
 
         for metric in metric_parser()(test_run.metrics_file):

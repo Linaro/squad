@@ -38,9 +38,7 @@ class TestTest(TestCase):
         self.assertEqual('fail', t.status)
 
     def test_status_xfail(self):
-        issue = KnownIssue.objects.create(title='foo fails', test_name='fo')
-        t = test(result=False)
-        t.known_issues.add(issue)
+        t = test(result=False, has_known_issues=True)
         self.assertEqual('xfail', t.status)
 
 
