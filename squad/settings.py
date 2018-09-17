@@ -279,4 +279,9 @@ REST_FRAMEWORK = {
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_METHODS = ['GET', 'HEAD']
 
+try:
+    from squad.local_settings import *  # noqa: F403
+except ImportError:
+    pass
+
 exec(open(os.getenv('SQUAD_EXTRA_SETTINGS', '/dev/null')).read())

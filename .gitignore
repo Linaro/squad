@@ -12,6 +12,7 @@
 /squad/frontend/static/floatThread
 /squad/frontend/static/select2.js/
 /squad/frontend/static/download.status
+/squad/local_settings.py
 /static
 /.tests
 /__pycache__
