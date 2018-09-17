@@ -3,12 +3,13 @@ RUN apt-get update && \
   apt-get install -qy auto-apt-proxy && \
   apt-get install -qy python3 \
     python3-pip \
+    libpq-dev \
     libyaml-dev \
     wget \
     unzip
 
 COPY requirements.txt /srv/
-RUN pip3 install -r /srv/requirements.txt
+RUN pip3 install --no-binary :all: -r /srv/requirements.txt
 
 WORKDIR /app
 COPY . ./
