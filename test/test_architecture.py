@@ -26,6 +26,7 @@ ALLOWED_MODULE_DEPENDENCIES = (
     ('squad.plugins', 'squad.core'),
     ('squad.plugins', 'squad.frontend'),
     ('squad.settings', 'squad.core'),
+    ('squad.settings', 'squad.local_settings'),
 )
 
 
