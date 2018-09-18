@@ -22,12 +22,12 @@ def get_metric_series(project, metric, environments):
         ).order_by(
             'test_run__datetime',
         ).values(
-            'test_run__datetime',
+            'test_run__build__datetime',
             'test_run__build__version',
             'result',
         )
         entry[environment] = [
-            [int(p['test_run__datetime'].timestamp()), p['result'], p['test_run__build__version']] for p in series
+            [int(p['test_run__build__datetime'].timestamp()), p['result'], p['test_run__build__version']] for p in series
         ]
     return entry
 
