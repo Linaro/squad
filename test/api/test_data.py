@@ -56,6 +56,22 @@ class ApiDataTest(TestCase):
 
         self.assertEqual('application/json; charset=utf-8', resp.http['Content-Type'])
 
+    def test_metrics_csv(self):
+        self.receive("2018-09-17", metrics={
+            "foo": 1,
+            "bar/baz": 2,
+        })
+
+        self.receive("2018-09-18", metrics={
+            "foo": 2,
+            "bar/baz": 3,
+        })
+
+        resp = self.client.get('/api/data/mygroup/myproject?metric=foo&environment=env1&format=csv')
+        data = resp.content.decode('utf-8').split("\n")
+        self.assertEqual('"foo","env1","1537142400","1.0","2018-09-17"', data[0])
+        self.assertEqual('"foo","env1","1537228800","2.0","2018-09-18"', data[1])
+
     def test_tests(self):
         self.receive("2017-01-01", tests={
             "foo": "pass",
