@@ -19,6 +19,56 @@ are two main parts of the API
 Native APIs
 -----------
 
+data
+~~~~
+
+**GET** /api/data/<group_slug>/<project_slug>/
+
+Retrieves metrics data in JSON format. The following parameters are mandatory:
+
+- `metric`: which metric to retrieve. You have to use the full metric name,
+  i.e. `<suite_slug>/<metric_slug>`.
+
+  This parameter can be specified multiple times, so data from multiple metrics
+  can be fetched with a single request.
+
+- `environment`: environment for which metric data is to be retrieved.
+
+  This parameter can be specified multiple times, so data from multiple
+  environments can be fetched with a single request.
+
+The response is a JSON object, which metrics as keys. Values are also objects,
+which environments as keys, and the data series as values. Each data point is
+an array with 3 values: the build date timestamp (as the number of seconds
+since the epoch), the value of the metric, and the build identifier.
+
+Example::
+
+    {
+        "mysuite/mymetric": {
+            "environment1": [
+                [1537210872, 1.15, "v0.50.1-21-g7b96236"],
+                [1537290845, 1.14, "v0.50.1-22-g1097312"],
+                [1537370812, 1.13, "v0.50.1-23-g0127321"],
+                [1537420892, 1.15, "v0.50.1-24-g8262524"],
+                [1537500801, 1.13, "v0.50.1-25-gfa72526"],
+                // [...]
+            ],
+            "environment2": [
+                [1537210872, 1.25, "v0.50.1-21-g7b96236"],
+                [1537290845, 1.24, "v0.50.1-22-g1097312"],
+                [1537370812, 1.23, "v0.50.1-23-g0127321"],
+                [1537420892, 1.25, "v0.50.1-24-g8262524"],
+                [1537500801, 1.23, "v0.50.1-25-gfa72526"],
+                // ...
+            ]
+        },
+        "mysuite/anothermetric": {
+            // [...]
+        }
+    }
+
+
 createbuild
 ~~~~~~~~~~~
 
