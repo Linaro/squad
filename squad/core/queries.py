@@ -34,14 +34,14 @@ def get_metric_series(project, metric, environments):
 
 def get_tests_series(project, environments):
     results = {}
-    tests_total = (F('tests_pass') + F('tests_skip') + F('tests_fail'))
+    tests_total = (F('tests_pass') + F('tests_skip') + F('tests_fail') + F('tests_xfail'))
     for environment in environments:
         series = models.Status.objects.filter(
             test_run__build__project=project,
             suite=None,
             test_run__environment__slug=environment,
         ).filter(
-            Q(tests_pass__gt=0) | Q(tests_skip__gt=0) | Q(tests_fail__gt=0))
+            Q(tests_pass__gt=0) | Q(tests_skip__gt=0) | Q(tests_fail__gt=0) | Q(tests_xfail__gt=0)
         ).order_by(
             'test_run__datetime'
         ).values(
