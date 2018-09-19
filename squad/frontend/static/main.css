@@ -224,3 +224,38 @@ table.test-results-details {
 .popover {
   min-width: 400px;
 }
+
+.slider {
+  position: relative;
+  margin: auto;
+  border: 1px solid #c0c0c0;
+  height: 0.9em;
+  width: 92%;
+  margin-top: 5px;
+  background-color: #e3e3e3;
+}
+
+.slider .handle {
+  position: absolute;
+  z-index: 2;
+}
+
+.handle {
+  top: -0.25em;
+  margin-left: -0.4em;
+}
+
+.handle:hover {
+    cursor: col-resize;
+}
+
+.slider .range {
+  position: absolute;
+  z-index: 1;
+  background-color: #f7f7f7;
+  height: 100%;
+}
+
+.range:hover {
+    cursor: grab;
+}
