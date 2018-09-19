@@ -311,15 +311,16 @@ class Build(models.Model):
         for env, count in testruns.items():
             expected = count['expected']
             received = count['received']
+            env_name = count['name']
             if expected == 0:
                 continue
             if received == 0:
-                reasons.append("No test runs for %s received so far" % env)
+                reasons.append("No test runs for %s received so far" % env_name)
             if expected and received < expected:
                 reasons.append(
                     "%d test runs expected for %s, but only %d received so far" % (
                         expected,
-                        count['name'],
+                        env_name,
                         received,
                     )
                 )

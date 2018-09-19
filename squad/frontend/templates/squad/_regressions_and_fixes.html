@@ -1,0 +1,35 @@
+{% with regressions=build.status.get_regressions %}
+{% if regressions %}
+<span>
+    <i class="fa fa-exclamation-triangle text-danger popover-hover popover-regressions"></i>
+    <span title="Regressions" class="hidden">
+        {% for regression_key, regression_value in regressions.items %}
+        <p>Regressions found on <strong>{{ regression_key }}</strong>:</p>
+        <ul>
+            {% for test in regression_value %}
+            <li>{{ test }}</li>
+            {% endfor %}
+        </ul>
+        {% endfor %}
+    </span>
+</span>
+{% endif %}
+{% endwith %}
+
+{% with fixes=build.status.get_fixes %}
+{% if fixes %}
+<span>
+    <i class="fa fa-check-circle text-success popover-hover popover-fixes"></i>
+    <div title="Fixes" class="hidden">
+        {% for fix_key, fix_value in fixes.items %}
+        <p>Fixes found on <strong>{{ fix_key }}</strong>:</p>
+        <ul>
+            {% for test in fix_value %}
+            <li>{{ test }}</li>
+            {% endfor %}
+        </ul>
+        {% endfor %}
+    </div>
+</span>
+{% endif %}
+{% endwith %}

@@ -10,18 +10,3 @@
 {% include "squad/_builds_table.html" %}
 </div>
 {% endblock %}
-
-{% block javascript %}
-<script>
-$(document).ready(function(){
-    $('.popover-regressions, .popover-fixes').popover({
-            placement: 'right',
-            trigger: 'hover',
-            container: 'body',
-            html: true,
-            title: function() { return $(this).parent().find('.hidden').attr('title') },
-            content: function() { return $(this).parent().find('.hidden').html() }
-    });
-});
-</script>
-{% endblock %}

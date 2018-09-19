@@ -1,6 +1,19 @@
 {% if build and not build.status.finished %}
 {% with reasons=build.finished.1 %}
-<i title='Build/testing in progress ({{reasons|join:"; "}})' class="fa fa-cog fa-spin"></i>
+<i title='Build/testing in progress' class="fa fa-cog fa-spin popover-hover popover-unfinished-build"></i>
+<div title='Build/testing in progress' class='hidden'>
+    <p>
+    This build is not considered finished yet for the following reasons:
+    </p>
+    <ul>
+        {% for reason in reasons %}
+        <li>{{reason}}</li>
+        {% endfor %}
+    </ul>
+    <p>
+    Being unfinished, this build will not trigger email notifications.
+    </p>
+</div>
 {% endwith %}
 {% endif %}
 
