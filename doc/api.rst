@@ -37,7 +37,10 @@ Retrieves metrics data in JSON format. The following parameters are mandatory:
   This parameter can be specified multiple times, so data from multiple
   environments can be fetched with a single request.
 
-The response is a JSON object, which metrics as keys. Values are also objects,
+- `format`: format of response. Valid values are `json` and `csv`. If this
+  parameter is ommited, `json` is used as a default.
+
+The JSON response is an object, which metrics as keys. Values are also objects,
 which environments as keys, and the data series as values. Each data point is
 an array with 3 values: the build date timestamp (as the number of seconds
 since the epoch), the value of the metric, and the build identifier.
@@ -67,6 +70,25 @@ Example::
             // [...]
         }
     }
+
+The CSV response contains one line for each data point. The columns are:
+metric, environment, timestamp, value, build identifier. Assuming the same data
+as the JSON example above, the CSV would look like this::
+
+    "mysuite/mymetric","environment1","1537210872","1.15","v0.50.1-21-g7b96236"
+    "mysuite/mymetric","environment1","1537290845","1.14","v0.50.1-22-g1097312"
+    "mysuite/mymetric","environment1","1537370812","1.13","v0.50.1-23-g0127321"
+    "mysuite/mymetric","environment1","1537420892","1.15","v0.50.1-24-g8262524"
+    "mysuite/mymetric","environment1","1537500801","1.13","v0.50.1-25-gfa72526"
+    [...]
+    "mysuite/mymetric","environment2","1537210872","1.25","v0.50.1-21-g7b96236"
+    "mysuite/mymetric","environment2","1537290845","1.24","v0.50.1-22-g1097312"
+    "mysuite/mymetric","environment2","1537370812","1.23","v0.50.1-23-g0127321"
+    "mysuite/mymetric","environment2","1537420892","1.25","v0.50.1-24-g8262524"
+    "mysuite/mymetric","environment2","1537500801","1.23","v0.50.1-25-gfa72526"
+    [...]
+    "mysuite/anothermetric",[...]
+    [...]
 
 
 createbuild
