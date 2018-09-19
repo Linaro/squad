@@ -44,53 +44,6 @@ function CompareController($scope, $http, $location) {
         return _.map($scope.selectedProjects, function(pr) {return pr.id})
     }
 
-    $scope.projectSearchUpdate = function(project_list) {
-        if ($scope.projectSearchResponses > 0) {
-            for (var i = 0; i < project_list.length; i++) {
-                var existing = _.find($scope.projects, function(m) {
-                    return m.id == project_list[i].id;
-                })
-                if (!existing) {
-                    $scope.projects.push(project_list[i])
-                }
-            }
-        } else {
-            $scope.projects = project_list;
-        }
-        $scope.projectSearchResponses += 1;
-        $('#projects-dropdown').collapse('show');
-        $('#suites-dropdown').collapse('hide');
-        $('#tests-dropdown').collapse('hide');
-    }
-
-    $scope.doProjectSearch = function() {
-        var params = new Array();
-        params['name__icontains'] = $scope.project;
-        $scope.projectSearchResponses = 0;
-        $http.get('/api/projects', {params: params})
-        .then(function(response) {
-            $scope.projectSearchUpdate(response.data.results);
-        });
-        var params2 = new Array();
-        params2['slug__icontains'] = $scope.project;
-        $http.get('/api/projects', {params: params2})
-        .then(function(response) {
-            $scope.projectSearchUpdate(response.data.results);
-        });
-        var params3 = new Array();
-        params3['group__name__icontains'] = $scope.project;
-        $http.get('/api/projects', {params: params3})
-        .then(function(response) {
-            $scope.projectSearchUpdate(response.data.results);
-        });
-        var params4 = new Array();
-        params4['group__slug__icontains'] = $scope.project;
-        $http.get('/api/projects', {params: params4})
-        .then(function(response) {
-            $scope.projectSearchUpdate(response.data.results);
-        });
-    }
-
     $scope.addProject = function(project) {
         var existing = _.find($scope.selectedProjects, function(m) {
             return m.id == project.id;
@@ -105,7 +58,6 @@ function CompareController($scope, $http, $location) {
             $scope.doCompare()
         }
         $scope.updateURL();
-        $('#projects-dropdown').collapse('hide');
     }
 
     $scope.removeProject = function(project) {
@@ -118,37 +70,17 @@ function CompareController($scope, $http, $location) {
         $scope.updateURL();
     }
 
-    $scope.doSuiteSearch = function() {
-        var params = new Array();
-        params['slug__startswith'] = $scope.suite;
-        var projectSlugList = new Array();
-        if ($scope.selectedProjects.length > 0) {
-            for (var i=0; i<$scope.selectedProjects.length; i++) {
-                projectSlugList.push($scope.selectedProjects[i].slug)
-            }
-            params['project__slug__in'] = projectSlugList.join();
-        }
-        $http.get('/api/suites/', {params: params})
-        .then(function(response) {
-            $scope.suites = [...new Set(response.data.results.map(item => item.slug))];
-            $('#suites-dropdown').collapse('show');
-            $('#projects-dropdown').collapse('hide');
-            $('#tests-dropdown').collapse('hide');
-        });
-    }
-
     $scope.addSuite = function(suite) {
-        if ($scope.selectedSuite != suite) {
+        if ($scope.selectedSuite != suite.suite) {
             $scope.removeTest();
         }
-        $scope.selectedSuite = suite;
+        $scope.selectedSuite = suite.suite;
         $scope.suite = undefined;
         if ($scope.selectedTest && $scope.selectedProjects.length > 0) {
             $scope.showResults = true;
             $scope.doCompare()
         }
         $scope.updateURL();
-        $('#suites-dropdown').collapse('hide');
     }
 
     $scope.removeSuite = function() {
@@ -159,36 +91,14 @@ function CompareController($scope, $http, $location) {
         $scope.updateKnownIssue();
     }
 
-    $scope.doTestSearch = function() {
-        var params = new Array();
-        params['name__startswith'] = $scope.test;
-        var projectSlugList = new Array();
-        if ($scope.selectedProjects.length > 0) {
-            for (var i=0; i<$scope.selectedProjects.length; i++) {
-                projectSlugList.push($scope.selectedProjects[i].slug)
-            }
-            params['test_run__build__project__slug__in'] = projectSlugList.join();
-        }
-        params['suite__slug'] = $scope.selectedSuite;
-
-        $http.get('/api/tests/', {params: params})
-        .then(function(response) {
-            $scope.tests = [...new Set(response.data.results.map(item => item.short_name))];
-            $('#tests-dropdown').collapse('show');
-            $('#suites-dropdown').collapse('hide');
-            $('#projects-dropdown').collapse('hide');
-        });
-    }
-
     $scope.addTest = function(test) {
-        $scope.selectedTest = test;
+        $scope.selectedTest = test.name;
         $scope.test = undefined;
         if ($scope.selectedSuite && $scope.selectedProjects.length > 0) {
             $scope.showResults = true;
             $scope.doCompare()
         }
         $scope.updateURL();
-        $('#tests-dropdown').collapse('hide');
     }
 
     $scope.removeTest = function() {
@@ -197,7 +107,6 @@ function CompareController($scope, $http, $location) {
         $scope.updateURL();
         $scope.updateKnownIssue();
     }
-
     $scope.doCompare = function() {
         // get the list of builds for each project
         for (i=0; i<$scope.selectedProjects.length; i++) {
@@ -245,24 +154,165 @@ function CompareController($scope, $http, $location) {
     $scope.showResults = false;
     $scope.hasKnownIssue = false;
     $scope.projectSearchResponses = 0;
-	$http.get('/api/projects', {params: {'id__in': project_list.join()}}).then(function(response) {
-		$scope.projects = response.data.results;
-        $scope.selectedProjects = _.filter($scope.projects, function(project) {
-            var found = _.find(_.castArray(params.project), function(param) {
-                if (param == project.id) {
-                    return param
+
+    $(".project-select").select2({
+        ajax: {
+            url: "/api/projects",
+            dataType: 'json',
+            data: function (params) {
+                var filters = "%28group__slug__icontains%253D" +
+                    params.term +
+                    "%29%20%7C%20%28group__name__icontains%253D" +
+                    params.term +
+                    "%29%20%7C%20%28name__icontains%253D" +
+                    params.term +
+                    "%29%20%7C%20%28slug__icontains%253D" +
+                    params.term +
+                    "%29";
+                return {
+                    filters: filters, // search term
+                    offset: params.page * 50 || 0,
+                    page: params.page
+                };
+            },
+            processResults: function (data, params) {
+                params.page = params.page || 0;
+                for(item in data.results){
+                    data.results[item].text = data.results[item].full_name;
                 }
+                return {
+                    results: data.results,
+                    pagination: {
+                        more: (params.page * 50) < data.count
+                    }
+                };
+            },
+        },
+        minimumInputLength: 1
+    });
+
+    var projectSelect = $(".project-select");
+    projectSelect.on('select2:unselect', function(e){
+        $scope.removeProject(e.params.data);
+    });
+    projectSelect.on('select2:select', function(e){
+        $scope.addProject(e.params.data)
+    });
+    $(".suite-select").select2({
+        ajax: {
+            url: "/api/suitemetadata/",
+            dataType: 'json',
+            data: function (params) {
+                var projectIdList = new Array();
+                if ($scope.selectedProjects.length > 0) {
+                    for (var i=0; i<$scope.selectedProjects.length; i++) {
+                        projectIdList.push($scope.selectedProjects[i].id)
+                    }
+                }
+                return {
+                    suite__startswith: params.term, // search term
+                    project: projectIdList.join(),
+                    kind: 'suite',
+                    offset: params.page * 50 || 0,
+                    page: params.page
+                };
+            },
+            processResults: function (data, params) {
+                params.page = params.page || 0;
+                for(item in data.results){
+                    data.results[item].text = data.results[item].suite;
+                }
+                return {
+                    results: data.results,
+                    pagination: {
+                        more: (params.page * 50) < data.count
+                    }
+                };
+            },
+        },
+        minimumInputLength: 1
+    });
+    var suiteSelect = $(".suite-select");
+    suiteSelect.on('select2:unselect', function(e){
+        $scope.removeSuite(e.params.data);
+    });
+    suiteSelect.on('select2:select', function(e){
+        $scope.addSuite(e.params.data);
+    });
+
+    $(".test-select").select2({
+        ajax: {
+            url: "/api/suitemetadata/",
+            dataType: 'json',
+            data: function (params) {
+                var projectIdList = new Array();
+                if ($scope.selectedProjects.length > 0) {
+                    for (var i=0; i<$scope.selectedProjects.length; i++) {
+                        projectIdList.push($scope.selectedProjects[i].id)
+                    }
+                }
+                return {
+                    name__startswith: params.term, // search term
+                    project: projectIdList.join(),
+                    kind: 'test',
+                    suite: $scope.selectedSuite,
+                    offset: params.page * 50 || 0,
+                    page: params.page
+                };
+            },
+            processResults: function (data, params) {
+                params.page = params.page || 0;
+                for(item in data.results){
+                    data.results[item].text = data.results[item].name;
+                }
+                return {
+                    results: data.results,
+                    pagination: {
+                        more: (params.page * 50) < data.count
+                    }
+                };
+            },
+        },
+        minimumInputLength: 1
+    });
+    var testSelect = $(".test-select");
+    testSelect.on('select2:unselect', function(e){
+        $scope.removeTest(e.params.data);
+    });
+    testSelect.on('select2:select', function(e){
+        $scope.addTest(e.params.data)
+    });
+
+	$http.get('/api/projects', {params: {'id__in': project_list.join()}})
+        .then(function(response) {
+            $scope.projects = response.data.results;
+            $scope.selectedProjects = _.filter($scope.projects, function(project) {
+                var found = _.find(_.castArray(params.project), function(param) {
+                    if (param == project.id) {
+                        return param
+                    }
+                })
+                return found
             })
-            return found
-        })
-        for (var i = 0; i < $scope.selectedProjects.length; i++) {
-            $scope.showProgress[$scope.selectedProjects[i].id] = true;
-        }
-        if ($scope.selectedSuite && $scope.selectedTest && $scope.selectedProjects.length > 0) {
-            $scope.showResults = true;
-            $scope.doCompare();
-        }
-	});
+            for (var i = 0; i < $scope.selectedProjects.length; i++) {
+                $scope.showProgress[$scope.selectedProjects[i].id] = true;
+
+                var option = new Option($scope.selectedProjects[i].full_name, $scope.selectedProjects[i].id, true, true);
+                option.url = $scope.selectedProjects[i].url;
+                projectSelect.append(option).trigger('change');
+                projectSelect.trigger({
+                    type: 'select2:select',
+                    params: {
+                        data: $scope.selectedProjects[i]
+                    }
+                });
+
+            }
+            if ($scope.selectedSuite && $scope.selectedTest && $scope.selectedProjects.length > 0) {
+                $scope.showResults = true;
+                $scope.doCompare();
+            }
+        });
 
     $scope.selectedSuite = params.suite;
     $scope.selectedTest = params.test;
@@ -271,6 +321,8 @@ function CompareController($scope, $http, $location) {
 
     $scope.projectBuilds = new Array();
     $scope.projectEnvironments = new Array();
+
+
 }
 
 app.controller(
