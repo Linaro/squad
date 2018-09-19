@@ -113,7 +113,7 @@ class TestComparison(object):
     @property
     def regressions(self):
         if self.__regressions__ is None:
-            self.__regressions__ = self.__status_changes__()
+            self.__regressions__ = self.__status_changes__(('pass', 'fail'))
         return self.__regressions__
 
     @property
@@ -122,7 +122,7 @@ class TestComparison(object):
             self.__fixes__ = self.__status_changes__(('fail', 'pass'))
         return self.__fixes__
 
-    def __status_changes__(self, comparison_tuple=('pass', 'fail')):
+    def __status_changes__(self, *transitions):
         if len(self.builds) < 2:
             return {}
 
@@ -134,7 +134,7 @@ class TestComparison(object):
             for test, results in self.diff.items():
                 results_after = results.get((after, env))
                 results_before = results.get((before, env))
-                if (results_before, results_after) == comparison_tuple:
+                if (results_before, results_after) in transitions:
                     comparison_list.append(test)
             if comparison_list:
                 comparisons[env] = comparison_list
