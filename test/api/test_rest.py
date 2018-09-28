@@ -150,6 +150,18 @@ class RestApiTest(TestCase):
         data = self.hit('/api/testjobs/%d/' % self.testjob.id)
         self.assertEqual('myenv', data['environment'])
 
+    def test_testruns(self):
+        data = self.hit('/api/testruns/%d/' % self.testrun.id)
+        self.assertEqual(self.testrun.id, data['id'])
+
+    def test_testruns_tests(self):
+        data = self.hit('/api/testruns/%d/tests/' % self.testrun.id)
+        self.assertEqual(list, type(data['results']))
+
+    def test_testruns_metrics(self):
+        data = self.hit('/api/testruns/%d/metrics/' % self.testrun.id)
+        self.assertEqual(list, type(data['results']))
+
     def test_testjob_definition(self):
         data = self.hit('/api/testjobs/%d/definition/' % self.testjob.id)
         self.assertEqual('foo: bar', data)
