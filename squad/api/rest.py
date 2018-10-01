@@ -12,7 +12,7 @@ from rest_framework import routers, serializers, views, viewsets, status
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
-from rest_framework.pagination import CursorPagination
+from rest_framework.pagination import CursorPagination, PageNumberPagination
 
 import rest_framework_filters as filters
 from jinja2 import TemplateSyntaxError
@@ -622,18 +622,20 @@ class TestRunViewSet(ModelViewSet):
     @detail_route(methods=['get'], suffix='tests')
     def tests(self, request, pk=None):
         testrun = self.get_object()
-        tests = testrun.tests.prefetch_related('suite')
-        page = self.paginate_queryset(tests)
+        tests = testrun.tests.prefetch_related('suite').order_by('id')
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(tests, request)
         serializer = TestSerializer(page, many=True, context={'request': request})
-        return self.get_paginated_response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)
 
     @detail_route(methods=['get'], suffix='metrics')
     def metrics(self, request, pk=None):
         testrun = self.get_object()
-        metrics = testrun.metrics.prefetch_related('suite')
-        page = self.paginate_queryset(metrics)
+        metrics = testrun.metrics.prefetch_related('suite').order_by('id')
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(metrics, request)
         serializer = MetricSerializer(page, many=True, context={'request': request})
-        return self.get_paginated_response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)
 
 
 class BackendSerializer(serializers.ModelSerializer):
