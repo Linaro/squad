@@ -151,3 +151,30 @@ class TestComparisonTest(TestCase):
         # same build! so no fixes, by definition
         comparison = TestComparison.compare_builds(self.build1, self.build1)
         self.assertEqual({}, comparison.fixes)
+
+    def test_xfail_fix(self):
+        """
+        This test is using builds from different projects because the relevant
+        test data is already prepared in setUp(), but usually fixes is
+        only used when comparing subsequent builds from the same project.
+        """
+        models.Test.objects.filter(test_run__build=self.build1, name='c').update(has_known_issues=True)
+        comparison = TestComparison.compare_builds(self.build1, self.build2)
+        fixes = comparison.fixes
+        self.assertEqual(['c'], fixes['myenv'])
+
+    def test_intermittent_xfail_is_not_a_fix(self):
+        """
+        This test is using builds from different projects because the relevant
+        test data is already prepared in setUp(), but usually fixes is
+        only used when comparing subsequent builds from the same project.
+        """
+        tests = models.Test.objects.filter(test_run__build=self.build1, name='c')
+        tests.update(has_known_issues=True)
+        issue = models.KnownIssue.objects.create(title='foo bar baz', intermittent=True)
+        for test in tests:
+            test.known_issues.add(issue)
+
+        comparison = TestComparison.compare_builds(self.build1, self.build2)
+        fixes = comparison.fixes
+        self.assertEqual({}, fixes)

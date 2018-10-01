@@ -44,6 +44,7 @@ class TestComparison(object):
         self.environments = OrderedDict()
         self.all_environments = set()
         self.results = OrderedDict()
+        self.__intermittent__ = {}
 
         models.Build.prefetch_related(self.builds)
         self.__extract_results__()
@@ -71,9 +72,13 @@ class TestComparison(object):
                 self.__extract_test_results__(test_run)
 
     def __extract_test_results__(self, test_run):
-        for test in test_run.tests.all():
+        for test in test_run.tests.prefetch_related('known_issues').all():
             key = (test_run.build, str(test_run.environment))
             self.results[test.full_name][key] = test.status
+            for issue in test.known_issues.all():
+                if issue.intermittent:
+                    env = str(test_run.environment)
+                    self.__intermittent__[(test.full_name, env)] = True
 
     def __all_tests__(self):
         test_set = set()
@@ -113,16 +118,20 @@ class TestComparison(object):
     @property
     def regressions(self):
         if self.__regressions__ is None:
-            self.__regressions__ = self.__status_changes__()
+            self.__regressions__ = self.__status_changes__(('pass', 'fail'))
         return self.__regressions__
 
     @property
     def fixes(self):
         if self.__fixes__ is None:
-            self.__fixes__ = self.__status_changes__(('fail', 'pass'))
+            self.__fixes__ = self.__status_changes__(
+                ('fail', 'pass'),
+                ('xfail', 'pass'),
+                predicate=lambda test, env: (test, env) not in self.__intermittent__
+            )
         return self.__fixes__
 
-    def __status_changes__(self, comparison_tuple=('pass', 'fail')):
+    def __status_changes__(self, *transitions, predicate=lambda test, env: True):
         if len(self.builds) < 2:
             return {}
 
@@ -134,8 +143,9 @@ class TestComparison(object):
             for test, results in self.diff.items():
                 results_after = results.get((after, env))
                 results_before = results.get((before, env))
-                if (results_before, results_after) == comparison_tuple:
-                    comparison_list.append(test)
+                if (results_before, results_after) in transitions:
+                    if predicate(test, env):
+                        comparison_list.append(test)
             if comparison_list:
                 comparisons[env] = comparison_list
 
