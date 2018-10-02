@@ -1,3 +1,26 @@
+# 0.51
+
+* core:
+  * Make order of tests important in notifications
+  * notifications: avoid duplicated "X FAILED TEST JOBS" notifications
+  * queries: use build date for X axis
+  * queries: also count xfail when calculating test pass %
+  * queries: fix Test pass % in the presence of multiple test runs
+  * TestComparison: record xfail -> pass transitions as fixes
+* frontend:
+  * build page: visually indicate that "more info" is available
+  * improve presentation of known issues in the UI
+  * display reason for build being unfinished
+  * create separate view for full metadata
+  * Make it possible to display the charts page in fullscreen
+  * test history: add links to group and project
+* api:
+  * allow to filter ProjectStatus by `last_updated` field
+  * add 'comparetest' to the api UI header
+  * provide metrics data in CSV as well
+  * Limit number of points in charts
+  * fix pagination in TestRun detail routes
+
 # 0.50.1
 
 * frontend:
