@@ -14,4 +14,6 @@ recursive-include squad/*/templates/ *
 recursive-include test/ *.py *.json *.csv *.log *.png *.yaml
 recursive-include scripts/ *
 recursive-include doc/ *
+
+exclude           squad/local_settings.py
 recursive-exclude doc/_build/ *
