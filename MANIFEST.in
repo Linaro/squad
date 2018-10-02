@@ -16,4 +16,5 @@ recursive-include scripts/ *
 recursive-include doc/ *
 
 exclude           squad/local_settings.py
+exclude           squad/local_settings.py.off
 recursive-exclude doc/_build/ *

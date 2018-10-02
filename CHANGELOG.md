@@ -1,3 +1,11 @@
+# 0.51.1
+
+* scripts/release: don't distribute `local_settings.py`
+
+The previous release erroneously included a local configuration file, and has
+been removed from PyPI. This release fixes that mistake, and supercedes the
+previous.
+
 # 0.51
 
 * core:

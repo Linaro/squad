@@ -13,6 +13,7 @@
 /squad/frontend/static/select2.js/
 /squad/frontend/static/download.status
 /squad/local_settings.py
+/squad/local_settings.py.off
 /static
 /.tests
 /__pycache__

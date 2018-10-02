@@ -46,7 +46,11 @@ if ! ./scripts/check-ci; then
 fi
 
 # build
-rm -rf dist/ *.egg-info/
+rm -rf build/ dist/ *.egg-info/
+local_settings=$(ls -1 squad/local_settings.py 2>/dev/null || true)
+if [ -n "$local_settings" ]; then
+    mv "$local_settings" "$local_settings".off
+fi
 python3 setup.py sdist bdist_wheel
 
 # test
@@ -55,6 +59,9 @@ git=$(mktemp git.XXXXXXXXX)
 trap cleanup INT TERM EXIT
 cleanup() {
     rm -rf "$tar" "$git"
+    if [ -n "$local_settings" ]; then
+        mv "$local_settings".off "$local_settings"
+    fi
 }
 git ls-tree -r --name-only HEAD | grep -v '^\.' | sort > "$git"
 
