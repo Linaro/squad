@@ -16,7 +16,7 @@ To install the dependencies::
 Alternatively to using pip, on Debian stretch or later you can install
 dependencies from the repository::
 
-    apt-get install python3-dateutil python3-django python3-celery \
+    apt-get install python3-dateutil python3-django python3-celery libyaml-dev \
       python3-django-celery python3-jinja2 python3-whitenoise python3-zmq
 
 To run the tests::
