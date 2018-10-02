@@ -7,7 +7,7 @@ exec(open('squad/version.py').read())
 
 
 def valid_requirement(req):
-    return not (re.match('^\s*$', req) or re.match('^#', req))
+    return not (re.match(r'^\s*$', req) or re.match('^#', req))
 
 
 requirements_txt = open('requirements.txt').read().splitlines()

@@ -23,7 +23,7 @@ gunicorn options:\
 def usage():
     print(__usage__)
     sys.stdout.flush()
-    os.system('%s -m gunicorn.app.wsgiapp --help | sed -e "/^\S/d"' % sys.executable)
+    os.system(r'%s -m gunicorn.app.wsgiapp --help | sed -e "/^\S/d"' % sys.executable)
 
 
 def main():

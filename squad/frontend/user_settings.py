@@ -95,5 +95,5 @@ urls = [
     url('^profile/$', profile, name='settings-profile'),
     url('^api-token/$', api_token, name='settings-api-token'),
     url('^subscriptions/$', subscriptions, name='settings-subscriptions'),
-    url('^remove-subscription/(?P<id>\d+)$', remove_subscription, name='settings-subscription-remove'),
+    url(r'^remove-subscription/(?P<id>\d+)$', remove_subscription, name='settings-subscription-remove'),
 ]
