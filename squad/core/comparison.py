@@ -72,7 +72,7 @@ class TestComparison(object):
                 self.__extract_test_results__(test_run)
 
     def __extract_test_results__(self, test_run):
-        for test in test_run.tests.prefetch_related('known_issues').all():
+        for test in test_run.tests.prefetch_related('suite', 'known_issues').all():
             key = (test_run.build, str(test_run.environment))
             self.results[test.full_name][key] = test.status
             for issue in test.known_issues.all():
