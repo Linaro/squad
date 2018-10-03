@@ -1,3 +1,8 @@
+# 0.51.2
+
+* core: NotificationDelivery: allow new notifications on changes
+* core: TestComparison: fix performance regression handling xfail
+
 # 0.51.1
 
 * scripts/release: don't distribute `local_settings.py`
