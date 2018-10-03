@@ -827,7 +827,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
 
 class NotificationDelivery(models.Model):
 
-    status = models.OneToOneField('ProjectStatus', related_name='delivery')
+    status = models.ForeignKey('ProjectStatus', related_name='deliveries')
     subject = models.CharField(max_length=40, null=True, blank=True)
     txt = models.CharField(max_length=40, null=True, blank=True)
     html = models.CharField(max_length=40, null=True, blank=True)
