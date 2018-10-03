@@ -9,6 +9,7 @@ from dateutil.relativedelta import relativedelta
 from django.db import models
 from django.db.models import Q, Count
 from django.db.models.query import prefetch_related_objects
+from django.db.utils import IntegrityError
 from django.contrib.auth.models import Group as UserGroup
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -840,13 +841,19 @@ class NotificationDelivery(models.Model):
         subject_hash = sha1(subject.encode()).hexdigest()
         txt_hash = sha1(txt.encode()).hexdigest()
         html_hash = sha1(html.encode()).hexdigest()
-        obj, created = cls.objects.get_or_create(
-            status=status,
-            subject=subject_hash,
-            txt=txt_hash,
-            html=html_hash,
-        )
-        return (not created)
+        try:
+            obj, created = cls.objects.get_or_create(
+                status=status,
+                subject=subject_hash,
+                txt=txt_hash,
+                html=html_hash,
+            )
+            return (not created)
+        except IntegrityError:
+            # race condition: another thread was able to create the object
+            # before us, but after we checked for existance first. We just give
+            # up and say the object already exists
+            return True
 
 
 class InvalidTestStatus(Exception):
