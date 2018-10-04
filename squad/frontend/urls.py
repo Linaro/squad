@@ -35,5 +35,5 @@ urlpatterns = [
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/metrics$' % ((slug_pattern,) * 2), views.test_run_metrics, name='testrun_metrics'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/metadata$' % ((slug_pattern,) * 2), views.test_run_metadata, name='testrun_metadata'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/attachments/([^/]+)$' % ((slug_pattern,) * 2), views.attachment, name='attachment'),
-    url(r'^testjob/([^/]+)$', views.test_job, name='test_job'),
+    url(r'^testjob/(\d+)$', views.test_job, name='test_job'),
 ]

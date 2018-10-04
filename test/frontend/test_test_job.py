@@ -78,3 +78,7 @@ class TestJobViewTest(TestCase):
     def test_testjob_non_existing(self):
         response = self.client.get('/testjob/9999')
         self.assertEqual(404, response.status_code)
+
+    def test_testjob_non_integer(self):
+        response = self.client.get('/testjob/9999%20abcd')
+        self.assertEqual(404, response.status_code)
