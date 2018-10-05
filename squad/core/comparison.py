@@ -62,17 +62,28 @@ class TestComparison(object):
     def __extract_results__(self):
         for test in self.__all_tests__():
             self.results[test] = OrderedDict()
+        test_runs = models.TestRun.objects.filter(
+            build__in=self.builds,
+        ).prefetch_related(
+            'build',
+            'environment',
+            'tests',
+            'tests__suite',
+            'tests__known_issues',
+        )
         for build in self.builds:
-            test_runs = list(build.test_runs.all())
-            environments = [t.environment for t in test_runs]
-            for e in environments:
-                self.all_environments.add(str(e))
-            self.environments[build] = sorted([str(e) for e in set(environments)])
-            for test_run in test_runs:
-                self.__extract_test_results__(test_run)
+            self.environments[build] = set()
+        for test_run in test_runs:
+            build = test_run.build
+            environment = test_run.environment
+            self.all_environments.add(str(environment))
+            self.environments[build].add(str(environment))
+            self.__extract_test_results__(test_run)
+        for build in self.builds:
+            self.environments[build] = sorted(self.environments[build])
 
     def __extract_test_results__(self, test_run):
-        for test in test_run.tests.prefetch_related('suite', 'known_issues').all():
+        for test in test_run.tests.all():
             key = (test_run.build, str(test_run.environment))
             self.results[test.full_name][key] = test.status
             for issue in test.known_issues.all():
