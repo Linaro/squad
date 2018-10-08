@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 from squad.core import models
 from squad.core.tasks import ReceiveTestRun
+from test.performance import count_queries
 
 
 class FrontendTest(TestCase):
@@ -30,7 +31,8 @@ class FrontendTest(TestCase):
         self.test_run.attachments.create(filename="foo", data=attachment_data, length=len(attachment_data))
 
     def hit(self, url, expected_status=200):
-        response = self.client.get(url)
+        with count_queries('url:' + url):
+            response = self.client.get(url)
         self.assertEqual(expected_status, response.status_code)
         return response
 

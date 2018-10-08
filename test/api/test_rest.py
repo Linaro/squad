@@ -6,6 +6,7 @@ from django.utils import timezone
 from squad.core import models
 from squad.core.tasks import UpdateProjectStatus
 from squad.ci import models as ci_models
+from test.performance import count_queries
 
 
 class RestApiTest(TestCase):
@@ -113,7 +114,8 @@ class RestApiTest(TestCase):
         )
 
     def hit(self, url):
-        response = self.client.get(url)
+        with count_queries('url:' + url):
+            response = self.client.get(url)
         self.assertEqual(200, response.status_code)
         text = response.content.decode('utf-8')
         if response['Content-Type'] == 'application/json':
