@@ -21,8 +21,13 @@ else
   tests_per_sec=0
 fi
 
+(
+if [ -f tmp/queries.json ]; then
+  cat tmp/queries.json | jq '' | sed -e 's/}/,/; s#/#_#g; s#:_#/_#; s#^\(\s\+"\)#\1queries/#;'
+else
+  echo "{"
+fi
 echo "
-{
   \"python/lines\": $python_lines,
   \"python/comments\": $python_comments,
   \"python/tests\": $python_tests,
@@ -37,4 +42,5 @@ echo "
 
   \"git/commits\": $git_commits,
   \"git/authors\": $git_authors
-}" | jq ''
+}"
+) | jq ''
