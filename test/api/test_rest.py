@@ -1,6 +1,8 @@
+import datetime
 import json
 from test.api import APIClient
 from django.test import TestCase
+from django.utils import timezone
 from squad.core import models
 from squad.core.tasks import UpdateProjectStatus
 from squad.ci import models as ci_models
@@ -11,19 +13,26 @@ class RestApiTest(TestCase):
     def setUp(self):
         self.group = models.Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
-        self.build = self.project.builds.create(version='1')
-        self.build2 = self.project.builds.create(version='2')
-        self.build3 = self.project.builds.create(version='3')
+        t = timezone.make_aware(datetime.datetime(2018, 10, 1, 1, 0, 0))
+        self.build = self.project.builds.create(version='1', datetime=t)
+        t2 = timezone.make_aware(datetime.datetime(2018, 10, 2, 1, 0, 0))
+        self.build2 = self.project.builds.create(version='2', datetime=t2)
+        t3 = timezone.make_aware(datetime.datetime(2018, 10, 3, 1, 0, 0))
+        self.build3 = self.project.builds.create(version='3', datetime=t3)
         self.environment = self.project.environments.create(slug='myenv')
+        self.environment_a = self.project.environments.create(slug='env-a')
         self.testrun = self.build.test_runs.create(environment=self.environment, build=self.build)
         self.testrun2 = self.build2.test_runs.create(environment=self.environment, build=self.build2)
         self.testrun3 = self.build3.test_runs.create(environment=self.environment, build=self.build3)
+        self.testrun_a = self.build.test_runs.create(environment=self.environment_a, build=self.build)
+        self.testrun2_a = self.build2.test_runs.create(environment=self.environment_a, build=self.build2)
+        self.testrun3_a = self.build3.test_runs.create(environment=self.environment_a, build=self.build3)
         self.backend = ci_models.Backend.objects.create(name='foobar')
         self.patchsource = models.PatchSource.objects.create(name='baz_source', username='u', url='http://example.com', token='secret')
         self.knownissue = models.KnownIssue.objects.create(title='knownissue_foo', test_name='test/bar', active=True)
         self.knownissue.environments.add(self.environment)
 
-        self.testjob = self.build.test_jobs.create(
+        self.testjob = ci_models.TestJob.objects.create(
             definition="foo: bar",
             backend=self.backend,
             target=self.project,
@@ -32,7 +41,7 @@ class RestApiTest(TestCase):
             environment='myenv',
             testrun=self.testrun
         )
-        self.testjob2 = self.build.test_jobs.create(
+        self.testjob2 = ci_models.TestJob.objects.create(
             definition="foo: bar",
             backend=self.backend,
             target=self.project,
@@ -41,7 +50,7 @@ class RestApiTest(TestCase):
             environment='myenv',
             testrun=self.testrun2
         )
-        self.testjob3 = self.build.test_jobs.create(
+        self.testjob3 = ci_models.TestJob.objects.create(
             definition="foo: bar",
             backend=self.backend,
             target=self.project,
@@ -50,6 +59,41 @@ class RestApiTest(TestCase):
             environment='myenv',
             testrun=self.testrun3
         )
+
+        testrun_sets = [
+            [self.testrun, self.testrun2, self.testrun3],  # environment: myenv
+            [self.testrun_a, self.testrun2_a, self.testrun3_a],  # environment: env-a
+        ]
+        tests = {
+            'foo/test1': ['pass', 'fail', 'pass'],  # fix
+            'foo/test2': ['pass', 'pass', 'fail'],  # regression
+            'foo/test3': ['pass', 'pass', 'pass'],
+            'foo/test4': ['pass', 'pass', 'pass'],
+            'foo/test5': ['pass', 'pass', 'pass'],
+            'foo/test6': ['pass', 'pass', 'pass'],
+            'foo/test7': ['pass', 'pass', 'pass'],
+            'foo/test8': ['pass', 'pass', 'pass'],
+            'foo/test9': ['pass', 'pass', 'pass'],
+            'bar/test1': ['pass', 'pass', 'pass'],
+            'bar/test2': ['fail', 'fail', 'fail'],
+            'bar/test3': ['fail', 'fail', 'fail'],
+            'bar/test4': ['fail', 'fail', 'fail'],
+            'bar/test5': ['fail', 'fail', 'fail'],
+            'bar/test6': ['fail', 'fail', 'fail'],
+            'bar/test7': ['fail', 'fail', 'fail'],
+            'bar/test8': ['fail', 'fail', 'fail'],
+            'bar/test9': ['fail', 'fail', 'fail'],
+        }
+        for test_name in tests.keys():
+            for testruns in testrun_sets:
+                for i in [0, 1, 2]:
+                    testrun = testruns[i]
+                    result = tests[test_name][i]
+                    s, t = test_name.split('/')
+                    r = {'pass': True, 'fail': False}[result]
+                    suite, _ = self.project.suites.get_or_create(slug=s)
+                    testrun.tests.create(suite=suite, name=t, result=r)
+
         self.emailtemplate = models.EmailTemplate.objects.create(
             name="fooTemplate",
             subject="abc",
@@ -100,33 +144,39 @@ class RestApiTest(TestCase):
         self.hit('/api/builds/%d/status/' % self.build.id)
 
     def test_builds_email(self):
-        response = self.client.get('/api/builds/%d/email/' % self.build.id)
+        response = self.client.get('/api/builds/%d/email/' % self.build3.id)
         self.assertEqual(404, response.status_code)
         # create ProjectStatus
-        UpdateProjectStatus()(self.testrun)
-        self.hit('/api/builds/%d/email/' % self.build.id)
+        self.build2.test_jobs.all().delete()
+        self.build3.test_jobs.all().delete()
+        UpdateProjectStatus()(self.testrun2)
+        UpdateProjectStatus()(self.testrun3)
+        response = self.hit('/api/builds/%d/email/' % self.build3.id)
+        self.assertIn('foo/test2', response)  # sanity check
 
     def test_builds_email_custom_template(self):
-        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build.id, self.validemailtemplate.pk))
+        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build3.id, self.validemailtemplate.pk))
         self.assertEqual(404, response.status_code)
         # create ProjectStatus
-        UpdateProjectStatus()(self.testrun)
-        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build.id, self.validemailtemplate.pk))
+        UpdateProjectStatus()(self.testrun2)
+        UpdateProjectStatus()(self.testrun3)
+        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build3.id, self.validemailtemplate.pk))
         self.assertEqual(200, response.status_code)
         self.assertEqual("text/plain", response['Content-Type'])
 
     def test_builds_email_custom_invalid_template(self):
-        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build.id, self.invalidemailtemplate.pk))
+        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build3.id, self.invalidemailtemplate.pk))
         self.assertEqual(404, response.status_code)
         # create ProjectStatus
-        UpdateProjectStatus()(self.testrun)
-        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build.id, self.invalidemailtemplate.pk))
+        UpdateProjectStatus()(self.testrun2)
+        UpdateProjectStatus()(self.testrun3)
+        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build3.id, self.invalidemailtemplate.pk))
         self.assertEqual(500, response.status_code)
 
     def test_builds_email_custom_baseline(self):
         UpdateProjectStatus()(self.testrun)
         UpdateProjectStatus()(self.testrun3)
-        self.hit('/api/builds/%d/email/?baseline=%s' % (self.build.id, self.build3.id))
+        self.hit('/api/builds/%d/email/?baseline=%s' % (self.build3.id, self.build.id))
 
     def test_builds_email_custom_baseline_missing_status(self):
         UpdateProjectStatus()(self.testrun)
@@ -140,7 +190,7 @@ class RestApiTest(TestCase):
 
     def test_build_testruns(self):
         data = self.hit('/api/builds/%d/testruns/' % self.build.id)
-        self.assertEqual(1, len(data['results']))
+        self.assertEqual(2, len(data['results']))
 
     def test_build_testjobs(self):
         data = self.hit('/api/builds/%d/testjobs/' % self.build.id)
@@ -172,7 +222,7 @@ class RestApiTest(TestCase):
 
     def test_environments(self):
         data = self.hit('/api/environments/')
-        self.assertEqual('myenv', data['results'][0]['slug'])
+        self.assertEqual(['env-a', 'myenv'], sorted([item['slug'] for item in data['results']]))
 
     def test_email_template(self):
         data = self.hit('/api/emailtemplates/')
