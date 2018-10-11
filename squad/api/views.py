@@ -11,6 +11,7 @@ from squad.http import read_file_upload
 from squad.http import auth_write
 
 
+from squad.core.models import Annotation
 from squad.core.models import Group
 from squad.core.models import Project
 from squad.core.models import Build

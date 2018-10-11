@@ -3,7 +3,7 @@ import yaml
 
 from django.contrib.auth.models import Group as UserGroup
 from squad.api.filters import ComplexFilterBackend
-from squad.core.models import Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata
+from squad.core.models import Annotation, Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata
 from squad.core.notification import Notification
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
@@ -816,6 +816,23 @@ class KnownIssueViewSet(viewsets.ModelViewSet):
     ordering_fields = ('title', 'id')
 
 
+class AnnotationSerializer(serializers.ModelSerializer):
+
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Annotation
+        fields = '__all__'
+
+
+class AnnotationViewSet(viewsets.ModelViewSet):
+
+    queryset = Annotation.objects.all()
+    serializer_class = AnnotationSerializer
+    filter_fields = ('description', 'build')
+    ordering_fields = ('id', 'build')
+
+
 router = APIRouter()
 router.register(r'groups', GroupViewSet)
 router.register(r'usergroups', UserGroupViewSet, 'usergroups')
@@ -831,3 +848,4 @@ router.register(r'emailtemplates', EmailTemplateViewSet)
 router.register(r'knownissues', KnownIssueViewSet)
 router.register(r'patchsources', PatchSourceViewSet)
 router.register(r'suitemetadata', SuiteMetadataViewset)
+router.register(r'annotations', AnnotationViewSet)

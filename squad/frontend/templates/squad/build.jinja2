@@ -198,4 +198,8 @@
 
 {% block javascript %}
 <script type="text/javascript" src='{{static("squad/filter.js")}}'></script>
+<script type="text/javascript" src='{{static("squad/annotation.js")}}'></script>
+<script type="text/javascript">
+csrf_token = '{{ csrf_token }}'
+</script>
 {% endblock %}
