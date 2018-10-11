@@ -28,7 +28,7 @@
       <th>Build</th>
       <th>Date</th>
       {% for environment in history.environments %}
-      <th colspan='2'>{{environment}}</th>
+      <th>{{environment}}</th>
       {% endfor %}
     </thead>
 
@@ -39,16 +39,14 @@
       {% for environment in history.environments %}
       {% with result=results|get_value:environment%}
       {% with known_issues=result.known_issues %}
-      <td class='{{result.status|slugify}}' colspan='{% if known_issues %}1{% else %}2{% endif %}'>
+      <td class='{{result.status|slugify}}'>
         {% if result %}
         <a href="{% project_url result.test_run %}">{{result.status}}</a>
         {% else %}
         <i>n/a</i>
         {% endif %}
-      </td>
       {% if known_issues %}
-      <td width='32px' class='known-issue'>
-        <button type='button' class='btn btn-xs btn-info' data-toggle='popover'><i title='Known issue' class='fa fa-info-circle'></i></button>
+        <button type='button' class='known-issue btn btn-xs btn-info pull-right' data-toggle='popover'><i title='Known issue' class='fa fa-info-circle'></i></button>
         <div class='known-issue-details' style='display: none'>
         {% for known_issue in known_issues %}
         Known issue:
@@ -62,8 +60,8 @@
         {% endif %}
         {% endfor %}
         </div>
-      </td>
       {% endif %}
+      </td>
       {% endwith %}
       {% endwith %}
       {% endfor %}
@@ -79,7 +77,7 @@
 <script type="text/javascript" src='{% static "squad/table.js" %}'></script>
 <script type="text/javascript">
   jQuery(function($) {
-    $('.known-issue button').popover({
+    $('.known-issue').popover({
       placement: 'left',
       html: true,
       content: function() {
