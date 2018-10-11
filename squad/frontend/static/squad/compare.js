@@ -121,6 +121,7 @@ function CompareController($scope, $http, $location) {
         // get the list of builds for each project
         for (i=0; i<$scope.selectedProjects.length; i++) {
             (function(index){
+                $scope.showProgress[$scope.selectedProjects[index].id] = true;
                 $http.get($scope.selectedProjects[index].url + "test_results/", {params: {'test_name': $scope.selectedSuite + "/" + $scope.selectedTest, "limit": 10}})
                     .then(function(response){
                         $scope.projectBuilds[$scope.selectedProjects[index].id] = response.data;
