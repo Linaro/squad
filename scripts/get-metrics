@@ -2,12 +2,12 @@
 
 set -eu
 
-python_lines=$(find -name '*.py' | xargs grep '\S' | wc -l)
-python_comments=$(find -name '*.py' | xargs grep '^\s*#' | wc -l)
+python_lines=$(find * -name '*.py' | xargs grep '\S' | wc -l)
+python_comments=$(find * -name '*.py' | xargs grep '^\s*#' | wc -l)
 python_tests=$(grep --binary-files=without-match -r 'def\s*test' test/ | wc -l)
 python_runtime_dependencies=$(grep ^[^-#] requirements.txt | wc -l)
 python_development_dependencies=$(grep ^[^-#] requirements-dev.txt | wc -l)
-python_files=$(find -name '*.py' | wc -l)
+python_files=$(find * -name '*.py' | wc -l)
 
 git_commits=$(git log --oneline | wc -l)
 git_authors=$(git log --format=%aN | sort -u | wc -l)
@@ -21,8 +21,13 @@ else
   tests_per_sec=0
 fi
 
+(
+if [ -f tmp/queries.json ]; then
+  cat tmp/queries.json | jq '' | sed -e 's/}/,/; s#/#_#g; s#:_#/_#; s#^\(\s\+"\)#\1queries/#;'
+else
+  echo "{"
+fi
 echo "
-{
   \"python/lines\": $python_lines,
   \"python/comments\": $python_comments,
   \"python/tests\": $python_tests,
@@ -37,4 +42,5 @@ echo "
 
   \"git/commits\": $git_commits,
   \"git/authors\": $git_authors
-}" | jq ''
+}"
+) | jq ''
