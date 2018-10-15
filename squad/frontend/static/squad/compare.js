@@ -18,12 +18,12 @@ function CompareController($scope, $http, $location) {
                         $scope.knownIssues = response.data.results;
                     } else {
                         $scope.hasKnownIssue = false;
-                        $scope.knownIssue = undefined
+                        $scope.knownIssues = undefined
                     }
                 })
         } else {
             $scope.hasKnownIssue = false;
-            $scope.knownIssue = undefined;
+            $scope.knownIssues = undefined;
         }
     }
 
