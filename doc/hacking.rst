@@ -34,3 +34,25 @@ locally:
 * migrate database:  ./manage.py migrate
 * create superuser:  ./manage.py createsuperuser
 * anonymize data:    ./manage.py prepdump # avoid mailing users
+
+
+Running Javascript unit tests
+-----------------------------
+
+In order to run Javascript unit tests, you need to installl nodejs and npm
+package manager, then install the dependencies from the package-lock.json file.
+Depending on the distribution, you can either install npm directly from
+repositories or alternatevely add PPA and then install it. Here's the
+instructions of how to setup up after the npm package manager is installed::
+
+  sudo apt-get install chromium
+  npm install
+  sudo npm install -g karma-cli
+
+Then simply run::
+
+  ./manage test
+
+or::
+
+  ./manage test test.test_javascript
