@@ -25,7 +25,7 @@ function ChartsController($scope, $http, $location, $compile) {
                 minDate = data[name][0][0]
             }
         })
-            //alert(minDate)
+
         this.minDate = minDate
     }
 
@@ -70,15 +70,7 @@ function ChartsController($scope, $http, $location, $compile) {
                 lineTension: 0,
                 backgroundColor: env.fill_color,
                 borderColor: env.line_color,
-                data: _.filter(data[env.name], function(point) {
-                    return point[0] > minLimit && point[0] < maxLimit
-                }).map(function(point){
-                    return {
-                        x: point[0],
-                        y: point[1],
-                        build_id: point[2]
-                    }
-                })
+                data: $scope.filter_data(data[env.name], minLimit, maxLimit)
             }
         })
 
@@ -88,7 +80,13 @@ function ChartsController($scope, $http, $location, $compile) {
         var formatDate = function(x) {
             // Javascript Date() takes milliseconds and x
             // is seconds, so multiply by 1000
-            return (new Date(x * 1000)).toISOString().slice(0,10)
+            // Check if x 'defaults' to [-1, 1] range which means there are no
+            // results, and in that case return an empty string.
+            if (x <= 1 && x >= -1) {
+                return ""
+            } else {
+                return (new Date(x * 1000)).toISOString().slice(0,10)
+            }
         }
 
         var scatterChart = new Chart(ctx, {
@@ -258,7 +256,7 @@ function ChartsController($scope, $http, $location, $compile) {
                 metric.chart = chart
                 metric.drawn = true
 
-                var slider_container = "<slider-range metrics='selectedMetrics' ranges='ranges' callback='updateURL()' value-min='" + min_value + "' value-max='" + max_value + "'></slider-range>"
+                var slider_container = "<slider-range metrics='selectedMetrics' ranges='ranges' filter-data='filter_data(data, minLimit, maxLimit)' update-url='updateURL()' value-min='" + min_value + "' value-max='" + max_value + "'></slider-range>"
                 elem = $compile(slider_container)($scope)
                 $(target).append(elem)
 
@@ -352,6 +350,20 @@ function ChartsController($scope, $http, $location, $compile) {
         $scope.redraw()
     }
 
+    $scope.filter_data = function(data, minLimit, maxLimit) {
+        var current_data = _.filter(data, function(point) {
+            return point[0] > minLimit && point[0] < maxLimit
+        }).map(function(point){
+            return {
+                x: point[0],
+                y: point[1],
+                build_id: point[2]
+            }
+        })
+
+        return current_data
+    }
+
     $scope.calculate_max_results = function() {
         for (metric in $scope.data) {
             var max_count = 0
@@ -440,7 +452,8 @@ app.directive('sliderRange', ['$document',function($document) {
             valueMax: "=",
             metrics: "=metrics",
             ranges: "=ranges",
-            callbackURL: "&callback"
+            updateUrl: "&",
+            filterData: "&",
         },
         link: function postLink(scope, element, attrs) {
             // Initilization
@@ -523,14 +536,10 @@ app.directive('sliderRange', ['$document',function($document) {
                         Math.round((maxDate - minDate) * (xMax / 100))
 
                     _.each(current.chart.scatterChart.data.datasets, function(dataset) {
-                        dataset.data = _.filter(current.chart.data[dataset.label], function(point) {
-                            return point[0] > minLimit && point[0] < maxLimit
-                        }).map(function(point) {
-                            return {
-                                x: point[0],
-                                y: point[1],
-                                build_id: point[2]
-                            }
+                        dataset.data = scope.filterData({
+                            data: current.chart.data[dataset.label],
+                            minLimit: minLimit,
+                            maxLimit: maxLimit
                         })
                     });
                     current.chart.scatterChart.update()
@@ -541,7 +550,7 @@ app.directive('sliderRange', ['$document',function($document) {
                 });
 
                 $document.mouseup(function() {
-                    scope.callbackURL()
+                    scope.updateUrl()
                     scope.$apply()
                     dragging = false
                     $document.unbind('mousemove')
