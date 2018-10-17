@@ -1,3 +1,23 @@
+# 0.52
+
+* Add infrastructure for counting database queries
+* squad.manage: check performance counts when running tests
+* api:
+  * add advanced filtering backend
+  * add suitemetadata endpoint
+  * add support for listing suite/test names in project
+  * `test.api.test_rest`: add extra test data
+* core: TestComparison: optimize database access
+* frontend:
+  * Add indicator when adding/updating tests.
+  * fixes to compare.js and compare.html
+  * fix test history table for Chrome
+  * Fix `test_run`'s `job_id` on build page
+  * limit testjob/<id> urls to support only integers
+  * replace comparetest combos with select2
+  * Move chart.js bundle script from base template to metrics.
+  * charts: Remove x-axis ticks in case of an empty result set.
+
 # 0.51.2
 
 * core: NotificationDelivery: allow new notifications on changes
