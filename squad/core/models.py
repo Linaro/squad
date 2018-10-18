@@ -121,9 +121,12 @@ class Project(models.Model):
     @property
     def status(self):
         if not self.__status__:
-            self.__status__ = ProjectStatus.objects.filter(
-                build__project=self
-            ).latest('created_at')
+            try:
+                self.__status__ = ProjectStatus.objects.filter(
+                    build__project=self
+                ).latest('created_at')
+            except ProjectStatus.DoesNotExist:
+                pass
         return self.__status__
 
     def accessible_to(self, user):

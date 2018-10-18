@@ -1,0 +1,50 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+
+{% include "squad/build-nav.jinja2" %}
+<h2>All test results</h2>
+
+{% with items=results %}
+{% include "squad/_pagination.jinja2" %}
+{% endwith %}
+
+<div>
+
+    <table class='test-results' data-param="filter">
+        <thead>
+            <th>Test</th>
+            {% for env in results.environments %}
+            <th>{{env}}</th>
+            {% endfor %}
+        </thead>
+        {% if results %}
+            {% for test in results %}
+            <tr id='test-{{test.name|slugify}}' ng-show="match('test-{{test.name|slugify}}')">
+                <td><a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test.name])}}">{{test.name}}</a></td>
+                {% for status in test %}
+                <td class="{{status}}"><a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test.name])}}">{{status}}</a></td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="{{results.environments|length|add(1)}}" class='alert alert-warning'>
+                    <em>This build has no test results yet.</em>
+                </td>
+            </tr>
+        {% endif %}
+    </table>
+
+</div>
+
+{% with items=results %}
+{% include "squad/_pagination.jinja2" %}
+{% endwith %}
+
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src='{{static("squad/filter.js")}}'></script>
+<script type="text/javascript" src='{{static("squad/table.js")}}'></script>
+{% endblock %}

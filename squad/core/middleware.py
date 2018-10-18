@@ -6,7 +6,7 @@ class Custom401Middleware(object):
     def process_exception(self, request, exception):
         if isinstance(exception, PermissionDenied):
             return render_to_response(
-                "401.html",
+                "401.jinja2",
                 {'request': request},
                 status=401)
         return None

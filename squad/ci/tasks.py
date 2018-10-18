@@ -73,12 +73,12 @@ def send_testjob_resubmit_admin_email(job_id, resubmitted_job_id):
     }
 
     text_message = render_to_string(
-        'squad/ci/testjob_resubmit.txt',
+        'squad/ci/testjob_resubmit.txt.jinja2',
         context=context,
     )
     html_message = ''
     html_message = render_to_string(
-        'squad/ci/testjob_resubmit.html',
+        'squad/ci/testjob_resubmit.html.jinja2',
         context=context,
     )
 

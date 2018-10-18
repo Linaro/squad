@@ -1,0 +1,58 @@
+<div class='row row-bordered {{test.status}} tests-{{status.id}}-{{test.status}}{% if test.has_known_issues %} known-issue{% endif %}'>
+    <div class='col-md-9 col-sm-9'>
+        <a href="{{url('test_history', args=[project.group.slug, project.slug, test.full_name])}}">
+            <i class='fa fa-{% if test.status == "fail" %}times{% elif test.status == "pass" %}check{% else %}bug{% endif %}'></i>
+            {{test.name}} — {{test.status|upper}}
+        </a>
+        {% if test.has_known_issues %}
+        {% for known_issue in test.known_issues.all %}
+            Known issue:
+            {% if known_issue.url %}
+                <a href="{{known_issue.url}}">{{known_issue.title}}</a>{% if known_issue.intermittent %} (intermittent){% endif %}.
+            {% else %}
+                {{known_issue.title}}{% if known_issue.intermittent %} (intermittent){% endif %}.
+            {% endif %}
+        {% endfor %}
+        {% endif %}
+    </div>
+    <div class='col-md-1 col-sm-1'>
+        <a class="pull-right" href="/_/comparetest/?project={{ test.test_run.build.project.pk }}&suite={{ test.suite.slug }}&test={{ test.name }}">compare</a>
+    </div>
+    <div class='col-md-2 col-sm-2'>
+        {% if test.metadata.description or suite.metadata.instructions_to_reproduce or test.metadata.instructions_to_reproduce or test.log %}
+        <a href='#'
+           onclick='$(".test-description-{{test.id}}").toggle(); return false'
+           class='test-description-{{test.id}}'
+        ><span class='fa fa-info-circle'></span> Show info</a>
+        <a href='#'
+           onclick='$(".test-description-{{test.id}}").toggle(); return false'
+           class='test-description-{{test.id}}'
+           style='display: none'
+        ><span class='fa fa-info-circle'></span> Hide info</a>
+        {% endif %}
+    </div>
+    {% if test.metadata.description or suite.metadata.instructions_to_reproduce or test.metadata.instructions_to_reproduce or test.log%}
+    <div class='test-description test-description-{{test.id}} col-md-12 col-sm-12' style='display: none'>
+        {% if test.metadata.description %}
+        <p><strong>Test description:</strong></p>
+        <div>
+        {{test.metadata.description|markdown}}
+        </div>
+        {% endif %}
+
+        {% if suite.metadata.instructions_to_reproduce or test.metadata.instructions_to_reproduce %}
+        <p><strong>How to reproduce:</strong></p>
+        <div>
+        {{suite.metadata.instructions_to_reproduce|markdown}}
+        {{test.metadata.instructions_to_reproduce|markdown}}
+        </div>
+        {% endif %}
+
+        {% if test.log %}
+        <p><strong>Test log:</strong></p>
+        <pre>{{test.log}}</pre>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+

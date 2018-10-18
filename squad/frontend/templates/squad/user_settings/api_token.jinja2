@@ -1,0 +1,41 @@
+{% extends "squad/user_settings/base.jinja2" %}
+{% block settings %}
+<h1>API token</h1>
+
+{% if token %}
+    <p>Your API token:</p>
+    <pre>{{token.key}}</pre>
+{% else %}
+    <div class='alert alert-warning'>
+    <p>
+    You do not have an API token yet.
+    </p>
+    </div>
+{% endif %}
+
+<form method="POST">
+    {{ csrf_input }}
+    {% if token %}
+    <div class='panel panel-danger'>
+        <div class='panel-heading'>
+            Reset API token
+        </div>
+        <div class='panel-body'>
+        <p>
+        <strong>Attention:</strong>
+        Resetting your API token will make the old token invalid, and it will
+        no longer be accepted to authenticate API requests.  Only the new token
+        will be accepted.
+        </p>
+        <p>
+        <input type="submit" class='btn btn-danger' value="Yes, reset my API token"/>
+        </p>
+        </div>
+    </div>
+    {% else %}
+    <input type="submit" class='btn btn-primary' value="Create API token"/>
+    {% endif %}
+</form>
+
+{% endblock %}
+

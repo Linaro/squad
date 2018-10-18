@@ -21,7 +21,7 @@ import django.contrib.auth.views as auth
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include('squad.api.urls')),
-    url(r'^login/', auth.login, {'template_name': 'squad/login.html'}),
+    url(r'^login/', auth.login, {'template_name': 'squad/login.jinja2'}),
     url(r'^logout/', auth.logout, {'next_page': '/'}),
     url(r'', include('squad.frontend.urls'))
 ]

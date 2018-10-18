@@ -1,0 +1,201 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+{% include "squad/build-nav.jinja2" %}
+
+<div ng-app='Filter'>
+
+<h2>Metadata</h2>
+{% include "squad/_metadata.jinja2" %}
+
+<div ng-controller='FilterController' data-param="filter-tests">
+<h2>Test results</h2>
+<div class='row row-bordered'>
+    <div class='col-md-12 col-sm-12'>
+        <form class='filter'>
+            <span class='fa fa-search'></span>
+            <input ng-model='filter' ng-change='update()' name='filter' type='text' placeholder='Filter results ...'/>
+        </form>
+    </div>
+</div>
+<div class="row" id="test-results">
+    <div class='col-md-12 col-sm-12'>
+        <table class='test-results'>
+            <tr>
+                <th style='width: 150px'>Suite</th>
+                {% for environment in test_results.environments  %}
+                <th>{{environment}}</th>
+                {% endfor %}
+            </tr>
+            {% for suite, results in test_results.data.items() %}
+	    <tr id='tests-{{suite.id}}' ng-show='match("tests-{{suite.id}}") || match("details-{{suite.id}}")'>
+                <td ng-click='toggle_details("details-{{suite.id}}")'>
+		    {{suite}}
+		    <small>
+		    <i class='fa fa-chevron-down pull-right' ng-show='!details_visible["details-{{suite.id}}"]'></i>
+		    <i class='fa fa-chevron-up pull-right' ng-show='details_visible["details-{{suite.id}}"]'></i>
+		    </small>
+		</td>
+                {% for environment in test_results.environments %}
+                    {% with entry=results[environment] %}
+                        {% if entry %}
+                            {% if entry.has_failures %}
+                            <td class='fail'><a class='fa fa-times text-danger' href='#' onclick='return false' ng-click='toggle_details("details-{{suite.id}}")'></a></td>
+                            {% elif entry.has_known_failures %}
+                            <td class='xfail'><a class='fa fa-bug text-info' href='#' onclick='return false' ng-click='toggle_details("details-{{suite.id}}")'></a></td>
+                            {% else %}
+                            <td class='pass'><a class='fa fa-check text-success' href='#' onclick='return false' ng-click='toggle_details("details-{{suite.id}}")'></a></td>
+                            {% endif %}
+                        {% else %}
+                        <td></td>
+                        {% endif %}
+                    {% endwith %}
+                {% endfor %}
+            </tr>
+	    <tr id='details-{{suite.id}}' ng-show='(match("tests-{{suite.id}}") || match("details-{{suite.id}}")) && details_visible["details-{{suite.id}}"]'>
+                <td></td>
+                <td colspan="{{test_results.environments|length}}">
+		    {% with entries=results.values() %}
+                        <table class='test-results-details'>
+                            <tr>
+                                <th>
+				    <i class='fa fa-microchip'></i>
+				    Test Run
+				</th>
+                                <th>
+				    <i class='fa fa-cog'></i>
+				    Environment
+				</th>
+                                <th>
+				    <i class='fa fa-check-square-o'></i>
+				    Test Results
+				</th>
+                            </tr>
+                        {% for entry in entries %}
+                            {% for status in entry.statuses %}
+			    <tr id='details-row-{{status.id}}' ng-show='match("details-row-{{status.id}}")'>
+                                    <td>
+					<a href="{{url("testrun", args=[project.group.slug, project.slug, build.version, status.test_run.job_id])}}">
+                                            {{status.test_run.job_id}}
+                                        </a>
+                                    </td>
+                                    <td>
+					<a href="{{url("testrun", args=[project.group.slug, project.slug, build.version, status.test_run.job_id])}}">
+					    {{status.environment}}
+					</a>
+                                    </td>
+                                    <td>
+					<a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">
+                                                <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}} tests</span>
+                                                {% if status.tests_pass > 0 %}
+                                                <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} pass</span>
+                                                {% endif %}
+                                                {% if status.tests_skip > 0 %}
+                                                <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}} skip</span>
+                                                {% endif %}
+                                                {% if status.tests_fail > 0 %}
+                                                <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} fail</span>
+                                                {% endif %}
+                                                {% if status.tests_xfail > 0 %}
+                                                <span class="badge alert-info" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_xfail}} xfail</span>
+                                                {% endif %}
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                        </table>
+                    {% endwith %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+</div> <!-- ng-controller=FilterController -->
+
+<div ng-controller='FilterController' data-param="filter-metrics">
+    <h2>Metrics</h2>
+    <div class='row row-bordered'>
+	<div class='col-md-12 col-sm-12'>
+	    <form class='filter'>
+		<span class='fa fa-search'></span>
+		<input ng-model='filter' ng-change='update()' name='filter' type='text' placeholder='Filter metrics ...'/>
+	    </form>
+	</div>
+    </div>
+    <div class='metrics highlight-row'>
+	{% for suite, results in test_results.data.items() %}
+	{% for environment, entry in results.items() %}
+	{% for status in entry.statuses %}
+	{% if status.suite and status.has_metrics %}
+	<a href="{{testrun_suite_metrics_url(project.group, project, build, status)}}" id="metrics-{{status.id}}" ng-show="match('metrics-{{status.id}}')">
+	    <div class='row row-bordered'>
+		<div class='col-md-3 col-sm-3' title='Metrics suite'>
+		    <i class='fa fa-list'></i>
+		    <strong>{{status.suite}}</strong>
+		</div>
+
+		<div class='col-md-3 col-sm-3' title='Environment'>
+		    <i class='fa fa-microchip'></i>
+		    {{status.environment}}
+		</div>
+
+		<div class='col-md-4 col-sm-4' title='Metrics summary'>
+		    <i class='fa fa-line-chart'></i>
+		    {{status.metrics_summary|floatformat(3)}}
+		</div>
+
+		<div class='col-md-2 col-sm-2' title='Test runs'>
+		    <i class='fa fa-cog'></i>
+		    {{status.test_run.job_id}}
+		</div>
+	    </div>
+	</a>
+	{% endif %}
+	{% endfor %}
+	{% endfor %}
+	{% endfor %}
+    </div>
+</div> <!-- ng-content=FilterController -->
+
+</div> <!-- ng-app=Filter -->
+
+<div class='testruns highlight-row'>
+    <h2>Test runs</h2>
+    {% for test_run in test_results.test_runs %}
+    <a href="{{url("testrun", args=[project.group.slug, project.slug, build.version, test_run.job_id])}}">
+	<div class='row row-bordered'>
+	    <div class='col-md-3 col-sm-3' title='Job ID'>
+		<i class='fa fa-list'></i>
+		<strong>{{test_run.job_id}}</strong>
+	    </div>
+	    <div class='col-md-3 col-sm-3' title='Environment'>
+		<i class='fa fa-microchip'></i>
+		{{test_run.environment}}
+	    </div>
+
+	    <div class='col-md-4 col-sm-4' title='Date &amp; time'>
+		<i class='fa fa-calendar'></i>
+		{{test_run.datetime|date}}
+	    </div>
+
+	    <div class='col-md-2 col-sm-2' title='Completed: {{test_run.completed}}'>
+		{% if test_run.completed %}
+		<i class='fa fa-check-square-o'></i>
+		{% else %}
+		<i class='fa fa-square-o'></i>
+		{% endif %}
+		{{test_run.job_status|default("")}}
+	    </div>
+	</div>
+    </a>
+    {% endfor %}
+</div>
+
+
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src='{{static("squad/filter.js")}}'></script>
+{% endblock %}

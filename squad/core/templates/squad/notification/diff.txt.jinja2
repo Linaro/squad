@@ -1,0 +1,44 @@
+Tests:   {{summary.tests_total}}
+Failed:  {{summary.tests_fail}}
+Passed:  {{summary.tests_pass}}
+Skipped: {{summary.tests_skip}}
+Build:   {{build.version}}
+Details: {{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}
+
+{% for key, value in important_metadata.items() %}{{key}}: {{value|metadata_txt(key)}}
+{% endfor %}
+
+Regressions{%if previous_build %} (compared to build {{previous_build.version}}){% endif %}
+------------------------------------------------------------------------
+{% if regressions %}
+{% for env, tests in regressions.items() %}{{env}}:
+{% for test in tests %}
+  * {{test}}{% endfor %}
+{% endfor %}
+{% else %}
+(none)
+{% endif %}
+
+Failures
+------------------------------------------------------------------------
+{% if summary.failures %}
+{% for env, tests in summary.failures.items() %}{{env}}:
+{% for test in tests %}
+  * {{test.full_name}}{% for issue in known_issues %}{% if issue.test_name == test.full_name %}{% for issue_environment in issue.environment.all %}{% if env == issue_environment.slug %}
+    * Known issue: {{issue.title}}{% if issue.url %} {{issue.url}}{% endif %}{% if issue.intermittent %} (intermittent){% endif %}{% endif %}{% endfor %}{% endif %}{% endfor %}{% endfor %}
+{% endfor %}
+{% else %}
+(none)
+{% endif %}
+
+All changes{%if previous_build %} (compared to build {{previous_build.version}}){% endif %}
+------------------------------------------------------------------------
+{% if previous_build %}
+{{tabulate_test_comparison(notification.comparison, notification.comparison.diff)}}
+{% else %}
+(none)
+{% endif %}
+
+--
+{{settings.SITE_NAME}}
+{{settings.BASE_URL}}

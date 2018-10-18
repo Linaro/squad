@@ -123,15 +123,14 @@ class Notification(object):
                 html_message = html_template.render(context)
         else:
             text_message = render_to_string(
-                'squad/notification/diff.txt',
+                'squad/notification/diff.txt.jinja2',
                 context=context,
             )
             if do_html:
                 html_message = render_to_string(
-                    'squad/notification/diff.html',
+                    'squad/notification/diff.html.jinja2',
                     context=context,
                 )
-
         return (text_message, html_message)
 
     def send(self):
@@ -171,14 +170,14 @@ class PreviewNotification(Notification):
     def message(self, do_html=True, custom_email_template=None):
         txt, html = super(PreviewNotification, self).message(do_html, custom_email_template)
         txt_banner = render_to_string(
-            'squad/notification/moderation.txt',
+            'squad/notification/moderation.txt.jinja2',
             {
                 "settings": settings,
                 "status": self.status,
             }
         )
         html_banner = render_to_string(
-            'squad/notification/moderation.html',
+            'squad/notification/moderation.html.jinja2',
             {
                 "settings": settings,
                 "status": self.status,

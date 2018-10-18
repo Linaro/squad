@@ -1,0 +1,41 @@
+{% if comparison %}
+<table class='test-results'>
+  <tr>
+    <td rowspan='2'></td>
+    {% for build, environments in comparison.environments.items() %}
+    <th colspan={{environments|length}}>
+      <a href="{{project_url(build)}}">{{build.project}}, build {{build.version}}</a>
+    </th>
+    {% endfor %}
+  </tr>
+  <tr>
+    {% for build, environments in comparison.environments.items() %}
+      {% for environment in environments %}
+      <th>
+        {{environment}}
+      </th>
+      {% endfor %}
+    {% endfor %}
+  </tr>
+  {% for test, results in comparison.results.items() %}
+    <tr>
+      <th>{{test}}</th>
+      {% for build, environments in comparison.environments.items() %}
+        {% for environment in environments %}
+          {% with result=results.get((build, environment)) %}
+            <td class='{{result|slugify}}'>
+              {% if result %}
+              <a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test])}}">
+                <strong>{{result}}</strong>
+              </a>
+              {% else %}
+              <i>n/a</i>
+              {% endif %}
+            </td>
+          {% endwith %}
+        {% endfor %}
+      {% endfor %}
+    </tr>
+  {% endfor %}
+</table>
+{% endif %}

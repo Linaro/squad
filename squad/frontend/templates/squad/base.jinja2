@@ -1,0 +1,85 @@
+{% if user is not defined %}
+   {% set user=request.user %}
+{% endif %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{squad_site_name()}} - {% block page_title %}{% endblock %}</title>
+
+    <link rel="shortcut icon" href="{{static('favicon.ico')}}"/>
+
+    <link rel="stylesheet" href="{{static('bootstrap/css/bootstrap.css')}}">
+    <link rel="stylesheet" href="{{static('bootstrap/css/bootstrap-theme.css')}}">
+    <link rel="stylesheet" href="{{static('font-awesome/css/font-awesome.css')}}">
+    <link rel="stylesheet" href="{{static('main.css')}}">
+    {% block styles %}{% endblock %}
+
+  </head>
+
+  <body>
+
+    <div id='wrapper'>
+    <nav id='navbar' class="navbar navbar-default">
+      <div class="container container-fluid">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <a class="btn btn-navbar navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </a>
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">
+            <span class="fa fa-line-chart" aria-hidden="true"></span>
+            {{squad_site_name()}}
+          </a>
+        </div>
+
+        <ul class="nav navbar-nav collapse navbar-collapse">
+          <li class="{{active('home')}}"><a href="{{url('home')}}">Explore</a></li>
+          <li class="{{active('compare_projects')}}"><a href="{{url('compare_projects')}}">Compare</a></li>
+          <li class="{{active('compare_test')}}"><a href="{{url('compare_test')}}">Compare Test</a></li>
+          <li class="{{active('api-root')}}"><a href="{{url('api-root')}}">API</a></li>
+        </ul>
+
+        <ul class="nav navbar-nav collapse navbar-collapse navbar-right">
+          {% include "squad/_user_menu.jinja2" %}
+        </ul>
+
+      </div>
+    </nav>
+
+    <div id="main-content">
+      <div class="container">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+
+    <footer id='footer'>
+      <div class="container">
+        <a href="http://squad.readthedocs.io/">SQUAD</a> version {{squad_version()}}.
+        SQUAD is free software,
+        developed by <a href="https://www.linaro.org/">Linaro</a>.
+        It is distributed under the terms of the
+        <a href="https://www.gnu.org/licenses/agpl-3.0.html">GNU Affero General Public License, version 3</a> or (at your option) any later version</a>.
+        <a href="https://github.com/Linaro/squad">Source code</a> and
+        <a href="https://github.com/Linaro/squad/issues">Issue tracker</a>
+        are available at Github.
+      </div>
+    </footer>
+    </div><!-- id="wrapper" -->
+
+    <script type="text/javascript" src="{{static("jquery.js")}}"></script>
+    <script type="text/javascript" src="{{static("bootstrap/js/bootstrap.js")}}"></script>
+    <script type="text/javascript" src="{{static("angularjs/angular.js")}}"></script>
+    <script type="text/javascript" src="{{static("lodash.js")}}"></script>
+    <script type="text/javascript" src="{{static("floatThread/dist/jquery.floatThead.js")}}"></script>
+    <script type="text/javascript" src="{{static("squad/common.js")}}"></script>
+    {% block javascript %}{% endblock %}
+
+  </body>
+</html>
+

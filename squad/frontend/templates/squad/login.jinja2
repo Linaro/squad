@@ -1,0 +1,60 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+{% if form.errors and not form.non_field_errors %}
+<p class="errornote">
+{% trans form_errors=form.errors.items|length %}
+Please correct the error below.
+{% pluralize form_errors %}
+Please correct the errors below.
+{% endtrans %}
+</p>
+{% endif %}
+
+{% if form.non_field_errors %}
+{% for error in form.non_field_errors() %}
+<p class="errornote">
+{{ error }}
+</p>
+{% endfor %}
+{% endif %}
+
+<div class='col-md-4 col-md-offset-4'>
+  <div class='panel panel-default'>
+    <div class='panel-heading'>
+      <h3 class="panel-title">{% trans %} Log in {% endtrans %}</h3>
+    </div>
+    <div class='panel-body'>
+      {% autoescape off %}
+        {{login_message('div', 'alert alert-info')}}
+      {% endautoescape %}
+      <form action="{{ app_path }}" method="post" id="login-form">
+        {{ csrf_input }}
+        <div class="form-group">
+          {{ form.username.errors }}
+          <label for="id_username" class="sr-only">Username</label>
+          <input type="text" id="id_username" name="username" class="form-control" placeholder="Username" required autofocus>
+        </div>
+        <div class="form-group">
+          {{ form.password.errors }}
+          <label for="id_password" class="sr-only">Password</label>
+          <input type="password" id="id_password" name="password" class="form-control" placeholder="Password" required>
+          <input type="hidden" name="next" value="{{ next }}" />
+        </div>
+        {# We currently do not implement password reset feature. If that's needed, check out link below #}
+        {# https://github.com/django/django/blob/c49ea6f5911296dcb40190c905e38b43cdc7c7a3/docs/ref/contrib/admin/index.txt#L3081 #}
+        {% set password_reset_url = url('admin_password_reset') %}
+        {% if password_reset_url %}
+        <div class="password-reset-link">
+          <a href="{{ password_reset_url }}">{% trans %} Forgotten your password or username? {% endtrans %}</a>
+        </div>
+        {% endif %}
+        <div class="form-group">
+          <input class='btn btn-default' type="submit" value="{% trans %} Log in {% endtrans %}" />
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

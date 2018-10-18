@@ -1,0 +1,37 @@
+<h2 class="page-header well">
+    <a class="h2 text-primitive" href="{{group_url(project.group)}}">{{project.group.name}}</a>
+    » <a class="h2 text-primitive" href="{{project_url(project)}}">{{project.name}}</a>
+    » {% include "squad/_unfinished_build.jinja2" %} <a class="h2 text-primary" href="{{build_url(build)}}">Build {{build.version}}</a>
+</h2>
+
+<ul class="page-header nav nav-pills">
+    {% with url_name=request.resolver_match.url_name %}
+
+    <li role="presentation" {% if url_name == 'build' %}class="active"{% endif %}>
+        <a href="{{build_url(build)}}">
+            Build summary
+        </a>
+    </li>
+    <li role="presentation" {% if url_name == 'tests' or url_name == 'test_history' %}class="active"{% endif %}>
+        <a href="{{build_section_url(build, 'tests')}}">
+            All test results
+        </a>
+    </li>
+    <li role="presentation" {% if url_name == 'build_metadata' %}class="active"{% endif %}>
+        <a href="{{build_section_url(build, 'build_metadata')}}">
+        Metadata
+        </a>
+    </li>
+    {% if build.test_jobs.count %}
+    <li role="presentation" {% if url_name == 'testjobs' %}class="active"{% endif %}>
+        <a href="{{build_section_url(build, 'testjobs')}}">
+            Test jobs
+        {% for i in build|filter_jobs %}
+        <span class="badge badge-{{ i.0 }}" data-toggle="tooltip" data-placement="top" title="{{ i.0 }}">{{ i.1 }}</span>
+        {% endfor %}
+        </a>
+    </li>
+    {% endif %}
+
+    {% endwith %}
+</ul>

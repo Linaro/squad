@@ -1,0 +1,27 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+
+{% with status=project.status %}
+
+{% include "squad/project-nav.jinja2" %}
+
+{% if last_build %}
+<div>
+<h2>
+  {% with build=last_build %}
+  Last build - {% include "squad/_unfinished_build.jinja2" %}
+  {% include "squad/_regressions_and_fixes.jinja2" %}
+  {% endwith %}
+  <a class="h2 text-primary" href="{{project_url(last_build)}}">{{last_build.version}}</a> {{last_build.datetime|date}} {{last_build.datetime|naturaltime}}
+</h2>
+
+{% include "squad/_metadata.jinja2" %}
+
+<h2>Latest builds</h2>
+{% include "squad/_builds_table.jinja2" %}
+</div>
+{% endif %}
+
+{% endwith %}
+{% endblock %}
