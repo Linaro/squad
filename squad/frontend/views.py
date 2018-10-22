@@ -23,7 +23,7 @@ def home(request):
     context = {
         'groups': Group.objects.accessible_to(request.user),
     }
-    return render(request, 'squad/index.html', context)
+    return render(request, 'squad/index.jinja2', context)
 
 
 def group(request, group_slug):
@@ -32,7 +32,7 @@ def group(request, group_slug):
         'group': group,
         'projects': group.projects.accessible_to(request.user),
     }
-    return render(request, 'squad/group.html', context)
+    return render(request, 'squad/group.jinja2', context)
 
 
 def __get_statuses__(project, limit=None):
@@ -63,7 +63,7 @@ def project(request, group_slug, project_slug):
         'last_build': last_build,
         'metadata': metadata,
     }
-    return render(request, 'squad/project.html', context)
+    return render(request, 'squad/project.jinja2', context)
 
 
 @auth
@@ -153,7 +153,7 @@ def builds(request, group_slug, project_slug):
         'project': project,
         'statuses': statuses,
     }
-    return render(request, 'squad/builds.html', context)
+    return render(request, 'squad/builds.jinja2', context)
 
 
 class TestResultTable(object):
@@ -232,7 +232,7 @@ def build(request, group_slug, project_slug, version):
         'metadata': sorted(build.important_metadata.items()),
         'has_extra_metadata': build.has_extra_metadata,
     }
-    return render(request, 'squad/build.html', context)
+    return render(request, 'squad/build.jinja2', context)
 
 
 @auth
@@ -250,7 +250,7 @@ def build_metadata(request, group_slug, project_slug, version):
         'build': build,
         'metadata': sorted(build.metadata.items()),
     }
-    return render(request, 'squad/build_metadata.html', context)
+    return render(request, 'squad/build_metadata.jinja2', context)
 
 
 @auth
@@ -279,7 +279,7 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
         'tests_status': tests_status,
         'metrics_status': metrics_status,
     }
-    return render(request, 'squad/test_run.html', context)
+    return render(request, 'squad/test_run.jinja2', context)
 
 
 def __test_run_suite_context__(request, group_slug, project_slug, build_version, job_id, suite_slug):
@@ -322,7 +322,7 @@ def test_run_suite_tests(request, group_slug, project_slug, build_version, job_i
     page = request.GET.get('page', '1')
     context['tests'] = paginator.page(page)
 
-    return render(request, 'squad/test_run_suite_tests.html', context)
+    return render(request, 'squad/test_run_suite_tests.jinja2', context)
 
 
 @auth
@@ -345,7 +345,7 @@ def test_run_suite_metrics(request, group_slug, project_slug, build_version, job
     page = request.GET.get('page', '1')
     context['metrics'] = paginator.page(page)
 
-    return render(request, 'squad/test_run_suite_metrics.html', context)
+    return render(request, 'squad/test_run_suite_metrics.jinja2', context)
 
 
 def __download__(filename, data, content_type=None):
@@ -441,7 +441,7 @@ def metrics(request, group_slug, project_slug):
         "metrics": metrics,
         "data": data,
     }
-    return render(request, 'squad/metrics.html', context)
+    return render(request, 'squad/metrics.jinja2', context)
 
 
 def test_job(request, testjob_id):
@@ -454,4 +454,4 @@ def test_job(request, testjob_id):
         context = {
             'testjob': testjob
         }
-        return render(request, 'squad/testjob.html', context)
+        return render(request, 'squad/testjob.jinja2', context)

@@ -100,10 +100,26 @@ ROOT_URLCONF = 'squad.urls'
 
 TEMPLATES = [
     {
+        'BACKEND': 'django.template.backends.jinja2.Jinja2',
+        # look for templates explicitly under squad.api so that Django REST
+        # Framework finds rest_framework/api.html in there
+        'DIRS': [os.path.join(BASE_DIR, path) for path in ['squad/frontend/templates', 'squad/core/templates', 'squad/ci/templates']],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'environment': 'squad.jinja2.environment',
+            'extensions': ['jinja2.ext.i18n', 'jinja2.ext.with_'],
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+    {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         # look for templates explicitly under squad.api so that Django REST
         # Framework finds rest_framework/api.html in there
-        'DIRS': [os.path.join(BASE_DIR, 'squad/frontend/templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'squad/frontend/templates/django/')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -114,11 +130,6 @@ TEMPLATES = [
             ],
         },
     },
-    {
-        'BACKEND': 'django.template.backends.jinja2.Jinja2',
-        'DIRS': [],
-        'APP_DIRS': True,
-    }
 ]
 
 WSGI_APPLICATION = 'squad.wsgi.application'
@@ -171,6 +182,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+DATE_FORMAT = 'N j, Y, P'
 
 # staticfile courtesy of whitenoise
 # http://whitenoise.evans.io/en/stable/django.html

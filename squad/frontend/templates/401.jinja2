@@ -1,0 +1,6 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+<h1>Authentication needed!</h1>
+<a href="/login?next={{request.path}}">Go to login page</a>
+{% endblock %}

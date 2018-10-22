@@ -1,0 +1,88 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+{% raw %}
+<div ng-app='SquadCompare' ng-controller='CompareController'>
+  <h1>Compare (<span ng-bind='selectedSuite'></span>/<span ng-bind='selectedTest'></span>)</h1>
+  <div class="alert alert-warning" role="alert" ng-show="hasKnownIssue" ng-repeat="knownIssue in knownIssues">
+      <a href="{{ knownIssue.url }}"><span ng-bind="knownIssue.title"></span></a>
+      <p><span ng-bind="knownIssue.notes"></span></p>
+  </div>
+
+  <div class='row'>
+	<div class='col-md-4'>
+	  <div class='panel panel-default'>
+        <div class='panel-heading'>
+          Projects
+        </div>
+        <div class='panel-body'>
+          <div class="input-group">
+            <select class="form-control project-select" multiple="multiple" name="selectedProjects[]"></select>
+            <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+          </div>
+        </div>
+      </div>
+	</div>
+	<div class='col-md-4'>
+	  <div class='panel panel-default'>
+		<div class='panel-heading'>
+		  Suite
+		</div>
+        <div class='panel-body'>
+          <div class="input-group">
+            <select class="form-control suite-select" name="selectedSuite"></select>
+            <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+          </div>
+		</div>
+	  </div>
+	</div>
+
+	<div class='col-md-4'>
+	  <div class='panel panel-default'>
+		<div class='panel-heading'>
+		  Test
+		</div>
+        <div class='panel-body'>
+          <div class="input-group">
+            <select class="form-control test-select" name="selectedTest"></select>
+            <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+          </div>
+		</div>
+	  </div>
+	</div>
+
+  </div>
+
+  <div ng-show='showResults' class='row' ng-repeat="project in selectedProjects">
+    <div class='col-md-12'>
+      <h2><span ng-bind='project.full_name'></span> <i ng-show='showProgress[project.id]' class="fa fa-gear fa-spin"></i></h2>
+      <table class='test-results'>
+          <thead>
+            <th>Version</th>
+            <th>Date</th>
+            <th ng-repeat="environment in projectEnvironments[project.id]"><span ng-bind='environment.environment.name || environment.environment.slug'></span></th>
+          </thead>
+          <tr ng-repeat='build in projectBuilds[project.id]'>
+              <td><a href="{{build.build_url_path}}" target="_self"><span ng-bind='build.build.version'></span></a></td>
+              <td><span ng-bind='build.build.created_at'></span></td>
+              <td class="{{ testResult.test.status }}" ng-repeat='testResult in build.environments'>
+                  <a ng-show="{{ testResult.test.status != undefined }}" href="{{testResult.test_url_path}}" target="_self"><span ng-bind='testResult.test.status'></span></a>
+                  <span ng-show="{{ testResult.test.status == undefined }}">n/a</span>
+              </td>
+          </tr>
+      </table>
+      <button type="button" class="btn btn-default" ng-click="loadMoreData(project.id)">Load more</button>
+    </div>
+  </div>
+</div> <!-- ng-app=Compare -->
+{% endraw %}
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src='{{static("select2.js/select2.min.js")}}'></script>
+<script type="text/javascript" src='{{static("squad/compare.js")}}'></script>
+{% endblock %}
+
+{% block styles %}
+<link href='{{static("select2.js/select2.css")}}' rel="stylesheet" />
+{% endblock %}

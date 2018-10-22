@@ -1,0 +1,71 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+{% include "squad/build-nav.jinja2" %}
+<h1>Test Jobs</h1>
+<div ng-app='SquadResubmit'>
+{% for testjob in testjobs %}
+<div class="row row-bordered project">
+    <div class="col-md-12 col-sm-12 project-listing-info">
+        <div title='Test Job'>
+            {% if not testjob.failure %}
+                <span class="badge alert-success"><i class='fa fa-check'></i></span>
+            {% else %}
+                <span class="badge alert-danger"><i class="fa fa-close"></i></span>
+            {% endif %}
+            {% if testjob.url %}<a href="{{ testjob.url }}">{% endif %}{{ testjob.job_id }}, {{ testjob.environment }}, {{ testjob.name }} ({{testjob.job_status}}){% if testjob.url %}</a>{% endif %}
+            {% if testjob.submitted %}
+                <span class="badge alert-success">Submitted <i class='fa fa-check'></i></span>
+            {% else %}
+                <span class="badge alert-danger">Not submitted <i class="fa fa-close"></i></span>
+            {% endif %}
+            {% if testjob.fetched %}
+                <span class="badge alert-success">Fetched <i class='fa fa-check'></i></span>
+            {% else %}
+                <span class="badge alert-danger">Not fetched <i class="fa fa-close"></i></span>
+                Last fetch attempt: {{ testjob.last_fetch_attempt|naturaltime }}
+            {% endif %}
+
+            {% if testjob.testrun %}
+                <a href="{{project_url(testjob.testrun)}}">Test run #{{testjob.testrun.job_id}}</a>
+            {% endif %}
+            {% if testjob.parent_job %}
+                <a href="{{ testjob.parent_job.url }}">Resubmitted from #{{testjob.parent_job.job_id}}</a>
+            {% endif %}
+            {% if testjob.failure %}
+            <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-failure-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-failure-{{testjob.pk}}"><span class="glyphicon glyphicon-alert" aria-hidden="true"></span></button>
+            {% endif %}
+            {% if testjob.definition %}
+            <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-definition-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-definition-{{testjob.pk}}"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></button>
+            {% endif %}
+            {% if user.is_staff or user.is_superuser %}
+            <div class='pull-right' ng-controller='ResubmitController'>
+                <a class="btn" ng-click="resubmit({{testjob.id}}, true)" ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}" ng-disabled="done" ><span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}" ng-disabled="done"></span> {{testjob.job_id}} - force resubmit</a>
+            {% if testjob.can_resubmit %}
+                <a class="btn" ng-click="resubmit({{testjob.id}}, false)" ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}" ng-disabled="done" ><span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}" ng-disabled="done"></span> {{testjob.job_id}} - resubmit</a>
+            {% endif %}
+            </div>
+            {% endif %}
+
+        </div>
+        {% if testjob.failure %}
+        <div class="collapse" id="collapse-failure-{{testjob.pk}}">
+            <h4>Error message</h4>
+            <pre>{{ testjob.failure }}</pre>
+        </div>
+        {% endif %}
+        {% if testjob.definition %}
+        <div class="collapse" id="collapse-definition-{{testjob.pk}}">
+            <h4>Definition</h4>
+            <pre>{{ testjob.definition }}</pre>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+</div>
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript" src="{{static("squad/resubmit.js")}}"></script>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+
+<h2 class="page-header well">
+    <a class="h2 text-primitive" href="{{group_url(project.group)}}">{{project.group.name}}</a>
+    » <a class="h2 text-primitive" href="{{project_url(project)}}">{{project.name}}</a>
+    » <a class="h2 text-prmitive" href="{{build_url(build)}}">{{build.version}}</a>
+    » <a class="h2 text-primary" href="{{project_url(test_run)}}">{{test_run.job_id}} </a>
+    <br>
+      <i class='fa fa-microchip'></i>
+      Test environment: <strong>{{test_run.environment}}</strong>
+      {% if test_run.environment.description %}
+      <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
+      {% endif %}
+      {% if test_run.environment.description %}
+      <div class='alert alert-info' id='environment-description' style='display: none'>
+	{{test_run.environment.description|markdown}}
+      </div>
+    {% endif %}
+</h2>
+
+<h2>Test run metadata</h2>
+{% include "squad/_metadata.jinja2" %}
+
+<h2>Related downloads</h2>
+
+{% if test_run.log_file|length > 0 %}
+<a href="log" class='btn btn-default'>
+    <i class='fa fa-file-text-o'></i>
+    Log file
+</a>
+{% endif %}
+
+{% if test_run.tests_file|length > 0 %}
+<a href="tests" class='btn btn-default'>
+    <i class='fa fa-file-code-o'></i>
+    Tests file
+</a>
+{% endif %}
+
+{% if test_run.metrics_file|length > 0 %}
+<a href="metrics" class='btn btn-default'>
+    <i class='fa fa-file-code-o'></i>
+    Metrics file
+</a>
+{% endif %}
+
+{% if test_run.metadata_file|length > 0 %}
+<a href="metadata" class='btn btn-default'>
+    <i class='fa fa-file-code-o'></i>
+    Metadata file
+</a>
+{% endif %}
+
+{% if attachments|length > 0 %}
+{% for file, file_type, length in attachments %}
+<a href="attachments/{{file}}" class='btn btn-default'>
+    {% if file_type %}
+    <i class='fa fa-file-{{file_type}}-o'></i>
+    {% else %}
+    <i class='fa fa-file-o'></i>
+    {% endif %}
+    {{file}}
+    ({{length|filesizeformat}})
+</a>
+{% endfor %}
+{% endif %}
+
+<h2>Test results</h2>
+<div class='test-results highlight-row'>
+{% for status in tests_status %}
+<a href="{{testrun_suite_tests_url(status.test_run.build.project.group, status.test_run.build.project, status.test_run.build, status)}}" class="status-fail{{status.tests_fail}}" id='tests-{{status.id}}'>
+<div class='row row-bordered {% if status.tests_fail%}fail{% else %}nofail{%endif%}'>
+    <div class='col-md-3 col-sm-3' title='Test suite'>
+        <i class='fa fa-list'></i>
+        <strong>{{status.suite}}</strong>
+    </div>
+
+    <div class='col-md-3 col-sm-3' title='Environment'>
+        <i class='fa fa-microchip'></i>
+        {{status.test_run.environment}}
+    </div>
+
+    <div class='col-md-4 col-sm-4' title='Test results'>
+        <i class='fa fa-check-square-o'></i>
+        <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}} tests</span>
+        {% if status.tests_pass > 0 %}
+        <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} pass</span>
+        {% endif %}
+        {% if status.tests_skip > 0 %}
+        <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}} skip</span>
+        {% endif %}
+        {% if status.tests_fail > 0 %}
+        <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} fail</span>
+        {% endif %}
+    </div>
+
+    <div class='col-md-2 col-sm-2' title='Test run'>
+        <i class='fa fa-cog'></i>
+        {{status.test_run.job_id}}
+    </div>
+</div>
+</a>
+{% endfor %}
+</div>
+
+<h2>Metrics</h2>
+<div class='metrics highlight-row'>
+{% for status in metrics_status %}
+<a href="{{testrun_suite_metrics_url(status.test_run.build.project.group, status.test_run.build.project, status.test_run.build, status)}}" id="metrics-{{status.id}}" ng-show="match('metrics-{{status.id}}')">
+<div class='row row-bordered'>
+    <div class='col-md-3 col-sm-3' title='Metrics suite'>
+        <i class='fa fa-list'></i>
+        <strong>{{status.suite}}</strong>
+    </div>
+
+    <div class='col-md-3 col-sm-3' title='Environment'>
+        <i class='fa fa-microchip'></i>
+        {{test_run.environment}}
+    </div>
+
+    <div class='col-md-4 col-sm-4' title='Metrics summary'>
+        <i class='fa fa-line-chart'></i>
+        {{status.metrics_summary|floatformat(3)}}
+    </div>
+
+    <div class='col-md-2 col-sm-2' title='Test runs'>
+        <i class='fa fa-cog'></i>
+        {{test_run.job_id}}
+    </div>
+</div>
+</a>
+{% endfor %}
+</div>
+
+{% endblock %}

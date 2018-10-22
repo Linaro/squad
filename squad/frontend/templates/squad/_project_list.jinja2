@@ -1,0 +1,67 @@
+<div class='highlight-row'>
+{% for project in projects %}
+<div class="row row-bordered project">
+    {% with status=project.status %}
+    <a href="{{project_url(project)}}">
+    <div class="col-md-4 col-sm-4">
+        <strong>
+            {% if not hide_group %}{{project.group.name}}/{% endif %}{{project.name}}
+        </strong>
+        {% if project.description%}
+        <div class='description-{{project.id}}'>
+            {{project.description|urlize|truncatechars_html(50)}}
+            {% if project.description|length > 50 %}
+            <a class='toggle-description' style='cursor: pointer' onclick='$(".description-{{project.id}}").toggle(); return false'>»</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-md-5 col-sm-5 project-listing-info">
+        {% if status.has_tests %}
+        <div title='Test results'>
+            <i class='fa fa-check-square-o'></i>
+            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}} total</span>
+            {% if status.tests_pass > 0 %}
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} pass</span>
+            {% endif %}
+            {% if status.tests_skip > 0 %}
+            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}} skip</span>
+            {% endif %}
+            {% if status.tests_fail > 0 %}
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} fail</span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if status.has_metrics %}
+        <div title='Metrics summary'>
+            <i class='fa fa-line-chart'></i>
+            {{status.metrics_summary|floatformat(3)}}
+         </div>
+        {% endif %}
+    </div>
+    <div class="col-md-3 col-sm-3 project-listing-info">
+        {% if status.last_updated %}
+        <div>
+            <i class='fa fa-clock-o'>&nbsp;</i>
+            {{status.last_updated|naturaltime}}
+        </div>
+        <div>
+            <i class='fa fa-clock-o' style='color: transparent'>&nbsp;</i>
+            {{status.last_updated|date}}
+        </div>
+        {% endif %}
+    </div>
+    </a>
+
+    {% if project.description and project.description|length > 50 %}
+    <div class='description-{{project.id}} description col-md-12 col-sm-12' style='display: none'>
+        <span >{{project.description|urlize}}</span>
+        <a class='toggle-description' style='cursor: pointer' onclick='$(".description-{{project.id}}").toggle(); return false'>«</a>
+    </div>
+    {% endif %}
+
+    {% endwith %}
+</div>
+{% endfor %}
+</div>

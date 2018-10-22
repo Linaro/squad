@@ -1,0 +1,59 @@
+<html>
+  <head>
+    <style type='text/css'>
+body {
+  font-family: sans-serif;
+  font-size: 12px;
+}
+h1 {
+  border-bottom: 1px solid #babdb6;
+}
+table.table-bordered {
+  border-collapse: collapse;
+}
+table.table-bordered td,
+table.table-bordered th {
+  border: 1px solid #2e3436;
+  padding: 0.25em;
+}
+table.table-bordered td.pass {
+  background: #8ae234;
+  color: #214203;
+}
+table.table-bordered td.fail {
+  background: #ef2929;
+  color: #260000;
+}
+.footer {
+  padding: 0.25em;
+  margin-top: 2em;
+}
+.footer, .footer a:link, .footer a:visited {
+  color: #babdb6;
+}
+    </style>
+  </head>
+  <body>
+    <h1>Failed to retrieve test results or test job finished with error.</h1>
+    <ul>
+      <li>URL: <a href="{{test_job.url}}">{{test_job.backend.name}} - {{test_job.job_id}}</a></li>
+      <li>Build: <a href="{{settings.BASE_URL}}/{{test_job.target}}/build/{{test_job.build}}">{{settings.BASE_URL}}/{{test_job.target}}/build/{{test_job.build}}</a></li>
+    </ul>
+    <h2>Reason</h2>
+    <p>{{test_job.failure|safe}}</p>
+    <p>Failed test job was automatically resubmitted as: <a href="{{resubmitted_job.url}}">{{resubmitted_job.backend.name}} - {{resubmitted_job.job_id}}</a>.<br/>
+       Original test job was resubmitted {{resubmitted_job.resubmitted_count}} time(s).
+    </p>
+    <h2>Details</h2>
+    <ul>
+      <li>project: {{test_job.target|safe}}</li>
+      <li>version: {{test_job.version|safe}}</li>
+      <li>environment: {{test_job.environment|safe}}</li>
+      <li>status: {{test_job.job_status|safe}}</li>
+      <li>name: {{test_job.name|safe}}</li>
+    </ul>
+    <div class='footer'>
+    Sent by <a href="{{settings.BASE_URL}}">{{settings.SITE_NAME}}</a>
+    </div>
+  </body>
+</html>

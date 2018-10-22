@@ -20,10 +20,10 @@ def compare_projects(request):
         'comparison': comparison,
     }
 
-    return render(request, 'squad/compare_projects.html', context)
+    return render(request, 'squad/compare_projects.jinja2', context)
 
 
 def compare_test(request):
 
     context = {}
-    return render(request, 'squad/compare.html', context)
+    return render(request, 'squad/compare.jinja2', context)

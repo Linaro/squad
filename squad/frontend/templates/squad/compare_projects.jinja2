@@ -1,0 +1,27 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+<h1>Compare projects</h1>
+
+{% include "squad/_test_results_table.jinja2" %}
+
+<h2>Select projects to compare</h2>
+<form>
+  {% for project in projects %}
+  <div class="checkbox">
+    <label>
+      <input type='checkbox' name='project' value='{{project}}'
+       {% if project in selected %}
+       checked
+       {% endif %}
+       />
+      {{project}}
+    </label>
+  </div>
+  {% endfor %}
+  <input type='submit' value='Compare' class='btn btn-default'/>
+</form>
+{% endblock %}
+{% block javascript %}
+<script type="text/javascript" src='{{static("squad/table.js")}}'></script>
+{% endblock %}

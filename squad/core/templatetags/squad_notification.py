@@ -1,11 +1,8 @@
-from django import template
 from squad.core.utils import format_metadata
+from squad.jinja2 import register_global_function, register_filter
 
 
-register = template.Library()
-
-
-@register.simple_tag
+@register_global_function
 def tabulate_test_comparison(comparison, test_results=None):
     if test_results is None:
         test_results = comparison.results
@@ -38,7 +35,7 @@ def tabulate_test_comparison(comparison, test_results=None):
     return "\n".join(text)
 
 
-@register.filter
+@register_filter
 def metadata_txt(v, key=None):
     separator = " "
     if key:

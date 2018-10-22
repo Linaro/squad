@@ -1,0 +1,68 @@
+<div class='highlight-row'>
+{% for status in statuses %}
+{% with build=status.build %}
+<a href="{{build_url(build)}}">
+<div class="row row-bordered build">
+    <div class="col-md-2 col-sm-2">
+        {% include "squad/_unfinished_build.jinja2" %}
+        {% include "squad/_regressions_and_fixes.jinja2" %}
+        <strong>
+            {{build.version}}
+        </strong>
+    </div>
+    <div class='col-md-3 col-sm-3'>
+        <div title='Test run status'>
+            <i class='fa fa-cog'></i>
+            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.test_runs_total}} test runs</span>
+            {% if status.test_runs_completed > 0 %}
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Completed">{{status.test_runs_completed}} completed</span>
+            {% endif %}
+            {% if status.test_runs_incomplete > 0 %}
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Incomplete">{{status.test_runs_incomplete}} incomplete</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-4">
+        {% if status.has_tests %}
+        <div title='Test results'>
+            <i class='fa fa-check-square-o'></i>
+            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}} tests</span>
+            {% if status.tests_pass > 0 %}
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} pass</span>
+            {% endif %}
+            {% if status.tests_skip > 0 %}
+            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}} skip</span>
+            {% endif %}
+            {% if status.tests_fail > 0 %}
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} fail</span>
+            {% endif %}
+            {% if status.tests_xfail > 0 %}
+            <span class="badge alert-info" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_xfail}} xfail</span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if status.has_metrics %}
+        <div title='Metrics summary'>
+            <i class='fa fa-line-chart'></i>
+            {{status.metrics_summary|floatformat(3)}}
+         </div>
+        {% endif %}
+    </div>
+    <div class="col-md-3 col-sm-3">
+        {% if status.last_updated %}
+        <div>
+            <i class='fa fa-clock-o'>&nbsp;</i>
+            {{status.last_updated|naturaltime}}
+        </div>
+        <div>
+            <i class='fa fa-clock-o' style='color: transparent'>&nbsp;</i>
+            {{status.last_updated|date}}
+        </div>
+        {% endif %}
+    </div>
+</div>
+</a>
+{% endwith %}
+{% endfor %}
+</div>

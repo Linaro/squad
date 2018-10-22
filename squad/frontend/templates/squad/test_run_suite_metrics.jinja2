@@ -1,0 +1,57 @@
+{% extends "squad/base.jinja2" %}
+{% block content %}
+
+<h2 class="page-header well">
+    <a class="h2 text-primitive" href="{{group_url(project.group)}}">{{project.group.name}}</a>
+    » <a class="h2 text-primitive" href="{{project_url(project)}}">{{project.name}}</a>
+    » <a class="h2 text-primitive" href="{{build_url(build)}}">Build {{build.version}}</a>
+    » <a class="h2 text-primitive" href="{{project_url(test_run)}}">Test run {{test_run.job_id}}</a>
+    » Test results for {{suite.slug}}
+</h2>
+
+<h2>
+    Test environment: {{test_run.environment}}
+    {% if test_run.environment.description %}
+    <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
+    {% endif %}
+</h2>
+{% if test_run.environment.description %}
+<div class='alert alert-info' id='environment-description' style='display: none'>
+    {{test_run.environment.description|markdown}}
+</div>
+{% endif %}
+
+<h2>
+    Suite: {{suite.slug}}
+    {% if status.suite_version %}
+    {{status.suite_version.version}}
+    {% endif %}
+    {% if suite.metadata.description %}
+    <a href='#' onclick="$('#tests-{{suite.slug}}-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
+    {% endif %}
+</h2>
+
+{% if suite.metadata.description %}
+<div class='alert alert-info' id='tests-{{suite.slug}}-description' style='display: none'>
+    {{suite.metadata.description|markdown}}
+</div>
+{% endif %}
+
+<a name="tests"></a>
+<h2>
+    Metrics
+</h2>
+
+{% with items=metrics %}
+    {% include "squad/_pagination.jinja2" %}
+{% endwith %}
+
+{% for metric in metrics %}
+    {% include "squad/_test_run_metric.jinja2" %}
+{% endfor %}
+
+{% with items=metrics %}
+    {% include "squad/_pagination.jinja2" %}
+{% endwith %}
+
+{% endblock %}

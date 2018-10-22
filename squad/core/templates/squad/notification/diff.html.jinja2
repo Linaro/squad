@@ -1,0 +1,120 @@
+{% extends "squad/notification/base.jinja2" %}
+{% block content %}
+    <h1>Summary</h1>
+    <div class='row'><div class='col-3 key'>Tests:   </div>  <div class='col-9'>{{summary.tests_total}} </div></div>
+    <div class='row'><div class='col-3 key'>Failed:  </div>  <div class='col-9'>{{summary.tests_fail}}  </div></div>
+    <div class='row'><div class='col-3 key'>Passed:  </div>  <div class='col-9'>{{summary.tests_pass}}  </div></div>
+    <div class='row'><div class='col-3 key'>Skipped: </div>  <div class='col-9'>{{summary.tests_skip}}  </div></div>
+    <div class='row'><div class='col-3 key'>Build:   </div>  <div class='col-9'>{{build.version}}       </div></div>
+    <div class='row'><div class='col-12 key'> <a href="{{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}">See details</a> </div></div>
+    {% if important_metadata %}
+    {% for key, value in important_metadata.items() %}
+      <div class='row'>
+        <div class='col-3 key'>{{key}}</div>
+        <div class='col-9'>{{value|metadata_value|urlize}}</div>
+      </div>
+      {% endfor %}
+    {% endif %}
+
+
+    <h1>Regressions{%if previous_build %} (compared to build {{previous_build.version}}){% endif %}</h1>
+    {% if regressions %}
+    <ul>
+      {% for env, tests in regressions.items() %}
+      <li><strong>{{env}}:</strong>
+        <ul>
+          {% for test in tests %}
+          <li>{{test}}</li>
+          {% endfor %}
+        </ul>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <em>(none)</em>
+    {% endif %}
+
+
+    <h1>Failures</h1>
+    {% if summary.failures %}
+    <ul>
+      {% for env, tests in summary.failures.items() %}
+      <li>
+        <strong>{{env}}:</strong>
+        <ul>
+          {% for test in tests %}
+          <li>
+            <a href="{{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}/testrun/{{test.test_run.job_id}}">{{test.full_name}}</a>
+            {% if test.test_run.log_file %}
+            <a href="{{settings.BASE_URL}}/{{build.project}}/build/{{build.version}}/testrun/{{test.test_run.job_id}}/log">(log)</a>
+            {% endif %}
+            {% for issue in known_issues %}
+                {% if issue.test_name == test.full_name %}
+                    {% for issue_environment in issue.environment.all() %}
+                        {% if env == issue_environment.slug %}
+                            <br/>
+                            Known issue:
+                            {% if issue.url %}
+                                <a href="{{issue.url}}">{{issue.title}}</a>
+                            {% else %}
+                                {{issue.title}}
+                            {% endif %}
+                            {% if issue.intermittent %}
+                            (intermittent)
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+          </li>
+          {% endfor %}
+        </ul>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <em>(none)</em>
+    {% endif %}
+
+
+    <h1>All changes detected{%if previous_build %} (compared to build {{previous_build.version}}){% endif %}</h1>
+    {% with comparison=notification.comparison %}
+    <table>
+      <tr>
+        <td rowspan='2'></td>
+        {% for environment in comparison.all_environments %}
+        <th colspan='{{comparison.builds|length}}'>
+          {{environment}}
+        </th>
+        {% endfor %}
+      </tr>
+      <tr>
+        {% for environment in comparison.all_environments %}
+        {% for build in comparison.builds %}
+        <th>
+          {{build.version}}
+        </th>
+        {% endfor %}
+        {% endfor %}
+      </tr>
+      {% for test, results in comparison.diff.items() %}
+      <tr>
+        <th>{{test}}</th>
+        {% for environment in comparison.all_environments %}
+        {% for build in comparison.builds %}
+        {% with result=results.get((build, environment)) %}
+        <td class='{{result}}'>
+          {% if result %}
+          <strong>{{result}}</strong>
+          {% else %}
+          <i>n/a</i>
+          {% endif %}
+        </td>
+        {% endwith %}
+        {% endfor %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
+    {% endwith %}
+{% endblock %}

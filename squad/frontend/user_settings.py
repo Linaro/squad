@@ -37,7 +37,7 @@ def profile(request):
             context = {'form': form}
     else:
         context = {'form': ProfileForm(instance=request.user)}
-    return render(request, 'squad/user_settings/profile.html', context)
+    return render(request, 'squad/user_settings/profile.jinja2', context)
 
 
 @login_required
@@ -54,7 +54,7 @@ def api_token(request):
         return redirect(reverse('settings-api-token'))
 
     context = {'token': token}
-    return render(request, 'squad/user_settings/api_token.html', context)
+    return render(request, 'squad/user_settings/api_token.jinja2', context)
 
 
 @login_required
@@ -79,7 +79,7 @@ def subscriptions(request):
         'subscriptions': subscriptions,
         'groups': groups
     }
-    return render(request, 'squad/user_settings/subscriptions.html', context)
+    return render(request, 'squad/user_settings/subscriptions.jinja2', context)
 
 
 @login_required

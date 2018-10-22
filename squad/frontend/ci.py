@@ -25,4 +25,4 @@ def testjobs(request, group_slug, project_slug, build_version):
         "testjobs": testjobs,
     }
 
-    return render(request, 'squad/testjobs.html', context)
+    return render(request, 'squad/testjobs.jinja2', context)

@@ -1,0 +1,15 @@
+<div class='metadata'>
+    {% for key, value in metadata %}
+    <div class='row row-bordered'>
+        <div class='col-md-3 col-sm-3'>
+            <strong>{{key}}</strong>
+        </div>
+        <div class='col-md-9 col-sm-9'>
+            {{value|metadata_value|urlize}}
+        </div>
+    </div>
+    {% endfor %}
+    {% if has_extra_metadata %}
+    <a class='extra-metadata-button' href='{{url("build_metadata", args=[project.group.slug, project.slug, build.version])}}'><small><i class='fa fa-plus'></i> Display more</small></a>
+    {% endif %}
+</div>

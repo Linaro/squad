@@ -1,0 +1,43 @@
+
+<div class='row row-bordered'>
+    <div class='col-md-10 col-sm-10'>
+        <i class='fa fa-line-chart'></i>
+        {{metric.name}}
+        <div class='pull-right'>
+            {{metric.result|floatformat(3)}}
+        </div>
+    </div>
+
+    <div class='col-md-2 col-sm-2'>
+        {% if metric.metadata.description or suite.metadata.instructions_to_reproduce or metric.metadata.instructions_to_reproduce %}
+        <a href='#'
+           onclick='$(".metric-description-{{metric.id}}").toggle(); return false'
+           class='metric-description-{{metric.id}}'
+        ><span class='fa fa-info-circle'></span> Show info</a>
+        <a href='#'
+           onclick='$(".metric-description-{{metric.id}}").toggle(); return false'
+           class='metric-description-{{metric.id}}'
+           style='display: none'
+        ><span class='fa fa-info-circle'></span> Hide info</a>
+        {% endif %}
+    </div>
+
+    {% if metric.metadata.description or suite.metadata.instructions_to_reproduce or metric.metadata.instructions_to_reproduce %}
+    <div class='metric-description metric-description-{{metric.id}} col-md-12 col-sm-12' style='display: none'>
+        {% if metric.metadata.description %}
+        <p><strong>Metric description:</strong></p>
+        <div>
+        {{metric.metadata.description|markdown}}
+        </div>
+        {% endif %}
+
+        {% if suite.metadata.instructions_to_reproduce or metric.metadata.instructions_to_reproduce %}
+        <p><strong>How to reproduce:</strong></p>
+        <div>
+        {{suite.metadata.instructions_to_reproduce|markdown}}
+        {{metric.metadata.instructions_to_reproduce|markdown}}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>

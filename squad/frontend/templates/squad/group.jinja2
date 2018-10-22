@@ -1,0 +1,13 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+<h2 class="page-header well">{{group.name}}</h2>
+
+<p>
+{{group.description|default("")}}
+</p>
+
+{% with hide_group=True %}
+{% include "squad/_project_list.jinja2" %}
+{% endwith %}
+{% endblock %}

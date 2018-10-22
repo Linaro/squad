@@ -155,7 +155,7 @@ def tests(request, group_slug, project_slug, build_version):
         "results": TestResultTable.get(build, page),
     }
 
-    return render(request, 'squad/tests.html', context)
+    return render(request, 'squad/tests.jinja2', context)
 
 
 @auth
@@ -178,6 +178,6 @@ def test_history(request, group_slug, project_slug, full_test_name):
             "project": project,
             "history": history,
         }
-        return render(request, 'squad/test_history.html', context)
+        return render(request, 'squad/test_history.jinja2', context)
     except Suite.DoesNotExist:
         raise Http404("No such suite for test: %s")

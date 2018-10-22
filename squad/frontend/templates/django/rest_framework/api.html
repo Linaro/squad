@@ -1,0 +1,44 @@
+{% extends "rest_framework/base.html" %}
+{% load static %}
+{% load squad %}
+
+{% block title %}{% squad_site_name %} API{% endblock %}
+
+{% block bootstrap_theme %}
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.css" %}">
+    <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap-theme.css" %}">
+    <link rel="stylesheet" href="{% static "font-awesome/css/font-awesome.css" %}">
+    <link rel="stylesheet" href="{% static "main.css" %}">
+{% endblock %}
+{% block bootstrap_navbar_variant %}navbar-default{% endblock %}
+
+{% block branding %}
+<a class='navbar-brand' rel="nofollow" href='{% url "home" %}'>
+    <span class="fa fa-line-chart" aria-hidden="true"></span>
+    {% squad_site_name %}
+</a>
+<ul class="nav navbar-nav">
+    <li class="{% active 'home'%}"><a href="{% url 'home' %}">Explore</a></li>
+    <li class="{% active 'compare_projects' %}"><a href="{% url 'compare_projects' %}">Compare</a></li>
+    <li class="{% active 'compare_test' %}"><a href="{% url 'compare_test' %}">Compare Test</a></li>
+    <li class="{% active 'api-root' %}"><a href="{% url 'api-root' %}">API</a></li>
+</ul>
+{% endblock %}
+
+{% block userlinks %}
+    {% include "squad/_user_menu.html" %}
+{% endblock %}
+
+
+{% block body %}
+    {{block.super}}
+    <footer id='footer'>
+      <div class="container">
+        <a href="https://github.com/Linaro/squad">SQUAD</a> ({% squad_version %}) is free software,
+        developed by <a href="https://www.linaro.org/">Linaro</a>.
+        It is distributed under the terms of the
+        <a href="https://www.gnu.org/licenses/agpl-3.0.html">GNU Affero General Public License, version 3</a> or (at your option) any later version</a>.
+      </div>
+    </footer>
+    </div><!-- id="wrapper" -->
+{% endblock %}
