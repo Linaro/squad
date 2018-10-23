@@ -17,4 +17,5 @@ from django.conf import settings  # noqa
 app = Celery('squad')
 
 app.config_from_object('django.conf:settings', namespace='CELERY')
+app.conf.worker_hijack_root_logger = False
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
