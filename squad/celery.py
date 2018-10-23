@@ -19,3 +19,8 @@ app = Celery('squad')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.conf.worker_hijack_root_logger = False
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+
+# workaround missing attribute in billiard.einfo._Frame
+# see https://github.com/celery/billiard/pull/257
+from billiard.einfo import _Frame  # noqa
+_Frame.f_back = None
