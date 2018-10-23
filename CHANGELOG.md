@@ -1,3 +1,10 @@
+# 0.52.1
+
+* Backport fixes from master branch:
+  * frontend: fix pagination iterator variable
+  * celery: really set celery to log with the same settings as the main app
+  * celery: workaround missing attribute in billiard frame objects
+
 # 0.52
 
 * Add infrastructure for counting database queries
