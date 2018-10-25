@@ -73,6 +73,7 @@ __apps__ = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_filters',
+    'simple_history',
     'django_filters',
     'squad.core',
     'squad.api',
