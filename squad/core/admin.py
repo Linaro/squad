@@ -1,5 +1,8 @@
 from django.contrib import admin
 from django.forms import ModelForm, ModelMultipleChoiceField, CheckboxSelectMultiple
+from simple_history.admin import SimpleHistoryAdmin
+
+
 from . import models
 from .tasks import notify_project_status, postprocess_test_run
 from squad.core.plugins import PluginLoader
@@ -192,7 +195,7 @@ class KnownIssueAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Group)
 admin.site.register(models.Project, ProjectAdmin)
-admin.site.register(models.EmailTemplate)
+admin.site.register(models.EmailTemplate, SimpleHistoryAdmin)
 admin.site.register(models.Token, TokenAdmin)
 admin.site.register(models.ProjectStatus, ProjectStatusAdmin)
 admin.site.register(models.Build, BuildAdmin)

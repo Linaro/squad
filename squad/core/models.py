@@ -15,6 +15,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator
 from django.core.validators import RegexValidator
 from django.utils import timezone
+from simple_history.models import HistoricalRecords
 
 
 from squad.core.utils import random_token, parse_name, join_name, yaml_validator
@@ -70,6 +71,9 @@ class EmailTemplate(models.Model):
     subject = models.CharField(max_length=1024, null=True, blank=True, help_text='Jinja2 template for subject (single line)')
     plain_text = models.TextField(help_text='Jinja2 template for text/plain content')
     html = models.TextField(blank=True, null=True, help_text='Jinja2 template for text/html content')
+
+    # If any of the attributes need not to be tracked, just pass excluded_fields=['attr']
+    history = HistoricalRecords(cascade_delete_history=True)
 
     def __str__(self):
         return self.name
