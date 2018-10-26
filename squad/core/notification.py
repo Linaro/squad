@@ -226,12 +226,12 @@ def send_admin_notification(status, project):
     subject = '%(build_version)s: FAILED TEST JOBS (%(count)d) -- %(project)s' % data
     sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
     recipients = [r.email for r in project.admin_subscriptions.all()]
-    txt = render_to_string('squad/notification/failed_test_jobs.txt', data)
+    txt = render_to_string('squad/notification/failed_test_jobs.txt.jinja2', data)
 
     message = EmailMultiAlternatives(subject, txt, sender, recipients)
     html = ''
     if project.html_mail:
-        html = render_to_string('squad/notification/failed_test_jobs.html', data)
+        html = render_to_string('squad/notification/failed_test_jobs.html.jinja2', data)
         message.attach_alternative(html, "text/html")
 
     if NotificationDelivery.exists(status, subject, txt, html):
