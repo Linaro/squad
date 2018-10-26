@@ -84,7 +84,7 @@ def _load_templatetags():
     for mod in _templatetags_modules:
         try:
             import_module(mod)
-        except ImportError as err:
+        except ImportError:
             pass
 
 
