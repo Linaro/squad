@@ -15,7 +15,7 @@ def create_or_update_projectstatus(apps, schema_editor):
     for build in Build.objects.order_by('datetime').prefetch_related('status'):
         try:
             status = build.status
-        except ProjectStatus.DoesNotExist as e:
+        except ProjectStatus.DoesNotExist:
             previous = ProjectStatus.objects.filter(
                 build__project=build.project,
                 build__datetime__lt=build.datetime,
