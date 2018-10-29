@@ -77,6 +77,9 @@ class FrontendTest(TestCase):
     def test_builds(self):
         self.hit('/mygroup/myproject/builds/')
 
+    def test_build(self):
+        self.hit('/mygroup/myproject/build/1.0/')
+
     def test_build_404(self):
         self.hit('/mygroup/myproject/build/999/', 404)
 
