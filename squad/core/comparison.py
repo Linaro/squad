@@ -60,8 +60,6 @@ class TestComparison(object):
         return cls.compare_builds(*builds)
 
     def __extract_results__(self):
-        for test in self.__all_tests__():
-            self.results[test] = OrderedDict()
         test_runs = models.TestRun.objects.filter(
             build__in=self.builds,
         ).prefetch_related(
@@ -85,19 +83,14 @@ class TestComparison(object):
     def __extract_test_results__(self, test_run):
         for test in test_run.tests.all():
             key = (test_run.build, str(test_run.environment))
+            if test.full_name not in self.results:
+                self.results[test.full_name] = OrderedDict()
             self.results[test.full_name][key] = test.status
             for issue in test.known_issues.all():
                 if issue.intermittent:
                     env = str(test_run.environment)
                     self.__intermittent__[(test.full_name, env)] = True
-
-    def __all_tests__(self):
-        test_set = set()
-        for build in self.builds:
-            for testrun in build.test_runs.all():
-                for test in testrun.tests.all():
-                    test_set.add(test.full_name)
-        return sorted(test_set)
+        self.results = OrderedDict(sorted(self.results.items()))
 
     __diff__ = None
 
