@@ -5,7 +5,7 @@
             {{test.name}} — {{test.status|upper}}
         </a>
         {% if test.has_known_issues %}
-        {% for known_issue in test.known_issues.all %}
+        {% for known_issue in test.known_issues.all() %}
             Known issue:
             {% if known_issue.url %}
                 <a href="{{known_issue.url}}">{{known_issue.title}}</a>{% if known_issue.intermittent %} (intermittent){% endif %}.
