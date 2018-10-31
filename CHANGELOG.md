@@ -1,3 +1,7 @@
+# 0.53.1
+
+* frontend: Fix missing changes in Jinja templates
+
 # 0.53
 
 * frontend: migrate all templates to Jinja2
