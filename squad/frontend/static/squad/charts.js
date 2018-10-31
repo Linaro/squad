@@ -117,18 +117,6 @@ function ChartsController($scope, $http, $location, $compile) {
         var ctx = document.createElement('canvas')
         target.appendChild(ctx)
 
-        var formatDate = function(x) {
-            // Javascript Date() takes milliseconds and x
-            // is seconds, so multiply by 1000
-            // Check if x 'defaults' to [-1, 1] range which means there are no
-            // results, and in that case return an empty string.
-            if (x <= 1 && x >= -1) {
-                return ""
-            } else {
-                return (new Date(x * 1000)).toISOString().slice(0,10)
-            }
-        }
-
         var scatterChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -145,7 +133,7 @@ function ChartsController($scope, $http, $location, $compile) {
                             tooltip = t[0]
                             dataset = data_objects.datasets[tooltip.datasetIndex]
                             data_point = build_id = dataset.data[tooltip.index]
-                            return formatDate(data_point.x)
+                            return $scope.formatDate(data_point.x)
                         },
                         beforeBody: function(t, data_objects) {
                             tooltip = t[0]
@@ -169,7 +157,7 @@ function ChartsController($scope, $http, $location, $compile) {
                         type: 'linear',
                         position: 'bottom',
                         ticks: {
-                            callback: formatDate
+                            callback: $scope.formatDate
                         }
                     }]
                 },
@@ -300,14 +288,17 @@ function ChartsController($scope, $http, $location, $compile) {
                 chart.draw(target)
                 metric.chart = chart
                 metric.drawn = true
+                $scope.currentmetric = metric
 
-                var slider_container = "<slider-range metrics='selectedMetrics' ranges='ranges' filter-data='filter_data(data, minLimit, maxLimit)' update-url='updateURL()' get-environment-ids='getEnvironmentIds()' value-min='" + min_value + "' value-max='" + max_value + "'></slider-range>"
+                var slider_container = "<slider-range metric='currentmetric' ranges='ranges' format-date='formatDate(x)' filter-data='filter_data(data, minLimit, maxLimit)' update-url='updateURL()' get-environment-ids='getEnvironmentIds()' value-min='" + min_value + "' value-max='" + max_value + "'></slider-range>"
                 elem = $compile(slider_container)($scope)
                 $(target).append(elem)
 
                 var date_limit_container = "<div class='slider-limits'><div class='pull-left'><i class='fa fa-caret-right'></i> " + (new Date(metric.chart.minDate * 1000)).toISOString().slice(0,10) + "</div><div class='pull-right'>" + (new Date(metric.chart.maxDate * 1000)).toISOString().slice(0,10) + " <i class='fa fa-caret-left'></i></div></div>"
                 elem = $compile(date_limit_container)($scope)
                 $(target).append(elem)
+
+                $('[data-toggle="tooltip"]').tooltip()
             }
         })
     }
@@ -409,6 +400,18 @@ function ChartsController($scope, $http, $location, $compile) {
         return current_data
     }
 
+    $scope.formatDate = function(x) {
+        // Javascript Date() takes milliseconds and x
+        // is seconds, so multiply by 1000
+        // Check if x 'defaults' to [-1, 1] range which means there are no
+        // results, and in that case return an empty string.
+        if (x <= 1 && x >= -1) {
+            return ""
+        } else {
+            return (new Date(x * 1000)).toISOString().slice(0,10)
+        }
+    }
+
     $scope.calculate_max_results = function() {
         for (metric in $scope.data) {
             var max_count = 0
@@ -481,13 +484,19 @@ app.directive('sliderRange', ['$document',function($document) {
         $(elem).find('.range').css("left", posMin + '%')
         $(elem).find('.range').css("width", posMax - posMin + '%')
     };
+    // Get date from percentage based on min/max date.
+    var getDateSeconds = function(minDate, maxDate, percentage) {
+        return minDate + Math.round((maxDate - minDate) * (percentage / 100))
+    };
 
     return {
         template: '<div class="slider horizontal">' +
             '<div class="range" ng-mousedown="mouseDown($event)"></div>' +
             '<i class="handle min btn btn-xs btn-default fa fa-caret-right" ' +
-            'aria-hidden="true" ng-mousedown="mouseDown($event)"></i>' +
+            'aria-hidden="true" ng-mousedown="mouseDown($event)" ' +
+            'data-toggle="tooltip" data-placement="bottom" title=""></i>' +
             '<i class="handle max btn btn-xs btn-default fa fa-caret-left" ' +
+            'data-toggle="tooltip" data-placement="bottom" title="" ' +
             'aria-hidden="true" ng-mousedown="mouseDown($event)"></i>' +
             '</div>',
         replace: true,
@@ -495,14 +504,16 @@ app.directive('sliderRange', ['$document',function($document) {
         scope: {
             valueMin: "=",
             valueMax: "=",
-            metrics: "=metrics",
-            ranges: "=ranges",
+            metric: "=",
+            ranges: "=",
             updateUrl: "&",
             filterData: "&",
             getEnvironmentIds: "&",
+            formatDate: "&",
         },
         link: function postLink(scope, element, attrs) {
             // Initilization
+            var dateMin, dateMax
             var dragging = false
             var startPointX = 0
             var xMin = scope.valueMin
@@ -510,6 +521,19 @@ app.directive('sliderRange', ['$document',function($document) {
             moveHandle(findElement(element, "min"), xMin)
             moveHandle(findElement(element, "max"), xMax)
             moveRange(element, xMin, xMax)
+
+            var minSeconds = getDateSeconds(
+                scope.metric.chart.minDate,
+                scope.metric.chart.maxDate,
+                xMin)
+            element.find(".min").attr("title",
+                                      scope.formatDate({x: minSeconds}))
+            var maxSeconds = getDateSeconds(
+                scope.metric.chart.minDate,
+                scope.metric.chart.maxDate,
+                xMax)
+            element.find(".max").attr("title",
+                                      scope.formatDate({x: maxSeconds}))
 
             // Action control.
             scope.mouseDown = function($event) {
@@ -566,43 +590,65 @@ app.directive('sliderRange', ['$document',function($document) {
                         moveHandle(findElement(element, "max"), xMax)
                     } else {
                         moveHandle(target, xCurrent)
+                        // Move tooltip as well. Need small hack since we need
+                        // it in the middle.
+                        moveHandle($(target).parent().find('.tooltip'),
+                                   xCurrent-4.5)
                     }
                     moveRange(element, xMin, xMax)
 
-                    // Update chart.
-                    var current = _.find(scope.metrics, function(m) {
-                        return m.name == element.parent().attr('id').replace("metric-", "")
-                    })
+                    var minLimit = getDateSeconds(
+                        scope.metric.chart.minDate,
+                        scope.metric.chart.maxDate,
+                        xMin)
+                    var maxLimit = getDateSeconds(
+                        scope.metric.chart.minDate,
+                        scope.metric.chart.maxDate,
+                        xMax)
 
-                    var minDate = current.chart.minDate
-                    var maxDate = current.chart.maxDate
-                    var minLimit = minDate +
-                        Math.round((maxDate - minDate) * (xMin / 100))
-                    var maxLimit = minDate +
-                        Math.round((maxDate - minDate) * (xMax / 100))
-
-                    _.each(current.chart.scatterChart.data.datasets, function(dataset) {
+                    _.each(scope.metric.chart.scatterChart.data.datasets, function(dataset) {
                         dataset.data = scope.filterData({
-                            data: current.chart.data[dataset.label],
+                            data: scope.metric.chart.data[dataset.label],
                             minLimit: minLimit,
                             maxLimit: maxLimit
                         })
                     });
-                    current.chart.updateAnnotations(
+
+                    scope.metric.chart.updateAnnotations(
                         scope.getEnvironmentIds(),
                         minLimit,
                         maxLimit
                     )
-                    current.chart.scatterChart.update()
+                    scope.metric.chart.scatterChart.update()
 
                     // Update range.
-                    scope.ranges[current.name][0] = Math.round(xMin)
-                    scope.ranges[current.name][1] = Math.round(xMax)
+                    scope.ranges[scope.metric.name][0] = Math.round(xMin)
+                    scope.ranges[scope.metric.name][1] = Math.round(xMax)
+
+                    // Finally, update handles' tooltips.
+                    if ($(target).hasClass('min')) {
+                        $(target).attr(
+                            "title",
+                            scope.formatDate({x: minLimit})).tooltip('fixTitle').tooltip('show')
+                    } else if ($(target).hasClass('max')) {
+                        $(target).attr(
+                            "title",
+                            scope.formatDate({x: maxLimit})).tooltip('fixTitle').tooltip('show')
+                    } else {
+                        $(target).parent().find(".min").attr(
+                            "data-original-title",
+                            scope.formatDate({x: minLimit}))
+                        $(target).parent().find(".max").attr(
+                            "data-original-title",
+                            scope.formatDate({x: maxLimit}))
+                    }
                 });
 
                 $document.mouseup(function() {
                     scope.updateUrl()
                     scope.$apply()
+                    // Clean up tooltips if client moved away the pointer.
+                    element.find('.handle:not(:hover)').tooltip('hide')
                     dragging = false
                     $document.unbind('mousemove')
                 });
