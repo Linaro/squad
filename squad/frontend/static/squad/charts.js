@@ -21,11 +21,12 @@ function ChartsController($scope, $http, $location, $compile) {
         var minDate = Math.round(new Date() / 1000)
         var data = this.data
         _.each(environmentIds, function(name) {
-            if (data[name][0][0] < minDate) {
-                minDate = data[name][0][0]
+            if (typeof data[name] !== "undefined" && data[name].length > 0) {
+                if (data[name][0][0] < minDate) {
+                    minDate = data[name][0][0]
+                }
             }
         })
-
         this.minDate = minDate
     }
 
@@ -34,11 +35,51 @@ function ChartsController($scope, $http, $location, $compile) {
         var maxDate = 0
         var data = this.data
         _.each(environmentIds, function(name) {
-            if (data[name][data[name].length-1][0] > maxDate) {
-                maxDate = data[name][data[name].length-1][0]
+            if (typeof data[name] !== "undefined" && data[name].length > 0) {
+                if (data[name][data[name].length-1][0] > maxDate) {
+                    maxDate = data[name][data[name].length-1][0]
+                }
             }
         })
         this.maxDate = maxDate
+    }
+
+    ChartPanel.prototype.updateAnnotations = function(environmentIds, minLimit,
+                                                      maxLimit) {
+        var data = this.data
+        var annotations = {}
+        var y_adjust = 0
+
+        _.each(environmentIds, function(name) {
+            _.each(data[name], function(elem) {
+                if (elem[3] != "") {
+                    if (elem[0] < maxLimit && elem[0] > minLimit) {
+                        // Offset the labels so they don't overlap
+                        y_adjust += 25
+                        if (y_adjust > 200) { y_adjust = 0 }
+
+                        annotations[elem[0]] = {
+                            type: "line",
+                            mode: "vertical",
+                            scaleID: "x-axis-0",
+                            value: elem[0],
+                            borderColor: "black",
+                            borderWidth: 2,
+                            label: {
+                                backgroundColor: "#337ab7",
+                                content: elem[3],
+                                yAdjust: -100 + y_adjust,
+                                enabled: true
+                            },
+                        }
+                    }
+                }
+            })
+        })
+
+        this.scatterChart.options.annotation.annotations = Object.values(
+            annotations)
+        this.scatterChart.update()
     }
 
     ChartPanel.prototype.draw = function(target) {
@@ -51,17 +92,16 @@ function ChartsController($scope, $http, $location, $compile) {
             return env.selected
         })
 
+        var minCoefficient = $scope.slider.defaultResultsLimit
+        var maxCoefficient = 1
+        if (typeof $scope.ranges[metric.name] !== 'undefined' && $scope.ranges[metric.name].length > 0) {
+            minCoefficient = $scope.ranges[metric.name][0] / 100
+            maxCoefficient = $scope.ranges[metric.name][1] / 100
+        }
+        var minLimit = minDate + Math.round((maxDate - minDate)*minCoefficient)
+        var maxLimit = minDate + Math.round((maxDate - minDate)*maxCoefficient)
+
         var datasets = _.map(environments, function(env) {
-            var minCoefficient = $scope.slider.defaultResultsLimit
-            var maxCoefficient = 1
-            if (typeof $scope.ranges[metric.name] !== 'undefined' && $scope.ranges[metric.name].length > 0) {
-                minCoefficient = $scope.ranges[metric.name][0] / 100
-                maxCoefficient = $scope.ranges[metric.name][1] / 100
-            }
-
-            minLimit = minDate + Math.round((maxDate - minDate)*minCoefficient)
-            maxLimit = minDate + Math.round((maxDate - minDate)*maxCoefficient)
-
             return {
                 label: env.name,
                 fill: false,
@@ -132,9 +172,16 @@ function ChartsController($scope, $http, $location, $compile) {
                             callback: formatDate
                         }
                     }]
+                },
+                annotation: {
+                    drawTime: "afterDatasetsDraw",
+                    annotations: [],
                 }
             }
         });
+        this.scatterChart = scatterChart
+
+        this.updateAnnotations($scope.getEnvironmentIds(), minLimit, maxLimit)
 
         ctx.onclick = function(evt) {
             var point = scatterChart.getElementAtEvent(evt)[0]
@@ -144,8 +191,6 @@ function ChartsController($scope, $http, $location, $compile) {
                 window.location.href= '/' + $scope.project + '/build/' + build + '/'
             }
         }
-
-        this.scatterChart = scatterChart
     }
 
     $scope.toggleEnvironments = function() {
@@ -256,7 +301,7 @@ function ChartsController($scope, $http, $location, $compile) {
                 metric.chart = chart
                 metric.drawn = true
 
-                var slider_container = "<slider-range metrics='selectedMetrics' ranges='ranges' filter-data='filter_data(data, minLimit, maxLimit)' update-url='updateURL()' value-min='" + min_value + "' value-max='" + max_value + "'></slider-range>"
+                var slider_container = "<slider-range metrics='selectedMetrics' ranges='ranges' filter-data='filter_data(data, minLimit, maxLimit)' update-url='updateURL()' get-environment-ids='getEnvironmentIds()' value-min='" + min_value + "' value-max='" + max_value + "'></slider-range>"
                 elem = $compile(slider_container)($scope)
                 $(target).append(elem)
 
@@ -454,6 +499,7 @@ app.directive('sliderRange', ['$document',function($document) {
             ranges: "=ranges",
             updateUrl: "&",
             filterData: "&",
+            getEnvironmentIds: "&",
         },
         link: function postLink(scope, element, attrs) {
             // Initilization
@@ -542,6 +588,11 @@ app.directive('sliderRange', ['$document',function($document) {
                             maxLimit: maxLimit
                         })
                     });
+                    current.chart.updateAnnotations(
+                        scope.getEnvironmentIds(),
+                        minLimit,
+                        maxLimit
+                    )
                     current.chart.scatterChart.update()
 
                     // Update range.

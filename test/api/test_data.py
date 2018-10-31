@@ -69,8 +69,8 @@ class ApiDataTest(TestCase):
 
         resp = self.client.get('/api/data/mygroup/myproject?metric=foo&environment=env1&format=csv')
         data = resp.content.decode('utf-8').split("\n")
-        self.assertEqual('"foo","env1","1537142400","1.0","2018-09-17"', data[0])
-        self.assertEqual('"foo","env1","1537228800","2.0","2018-09-18"', data[1])
+        self.assertEqual('"foo","env1","1537142400","1.0","2018-09-17",""', data[0])
+        self.assertEqual('"foo","env1","1537228800","2.0","2018-09-18",""', data[1])
 
     def test_tests(self):
         self.receive("2017-01-01", tests={
@@ -88,8 +88,8 @@ class ApiDataTest(TestCase):
         first = json[':tests:']['env1'][0]
         second = json[':tests:']['env1'][1]
 
-        self.assertEqual([1483228800, 50, '2017-01-01'], first)
-        self.assertEqual([1483315200, 100, '2017-01-02'], second)
+        self.assertEqual([1483228800, 50, '2017-01-01', ''], first)
+        self.assertEqual([1483315200, 100, '2017-01-02', ''], second)
 
     def test_no_auth_on_non_public_project(self):
         self.project.is_public = False

@@ -25,9 +25,10 @@ def get_metric_series(project, metric, environments):
             'test_run__build__datetime',
             'test_run__build__version',
             'result',
+            'test_run__build__annotation__description',
         )
         entry[environment] = [
-            [int(p['test_run__build__datetime'].timestamp()), p['result'], p['test_run__build__version']] for p in series
+            [int(p['test_run__build__datetime'].timestamp()), p['result'], p['test_run__build__version'], p['test_run__build__annotation__description'] or ""] for p in series
         ]
     return entry
 
@@ -48,12 +49,13 @@ def get_tests_series(project, environments):
             'test_run__build_id',
             'test_run__build__datetime',
             'test_run__build__version',
+            'test_run__build__annotation__description',
         ).annotate(
             pass_percentage=100 * Sum('tests_pass') / Sum(tests_total)
         ).order_by('test_run__build__datetime')
 
         results[environment] = [
-            [int(s['test_run__build__datetime'].timestamp()), s['pass_percentage'], s['test_run__build__version']]
+            [int(s['test_run__build__datetime'].timestamp()), s['pass_percentage'], s['test_run__build__version'], s['test_run__build__annotation__description'] or ""]
             for s in series
         ]
     return results

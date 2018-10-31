@@ -971,3 +971,11 @@ class KnownIssue(models.Model):
         if test_name:
             qs = qs.filter(test_name=test_name)
         return qs.distinct()
+
+
+class Annotation(models.Model):
+    description = models.CharField(max_length=1024)
+    build = models.OneToOneField(Build)
+
+    def __str__(self):
+        return '%s' % self.description

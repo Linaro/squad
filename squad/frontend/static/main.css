@@ -259,3 +259,19 @@ table.test-results-details {
 .range:hover {
     cursor: grab;
 }
+
+.annotation-alert {
+    padding: 12px;
+}
+
+.annotation-text-col {
+    padding-top: 6px;
+}
+
+.annotation-description {
+    width: 100%;
+}
+
+.build-nav-header {
+    margin-top: 20px;
+}

@@ -4,7 +4,27 @@
     » {% include "squad/_unfinished_build.jinja2" %} <a class="h2 text-primary" href="{{build_url(build)}}">Build {{build.version}}</a>
 </h2>
 
-<ul class="page-header nav nav-pills">
+{% if user.is_authenticated %}
+<div class="highlight-row">
+  <div class="alert alert-info annotation-alert">
+    <div class="row">
+      <div id="annotation_text" class="col-md-11 annotation-text-col {% if not build.annotation %}hidden{% endif %}">
+        {% if build.annotation %}
+        <strong>Annotation:</strong>
+        {{ build.annotation.description }}
+        {% endif %}
+      </div>
+      <div class="col-md-1">
+        <a href="#" data-toggle="modal" data-target="#annotation_modal">
+          <button id="annotation_button" type="submit" class="btn btn-primary">{% if build.annotation %}Update{% else %}Add annotation{% endif %}</button>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<ul class="page-header nav nav-pills build-nav-header">
     {% with url_name=request.resolver_match.url_name %}
 
     <li role="presentation" {% if url_name == 'build' %}class="active"{% endif %}>
@@ -35,3 +55,31 @@
 
     {% endwith %}
 </ul>
+
+<!-- Modal HTML -->
+<div ng-app="Annotation" id="annotation_modal" class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Build annotation</h4>
+      </div>
+      <form class="well" id="annotation_form" ng-controller="AnnotationController" ng-submit="updateAnnotation('{{ build.id }}')" ng-init="{% if build.annotation%}annotation_id={{ build.annotation.id }}{% endif %}">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-2">
+              <label for="description">Description:</label>
+            </div>
+            <div class="col-md-10">
+              <input name="description" class="annotation-description" ng-model="description" placeholder="Annotation description" ng-init="description='{% if build.annotation %}{{ build.annotation.description }}{% endif %}'" />
+            </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button class="btn btn-primary">Save</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
