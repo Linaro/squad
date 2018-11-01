@@ -144,7 +144,6 @@ JOB_DEFINITION_NO_METADATA = {
 }
 
 JOB_DETAILS = {
-    'is_pipeline': True,
     'status': 'Complete',
     'id': 1234,
     'definition': yaml.dump(JOB_DEFINITION),
@@ -152,7 +151,6 @@ JOB_DETAILS = {
 }
 
 JOB_DETAILS_RUNNING = {
-    'is_pipeline': True,
     'status': 'Running',
     'id': 1234,
     'definition': yaml.dump(JOB_DEFINITION),
@@ -160,7 +158,6 @@ JOB_DETAILS_RUNNING = {
 }
 
 JOB_DETAILS_CANCELED = {
-    'is_pipeline': True,
     'status': 'Canceled',
     'id': 1234,
     'definition': yaml.dump(JOB_DEFINITION),
@@ -168,7 +165,6 @@ JOB_DETAILS_CANCELED = {
 }
 
 JOB_DETAILS_NO_METADATA = {
-    'is_pipeline': True,
     'status': 'Complete',
     'id': 1234,
     'definition': yaml.dump(JOB_DEFINITION_NO_METADATA),
@@ -176,7 +172,6 @@ JOB_DETAILS_NO_METADATA = {
 }
 
 JOB_DETAILS_WITH_SUITE_VERSIONS = {
-    'is_pipeline': True,
     'status': 'Complete',
     'id': 1234,
     'definition': yaml.dump({
