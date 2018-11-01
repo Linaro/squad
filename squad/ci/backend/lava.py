@@ -274,9 +274,6 @@ class Backend(BaseBackend):
         lava_infra_error_messages = []
         if self.settings is not None:
             lava_infra_error_messages = self.settings.get('CI_LAVA_INFRA_ERROR_MESSAGES', [])
-        if data['is_pipeline'] is False:
-            # in case of v1 job, return empty data
-            return (data['status'], {}, {}, {})
         definition = yaml.load(data['definition'])
         if data['multinode_definition']:
             definition = yaml.load(data['multinode_definition'])
@@ -381,8 +378,6 @@ class Backend(BaseBackend):
         if job.name is None:
             # fetch job name once
             data = self.__get_job_details__(lava_id)
-            if data['is_pipeline'] is False:
-                return
             definition = yaml.load(data['definition'])
             if data['multinode_definition']:
                 definition = yaml.load(data['multinode_definition'])
