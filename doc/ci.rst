@@ -119,6 +119,9 @@ Out of the box SQUAD supports following backends:
 LAVA
 ~~~~
 
+SQUAD supports only LAVA v2. Old version of LAVA was made obsolete with 2017.11
+LAVA release.
+
 LAVA backend supports the following settings:
  - CI_LAVA_INFRA_ERROR_MESSAGES
    a list of strings that cause automated job resubmission when matched
