@@ -12,15 +12,14 @@ addons:
       - snakefood
       - software-properties-common
 env:
-  - DJANGO=1.11 TESTENV=travis-postgresql DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432
-  - DJANGO=1.11 TESTENV=travis-sqlite3 DATABASE=
+  - TESTENV=travis-postgresql DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432
+  - TESTENV=travis-sqlite3 DATABASE=
 
 before_install:
   - if test -n "$DATABASE"; then ./scripts/travis-postgresql; fi
 
 install:
   - pip install --upgrade setuptools
-  - ./scripts/travis-django
   - pip install -r requirements-dev.txt
   - pip freeze
   - sudo apt-get install nodejs npm
