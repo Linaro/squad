@@ -1,3 +1,14 @@
+# 0.54
+
+* frontend:
+  * Add Annotation line in graphs.
+  * Add tooltips on chart sliders.
+  * Add Unit tests for JS code.
+* ci:
+  * lava: Clean up `is_pipeline` checks.
+* core:
+  * add tracking to EmailTemplate changes
+
 # 0.53.1
 
 * frontend: Fix missing changes in Jinja templates
