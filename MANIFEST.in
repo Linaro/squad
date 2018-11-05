@@ -7,11 +7,14 @@ include requirements*.txt
 include manage.py
 include INSTALL.rst
 include HACKING.rst
+include CODEOWNERS
+include package.json
+include package-lock.json
 
 include           squad/core/management/commands/import_data.rst
 recursive-include squad/frontend/static/ *
 recursive-include squad/*/templates/ *
-recursive-include test/ *.py *.json *.csv *.log *.png *.yaml
+recursive-include test/ *.py *.json *.csv *.log *.png *.yaml *.js
 recursive-include scripts/ *
 recursive-include doc/ *
 
