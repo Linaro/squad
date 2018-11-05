@@ -24,8 +24,6 @@ install:
   - pip freeze
   - sudo apt-get install nodejs npm
   - npm install
-  - npm set ca null
-  - sudo npm install -g karma-cli
 
 script:
   - ./scripts/travis

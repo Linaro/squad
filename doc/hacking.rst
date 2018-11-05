@@ -47,7 +47,6 @@ instructions of how to setup up after the npm package manager is installed::
 
   sudo apt-get install chromium
   npm install
-  sudo npm install -g karma-cli
 
 Then simply run::
 
