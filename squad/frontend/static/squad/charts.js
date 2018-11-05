@@ -7,13 +7,13 @@ app.config(['$locationProvider', function($locationProvider) {
     })
 }])
 
-function ChartsController($scope, $http, $location, $compile) {
+app.factory('ChartPanel', function() {
 
-    var ChartPanel = function(metric, data) {
+    var ChartPanel = function(metric, data, environmentIds) {
         this.metric = metric
         this.data = data
-        this.updateMinDate($scope.getEnvironmentIds())
-        this.updateMaxDate($scope.getEnvironmentIds())
+        this.updateMinDate(environmentIds)
+        this.updateMaxDate(environmentIds)
     }
 
     ChartPanel.prototype.updateMinDate = function(environmentIds) {
@@ -54,10 +54,6 @@ function ChartsController($scope, $http, $location, $compile) {
             _.each(data[name], function(elem) {
                 if (elem[3] != "") {
                     if (elem[0] < maxLimit && elem[0] > minLimit) {
-                        // Offset the labels so they don't overlap
-                        y_adjust += 25
-                        if (y_adjust > 200) { y_adjust = 0 }
-
                         annotations[elem[0]] = {
                             type: "line",
                             mode: "vertical",
@@ -68,10 +64,13 @@ function ChartsController($scope, $http, $location, $compile) {
                             label: {
                                 backgroundColor: "#337ab7",
                                 content: elem[3],
-                                yAdjust: -100 + y_adjust,
+                                yAdjust: -150 + y_adjust,
                                 enabled: true
                             },
                         }
+                        // Offset the labels so they don't overlap
+                        y_adjust += 25
+                        if (y_adjust > 200) { y_adjust = 0 }
                     }
                 }
             })
@@ -82,26 +81,57 @@ function ChartsController($scope, $http, $location, $compile) {
         this.scatterChart.update()
     }
 
-    ChartPanel.prototype.draw = function(target) {
+    ChartPanel.filterData = function(data, minLimit, maxLimit) {
+        var current_data = _.filter(data, function(point) {
+            return point[0] >= minLimit && point[0] <= maxLimit
+        }).map(function(point){
+            return {
+                x: point[0],
+                y: point[1],
+                build_id: point[2]
+            }
+        })
+        return current_data
+    }
+
+    ChartPanel.formatDate = function(x) {
+        // Javascript Date() takes milliseconds and x
+        // is seconds, so multiply by 1000
+        // Check if x 'defaults' to [-1, 1] range which means there are no
+        // results, and in that case return an empty string.
+        if (x <= 1 && x >= -1) {
+            return ""
+        } else {
+            return (new Date(x * 1000)).toISOString().slice(0,10)
+        }
+    }
+
+    ChartPanel.slider = {
+        defaultResultsLimit: 0.8,
+        rangeMax: 100
+    };
+
+    ChartPanel.prototype.draw = function(target, environments, range) {
         var metric = this.metric
         var data = this.data
-        var minDate = this.minDate
-        var maxDate = this.maxDate
 
-        var environments = _.filter($scope.environments, function(env) {
+        var selected_environments = _.filter(environments, function(env) {
             return env.selected
         })
 
-        var minCoefficient = $scope.slider.defaultResultsLimit
+        var minCoefficient = ChartPanel.slider.defaultResultsLimit
         var maxCoefficient = 1
-        if (typeof $scope.ranges[metric.name] !== 'undefined' && $scope.ranges[metric.name].length > 0) {
-            minCoefficient = $scope.ranges[metric.name][0] / 100
-            maxCoefficient = $scope.ranges[metric.name][1] / 100
+        if (typeof range !== 'undefined' && range.length > 0) {
+            minCoefficient = range[0] / 100
+            maxCoefficient = range[1] / 100
         }
-        var minLimit = minDate + Math.round((maxDate - minDate)*minCoefficient)
-        var maxLimit = minDate + Math.round((maxDate - minDate)*maxCoefficient)
 
-        var datasets = _.map(environments, function(env) {
+        var minLimit = this.minDate +
+            Math.round((this.maxDate - this.minDate) * minCoefficient)
+        var maxLimit = this.minDate +
+            Math.round((this.maxDate - this.minDate) * maxCoefficient)
+
+        var datasets = _.map(selected_environments, function(env) {
             return {
                 label: env.name,
                 fill: false,
@@ -110,7 +140,8 @@ function ChartsController($scope, $http, $location, $compile) {
                 lineTension: 0,
                 backgroundColor: env.fill_color,
                 borderColor: env.line_color,
-                data: $scope.filter_data(data[env.name], minLimit, maxLimit)
+                data: ChartPanel.filterData(
+                    data[env.name], minLimit, maxLimit)
             }
         })
 
@@ -133,7 +164,7 @@ function ChartsController($scope, $http, $location, $compile) {
                             tooltip = t[0]
                             dataset = data_objects.datasets[tooltip.datasetIndex]
                             data_point = build_id = dataset.data[tooltip.index]
-                            return $scope.formatDate(data_point.x)
+                            return ChartPanel.formatDate(data_point.x)
                         },
                         beforeBody: function(t, data_objects) {
                             tooltip = t[0]
@@ -157,7 +188,7 @@ function ChartsController($scope, $http, $location, $compile) {
                         type: 'linear',
                         position: 'bottom',
                         ticks: {
-                            callback: $scope.formatDate
+                            callback: ChartPanel.formatDate
                         }
                     }]
                 },
@@ -169,17 +200,27 @@ function ChartsController($scope, $http, $location, $compile) {
         });
         this.scatterChart = scatterChart
 
-        this.updateAnnotations($scope.getEnvironmentIds(), minLimit, maxLimit)
+        var env_ids = _.map(selected_environments, function(env) {
+            return env.name
+        })
+        this.updateAnnotations(env_ids, minLimit, maxLimit)
 
         ctx.onclick = function(evt) {
             var point = scatterChart.getElementAtEvent(evt)[0]
             if (point) {
                 var data_point = datasets[point._datasetIndex].data[point._index]
                 var build = data_point.build_id
-                window.location.href= '/' + $scope.project + '/build/' + build + '/'
+                window.open('/' + DATA.project + '/build/' + build + '/',
+                            '_blank')
             }
         }
     }
+
+    return ChartPanel
+});
+
+
+function ChartsController($scope, $http, $location, $compile, ChartPanel) {
 
     $scope.toggleEnvironments = function() {
         _.each($scope.environments, function(env) {
@@ -252,10 +293,11 @@ function ChartsController($scope, $http, $location, $compile) {
     }
 
     $scope.redraw = function() {
-        _.each($scope.selectedMetrics, function(metric) {
+        _.each($scope.selectedMetrics, function(metric, index) {
             if (! metric.drawn) {
                 var data = $scope.data[metric.name]
-                var chart = new ChartPanel(metric, data)
+                var chart = new ChartPanel(metric, data,
+                                           $scope.getEnvironmentIds())
 
                 var target_id = 'metric-' + metric.name
                 var target = document.getElementById(target_id)
@@ -278,19 +320,19 @@ function ChartsController($scope, $http, $location, $compile) {
                 var elem = $compile(title_container)($scope)
                 $(target).append(elem)
 
-                var min_value = $scope.slider.defaultResultsLimit * 100;
-                var max_value = $scope.slider.rangeMax
+                var min_value = ChartPanel.slider.defaultResultsLimit * 100;
+                var max_value = ChartPanel.slider.rangeMax
                 if (typeof $scope.ranges[metric.name] !== 'undefined' && $scope.ranges[metric.name].length > 0) {
                     min_value = $scope.ranges[metric.name][0]
                     max_value = $scope.ranges[metric.name][1]
                 }
 
-                chart.draw(target)
+                chart.draw(target, $scope.environments,
+                           $scope.ranges[metric.name])
                 metric.chart = chart
                 metric.drawn = true
-                $scope.currentmetric = metric
 
-                var slider_container = "<slider-range metric='currentmetric' ranges='ranges' format-date='formatDate(x)' filter-data='filter_data(data, minLimit, maxLimit)' update-url='updateURL()' get-environment-ids='getEnvironmentIds()' value-min='" + min_value + "' value-max='" + max_value + "'></slider-range>"
+                var slider_container = "<slider-range metrics='selectedMetrics' metric-index='" + index + "' ranges='ranges' format-date='formatDate(x)' filter-data='filterData(data, minLimit, maxLimit)' update-url='updateURL()' get-environment-ids='getEnvironmentIds()' value-min='" + min_value + "' value-max='" + max_value + "'></slider-range>"
                 elem = $compile(slider_container)($scope)
                 $(target).append(elem)
 
@@ -386,31 +428,8 @@ function ChartsController($scope, $http, $location, $compile) {
         $scope.redraw()
     }
 
-    $scope.filter_data = function(data, minLimit, maxLimit) {
-        var current_data = _.filter(data, function(point) {
-            return point[0] > minLimit && point[0] < maxLimit
-        }).map(function(point){
-            return {
-                x: point[0],
-                y: point[1],
-                build_id: point[2]
-            }
-        })
-
-        return current_data
-    }
-
-    $scope.formatDate = function(x) {
-        // Javascript Date() takes milliseconds and x
-        // is seconds, so multiply by 1000
-        // Check if x 'defaults' to [-1, 1] range which means there are no
-        // results, and in that case return an empty string.
-        if (x <= 1 && x >= -1) {
-            return ""
-        } else {
-            return (new Date(x * 1000)).toISOString().slice(0,10)
-        }
-    }
+    $scope.filterData = ChartPanel.filterData
+    $scope.formatDate = ChartPanel.formatDate
 
     $scope.calculate_max_results = function() {
         for (metric in $scope.data) {
@@ -450,11 +469,6 @@ function ChartsController($scope, $http, $location, $compile) {
         }
     }
 
-    $scope.slider = {
-        defaultResultsLimit: 0.8,
-        rangeMax: 100
-    };
-
     $scope.initPage()
 }
 
@@ -465,6 +479,7 @@ app.controller(
         '$http',
         '$location',
         '$compile',
+        'ChartPanel',
         ChartsController
     ]
 );
@@ -504,7 +519,8 @@ app.directive('sliderRange', ['$document',function($document) {
         scope: {
             valueMin: "=",
             valueMax: "=",
-            metric: "=",
+            metrics: "=",
+            metricIndex: "@",
             ranges: "=",
             updateUrl: "&",
             filterData: "&",
@@ -518,19 +534,21 @@ app.directive('sliderRange', ['$document',function($document) {
             var startPointX = 0
             var xMin = scope.valueMin
             var xMax = scope.valueMax
+            // Current metric.
+            var currentMetric = scope.metrics[scope.metricIndex]
             moveHandle(findElement(element, "min"), xMin)
             moveHandle(findElement(element, "max"), xMax)
             moveRange(element, xMin, xMax)
 
             var minSeconds = getDateSeconds(
-                scope.metric.chart.minDate,
-                scope.metric.chart.maxDate,
+                currentMetric.chart.minDate,
+                currentMetric.chart.maxDate,
                 xMin)
             element.find(".min").attr("title",
                                       scope.formatDate({x: minSeconds}))
             var maxSeconds = getDateSeconds(
-                scope.metric.chart.minDate,
-                scope.metric.chart.maxDate,
+                currentMetric.chart.minDate,
+                currentMetric.chart.maxDate,
                 xMax)
             element.find(".max").attr("title",
                                       scope.formatDate({x: maxSeconds}))
@@ -598,32 +616,32 @@ app.directive('sliderRange', ['$document',function($document) {
                     moveRange(element, xMin, xMax)
 
                     var minLimit = getDateSeconds(
-                        scope.metric.chart.minDate,
-                        scope.metric.chart.maxDate,
+                        currentMetric.chart.minDate,
+                        currentMetric.chart.maxDate,
                         xMin)
                     var maxLimit = getDateSeconds(
-                        scope.metric.chart.minDate,
-                        scope.metric.chart.maxDate,
+                        currentMetric.chart.minDate,
+                        currentMetric.chart.maxDate,
                         xMax)
 
-                    _.each(scope.metric.chart.scatterChart.data.datasets, function(dataset) {
+                    _.each(currentMetric.chart.scatterChart.data.datasets, function(dataset) {
                         dataset.data = scope.filterData({
-                            data: scope.metric.chart.data[dataset.label],
+                            data: currentMetric.chart.data[dataset.label],
                             minLimit: minLimit,
                             maxLimit: maxLimit
                         })
                     });
 
-                    scope.metric.chart.updateAnnotations(
+                    currentMetric.chart.updateAnnotations(
                         scope.getEnvironmentIds(),
                         minLimit,
                         maxLimit
                     )
-                    scope.metric.chart.scatterChart.update()
+                    currentMetric.chart.scatterChart.update()
 
                     // Update range.
-                    scope.ranges[scope.metric.name][0] = Math.round(xMin)
-                    scope.ranges[scope.metric.name][1] = Math.round(xMax)
+                    scope.ranges[currentMetric.name][0] = Math.round(xMin)
+                    scope.ranges[currentMetric.name][1] = Math.round(xMax)
 
                     // Finally, update handles' tooltips.
                     if ($(target).hasClass('min')) {
