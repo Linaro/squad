@@ -46,7 +46,7 @@ def submit_job(request, group_slug, project_slug, version, environment_slug):
         backend=backend,
         definition=definition,
         target=project,
-        build=version,
+        target_build=build,
         environment=environment_slug,
     )
     # schedule submission
@@ -87,7 +87,7 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
     test_job = TestJob.objects.create(
         backend=backend,
         target=project,
-        build=version,
+        target_build=build,
         environment=environment_slug,
         submitted=True,
         job_id=testjob_id

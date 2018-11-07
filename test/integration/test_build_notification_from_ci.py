@@ -33,7 +33,7 @@ class BuildNotificationFromCI(TestCase):
         )
         testjob = backend.test_jobs.create(
             target=project,
-            build='1',
+            target_build=build,
             job_id='123',
             environment='myenv',
         )

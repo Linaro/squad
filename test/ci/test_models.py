@@ -35,9 +35,10 @@ class BackendTestBase(TestCase):
         self.group = core_models.Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
         self.backend = models.Backend.objects.create()
+        self.build = self.project.builds.create(version='1')
 
     def create_test_job(self, **attrs):
-        return self.backend.test_jobs.create(target=self.project, **attrs)
+        return self.backend.test_jobs.create(target=self.project, target_build=self.build, **attrs)
 
 
 class BackendPollTest(BackendTestBase):
@@ -122,7 +123,6 @@ class BackendFetchTest(BackendTestBase):
         test_job = self.create_test_job(
             backend=self.backend,
             definition='foo: 1',
-            build='1',
             environment='myenv',
             job_id='999',
         )
@@ -169,9 +169,8 @@ class BackendFetchTest(BackendTestBase):
         impl.job_url = MagicMock(return_value="http://www.example.com")
         get_implementation.return_value = impl
 
-        build = self.project.builds.create(version='1')
         environment = self.project.environments.create(slug='myenv')
-        build.test_runs.create(
+        self.build.test_runs.create(
             environment=environment,
             job_id='999',
             job_status='Complete',
@@ -181,7 +180,6 @@ class BackendFetchTest(BackendTestBase):
         test_job = self.create_test_job(
             backend=self.backend,
             definition='foo: 1',
-            build='1',
             environment='myenv',
             job_id='999',
         )
@@ -207,7 +205,6 @@ class BackendFetchTest(BackendTestBase):
         test_job = self.create_test_job(
             backend=self.backend,
             definition='foo: 1',
-            build='1',
             environment='myenv',
             job_id='999',
         )
@@ -241,7 +238,6 @@ class BackendFetchTest(BackendTestBase):
         test_job = self.create_test_job(
             backend=self.backend,
             definition='foo: 1',
-            build='1',
             environment='myenv',
             job_id='999',
         )
@@ -275,7 +271,6 @@ class BackendFetchTest(BackendTestBase):
         test_job = self.create_test_job(
             backend=self.backend,
             definition='foo: 1',
-            build='1',
             environment='myenv',
             job_id='999',
         )
@@ -310,7 +305,6 @@ class BackendFetchTest(BackendTestBase):
         test_job = self.create_test_job(
             backend=self.backend,
             definition='foo: 1',
-            build='1',
             environment='myenv',
             job_id='999',
         )
@@ -345,7 +339,6 @@ class BackendFetchTest(BackendTestBase):
         test_job = self.create_test_job(
             backend=self.backend,
             definition='foo: 1',
-            build='1',
             environment='myenv',
             job_id='999',
         )
@@ -380,7 +373,6 @@ class BackendFetchTest(BackendTestBase):
         test_job = self.create_test_job(
             backend=self.backend,
             definition='foo: 1',
-            build='1',
             environment='myenv',
             job_id='999',
         )
@@ -403,14 +395,12 @@ class BackendFetchTest(BackendTestBase):
     def test_really_fetch_sets_fetched_at(self, receive, backend_fetch):
         backend_fetch.return_value = ('Completed', True, {}, {}, {}, None)
 
-        build = self.project.builds.create(version='1')
         env = self.project.environments.create(slug='foo')
-        receive.return_value = build.test_runs.create(environment=env)
+        receive.return_value = self.build.test_runs.create(environment=env)
 
         test_job = self.create_test_job(
             backend=self.backend,
             definition='foo: 1',
-            build='1',
             environment='myenv',
             job_id='999',
         )
@@ -423,14 +413,12 @@ class BackendFetchTest(BackendTestBase):
     def test_really_fetch_postprocessing(self, receive, backend_fetch, postprocess):
         backend_fetch.return_value = ('Completed', True, {}, {}, {}, None)
 
-        build = self.project.builds.create(version='1')
         env = self.project.environments.create(slug='foo')
-        receive.return_value = build.test_runs.create(environment=env)
+        receive.return_value = self.build.test_runs.create(environment=env)
 
         test_job = self.create_test_job(
             backend=self.backend,
             definition='foo: 1',
-            build='1',
             environment='myenv',
             job_id='999',
         )
@@ -461,6 +449,7 @@ class TestJobTest(TestCase):
     def setUp(self):
         self.group = core_models.Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
+        self.build = self.project.builds.create(version='1')
         self.backend = models.Backend.objects.create(
             url='http://example.com',
             username='foobar',
@@ -470,7 +459,7 @@ class TestJobTest(TestCase):
     def test_basics(self):
         testjob = models.TestJob.objects.create(
             target=self.project,
-            build='1',
+            target_build=self.build,
             environment='myenv',
             backend=self.backend,
         )
@@ -479,7 +468,7 @@ class TestJobTest(TestCase):
     def test_records_resubmitted_count(self):
         testjob = models.TestJob.objects.create(
             target=self.project,
-            build='1',
+            target_build=self.build,
             environment='myenv',
             backend=self.backend,
             submitted=True,
