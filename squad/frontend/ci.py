@@ -16,7 +16,7 @@ def testjobs(request, group_slug, project_slug, build_version):
         raise Http404()
     testjobs = TestJob.objects.filter(
         target=project,
-        build=build.version
+        target_build=build.id
     )
 
     context = {

@@ -25,7 +25,7 @@ class Backend(object):
             backend=self.data,
             testrun=test_job.testrun,
             target=test_job.target,
-            build=test_job.build,
+            target_build=test_job.target_build,
             environment=test_job.environment,
             submitted=True,
             job_id=new_jobid,

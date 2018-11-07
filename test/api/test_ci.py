@@ -24,6 +24,7 @@ class CiApiTest(TestCase):
         self.project_submission_user = User.objects.create(username='project-user')
         usergroup = self.group.user_groups.create()
         self.project_submission_user.groups.add(usergroup)
+        self.build = self.project.builds.create(version='1')
         Token.objects.create(user=self.project_submission_user, key='thekey')
 
         self.backend = models.Backend.objects.create(name='lava')
@@ -50,7 +51,7 @@ class CiApiTest(TestCase):
             models.TestJob.objects.filter(
                 target=self.project,
                 environment='myenv',
-                build='1',
+                target_build=self.build,
                 backend=self.backend,
                 definition='foo: 1',
             ).count()
@@ -113,7 +114,7 @@ class CiApiTest(TestCase):
             models.TestJob.objects.filter(
                 target=self.project,
                 environment='myenv',
-                build='1',
+                target_build=self.build,
                 backend=self.backend,
                 submitted=True,
                 job_id=testjob_id
