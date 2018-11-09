@@ -1,3 +1,5 @@
+from datetime import datetime
+from django.utils import timezone
 from collections import defaultdict
 import json
 import logging
@@ -10,6 +12,9 @@ from django.db import transaction
 
 from squad.celery import app as celery
 from squad.core.models import TestRun, Suite, SuiteVersion, SuiteMetadata, Test, Metric, Status, ProjectStatus, KnownIssue
+from squad.core.models import Build
+from squad.core.models import BuildPlaceholder
+from squad.core.models import Project
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
 from squad.core.statistics import geomean
 from squad.core.plugins import apply_plugins
@@ -361,3 +366,24 @@ class CreateBuild(object):
         if build.patch_source and build.patch_id:
             notify_patch_build_created.delay(build.id)
         return build
+
+
+@celery.task
+def cleanup_old_builds():
+    for project in Project.objects.filter(data_retention_days__gt=0):
+        start = timezone.now() - timezone.timedelta(project.data_retention_days)
+        builds = Build.objects.filter(
+            created_at__lt=start
+        ).exclude(
+            keep_data=True
+        ).values('id')
+        for entry in builds:
+            cleanup_build.delay(entry['id'])
+
+
+@celery.task
+@transaction.atomic
+def cleanup_build(build_id):
+    build = Build.objects.get(pk=build_id)
+    BuildPlaceholder.objects.create(project=build.project, version=build.version)
+    build.delete()

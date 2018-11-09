@@ -12,11 +12,46 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
 from squad.core.models import Group, Project, Metric, ProjectStatus, Status, KnownIssue
+from squad.core.models import Build
 from squad.core.queries import get_metric_data
 from squad.core.utils import join_name
 from squad.frontend.utils import file_type
 from squad.http import auth
 from collections import OrderedDict
+
+
+class BuildDeleted(Http404):
+
+    def __init__(self, date, days):
+        self.display_message = True
+        msg = 'This build has been deleted on %s. ' % date
+        msg += 'Builds in this project are usually deleted after %d days.' % days
+        super(BuildDeleted, self).__init__(msg)
+
+
+def get_build(project, version):
+    if version == 'latest-finished':
+        status = ProjectStatus.objects.prefetch_related('build').filter(
+            build__project=project,
+            finished=True,
+        ).order_by('build__datetime').last()
+        if status is None:
+            raise Http404()
+        build = status.build
+    else:
+        try:
+            build = project.builds.get(
+                version=version
+            )
+        except Build.DoesNotExist:
+            placeholder = get_object_or_404(
+                project.build_placeholders,
+                version=version
+            )
+            deleted = placeholder.build_deleted_at
+            days = project.data_retention_days
+            raise BuildDeleted(deleted, days)
+    return build
 
 
 def home(request):
@@ -197,20 +232,8 @@ class TestResultTable(object):
 def build(request, group_slug, project_slug, version):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-
-    if version == 'latest-finished':
-        status = ProjectStatus.objects.prefetch_related('build').filter(
-            build__project=project,
-            finished=True,
-        ).order_by('build__datetime').last()
-        if status is None:
-            raise Http404()
-        build = status.build
-    else:
-        build = get_object_or_404(
-            project.builds.prefetch_related('test_runs'),
-            version=version,
-        )
+    build = get_build(project, version)
+    build.prefetch('test_runs')
 
     __statuses__ = Status.objects.filter(
         test_run__build=build,
@@ -240,10 +263,8 @@ def build_metadata(request, group_slug, project_slug, version):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
 
-    build = get_object_or_404(
-        project.builds.prefetch_related('test_runs'),
-        version=version,
-    )
+    build = get_build(project, version)
+    build.prefetch('test_runs')
 
     context = {
         'project': project,
@@ -257,7 +278,7 @@ def build_metadata(request, group_slug, project_slug, version):
 def test_run(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    build = get_object_or_404(project.builds, version=build_version)
+    build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
     status = test_run.status.by_suite().prefetch_related('suite', 'suite__metadata').all()
@@ -285,7 +306,8 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
 def __test_run_suite_context__(request, group_slug, project_slug, build_version, job_id, suite_slug):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    build = get_object_or_404(project.builds, version=build_version)
+    build = get_build(project, build_version)
+
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
     suite = get_object_or_404(project.suites, slug=suite_slug.replace('$', '/'))
     status = get_object_or_404(test_run.status, suite=suite)
@@ -362,7 +384,7 @@ def __download__(filename, data, content_type=None):
 def test_run_log(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    build = project.builds.get(version=build_version)
+    build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
     if not test_run.log_file:
@@ -375,7 +397,7 @@ def test_run_log(request, group_slug, project_slug, build_version, job_id):
 def test_run_tests(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    build = project.builds.get(version=build_version)
+    build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
     filename = '%s_%s_%s_%s_tests.json' % (group.slug, project.slug, build.version, test_run.job_id)
@@ -386,7 +408,7 @@ def test_run_tests(request, group_slug, project_slug, build_version, job_id):
 def test_run_metrics(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    build = project.builds.get(version=build_version)
+    build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
     filename = '%s_%s_%s_%s_metrics.json' % (group.slug, project.slug, build.version, test_run.job_id)
@@ -397,7 +419,7 @@ def test_run_metrics(request, group_slug, project_slug, build_version, job_id):
 def test_run_metadata(request, group_slug, project_slug, build_version, job_id):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    build = project.builds.get(version=build_version)
+    build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
     filename = '%s_%s_%s_%s_metadata.json' % (group.slug, project.slug, build.version, test_run.job_id)
@@ -408,7 +430,7 @@ def test_run_metadata(request, group_slug, project_slug, build_version, job_id):
 def attachment(request, group_slug, project_slug, build_version, job_id, fname):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    build = project.builds.get(version=build_version)
+    build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
     attachment = get_object_or_404(test_run.attachments, filename=fname)

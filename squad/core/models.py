@@ -118,6 +118,11 @@ class Project(models.Model):
         default='all'
     )
 
+    data_retention_days = models.IntegerField(
+        default=0,
+        help_text="Delete builds older than this number of days. Set to 0 or any negative number to disable.",
+    )
+
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
         self.__status__ = None
@@ -202,6 +207,11 @@ class Build(models.Model):
     patch_baseline = models.ForeignKey('Build', null=True, blank=True)
     patch_id = models.CharField(max_length=1024, null=True, blank=True)
 
+    keep_data = models.BooleanField(
+        default=False,
+        help_text="Keep this build data even after the project data retention period has passed"
+    )
+
     class Meta:
         unique_together = ('project', 'version',)
         ordering = ['datetime']
@@ -225,6 +235,9 @@ class Build(models.Model):
             'test_runs__tests',
             'test_runs__tests__suite',
         )
+
+    def prefetch(self, *related):
+        prefetch_related_objects([self], *related)
 
     @property
     def test_summary(self):
@@ -358,6 +371,15 @@ class Build(models.Model):
                 key=lambda suite_dict: suite_dict[0].slug)
 
         return result
+
+
+class BuildPlaceholder(models.Model):
+    project = models.ForeignKey(Project, related_name='build_placeholders')
+    version = models.CharField(max_length=100)
+    build_deleted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('project', 'version',)
 
 
 class Environment(models.Model):

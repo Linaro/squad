@@ -7,6 +7,7 @@ from squad.core.models import Group, Test, Suite
 from squad.core.history import TestHistory
 from django.shortcuts import get_object_or_404
 from django.http import Http404
+from squad.frontend.views import get_build
 
 
 class TestResult(list):
@@ -142,7 +143,7 @@ class TestResultTable(list):
 def tests(request, group_slug, project_slug, build_version):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
-    build = get_object_or_404(project.builds, version=build_version)
+    build = get_build(project, build_version)
 
     try:
         page = int(request.GET.get('page', '1'))
@@ -170,7 +171,7 @@ def test_history(request, group_slug, project_slug, full_test_name):
 
     top = request.GET.get('top', None)
     if top:
-        top = project.builds.get(version=top)
+        top = get_build(project, top)
 
     try:
         history = TestHistory(project, full_test_name, top=top, page=page)

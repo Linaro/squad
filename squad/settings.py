@@ -266,6 +266,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'squad.ci.tasks.poll',
         'schedule': crontab(hour='*/1', minute=17),
     },
+    'cleanup': {
+        'task': 'squad.core.tasks.cleanup_old_builds',
+        'schedule': crontab(hour='3', minute=41),
+    }
 }
 
 REST_FRAMEWORK = {

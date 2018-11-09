@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 from squad.core import models
 from squad.core.tasks import ReceiveTestRun
+from squad.core.tasks import cleanup_build
 from test.performance import count_queries
 
 
@@ -82,6 +83,14 @@ class FrontendTest(TestCase):
 
     def test_build_404(self):
         self.hit('/mygroup/myproject/build/999/', 404)
+
+    def test_build_after_cleanup(self):
+        self.project.data_retention_days = 180
+        self.project.save()
+        cleanup_build(self.project.builds.last().id)
+
+        response = self.hit('/mygroup/myproject/build/1.0/', 404)
+        self.assertIn('after 180 days', str(response.content))
 
     def test_build_tests_404(self):
         self.hit('/mygroup/myproject/build/999/tests/', 404)
