@@ -14,9 +14,37 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import include, url
+from django.shortcuts import render_to_response
 from django.contrib import admin
 
 import django.contrib.auth.views as auth
+
+
+def permission_denied(request, exception, template_name='401.jinja2'):
+    return render_to_response(
+        template_name,
+        {
+            'request': request,
+            'exception': exception,
+        },
+        status=401,
+    )
+
+
+def page_not_found(request, exception, template_name='404.jinja2'):
+    return render_to_response(
+        template_name,
+        {
+            'request': request,
+            'exception': exception,
+        },
+        status=404,
+    )
+
+
+handler403 = 'squad.urls.permission_denied'
+handler404 = 'squad.urls.page_not_found'
+
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
