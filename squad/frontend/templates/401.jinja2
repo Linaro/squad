@@ -1,6 +1,16 @@
 {% extends "squad/base.jinja2" %}
 
 {% block content %}
-<h1>Authentication needed!</h1>
-<a href="/login?next={{request.path}}">Go to login page</a>
+{% if user.is_authenticated %}
+<h1>Permission denied</h1>
+<p>
+You are not allowed to access this content.
+</p>
+{% else %}
+<h1>Authentication required</h1>
+<p>
+<a href="/login?next={{request.path}}">Go to the login page</a>.
+</p>
+{% endif %}
+
 {% endblock %}

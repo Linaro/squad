@@ -84,7 +84,6 @@ __apps__ = [
 INSTALLED_APPS = [app for app in __apps__ if app]
 
 MIDDLEWARE_CLASSES = [
-    'squad.core.middleware.Custom401Middleware',
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -267,6 +266,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'squad.ci.tasks.poll',
         'schedule': crontab(hour='*/1', minute=17),
     },
+    'cleanup': {
+        'task': 'squad.core.tasks.cleanup_old_builds',
+        'schedule': crontab(hour='3', minute=41),
+    }
 }
 
 REST_FRAMEWORK = {

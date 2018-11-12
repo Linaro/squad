@@ -1,5 +1,11 @@
 {% extends "squad/base.jinja2" %}
 
 {% block content %}
-<h1>Page not found!<h1>
+<h1>Page not found</h1>
+
+{% if exception.display_message %}
+<p>
+{{exception}}
+</p>
+{% endif %}
 {% endblock %}

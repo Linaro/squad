@@ -19,6 +19,8 @@ from squad.core.tasks import ReceiveTestRun
 from squad.core.tasks import ValidateTestRun
 from squad.core.tasks import CreateBuild
 from squad.core.tasks import exceptions
+from squad.core.tasks import cleanup_old_builds
+from squad.core.tasks import cleanup_build
 
 
 class CommonTestCase(TestCase):
@@ -438,3 +440,62 @@ class CreateBuildTest(TestCase):
         create_build = CreateBuild(self.project)
         create_build('1.0')  # no patch_source or patch_id
         notify_patch_build_created.delay.assert_not_called()
+
+
+class CleanupOldBuildsTest(TestCase):
+
+    def setUp(self):
+        group = Group.objects.create(slug='mygroup')
+        self.project = group.projects.create(slug='mygroup', data_retention_days=180)
+
+    def create_build(self, version, created_at=None):
+        build = self.project.builds.create(version=version)
+        if created_at:
+            build.created_at = created_at  # override actual creation date
+            build.save()
+        return build
+
+    @patch('squad.core.tasks.cleanup_build')
+    def test_cleanup_old_builds(self, cleanup_build):
+        seven_months_ago = timezone.now() - timezone.timedelta(210)
+        old_build = self.create_build('1', seven_months_ago)
+        self.create_build('2')  # new build, should be kept
+        cleanup_old_builds()
+        cleanup_build.delay.assert_called_once_with(old_build.id)
+
+    @patch('squad.core.tasks.cleanup_build')
+    def test_cleanup_old_builds_respects_data_retention_policy(self, cleanup_build):
+        build = self.create_build('1', timezone.now() - timezone.timedelta(90))
+        cleanup_old_builds()
+        cleanup_build.delay.assert_not_called()
+        self.project.data_retention_days = 60
+        self.project.save()
+        cleanup_old_builds()
+        cleanup_build.delay.assert_called_once_with(build.id)
+
+    def test_cleanup_build(self):
+        build_id = self.create_build('1').id
+        self.assertTrue(self.project.builds.filter(id=build_id).exists())
+        cleanup_build(build_id)
+        self.assertFalse(self.project.builds.filter(id=build_id).exists())
+
+    def test_cleanup_build_created_placeholder(self):
+        build_id = self.create_build('1').id
+        cleanup_build(build_id)
+        self.assertTrue(self.project.build_placeholders.filter(version='1').exists())
+
+    @patch('squad.core.tasks.cleanup_build')
+    def test_no_cleanup_with_non_positive_data_retention_days(self, cleanup_build):
+        self.project.data_retention_days = 0
+        self.project.save()
+        self.create_build('1', timezone.now() - timezone.timedelta(210))
+        cleanup_old_builds()
+        cleanup_build.delay.assert_not_called()
+
+    @patch('squad.core.tasks.cleanup_build')
+    def test_no_cleanup_when_build_has_keep_data_checked(self, cleanup_build):
+        build = self.create_build('1', timezone.now() - timezone.timedelta(210))
+        build.keep_data = True
+        build.save()
+        cleanup_old_builds()
+        cleanup_build.delay.assert_not_called()

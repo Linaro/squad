@@ -52,7 +52,8 @@ def diff(previous_file):
     if regressions:
         list_changes(regressions, 'DATABASE PERFORMANCE REGRESSIONS')
         print('')
-        print('If there are good reasons for the increase(s) above (e.g. new features), just remove `%s` and carry on. You will not be bothered again.' % previous_file)
+        print('If there are good reasons for the increase(s) above (e.g. new features, or new tests), just remove `%s` and carry on. You will not be bothered again.' % previous_file)
+        print('Otherwise, you might want to investigate the reason for the extra database queries.')
         sys.exit(1)
 
 
