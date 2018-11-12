@@ -1,9 +1,13 @@
 from __future__ import absolute_import
 
+import logging
 import os
+import resource
 import sys
 
 from celery import Celery
+from celery import Task
+
 
 # set the default Django settings module for the 'celery' program.
 # FIXME this duplicates code in squad/manage.py
@@ -14,7 +18,31 @@ else:
 
 from django.conf import settings  # noqa
 
-app = Celery('squad')
+
+class MemoryUseLoggingTask(Task):
+
+    def __call__(self, *args, **kwargs):
+        ram0 = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss  # in kB
+        try:
+            return super(MemoryUseLoggingTask, self).__call__(*args, **kwargs)
+        finally:
+            ram = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss  # in kB
+            diff = ram - ram0
+            if diff >= 1024:  # 1024kB = 1048576 (1MB)
+                logger = logging.getLogger()
+                mb = diff / 1024
+                logger.warning('Task %s%r consumed %dMB of memory', self.name, args, mb)
+
+
+class SquadCelery(Celery):
+
+    def task(self, *args, **kwargs):
+        kw = {'base': MemoryUseLoggingTask}
+        kw.update(kwargs)
+        return super(SquadCelery, self).task(*args, **kw)
+
+
+app = SquadCelery('squad')
 
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.conf.worker_hijack_root_logger = False
