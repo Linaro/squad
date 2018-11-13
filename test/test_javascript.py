@@ -5,7 +5,9 @@ import shutil
 
 from django.test import TestCase
 
-if shutil.which('karma'):
+karma = os.path.join(os.path.dirname(__file__), '../node_modules/.bin/karma')
+
+if os.path.exists(karma):
     class TestJavascript(TestCase):
         def test_javascript(self):
             chrome_exec = shutil.which('chromium') or shutil.which('chromium-browser')
@@ -17,7 +19,7 @@ if shutil.which('karma'):
                       "to run javascript unit tests.")
             self.assertEqual(
                 0,
-                subprocess.call(["karma", "start",
+                subprocess.call([karma, "start",
                                  "test/karma.conf.js", "--single-run"]))
 else:
     print("I: skipping javascript test (karma not available)")
