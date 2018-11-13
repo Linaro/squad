@@ -5,25 +5,42 @@ import json
 import logging
 import traceback
 import uuid
+import yaml
 
 
 from django.db import transaction
 
 
 from squad.celery import app as celery
-from squad.core.models import TestRun, Suite, SuiteVersion, SuiteMetadata, Test, Metric, Status, ProjectStatus, KnownIssue
-from squad.core.models import Build
-from squad.core.models import BuildPlaceholder
-from squad.core.models import Project
+from squad.core.models import (
+    TestRun,
+    Suite,
+    SuiteVersion,
+    SuiteMetadata,
+    Test,
+    Metric,
+    Status,
+    ProjectStatus,
+    KnownIssue,
+    Build,
+    BuildPlaceholder,
+    Project,
+    EmailTemplate,
+    DelayedReport
+)
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
 from squad.core.statistics import geomean
+from squad.core.notification import Notification
 from squad.core.plugins import apply_plugins
 from squad.core.utils import join_name
+from rest_framework import status
+from jinja2 import TemplateSyntaxError
 from . import exceptions
 
 
 from .notification import notify_project_status, maybe_notify_project_status
 from .notification import notify_patch_build_created
+from .notification import notify_delayed_report_callback, notify_delayed_report_email
 
 
 test_parser = JSONTestDataParser
@@ -262,6 +279,67 @@ def get_suite_version(test_run, suite):
         return None
 
 
+def update_delayed_report(delayed_report, error_message, status_code):
+    delayed_report.error_message = yaml.dump(error_message)
+    delayed_report.status_code = status_code
+    delayed_report.save()
+    return delayed_report
+
+
+@celery.task
+def prepare_report(delayed_report_id):
+    try:
+        delayed_report = DelayedReport.objects.get(pk=delayed_report_id)
+    except DelayedReport.DoesNotExist:
+        logger.error("Cannot find report: %s" % delayed_report_id)
+        return None
+
+    build_object = delayed_report.build
+    if not hasattr(build_object, "status"):
+        delayed_report.status_code = status.HTTP_404_NOT_FOUND
+        delayed_report.error_message = yaml.dump({"message": "Requested build status %s doesn't exist" % build_object.id})
+        delayed_report.data_retention_days = 0
+        delayed_report.save()
+        return delayed_report
+
+    pr_status = build_object.status
+    notification = Notification(pr_status, delayed_report.baseline)
+    produce_html = build_object.project.html_mail
+    if delayed_report.output_format == "text/html":
+        produce_html = True
+    try:
+        txt, html = notification.message(produce_html, delayed_report.template)
+        delayed_report.output_text = txt
+        delayed_report.output_html = html
+    except TemplateSyntaxError as e:
+        data = {
+            "lineno": e.lineno,
+            "message": e.message
+        }
+        if delayed_report.template is not None:
+            data.update({
+                "txt": delayed_report.template.plain_text,
+                "html": delayed_report.template.html
+            })
+        return update_delayed_report(delayed_report, data, status.HTTP_400_BAD_REQUEST)
+    except TypeError as te:
+        data = {"message": str(te)}
+        if delayed_report.template is not None:
+            data.update({
+                "txt": delayed_report.template.plain_text,
+                "html": delayed_report.template.html
+            })
+        return update_delayed_report(delayed_report, data, status.HTTP_400_BAD_REQUEST)
+
+    delayed_report.status_code = status.HTTP_200_OK
+    delayed_report.save()
+    if delayed_report.email_recipient:
+        notify_delayed_report_email.delay(delayed_report.pk)
+    if delayed_report.callback:
+        notify_delayed_report_callback.delay(delayed_report.pk)
+    return delayed_report
+
+
 class RecordTestRunStatus(object):
 
     @staticmethod
@@ -379,6 +457,14 @@ def cleanup_old_builds():
         ).values('id')
         for entry in builds:
             cleanup_build.delay(entry['id'])
+
+
+@celery.task
+def remove_delayed_reports():
+    now = timezone.now()
+    for report in DelayedReport.objects.all():
+        if now - report.created_at > timezone.timedelta(report.data_retention_days):
+            report.delete()
 
 
 @celery.task
