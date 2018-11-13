@@ -48,10 +48,11 @@ instructions of how to setup up after the npm package manager is installed::
   sudo apt-get install chromium
   npm install
 
-Then simply run::
+Simply running the Django tests will also run the Javascript unit tests::
 
   ./manage test
 
-or::
+Or, you can run only the Javascript unit tests with one of these commands::
 
-  ./manage test test.test_javascript
+  python3 python3 test/javascript.py  # or
+  python3 -m test.javascript

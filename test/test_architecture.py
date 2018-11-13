@@ -25,7 +25,7 @@ ALLOWED_MODULE_DEPENDENCIES = (
     ('squad.frontend', 'squad.jinja2'),
     ('squad.http', 'squad.core'),
     ('squad.jinja2', 'squad.jinja2'),
-    ('squad.manage', 'test.performance'),
+    ('squad.manage', 'test'),
     ('squad.run', 'squad.manage'),
     ('squad.run', 'squad.version'),
     ('squad.plugins', 'squad.core'),

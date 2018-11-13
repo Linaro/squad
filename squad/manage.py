@@ -14,8 +14,23 @@ def main():
         execute_from_command_line(sys.argv)
     finally:
         if testing:
-            import test.performance
-            test.performance.export('tmp/queries.json')
+            tests = [t for t in sys.argv[2:] if t.startswith('test.')]
+            if not tests:
+                # only run when not running specific tests
+                rc = performance_tests()
+                rc += javascript_tests()
+                if rc > 0:
+                    sys.exit(rc)
+
+
+def performance_tests():
+    import test.performance
+    return test.performance.export('tmp/queries.json')
+
+
+def javascript_tests():
+    import test.javascript
+    return test.javascript.javascript_tests()
 
 
 if __name__ == "__main__":
