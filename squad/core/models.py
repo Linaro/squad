@@ -723,6 +723,17 @@ class Status(models.Model, TestSummaryBase):
         return '%s: %f, %d%% pass' % (name, self.metrics_summary, self.pass_percentage)
 
 
+class MetricThreshold(models.Model):
+
+    class Meta:
+        unique_together = ('project', 'name',)
+
+    project = models.ForeignKey(Project)
+    name = models.CharField(max_length=1024)
+    value = models.FloatField()
+    is_higher_better = models.BooleanField(default=False)
+
+
 class ProjectStatus(models.Model, TestSummaryBase):
     """
     Represents a "checkpoint" of a project status in time. It is used by the
@@ -852,6 +863,25 @@ class ProjectStatus(models.Model, TestSummaryBase):
 
     def get_fixes(self):
         return self.__get_yaml_field__(self.fixes)
+
+    def get_exceeded_thresholds(self):
+        # Return a list of all (threshold, metric) objects for those
+        # thresholds that were exceeded by corresponding metrics.
+        thresholds_exceeded = []
+        if self.has_metrics:
+            test_runs = self.build.test_runs.all()
+            suites = Suite.objects.filter(test__test_run__build=self.build)
+            for metric in Metric.objects.filter(
+                    Q(test_run__in=test_runs) | Q(suite__in=suites),
+                    name__in=self.build.project.metricthreshold_set.values_list('name', flat=True)):
+                for threshold in self.build.project.metricthreshold_set.all():
+                    if threshold.is_higher_better:
+                        if metric.result < threshold.value:
+                            thresholds_exceeded.append((threshold, metric))
+                    else:
+                        if metric.result > threshold.value:
+                            thresholds_exceeded.append((threshold, metric))
+        return thresholds_exceeded
 
 
 class NotificationDelivery(models.Model):

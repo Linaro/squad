@@ -461,9 +461,25 @@ def metrics(request, group_slug, project_slug):
         "project": project,
         "environments": environments,
         "metrics": metrics,
+        "thresholds": list(project.metricthreshold_set.all().values(
+            'name', 'value')),
         "data": data,
     }
     return render(request, 'squad/metrics.jinja2', context)
+
+
+@auth
+def thresholds(request, group_slug, project_slug):
+    group = Group.objects.get(slug=group_slug)
+    project = group.projects.get(slug=project_slug)
+
+    environments = [{"name": e.slug} for e in project.environments.order_by('id').all()]
+
+    context = {
+        "project": project,
+        "environments": environments,
+    }
+    return render(request, 'squad/thresholds.jinja2', context)
 
 
 def test_job(request, testjob_id):

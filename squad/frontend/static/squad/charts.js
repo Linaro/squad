@@ -44,6 +44,30 @@ app.factory('ChartPanel', function() {
         this.maxDate = maxDate
     }
 
+    ChartPanel.prototype.getThresholdAnnotations = function() {
+
+        var annotations = []
+        _.each(DATA.thresholds, function(threshold) {
+            if (threshold.name == this.metric) {
+                annotations.push({
+                    type: "line",
+                    mode: "horizontal",
+                    scaleID: "y-axis-0",
+                    value: threshold.value,
+                    borderColor: 'rgba(0,0,0,0.3)',
+                    borderWidth: 2,
+                    label: {
+                        backgroundColor: 'rgba(169,68,66,0.5)',
+                        content: threshold.name + "  " + threshold.value,
+                        enabled: true
+                    },
+                })
+            }
+        })
+
+        return annotations
+    }
+
     ChartPanel.prototype.updateAnnotations = function(environmentIds, minLimit,
                                                       maxLimit) {
         var data = this.data
@@ -59,10 +83,10 @@ app.factory('ChartPanel', function() {
                             mode: "vertical",
                             scaleID: "x-axis-0",
                             value: elem[0],
-                            borderColor: "black",
+                            borderColor: 'rgba(0,0,0,0.3)',
                             borderWidth: 2,
                             label: {
-                                backgroundColor: "#337ab7",
+                                backgroundColor: 'rgba(51,122,183,0.5)',
                                 content: elem[3],
                                 yAdjust: -150 + y_adjust,
                                 enabled: true
@@ -77,7 +101,7 @@ app.factory('ChartPanel', function() {
         })
 
         this.scatterChart.options.annotation.annotations = Object.values(
-            annotations)
+            annotations).concat(this.getThresholdAnnotations())
         this.scatterChart.update()
     }
 

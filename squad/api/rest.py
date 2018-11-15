@@ -3,7 +3,7 @@ import yaml
 
 from django.contrib.auth.models import Group as UserGroup
 from squad.api.filters import ComplexFilterBackend
-from squad.core.models import Annotation, Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata
+from squad.core.models import Annotation, Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, MetricThreshold, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata
 from squad.core.notification import Notification
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
@@ -119,6 +119,14 @@ class TestFilter(filters.FilterSet):
         model = Test
         fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'result': ['exact', 'in']}
+
+
+class MetricThresholdFilter(filters.FilterSet):
+    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all(), widget=forms.TextInput)
+
+    class Meta:
+        model = MetricThreshold
+        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains']}
 
 
 class API(routers.APIRootView):
@@ -845,6 +853,24 @@ class AnnotationViewSet(viewsets.ModelViewSet):
     ordering_fields = ('id', 'build')
 
 
+class MetricThresholdSerializer(serializers.HyperlinkedModelSerializer):
+
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = MetricThreshold
+        fields = '__all__'
+
+
+class MetricThresholdViewSet(viewsets.ModelViewSet):
+
+    queryset = MetricThreshold.objects.all()
+    serializer_class = MetricThresholdSerializer
+    filter_fields = ('name', 'value', 'is_higher_better', 'project')
+    ordering_fields = ('id', 'project', 'name')
+    filter_class = MetricThresholdFilter
+
+
 router = APIRouter()
 router.register(r'groups', GroupViewSet)
 router.register(r'usergroups', UserGroupViewSet, 'usergroups')
@@ -861,3 +887,4 @@ router.register(r'knownissues', KnownIssueViewSet)
 router.register(r'patchsources', PatchSourceViewSet)
 router.register(r'suitemetadata', SuiteMetadataViewset)
 router.register(r'annotations', AnnotationViewSet)
+router.register(r'metricthresholds', MetricThresholdViewSet)

@@ -2,7 +2,7 @@ from django.utils import timezone
 from django.test import TestCase
 from dateutil.relativedelta import relativedelta
 
-from squad.core.models import Group, ProjectStatus
+from squad.core.models import Group, ProjectStatus, MetricThreshold
 
 
 def h(n):
@@ -261,3 +261,20 @@ class ProjectStatusTest(TestCase):
 
         self.assertIsNotNone(status2.fixes)
         self.assertIsNone(status2.regressions)
+
+    def test_get_exceeded_thresholds(self):
+        build = self.create_build('1')
+        testrun = build.test_runs.create(
+            environment=self.environment)
+        testrun.metrics.create(name='metric1', suite=self.suite, result=3)
+        testrun.metrics.create(name='metric2', suite=self.suite, result=2)
+        testrun.metrics.create(name='metric1', suite=self.suite, result=5)
+        status = ProjectStatus.create_or_update(build)
+        MetricThreshold.objects.create(project=self.project,
+                                       name='metric1', value=4,
+                                       is_higher_better=True)
+
+        thresholds = status.get_exceeded_thresholds()
+        self.assertEqual(len(thresholds), 1)
+        self.assertEqual(thresholds[0][1].name, 'metric1')
+        self.assertEqual(thresholds[0][1].result, 3)

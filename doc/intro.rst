@@ -35,7 +35,10 @@ Projects can have subscriptions, which are either users or manually-entered
 email addreses that should be notified about important events such as changing
 test results. ProjectStatus records the most recent build of a project, against
 which future results should be compared in search for important events to
-notify subscribers about.
+notify subscribers about. SQUAD also supports a metric threshold system, which
+will send notification to project subscribers if the test result metrics exceed
+a certain value. The threshold values will also appear in the charts.
+
 
 .. _result_submit_ref_label:
 

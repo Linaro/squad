@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^(%s)/(%s)/tests/(.+)$' % ((slug_pattern,) * 2), tests.test_history, name='test_history'),
     url(r'^(%s)/(%s)/metrics/$' % ((slug_pattern,) * 2), views.metrics, name='metrics'),
     url(r'^(%s)/(%s)/builds/$' % ((slug_pattern,) * 2), views.builds, name='builds'),
+    url(r'^(%s)/(%s)/thresholds/$' % ((slug_pattern,) * 2), views.thresholds, name='thresholds'),
     url(r'^(%s)/(%s)/build/([^/]+)/$' % ((slug_pattern,) * 2), views.build, name='build'),
     url(r'^(%s)/(%s)/build/([^/]+)/tests/$' % ((slug_pattern,) * 2), tests.tests, name='tests'),
     url(r'^(%s)/(%s)/build/([^/]+)/testjobs/$' % ((slug_pattern,) * 2), ci.testjobs, name='testjobs'),
