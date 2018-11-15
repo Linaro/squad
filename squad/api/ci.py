@@ -17,15 +17,15 @@ def submit_job(request, group_slug, project_slug, version, environment_slug):
     backend_name = request.POST.get('backend')
     if backend_name is None:
         return HttpResponseBadRequest("backend field is required")
-    backend = None
+
     try:
-        backend = Backend.objects.get(name=request.POST.get('backend'))
+        backend = Backend.objects.get(name=backend_name)
     except Backend.DoesNotExist:
         return HttpResponseBadRequest("requested backend does not exist")
 
     # project has to exist or request will result with 404
     project = Project.objects.get(slug=project_slug, group__slug=group_slug)
-    if backend is None or project is None:
+    if project is None:
         return HttpResponseBadRequest("malformed request")
 
     # create Build object
