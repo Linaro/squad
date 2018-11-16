@@ -2,7 +2,10 @@
 
 {% block content %}
 
+<div ng-app='Build'>
 {% include "squad/build-nav.jinja2" %}
+</div>
+
 <h2>All test results</h2>
 
 {% with items=results %}
@@ -45,9 +48,8 @@
 {% endblock %}
 
 {% block javascript %}
-<script type="text/javascript" src='{{static("squad/filter.js")}}'></script>
+<script type="text/javascript" src='{{static("squad/build.js")}}'></script>
 <script type="text/javascript" src='{{static("squad/table.js")}}'></script>
-<script type="text/javascript" src='{{static("squad/annotation.js")}}'></script>
 <script type="text/javascript">
 csrf_token = '{{ csrf_token }}'
 </script>
