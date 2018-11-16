@@ -1000,7 +1000,7 @@ class KnownIssue(models.Model):
 
 
 class Annotation(models.Model):
-    description = models.CharField(max_length=1024)
+    description = models.CharField(max_length=1024, null=True, blank=True)
     build = models.OneToOneField(Build)
 
     def __str__(self):

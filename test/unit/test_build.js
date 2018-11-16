@@ -1,5 +1,5 @@
 describe('FilterController', function() {
-    beforeEach(module('Filter'));
+    beforeEach(module('Build'));
 
     var $controller;
 

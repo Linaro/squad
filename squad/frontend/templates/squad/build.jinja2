@@ -1,9 +1,9 @@
 {% extends "squad/base.jinja2" %}
 
 {% block content %}
-{% include "squad/build-nav.jinja2" %}
 
-<div ng-app='Filter'>
+<div ng-app='Build'>
+{% include "squad/build-nav.jinja2" %}
 
 <h2>Metadata</h2>
 {% include "squad/_metadata.jinja2" %}
@@ -197,8 +197,7 @@
 {% endblock %}
 
 {% block javascript %}
-<script type="text/javascript" src='{{static("squad/filter.js")}}'></script>
-<script type="text/javascript" src='{{static("squad/annotation.js")}}'></script>
+<script type="text/javascript" src='{{static("squad/build.js")}}'></script>
 <script type="text/javascript">
 csrf_token = '{{ csrf_token }}'
 </script>
