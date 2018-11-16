@@ -30,10 +30,12 @@ def export(f):
     d = os.path.dirname(f)
     if not os.path.exists(d):
         os.makedirs(d)
+    rc = 0
     if os.path.exists(f):
-        diff(f)
+        rc = diff(f)
     with open(f, 'w') as output:
         output.write(json.dumps(count))
+    return rc
 
 
 def diff(previous_file):
@@ -54,7 +56,8 @@ def diff(previous_file):
         print('')
         print('If there are good reasons for the increase(s) above (e.g. new features, or new tests), just remove `%s` and carry on. You will not be bothered again.' % previous_file)
         print('Otherwise, you might want to investigate the reason for the extra database queries.')
-        sys.exit(1)
+        return 1
+    return 0
 
 
 def list_changes(data, title):
