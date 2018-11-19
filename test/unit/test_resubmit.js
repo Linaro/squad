@@ -1,6 +1,6 @@
 describe("ResubmitController", function () {
 
-    beforeEach(module("SquadResubmit"));
+    beforeEach(module("Build"));
 
     var $controller;
 
