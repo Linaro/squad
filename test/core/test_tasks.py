@@ -445,11 +445,13 @@ class CreateBuildTest(TestCase):
 class CleanupOldBuildsTest(TestCase):
 
     def setUp(self):
-        group = Group.objects.create(slug='mygroup')
-        self.project = group.projects.create(slug='mygroup', data_retention_days=180)
+        self.group = Group.objects.create(slug='mygroup')
+        self.project = self.group.projects.create(slug='myproject', data_retention_days=180)
 
-    def create_build(self, version, created_at=None):
-        build = self.project.builds.create(version=version)
+    def create_build(self, version, created_at=None, project=None):
+        if not project:
+            project = self.project
+        build = project.builds.create(version=version)
         if created_at:
             build.created_at = created_at  # override actual creation date
             build.save()
@@ -462,6 +464,15 @@ class CleanupOldBuildsTest(TestCase):
         self.create_build('2')  # new build, should be kept
         cleanup_old_builds()
         cleanup_build.delay.assert_called_once_with(old_build.id)
+
+    @patch('squad.core.tasks.cleanup_build')
+    def test_cleanup_old_builds_does_not_delete_builds_from_other_projects(self, cleanup_build):
+        seven_months_ago = timezone.now() - timezone.timedelta(210)
+
+        other_project = self.group.projects.create(slug='otherproject')
+        self.create_build('1', created_at=seven_months_ago, project=other_project)
+        cleanup_old_builds()
+        cleanup_build.delay.assert_not_called()
 
     @patch('squad.core.tasks.cleanup_build')
     def test_cleanup_old_builds_respects_data_retention_policy(self, cleanup_build):
