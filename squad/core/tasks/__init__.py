@@ -372,7 +372,7 @@ class CreateBuild(object):
 def cleanup_old_builds():
     for project in Project.objects.filter(data_retention_days__gt=0):
         start = timezone.now() - timezone.timedelta(project.data_retention_days)
-        builds = Build.objects.filter(
+        builds = project.builds.filter(
             created_at__lt=start
         ).exclude(
             keep_data=True
