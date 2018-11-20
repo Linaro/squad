@@ -14,6 +14,8 @@ def main():
         execute_from_command_line(sys.argv)
     finally:
         if testing:
+            sys.stdout.flush()
+            sys.stderr.flush()
             tests = [t for t in sys.argv[2:] if t.startswith('test.')]
             if not tests:
                 # only run when not running specific tests
