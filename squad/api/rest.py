@@ -18,6 +18,11 @@ from rest_framework.pagination import CursorPagination, PageNumberPagination
 import rest_framework_filters as filters
 from jinja2 import TemplateSyntaxError
 
+import logging
+
+
+logger = logging.getLogger()
+
 
 class GroupFilter(filters.FilterSet):
     class Meta:
@@ -287,11 +292,15 @@ class SuiteMetadataViewset(viewsets.ModelViewSet):
         suites_qs = self.queryset
         project_ids = request.query_params.get("project", None)
         project_qs = Project.objects.all()
-        if project_ids is not None:
-            projects = project_ids.split(",")
-            project_qs = project_qs.filter(id__in=projects)
-            suites_names = Suite.objects.filter(project__in=project_qs).values_list('slug')
-            suites_qs = suites_qs.filter(suite__in=suites_names)
+        try:
+            if project_ids:
+                projects = project_ids.split(",")
+                project_qs = project_qs.filter(id__in=projects)
+                suites_names = Suite.objects.filter(project__in=project_qs).values_list('slug')
+                suites_qs = suites_qs.filter(suite__in=suites_names)
+        except ValueError as e:
+            logger.warning(e)
+
         return suites_qs
 
 
