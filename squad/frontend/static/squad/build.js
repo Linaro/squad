@@ -29,9 +29,9 @@ function AnnotationController($scope, $http, $httpParamSerializerJQLike) {
             $("#annotation_modal").modal('hide')
             $scope.annotation_id = response.data.id
         }, function(response) {
-            var msg = "There was an error while editing annotation.\n"
+            var msg = "There was an error while editing annotation."
             if (response.data) {
-                msg += "Message: " + response.data.description
+                msg += "\nMessage: " + response.data.description
             }
             alert(msg)
         })
