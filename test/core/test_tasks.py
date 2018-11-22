@@ -1,3 +1,4 @@
+import datetime
 import json
 import re
 
@@ -8,7 +9,7 @@ from django.utils import timezone
 from unittest.mock import patch, PropertyMock
 
 
-from squad.core.models import Group, TestRun, Status, Build, ProjectStatus, SuiteVersion, PatchSource, KnownIssue
+from squad.core.models import Group, TestRun, Status, Build, ProjectStatus, SuiteVersion, PatchSource, KnownIssue, EmailTemplate
 from squad.core.tasks import ParseTestRunData
 from squad.core.tasks import PostProcessTestRun
 from squad.core.tasks import RecordTestRunStatus
@@ -21,6 +22,7 @@ from squad.core.tasks import CreateBuild
 from squad.core.tasks import exceptions
 from squad.core.tasks import cleanup_old_builds
 from squad.core.tasks import cleanup_build
+from squad.core.tasks import prepare_report
 
 
 class CommonTestCase(TestCase):
@@ -510,3 +512,71 @@ class CleanupOldBuildsTest(TestCase):
         build.save()
         cleanup_old_builds()
         cleanup_build.delay.assert_not_called()
+
+
+class PrepareDelayedReport(TestCase):
+
+    def setUp(self):
+        self.group = Group.objects.create(slug='mygroup')
+        self.project = self.group.projects.create(slug='myproject')
+        t = timezone.make_aware(datetime.datetime(2018, 10, 1, 1, 0, 0))
+        self.build = self.project.builds.create(version='1', datetime=t)
+        t2 = timezone.make_aware(datetime.datetime(2018, 10, 2, 1, 0, 0))
+        self.build2 = self.project.builds.create(version='2', datetime=t2)
+        self.environment = self.project.environments.create(slug='myenv')
+        self.environment_a = self.project.environments.create(slug='env-a')
+        self.testrun = self.build.test_runs.create(environment=self.environment, build=self.build)
+        self.testrun2 = self.build2.test_runs.create(environment=self.environment, build=self.build2)
+        self.testrun_a = self.build.test_runs.create(environment=self.environment_a, build=self.build)
+        self.testrun2_a = self.build2.test_runs.create(environment=self.environment_a, build=self.build2)
+
+        self.emailtemplate = EmailTemplate.objects.create(
+            name="fooTemplate",
+            subject="abc",
+            plain_text="def",
+        )
+        self.validemailtemplate = EmailTemplate.objects.create(
+            name="validTemplate",
+            subject="subject",
+            plain_text="{% if foo %}bar{% endif %}",
+            html="{% if foo %}bar{% endif %}"
+        )
+        self.invalidemailtemplate = EmailTemplate.objects.create(
+            name="invalidTemplate",
+            subject="subject",
+            plain_text="{% if foo %}bar",
+            html="{% if foo %}bar"
+        )
+
+    def test_invalid_id(self):
+        report = prepare_report(999)
+        self.assertIsNone(report)
+
+    def test_prepare_report(self):
+        UpdateProjectStatus()(self.testrun)
+        UpdateProjectStatus()(self.testrun2)
+        report = self.build2.delayed_reports.create()
+        prepared_report = prepare_report(report.pk)
+        self.assertEqual(200, prepared_report.status_code)
+
+    @patch('squad.core.tasks.notification.notify_delayed_report_email.delay')
+    def test_email_notification(self, email_notification_mock):
+        UpdateProjectStatus()(self.testrun)
+        UpdateProjectStatus()(self.testrun2)
+        report = self.build2.delayed_reports.create()
+        report.email_recipient = "foo@bar.com"
+        report.save()
+        prepared_report = prepare_report(report.pk)
+        self.assertEqual(200, prepared_report.status_code)
+        email_notification_mock.assert_called_with(report.pk)
+
+    @patch('squad.core.tasks.notification.notify_delayed_report_callback.delay')
+    def test_callback_notification(self, callback_notification_mock):
+        UpdateProjectStatus()(self.testrun)
+        UpdateProjectStatus()(self.testrun2)
+        report = self.build2.delayed_reports.create()
+        report.callback = "http://foo.bar.com"
+        report.save()
+        prepared_report = prepare_report(report.pk)
+        self.assertEqual(200, prepared_report.status_code)
+        callback_notification_mock.assert_called_with(report.pk)

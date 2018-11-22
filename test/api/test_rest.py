@@ -1,11 +1,13 @@
 import datetime
 import json
+from mock import patch
 from test.api import APIClient
 from django.test import TestCase
 from django.utils import timezone
 from squad.core import models
 from squad.core.tasks import UpdateProjectStatus
 from squad.ci import models as ci_models
+from rest_framework.reverse import reverse
 from test.performance import count_queries
 
 
@@ -183,6 +185,28 @@ class RestApiTest(TestCase):
         UpdateProjectStatus()(self.testrun)
         response = self.client.get('/api/builds/%d/email/?baseline=999' % (self.build.id))
         self.assertEqual(400, response.status_code)
+
+    @patch('squad.core.tasks.prepare_report.delay')
+    def test_build_report(self, prepare_report_mock):
+        response = self.client.get('/api/builds/%d/report/' % self.build3.id)
+        self.assertEqual(202, response.status_code)
+        report_object = self.build3.delayed_reports.last()
+        self.assertTrue(response.json()['url'].endswith(reverse('delayedreport-detail', args=[report_object.pk])))
+        self.assertIsNotNone(report_object)
+        self.assertIsNone(report_object.status_code)
+        prepare_report_mock.assert_called()
+
+    @patch('squad.core.tasks.prepare_report.delay')
+    def test_build_report_retry(self, prepare_report_mock):
+        response = self.client.get('/api/builds/%d/report/' % self.build3.id)
+        self.assertEqual(202, response.status_code)
+        report_object = self.build3.delayed_reports.last()
+        self.assertTrue(response.json()['url'].endswith(reverse('delayedreport-detail', args=[report_object.pk])))
+        self.assertIsNotNone(report_object)
+        self.assertIsNone(report_object.status_code)
+        prepare_report_mock.assert_called()
+        response2 = self.client.get('/api/builds/%d/report/' % self.build3.id)
+        self.assertEqual(response.json(), response2.json())
 
     def test_build_testruns(self):
         data = self.hit('/api/builds/%d/testruns/' % self.build.id)

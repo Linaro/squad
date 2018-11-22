@@ -5,12 +5,14 @@ from django.test import TestCase
 from django.utils import timezone
 
 
-from squad.core.models import Group, ProjectStatus, PatchSource
+from squad.core.models import Group, ProjectStatus, PatchSource, DelayedReport
 from squad.core.tasks.notification import maybe_notify_project_status
 from squad.core.tasks.notification import notify_project_status
 from squad.core.tasks.notification import notification_timeout
 from squad.core.tasks.notification import notify_patch_build_created
 from squad.core.tasks.notification import notify_patch_build_finished
+from squad.core.tasks.notification import notify_delayed_report_callback
+from squad.core.tasks.notification import notify_delayed_report_email
 
 
 class TestNotificationTasks(TestCase):
@@ -205,3 +207,45 @@ class TestPatchNotificationTasks(TestCase):
 
         notify_patch_build_finished(build.id)
         plugin.notify_patch_build_finished.assert_called_with(build)
+
+
+class TestReportNotificationTasks(TestCase):
+
+    def setUp(self):
+        self.group = Group.objects.create(slug='mygroup')
+        self.project = self.group.projects.create(slug='myproject')
+        self.build = self.project.builds.create(version='1')
+        self.report = self.build.delayed_reports.create()
+
+    @patch('requests.Session')
+    def test_callback_notification(self, send_mock):
+        url = "https://foo.bar.com"
+        self.report.callback = url
+        self.report.save()
+        notify_delayed_report_callback(self.report.pk)
+        send_mock.assert_any_call()
+        report = DelayedReport.objects.get(pk=self.report.pk)
+        self.assertTrue(report.callback_notified)
+
+    @patch('requests.Session.send')
+    def test_callback_notification_sent_earlier(self, send_mock):
+        self.report.callback = "https://foo.bar.com"
+        self.report.callback_notified = True
+        self.report.save()
+        notify_delayed_report_callback(self.report.pk)
+        send_mock.assert_not_called()
+
+    @patch('squad.core.models.DelayedReport.send')
+    def test_email_notification(self, send_mock):
+        self.report.email_recipient = "foo@bar.com"
+        self.report.save()
+        notify_delayed_report_email(self.report.pk)
+        send_mock.assert_called_with()
+
+    @patch('squad.core.models.DelayedReport.send')
+    def test_email_notification_sent_earlier(self, send_mock):
+        self.report.email_recipient = "foo@bar.com"
+        self.report.email_recipient_notified = True
+        self.report.save()
+        notify_delayed_report_email(self.report.pk)
+        send_mock.assert_not_called()
