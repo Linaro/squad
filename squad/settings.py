@@ -274,7 +274,9 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'squad.core.tasks.remove_delayed_reports',
         'schedule': crontab(hour='7', minute=21),
     }
-
+}
+CELERY_TASK_ROUTES = {
+    'squad.core.tasks.prepare_report': {'queue': 'reporting_queue'},
 }
 
 REST_FRAMEWORK = {
