@@ -229,7 +229,7 @@ class LatestTestResults(object):
     def __init__(self, build, test_name):
         self.build = build
         self.environments = build.project.environments.all()
-        test_suite_name, test_case_name = test_name.split("/", 1)
+        test_suite_name, test_case_name = test_name.rsplit("/", 1)
         self.test_list = Test.objects.filter(
             test_run__build=self.build,
             test_run__environment__in=self.environments,
