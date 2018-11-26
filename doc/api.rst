@@ -210,6 +210,40 @@ following additional routes:
   - baseline - ID of the Build object to be used as comparison baseline. The default
     is "previous finished" build in the same project.
 
+- report (/api/build/<id>/report/)
+
+  This API accepts both GET and POST requests.
+
+  Provides non blocking version of 'email' API. Both calls will produce DelayedReport
+  objects which cache the results of the call. Non blocking version ('report')
+  is recommended as it is executed in separate process on the worker node and
+  doesn't affect web frontend performance or memory consumption. Reports might be
+  resource hungry and long running which causes webserver requests to time out.
+  Non blocking call returns immediately returning url to the cached resource.
+  Final results can be retrieved by:
+
+  - email notification
+  - callback notification
+  - polling the result URL - Results are completed when 'status_code' field
+    is filled in (not None/Null)
+
+  'report' API has following options:
+
+  - output - mime type to be generated. Defaults to "text/plain". Can also be set
+    to "text/html". Using HTML requires HTML part of the EmailTemplate to be defined
+
+  - template - ID of the EmailTemplate to be used
+  - baseline - ID of the Build object to be used as comparison baseline. The default
+    is "previous finished" build in the same project.
+  - email_recipient - email address which is notified when report is ready
+  - callback - URL which SQUAD calls when report is ready. Call is made using POST
+    request type. Call can be secured with token
+  - callback_token - token/password for securing callback. When "callback" option
+    is present it adds "Authorization" and "Auth-Token" headers to the HTTP POST
+    call. It is recommended to send this option usig POST request to avoid password
+    leakage.
+  - keep - number of days to keep the cached reports in the database
+
 With enough privileges Builds can also be created, modified and deleted
 using REST API with POST, PUT and DELETE HTTP requests respectively. This is
 however not recommended.
@@ -302,6 +336,19 @@ Provides access to MetricThreshold object.
 
 With enough privileges MetricThreshold can also be created, modified and deleted
 using REST API with POST, PUT and DELETE HTTP requests respectively
+
+reports (/api/reports/)
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Provides access to results of /api/build/<id>/email and /api/build/<id>/report
+results. Both of these endpoints create DelayedReport objects and present
+them to the user. The difference is that 'email' API is blocking and 'report'
+is not blocking (returns immediately).
+
+status_code field in the reports endpoint will indicate whether the report is
+ready. If the field is empty, the report wasn't prepared yet. status_code follows
+the HTTP status codes. Anything else that 200 in status_code field suggests
+a problem. error_message field can be checked to learn about issue details.
 
 REST API Schema (for CLI)
 -------------------------
