@@ -271,9 +271,17 @@ class Backend(BaseBackend):
         return self.proxy.scheduler.get_publisher_event_socket()
 
     def __parse_results__(self, data, test_job):
-        lava_infra_error_messages = []
+        infra_messages_re_list = []
         if self.settings is not None:
             lava_infra_error_messages = self.settings.get('CI_LAVA_INFRA_ERROR_MESSAGES', [])
+            for message_re in lava_infra_error_messages:
+                try:
+                    r = re.compile(message_re, re.I)
+                    infra_messages_re_list.append(r)
+                except re.error:
+                    # ignore incorrect expressions
+                    self.log_debug("'%s' is not a valid regex" % message_re)
+
         definition = yaml.load(data['definition'])
         if data['multinode_definition']:
             definition = yaml.load(data['multinode_definition'])
@@ -327,15 +335,6 @@ class Backend(BaseBackend):
                         if error_type in ['Infrastructure', 'Lava', 'Job']:
                             completed = False
                         # automatically resubmit in some cases
-                        infra_messages_re_list = []
-                        for message_re in lava_infra_error_messages:
-                            try:
-                                r = re.compile(message_re, re.I)
-                                infra_messages_re_list.append(r)
-                            except re.error:
-                                # ignore incorrect expressions
-                                self.log_debug("'%s' is not a valid regex" % message_re)
-                                continue
                         if error_type in ['Infrastructure', 'Job', 'Test'] and \
                                 len(infra_messages_re_list) > 0:
                             for regex in infra_messages_re_list:
