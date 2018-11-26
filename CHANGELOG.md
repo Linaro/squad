@@ -1,3 +1,16 @@
+# 0.55
+
+* frontend:
+  * fix handling of custom templates for 404 and 401 reponses
+  * Merge angular apps on build page into one.
+* core, frontend: implement data retention policy
+* celery: log memory usage for tasks that use more than 1MB
+* ci:
+  * fix testjobs resubmit
+* api:
+  * gracefully handle incorrect project IDs in filters
+  * fix test comparison results
+
 # 0.54
 
 * frontend:
