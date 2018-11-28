@@ -139,6 +139,9 @@ class API(routers.APIRootView):
       the project in question.
 
     * All URLs displayed in this API browser are clickable.
+
+    * Client interaction is enabled with <a href="/api/schema/">/api/schema</a>
+    URL.
     """
 
     def get_view_name(self):

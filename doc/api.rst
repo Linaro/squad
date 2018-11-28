@@ -287,6 +287,23 @@ patchsources (/api/patchsources/)
 
 Provides access to PatchSource object.
 
+REST API Schema (for CLI)
+-------------------------
+
+SQUAD's API supports API clients. Example is coreapi. In order for client
+to understand the API SQUAD generates schema file. Schema is dynamically
+built and it's available at /api/schema URL. Example usage with coreapi-cli:
+
+::
+
+  coreapi get https://<host_tld>/api/schema
+  coreapi action projects list
+
+More details about coreapi can be found on coreapi website and DRF website:
+
+ * http://www.coreapi.org/
+ * https://www.django-rest-framework.org/topics/api-clients/
+
 Badges
 ------
 
