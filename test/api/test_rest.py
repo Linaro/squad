@@ -170,7 +170,7 @@ class RestApiTest(TestCase):
         UpdateProjectStatus()(self.testrun2)
         UpdateProjectStatus()(self.testrun3)
         response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build3.id, self.invalidemailtemplate.pk))
-        self.assertEqual(500, response.status_code)
+        self.assertEqual(400, response.status_code)
 
     def test_builds_email_custom_baseline(self):
         UpdateProjectStatus()(self.testrun)
@@ -180,12 +180,12 @@ class RestApiTest(TestCase):
     def test_builds_email_custom_baseline_missing_status(self):
         UpdateProjectStatus()(self.testrun)
         response = self.client.get('/api/builds/%d/email/?baseline=%s' % (self.build.id, self.build2.id))
-        self.assertEqual(500, response.status_code)
+        self.assertEqual(400, response.status_code)
 
     def test_builds_email_custom_invalid_baseline(self):
         UpdateProjectStatus()(self.testrun)
         response = self.client.get('/api/builds/%d/email/?baseline=999' % (self.build.id))
-        self.assertEqual(500, response.status_code)
+        self.assertEqual(400, response.status_code)
 
     def test_build_testruns(self):
         data = self.hit('/api/builds/%d/testruns/' % self.build.id)
