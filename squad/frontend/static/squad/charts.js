@@ -109,11 +109,15 @@ app.factory('ChartPanel', function() {
         var current_data = _.filter(data, function(point) {
             return point[0] >= minLimit && point[0] <= maxLimit
         }).map(function(point){
-            return {
+            var data_point = {
                 x: point[0],
                 y: point[1],
                 build_id: point[2]
             }
+            if (point.length > 4) {
+                data_point['metric_id'] = point[4]
+            }
+            return data_point
         })
         return current_data
     }
@@ -130,10 +134,77 @@ app.factory('ChartPanel', function() {
         }
     }
 
+    ChartPanel.getDatasetByLabel = function(datasets, label) {
+        return _.find(datasets, function(element) {
+            return element.label == label
+        })
+    }
+
     ChartPanel.slider = {
         defaultResultsLimit: 0.8,
         rangeMax: 100
     };
+    ChartPanel.OUTLIER_LABEL = "outliers"
+    ChartPanel.OUTLIER_DATASET_OPTIONS = {
+        label: ChartPanel.OUTLIER_LABEL,
+        fill: false,
+        borderWidth: 2,
+        pointRadius: 1.5,
+        backgroundColor: "#ff0000",
+        borderColor: "#ff2222",
+        showLine: false,
+        data: []
+    }
+
+    ChartPanel.putDatapoint = function(data, data_point) {
+        // Finds the right place for the data_point in data, based
+        // on the datetime value, via binary search.
+        var left = 0
+        var right = data.length - 1
+        while (left <= right) {
+            var mid = left + Math.round((right-left)/2)
+            if (data_point.x < data[mid].x && data_point.x >= data[mid-1].x) {
+                data.splice(mid, 0, data_point)
+                return
+            } else if (data_point.x < data[mid-1].x) {
+                if (mid == left + 1) {  // Leftmost one.
+                    data.splice(0, 0, data_point)
+                } else {
+                    right = mid - 1
+                }
+            } else {
+                if (mid == right) {  // Rightmost one.
+                    data.push(data_point)
+                    return
+                } else {
+                    left = mid
+                }
+            }
+        }
+    }
+
+    ChartPanel.moveOutlierDatapoint = function(datasets, data_point,
+                                               environment, is_outlier) {
+        // Move a datapoint from/to one dataset to/from the 'outlier' dataset.
+        // If the outlier dataset is not defined yet, set some default options
+        // for it and add it to the chart datasets.
+        var outlier_dataset = ChartPanel.getDatasetByLabel(
+            datasets, ChartPanel.OUTLIER_LABEL)
+        if (typeof outlier_dataset === 'undefined') {
+            outlier_dataset = ChartPanel.OUTLIER_DATASET_OPTIONS
+            datasets.push(outlier_dataset)
+        }
+        var target_dataset = ChartPanel.getDatasetByLabel(
+            datasets, environment)
+        if (!is_outlier) {
+            target_dataset.data.splice(data_point._index, 1)
+            outlier_dataset.data.push(data_point)
+        } else {
+            outlier_dataset.data.splice(data_point._index, 1)
+            ChartPanel.putDatapoint(target_dataset.data, data_point)
+        }
+
+    }
 
     ChartPanel.prototype.draw = function(target, environments, range) {
         var metric = this.metric
@@ -155,6 +226,20 @@ app.factory('ChartPanel', function() {
         var maxLimit = this.minDate +
             Math.round((this.maxDate - this.minDate) * maxCoefficient)
 
+        // Filter out outliers from data[env.name] first here and manage them
+        // separately.
+        data[ChartPanel.OUTLIER_LABEL] = []
+        _.each(selected_environments, function(env) {
+            data[env.name] = _.filter(data[env.name], function(point) {
+                if (point.length < 6 || point[5] == 'False') {
+                    return true
+                } else {
+                    data[ChartPanel.OUTLIER_LABEL].push(point)
+                    return false
+                }
+            })
+        })
+
         var datasets = _.map(selected_environments, function(env) {
             return {
                 label: env.name,
@@ -164,10 +249,20 @@ app.factory('ChartPanel', function() {
                 lineTension: 0,
                 backgroundColor: env.fill_color,
                 borderColor: env.line_color,
-                data: ChartPanel.filterData(
-                    data[env.name], minLimit, maxLimit)
+                data: ChartPanel.filterData(data[env.name], minLimit, maxLimit)
             }
         })
+
+        // Add outliers to dataset.
+        if (data[ChartPanel.OUTLIER_LABEL].length) {
+            // Shallow clone the static dict.
+            var outlier_dataset = Object.assign(
+                {}, ChartPanel.OUTLIER_DATASET_OPTIONS)
+            outlier_dataset.data = ChartPanel.filterData(
+                data[ChartPanel.OUTLIER_LABEL],
+                minLimit, maxLimit)
+            datasets.push(outlier_dataset)
+        }
 
         var ctx = document.createElement('canvas')
         target.appendChild(ctx)
@@ -233,9 +328,51 @@ app.factory('ChartPanel', function() {
             var point = scatterChart.getElementAtEvent(evt)[0]
             if (point) {
                 var data_point = datasets[point._datasetIndex].data[point._index]
-                var build = data_point.build_id
-                window.open('/' + DATA.project + '/build/' + build + '/',
-                            '_blank')
+                data_point._index = point._index
+                var project_location = '/' + DATA.project
+                var build_location = project_location + '/build/' +
+                    data_point.build_id + '/'
+                if (metric.name == ":tests:" || user == 'AnonymousUser') {
+                    window.open(build_location, '_blank')
+                } else {
+                    $("#point_menu").show()
+                    document.getElementById(
+                        'metric-' + metric.name).appendChild(
+                            document.getElementById("point_menu"))
+                    $("#point_menu").offset({
+                        top: evt.clientY + $(window).scrollTop() - 10,
+                        left: evt.clientX - 10
+                    })
+
+                    $("#point_menu > ul > li:first-child > a").attr(
+                        "href", build_location)
+                    $("#point_menu > ul > li:nth-child(2) > a").unbind("click").bind(
+                        "click",
+                        function() {
+                            var url = '/' + DATA.project
+                            $.ajax({
+                                url: project_location +
+                                    '/toggle-outlier-metric/' +
+                                    data_point.metric_id,
+                                type: "POST",
+                                data: {
+                                    csrfmiddlewaretoken: csrf_token,
+                                },
+                                success: function (data) {
+                                    var is_outlier = datasets[point._datasetIndex].label === ChartPanel.OUTLIER_LABEL
+                                    ChartPanel.moveOutlierDatapoint(
+                                        datasets,
+                                        data_point,
+                                        data.environment,
+                                        is_outlier)
+                                    scatterChart.update()
+                                    $("#point_menu").hide()
+                                },
+                            });
+
+                        }
+                    )
+                }
             }
         }
     }

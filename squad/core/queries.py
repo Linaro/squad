@@ -22,13 +22,15 @@ def get_metric_series(project, metric, environments):
         ).order_by(
             'test_run__datetime',
         ).values(
+            'id',
             'test_run__build__datetime',
             'test_run__build__version',
             'result',
             'test_run__build__annotation__description',
+            'is_outlier'
         )
         entry[environment] = [
-            [int(p['test_run__build__datetime'].timestamp()), p['result'], p['test_run__build__version'], p['test_run__build__annotation__description'] or ""] for p in series
+            [int(p['test_run__build__datetime'].timestamp()), p['result'], p['test_run__build__version'], p['test_run__build__annotation__description'] or "", p['id'], str(p['is_outlier'])] for p in series
         ]
     return entry
 
