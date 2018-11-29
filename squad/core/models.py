@@ -755,7 +755,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
     notified_on_timeout = models.BooleanField(default=False)
     approved = models.BooleanField(default=False)
 
-    metrics_summary = models.FloatField()
+    metrics_summary = models.FloatField(null=True)
     has_metrics = models.BooleanField(default=False)
 
     tests_pass = models.IntegerField(default=0)
