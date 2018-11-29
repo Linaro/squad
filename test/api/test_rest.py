@@ -136,16 +136,16 @@ class RestApiTest(TestCase):
         self.assertEqual(3, len(data['results']))
 
     def test_builds_status(self):
-        response = self.client.get('/api/builds/%d/status/' % self.build.id)
-        self.assertEqual(404, response.status_code)
-        # create ProjectStatus
-        UpdateProjectStatus()(self.testrun)
         self.hit('/api/builds/%d/status/' % self.build.id)
 
-    def test_builds_email(self):
+    def test_builds_email_missing_status(self):
+        # this should not happen normally, but let's test it anyway
+        self.build3.status.delete()
         response = self.client.get('/api/builds/%d/email/' % self.build3.id)
         self.assertEqual(404, response.status_code)
-        # create ProjectStatus
+
+    def test_builds_email(self):
+        # update ProjectStatus
         self.build2.test_jobs.all().delete()
         self.build3.test_jobs.all().delete()
         UpdateProjectStatus()(self.testrun2)
@@ -154,9 +154,7 @@ class RestApiTest(TestCase):
         self.assertIn('foo/test2', response)  # sanity check
 
     def test_builds_email_custom_template(self):
-        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build3.id, self.validemailtemplate.pk))
-        self.assertEqual(404, response.status_code)
-        # create ProjectStatus
+        # update ProjectStatus
         UpdateProjectStatus()(self.testrun2)
         UpdateProjectStatus()(self.testrun3)
         response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build3.id, self.validemailtemplate.pk))
@@ -164,9 +162,7 @@ class RestApiTest(TestCase):
         self.assertEqual("text/plain", response['Content-Type'])
 
     def test_builds_email_custom_invalid_template(self):
-        response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build3.id, self.invalidemailtemplate.pk))
-        self.assertEqual(404, response.status_code)
-        # create ProjectStatus
+        # update ProjectStatus
         UpdateProjectStatus()(self.testrun2)
         UpdateProjectStatus()(self.testrun3)
         response = self.client.get('/api/builds/%d/email/?template=%s' % (self.build3.id, self.invalidemailtemplate.pk))
@@ -179,6 +175,7 @@ class RestApiTest(TestCase):
 
     def test_builds_email_custom_baseline_missing_status(self):
         UpdateProjectStatus()(self.testrun)
+        self.build2.status.delete()
         response = self.client.get('/api/builds/%d/email/?baseline=%s' % (self.build.id, self.build2.id))
         self.assertEqual(400, response.status_code)
 

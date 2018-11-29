@@ -7,6 +7,7 @@ from hashlib import sha1
 
 from dateutil.relativedelta import relativedelta
 from django.db import models
+from django.db import transaction
 from django.db.models import Q, Count
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import Group as UserGroup
@@ -225,7 +226,9 @@ class Build(models.Model):
     def save(self, *args, **kwargs):
         if not self.datetime:
             self.datetime = timezone.now()
-        super(Build, self).save(*args, **kwargs)
+        with transaction.atomic():
+            super(Build, self).save(*args, **kwargs)
+            ProjectStatus.objects.get_or_create(build=self)
 
     def __str__(self):
         return '%s (%s)' % (self.version, self.datetime)
