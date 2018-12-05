@@ -1,6 +1,7 @@
 --exclude=squad/frontend/static/angularjs/*
 --exclude=squad/frontend/static/bootstrap/*
 --exclude=squad/frontend/static/font-awesome/*
+--exclude=node_modules/*
 --exclude=test/*
 --exclude=static/*
 --exclude=scripts/*
