@@ -82,16 +82,17 @@ class TestResultTable(list):
         query = """
         SELECT
           suite_id,
-          name,
+          core_test.name,
           SUM(CASE when result is null then 1 else 0 end) as skips,
           SUM(CASE when result is not null and not result and (has_known_issues is null or not has_known_issues) then 1 else 0 end) as fails,
           SUM(CASE when result is not null and not result and has_known_issues then 1 else 0 end) as xfails,
           SUM(CASE when result is null then 0 when result then 1 else 0 end) as passes
         FROM core_test
         JOIN core_testrun ON core_testrun.id = core_test.test_run_id
+        JOIN core_suite ON core_test.suite_id = core_suite.id
         WHERE core_testrun.build_id = %s
-        GROUP BY suite_id, name
-        ORDER BY fails DESC, xfails DESC, skips DESC, passes DESC, suite_id, name
+        GROUP BY suite_id, core_suite.slug, core_test.name
+        ORDER BY fails DESC, xfails DESC, skips DESC, passes DESC, core_suite.slug, core_test.name
         LIMIT %s
         OFFSET %s
         """
