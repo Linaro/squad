@@ -84,7 +84,7 @@ class TestResultTable(list):
           suite_id,
           name,
           SUM(CASE when result is null then 1 else 0 end) as skips,
-          SUM(CASE when result is not null and not result and not has_known_issues then 1 else 0 end) as fails,
+          SUM(CASE when result is not null and not result and (has_known_issues is null or not has_known_issues) then 1 else 0 end) as fails,
           SUM(CASE when result is not null and not result and has_known_issues then 1 else 0 end) as xfails,
           SUM(CASE when result is null then 0 when result then 1 else 0 end) as passes
         FROM core_test
