@@ -75,6 +75,10 @@ class Notification(object):
         return KnownIssue.active_by_project_and_test(self.project)
 
     @property
+    def thresholds(self):
+        return self.status.get_exceeded_thresholds()
+
+    @property
     def subject(self):
         summary = self.summary
         subject_data = {
@@ -109,6 +113,7 @@ class Notification(object):
             'known_issues': self.known_issues,
             'regressions': self.comparison.regressions,
             'fixes': self.comparison.fixes,
+            'thresholds': self.thresholds,
             'settings': settings,
             'summary': self.summary,
         }

@@ -22,5 +22,11 @@
     </a>
   </li>
 
+  <li role="presentation" {% if url_name == 'thresholds' %}class="active"{% endif %}>
+    <a href="{{project_section_url(project, 'thresholds')}}">
+      Threshold settings
+    </a>
+  </li>
+
   {% endwith %}
 </ul>

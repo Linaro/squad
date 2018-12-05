@@ -287,6 +287,22 @@ patchsources (/api/patchsources/)
 
 Provides access to PatchSource object.
 
+annotations (/api/annotations/)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Provides access to Annotation object.
+
+With enough privileges Annotation can also be created, modified and deleted
+using REST API with POST, PUT and DELETE HTTP requests respectively
+
+metricthresholds (/api/metricthresholds/)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Provides access to MetricThreshold object.
+
+With enough privileges MetricThreshold can also be created, modified and deleted
+using REST API with POST, PUT and DELETE HTTP requests respectively
+
 REST API Schema (for CLI)
 -------------------------
 
