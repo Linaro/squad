@@ -25,7 +25,7 @@ class TestResult(list):
         return super(TestResult, self).append(item)
 
     def ordering(self):
-        return tuple((-self.totals[k] for k in ("fail", "xfail", "skip", "pass", "n/a")))
+        return tuple((-self.totals[k] for k in ("fail", "xfail", "skip", "pass", "n/a"))) + (self.name,)
 
     def __lt__(self, other):
         return self.ordering() < other.ordering()
