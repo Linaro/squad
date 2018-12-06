@@ -401,3 +401,27 @@ Badge offers customization through following parameters:
   Changes the right part of the badge to use metrics instead of test results.
   In such case badge colour is set to green. In case both 'metrics' and
   'passrate' keywords are present, 'metrics' is ignored.
+
+Google Data Studio
+------------------
+
+SQUAD has an implementation of the Google Data Studio Community Connector under
+https://github.com/Linaro/squad/tree/master/scripts/community_connector/
+There is also an existing deployment which will pull data from
+https://qa-reports.linaro.org/ and resides in this location (it is currently
+restricted to Linaro members):
+
+::
+
+   https://datastudio.google.com/datasources/create?connectorId=AKfycbxnkmVPXZRad22brXQ6BIB3iG9-GPWbjZnXds0vTuU
+
+SQUAD Connector takes three arguments, token, group and project. The token
+argument is not required but then the dataset will be limited as for the
+non-authenticated user.
+After connecting it will display all the environments as metrics in the Data
+Studio, and it will use date and SQUAD metrics as dimensions. User can use
+this data to create reports and dashboards in the Google Data Studio as they
+see fit.
+
+User is also free to deploy an instance of the Connector of their own using the
+code and manifest presented in the codebase.
