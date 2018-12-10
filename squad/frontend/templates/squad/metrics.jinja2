@@ -63,8 +63,15 @@
   <div class='col-md-9'>
     <div id='charts'>
     </div>
+    <div id="point_menu" class="metrics-point-menu" onmouseleave="$(this).hide()">
+      <ul class="dropdown-menu">
+        <li><a target="_blank" href="#">View result</a></li>
+        <li><a href="#">Toggle outlier</a></li>
+      </ul>
+    </div>
   </div>
 </div>
+
 {% endblock %}
 
 {% block javascript %}
@@ -76,6 +83,8 @@ DATA = {
   'thresholds': {{thresholds|safe}},
   'data': {{data|safe}}
 }
+csrf_token = '{{ csrf_token }}'
+user = '{{request.user}}'
 </script>
 <script type="text/javascript" src="{{static("chartjs/Chart.bundle.js")}}"></script>
 <script type="text/javascript" src='{{static("squad/charts.js")}}'></script>

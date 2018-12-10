@@ -275,3 +275,42 @@ table.test-results-details {
 .build-nav-header {
     margin-top: 20px;
 }
+
+.metrics-point-menu {
+    display: none;
+}
+
+.metrics-point-menu ul {
+    position: absolute;
+    font-size: 12px;
+    z-index: 1;
+    display: block;
+}
+
+.metrics-point-menu li {
+    margin:0;
+    padding: 0;
+    zoom: 1;
+    float: left;
+    clear: left;
+    width: 100%;
+}
+
+.metrics-point-menu a {
+    text-decoration:none;
+    display:block;
+    padding:.2em .4em;
+    line-height:1.5;
+    zoom:1;
+}
+
+.metrics-point-menu a.print-state-hover,
+.metrics-point-menu a.print-state-active {
+    font-weight: normal;
+    margin: -1px;
+    background: #5f83b9;
+    color: #FFFFFF;
+    text-shadow: 0px 1px 1px #234386;
+    border-color: #466086;
+    -moz-border-radius: 0; -webkit-border-radius: 0; border-radius: 0;
+}

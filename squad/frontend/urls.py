@@ -37,4 +37,6 @@ urlpatterns = [
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/metadata$' % ((slug_pattern,) * 2), views.test_run_metadata, name='testrun_metadata'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/attachments/([^/]+)$' % ((slug_pattern,) * 2), views.attachment, name='attachment'),
     url(r'^testjob/(\d+)$', views.test_job, name='test_job'),
+    url(r'^(%s)/(%s)/toggle-outlier-metric/([^/]+)$' % ((slug_pattern,) * 2), views.toggle_outlier_metric, name='toggle_outlier_metric'),
+
 ]

@@ -16,7 +16,7 @@ from squad.core.models import Build
 from squad.core.queries import get_metric_data
 from squad.core.utils import join_name
 from squad.frontend.utils import file_type
-from squad.http import auth
+from squad.http import auth, auth_write
 from collections import OrderedDict
 
 
@@ -480,6 +480,25 @@ def thresholds(request, group_slug, project_slug):
         "environments": environments,
     }
     return render(request, 'squad/thresholds.jinja2', context)
+
+
+@auth
+@login_required
+def toggle_outlier_metric(request, group_slug, project_slug, metric_id):
+
+    try:
+        metric = Metric.objects.select_related("test_run__environment").get(
+            pk=metric_id)
+    except Metric.DoesNotExist:
+        raise Http404("Metric does not exist")
+
+    metric.is_outlier = not metric.is_outlier
+    metric.save()
+    return HttpResponse(
+        json.dumps(
+            {"id": metric.id,
+             "environment": metric.test_run.environment.slug}),
+        content_type='application/json')
 
 
 def test_job(request, testjob_id):
