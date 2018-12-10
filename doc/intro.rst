@@ -37,8 +37,8 @@ test results. ProjectStatus records the most recent build of a project, against
 which future results should be compared in search for important events to
 notify subscribers about. SQUAD also supports a metric threshold system, which
 will send notification to project subscribers if the test result metrics exceed
-a certain value. The threshold values will also appear in the charts.
-
+a certain value. The threshold values will also appear in the charts. Projects 
+have the `project_settings` field for any specific configuration it might require.
 
 .. _result_submit_ref_label:
 

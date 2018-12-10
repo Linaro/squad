@@ -123,6 +123,12 @@ class Project(models.Model):
         help_text="Delete builds older than this number of days. Set to 0 or any negative number to disable.",
     )
 
+    project_settings = models.TextField(
+        null=True,
+        blank=True,
+        validators=[yaml_validator]
+    )
+
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
         self.__status__ = None

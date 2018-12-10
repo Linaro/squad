@@ -17,7 +17,7 @@ class Backend(object):
 
     def __init__(self, data):
         self.data = data
-        self.settings = None
+        self.settings = {}
         if self.data is not None and \
                 self.data.backend_settings is not None and \
                 len(self.data.backend_settings) > 0:
