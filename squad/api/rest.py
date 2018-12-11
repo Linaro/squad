@@ -87,10 +87,21 @@ class TestRunFilter(filters.FilterSet):
 class TestJobFilter(filters.FilterSet):
     testrun = filters.RelatedFilter(TestRunFilter, name="testrun", queryset=TestRun.objects.all(), widget=forms.TextInput)
     target_build = filters.RelatedFilter(BuildFilter, name="target_build", queryset=Build.objects.all(), widget=forms.TextInput)
+    target = filters.RelatedFilter(ProjectFilter, name="target", queryset=Project.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = TestJob
-        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains']}
+        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  "environment": ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  "submitted": ['exact', 'in'],
+                  "fetched": ['exact', 'in'],
+                  "fetch_attempts": ['exact', 'in'],
+                  "last_fetch_attempt": ['exact', 'in', 'lt', 'gt', 'lte', 'gte'],
+                  "failure": ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  "can_resubmit": ['exact', 'in'],
+                  "resubmitted_count": ['exact', 'in'],
+                  "job_status": ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  "job_id": ['exact', 'in', 'startswith', 'contains', 'icontains']}
 
 
 class SuiteFilter(filters.FilterSet):
@@ -781,6 +792,7 @@ class TestJobViewSet(ModelViewSet):
         "can_resubmit",
         "resubmitted_count",
         "job_status",
+        "job_id",
         "backend",
         "target",
         "testrun",
