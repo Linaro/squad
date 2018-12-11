@@ -123,3 +123,32 @@ class ApiDataTest(TestCase):
 
         resp = web_client.get('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')
         self.assertEqual(200, resp.status_code)
+
+    def test_all_metrics(self):
+        self.receive("2018-09-01", metrics={
+            "foo": 1,
+            "bar/baz": 2,
+        })
+
+        self.receive("2018-09-02", metrics={
+            "foo": 2,
+            "bar/baz": 3,
+        })
+
+        resp = self.client.get_json(
+            '/api/data/mygroup/myproject?environment=env1')
+        json = resp.data
+        self.assertEqual(dict, type(json['foo']))
+        self.assertEqual(dict, type(json['bar/baz']))
+
+        first = json['foo']['env1'][0]
+        second = json['foo']['env1'][1]
+        self.assertEqual([1535760000, 1.0], first[0:2])
+        self.assertEqual([1535846400, 2.0], second[0:2])
+
+        first = json['bar/baz']['env1'][0]
+        second = json['bar/baz']['env1'][1]
+        self.assertEqual([1535760000, 2.0], first[0:2])
+        self.assertEqual([1535846400, 3.0], second[0:2])
+
+        self.assertEqual('application/json; charset=utf-8', resp.http['Content-Type'])
