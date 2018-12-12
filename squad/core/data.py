@@ -60,7 +60,7 @@ class JSONMetricDataParser(object):
         for key, value in input_data.items():
             group_name, name = parse_name(key)
             result, measurements = parse_metric(value)
-            if result and not (math.isnan(result) or math.isinf(result)):
+            if result is not None and not (math.isnan(result) or math.isinf(result)):
                 data.append({
                     "name": name,
                     "group_name": group_name,
