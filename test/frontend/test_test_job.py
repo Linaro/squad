@@ -9,37 +9,31 @@ class TestJobViewTest(TestCase):
 
     def setUp(self):
         self.client = Client()
-
-    def test_basics(self):
-        group = core_models.Group.objects.create(slug='mygroup')
-        project = group.projects.create(slug='myproject')
-        backend = models.Backend.objects.create(
+        self.group = core_models.Group.objects.create(slug='mygroup')
+        self.project = self.group.projects.create(slug='myproject')
+        self.build = self.project.builds.create(version='1')
+        self.backend = models.Backend.objects.create(
             url='http://example.com',
             username='foobar',
             token='mypassword',
         )
+
+    def test_basics(self):
         testjob = models.TestJob.objects.create(
-            target=project,
-            build='1',
+            target=self.project,
+            target_build=self.build,
             environment='myenv',
-            backend=backend,
+            backend=self.backend,
         )
         self.assertIsNone(testjob.job_id)
 
     def test_testjob_page(self):
-        group = core_models.Group.objects.create(slug='mygroup')
-        project = group.projects.create(slug='myproject')
-        backend = models.Backend.objects.create(
-            url='http://example.com',
-            username='foobar',
-            token='mypassword',
-        )
         job_id = 1234
         testjob = models.TestJob.objects.create(
-            target=project,
-            build='1',
+            target=self.project,
+            target_build=self.build,
             environment='myenv',
-            backend=backend,
+            backend=self.backend,
             job_id=job_id
         )
 
@@ -54,24 +48,17 @@ class TestJobViewTest(TestCase):
             def job_url(self, job_id):
                 return return_url
 
-        group = core_models.Group.objects.create(slug='mygroup')
-        project = group.projects.create(slug='myproject')
-        backend = models.Backend.objects.create(
-            url='http://example.com',
-            username='foobar',
-            token='mypassword',
-        )
         implementation.return_value = BackendImpl()
         testjob = models.TestJob.objects.create(
-            target=project,
-            build='1',
+            target=self.project,
+            target_build=self.build,
             environment='myenv',
-            backend=backend,
+            backend=self.backend,
             job_id=1234
         )
 
         response = self.client.get('/testjob/%s' % testjob.id)
-        backend.get_implementation.assert_called()
+        self.backend.get_implementation.assert_called()
         self.assertEqual(302, response.status_code)
         self.assertEqual(return_url, response.url)
 

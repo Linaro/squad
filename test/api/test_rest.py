@@ -38,7 +38,6 @@ class RestApiTest(TestCase):
             backend=self.backend,
             target=self.project,
             target_build=self.build,
-            build='1',
             environment='myenv',
             testrun=self.testrun
         )
@@ -47,7 +46,6 @@ class RestApiTest(TestCase):
             backend=self.backend,
             target=self.project,
             target_build=self.build2,
-            build='2',
             environment='myenv',
             testrun=self.testrun2
         )
@@ -56,7 +54,6 @@ class RestApiTest(TestCase):
             backend=self.backend,
             target=self.project,
             target_build=self.build3,
-            build='3',
             environment='myenv',
             testrun=self.testrun3
         )

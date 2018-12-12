@@ -246,6 +246,7 @@ class LavaTest(TestCase):
             name="project_foo",
             group=self.group,
         )
+        self.build = self.project.builds.create(version='1')
 
     def test_detect(self):
         impl = self.backend.get_implementation()
@@ -576,7 +577,7 @@ class LavaTest(TestCase):
         testjob = TestJob.objects.create(
             backend=self.backend,
             target=self.project,
-            build='1',
+            target_build=self.build,
             environment='myenv',
             submitted=True,
             fetched=False,
@@ -614,7 +615,7 @@ class LavaTest(TestCase):
         testjob = TestJob.objects.create(
             backend=self.backend,
             target=self.project,
-            build='1',
+            target_build=self.build,
             environment='myenv',
             submitted=True,
             fetched=False,

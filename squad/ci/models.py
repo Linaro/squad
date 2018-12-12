@@ -99,7 +99,7 @@ class Backend(models.Model):
             try:
                 receive = ReceiveTestRun(test_job.target, update_project_status=False)
                 testrun = receive(
-                    version=test_job.build,
+                    version=test_job.target_build.version,
                     environment_slug=test_job.environment,
                     metadata_file=json.dumps(metadata),
                     tests_file=json.dumps(tests),
@@ -158,7 +158,6 @@ class TestJob(models.Model):
 
     # input - for TestRun later
     target = models.ForeignKey(Project)
-    build = models.CharField(max_length=100)
     target_build = models.ForeignKey(Build, related_name='test_jobs', null=True, blank=True)
     environment = models.CharField(max_length=100, validators=[slug_validator])
 
@@ -180,10 +179,6 @@ class TestJob(models.Model):
     resubmitted_count = models.IntegerField(default=0)
     # reference to the job that was used as base for resubmission
     parent_job = models.ForeignKey('self', default=None, blank=True, null=True, related_name="resubmitted_jobs")
-
-    def save(self, *args, **kwargs):
-        self.target_build = self.target.builds.filter(version=self.build).first()
-        super(TestJob, self).save(*args, **kwargs)
 
     def success(self):
         return not self.failure
