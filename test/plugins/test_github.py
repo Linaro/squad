@@ -41,24 +41,14 @@ class GithubPluginTest(TestCase):
 
     @patch('squad.plugins.github.Plugin.__github_post__')
     def test_notify_patch_build_finished_no_failures(self, __github_post__):
-        ProjectStatus.objects.create(
-            build=self.build,
-            tests_pass=1,
-            tests_fail=0,
-            tests_skip=0,
-            metrics_summary=0,
-        )
+        self.build.status.tests_pass = 1
+        self.build.status.save()
         state, _ = self.github.__get_finished_state__(self.build)
         self.assertEquals("success", state)
 
     @patch('squad.plugins.github.Plugin.__github_post__')
     def test_notify_patch_build_finished_with_failures(self, __github_post__):
-        ProjectStatus.objects.create(
-            build=self.build,
-            tests_pass=0,
-            tests_fail=1,
-            tests_skip=0,
-            metrics_summary=0,
-        )
+        self.build.status.tests_fail = 1
+        self.build.status.save()
         state, _ = self.github.__get_finished_state__(self.build)
         self.assertEquals("failure", state)

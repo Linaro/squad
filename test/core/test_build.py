@@ -255,3 +255,7 @@ class BuildTest(TestCase):
         }
         with patch('squad.core.models.Build.metadata', m):
             self.assertEqual({'my key': 'my value'}, build.important_metadata)
+
+    def test_create_project_status(self):
+        build = Build.objects.create(project=self.project, version='1.0')
+        self.assertIsNotNone(build.status)

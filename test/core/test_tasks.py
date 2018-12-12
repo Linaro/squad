@@ -341,11 +341,11 @@ class ReceiveTestRunTest(TestCase):
         testrun = TestRun.objects.last()
         self.assertEqual(1, ProjectStatus.objects.filter(build=testrun.build).count())
 
-    def test_dont_update_project_status(self):
+    @patch('squad.core.tasks.UpdateProjectStatus.__call__')
+    def test_dont_update_project_status(self, UpdateProjectStatus):
         receive = ReceiveTestRun(self.project, update_project_status=False)
         receive('199', 'myenv')
-        testrun = TestRun.objects.last()
-        self.assertEqual(0, ProjectStatus.objects.filter(build=testrun.build).count())
+        UpdateProjectStatus.assert_not_called()
 
 
 class TestValidateTestRun(TestCase):

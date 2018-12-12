@@ -531,12 +531,12 @@ class BuildViewSet(ModelViewSet):
                 data = {
                     "message": "Build %s does not exist" % baseline_id
                 }
-                return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
             except ProjectStatus.DoesNotExist:
                 data = {
                     "message": "Build %s has no status" % baseline_id
                 }
-                return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
         if hasattr(self.get_object(), "status"):
             pr_status = self.get_object().status
@@ -559,7 +559,7 @@ class BuildViewSet(ModelViewSet):
                         "txt": template.plain_text,
                         "html": template.html
                     })
-                return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
             except TypeError as te:
                 data = {"message": str(te)}
                 if template is not None:
@@ -567,7 +567,7 @@ class BuildViewSet(ModelViewSet):
                         "txt": template.plain_text,
                         "html": template.html
                     })
-                return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({}, status=status.HTTP_404_NOT_FOUND)
 
