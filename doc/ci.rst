@@ -129,6 +129,10 @@ LAVA backend supports the following settings:
  - CI_LAVA_SEND_ADMIN_EMAIL
    boolean flag that prevents sending admin emails for each resubmitted
    job when set to ``False``
+ - CI_LAVA_HANDLE_SUITE
+   boolean flag that parses results from LAVA test suite when
+   set to ``True``. Please note that this option can be overwritten by
+   having the same option with different value in Project `project_settings`
 
 Example LAVA backend settings:
 
@@ -142,5 +146,6 @@ Example LAVA backend settings:
       - 'enter-vexpress-mcc timed out'
       - 'Unable to fetch git repository'
     CI_LAVA_SEND_ADMIN_EMAIL: False
+    CI_LAVA_HANDLE_SUITE: True
 
 .. vim: ts=4 sw=4 et=1

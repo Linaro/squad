@@ -271,16 +271,12 @@ class Backend(BaseBackend):
         return self.proxy.scheduler.get_publisher_event_socket()
 
     def __parse_results__(self, data, test_job):
-        infra_messages_re_list = []
-        if self.settings is not None:
-            lava_infra_error_messages = self.settings.get('CI_LAVA_INFRA_ERROR_MESSAGES', [])
-            for message_re in lava_infra_error_messages:
-                try:
-                    r = re.compile(message_re, re.I)
-                    infra_messages_re_list.append(r)
-                except re.error:
-                    # ignore incorrect expressions
-                    self.log_debug("'%s' is not a valid regex" % message_re)
+        handle_lava_suite = self.settings.get('CI_LAVA_HANDLE_SUITE', False)
+        if hasattr(test_job, 'target') and test_job.target.project_settings is not None:
+            project_settings = yaml.load(test_job.target.project_settings)
+            tmp_handle_lava = project_settings.get('CI_LAVA_HANDLE_SUITE')
+            if tmp_handle_lava is not None:
+                handle_lava_suite = tmp_handle_lava
 
         definition = yaml.load(data['definition'])
         if data['multinode_definition']:
@@ -303,7 +299,7 @@ class Backend(BaseBackend):
             completed = False
         else:
             for result in data['results']:
-                if result['suite'] != 'lava':
+                if handle_lava_suite or result['suite'] != 'lava':
                     suite = result['suite'].split("_", 1)[-1]
                     res_name = "%s/%s" % (suite, result['name'])
                     # YAML from LAVA has all values serialized to strings
@@ -326,29 +322,42 @@ class Backend(BaseBackend):
                             res_name = "%s-%s" % (res_name, job_metadata['testsuite'])
                         results.update({res_name: result['result']})
                         metrics.update({res_time_name: float(result['measurement'])})
-                    if result['name'] == 'job' and result['result'] == 'fail':
-                        metadata = result['metadata']
-                        test_job.failure = str(metadata)
-                        test_job.save()
-                        error_type = metadata.get('error_type', None)
-                        # detect jobs failed because of infrastructure issues
-                        if error_type in ['Infrastructure', 'Lava', 'Job']:
-                            completed = False
-                        # automatically resubmit in some cases
-                        if error_type in ['Infrastructure', 'Job', 'Test'] and \
-                                len(infra_messages_re_list) > 0:
-                            for regex in infra_messages_re_list:
-                                if regex.search(metadata['error_msg']) is not None and \
-                                        test_job.resubmitted_count < 3:
-                                    resubmitted_job = self.resubmit(test_job)
-                                    if self.settings.get('CI_LAVA_SEND_ADMIN_EMAIL', True):
-                                        # delay sending email by 15 seconds to allow the database object to be saved
-                                        send_testjob_resubmit_admin_email.apply_async(args=[test_job.pk, resubmitted_job.pk], countdown=15)
-                                    # re-submit the job only once
-                                    # even if there are more matches
-                                    break
+
+                # Handle failed lava jobs
+                if result['suite'] == 'lava' and result['name'] == 'job' and result['result'] == 'fail':
+                    metadata = result['metadata']
+                    test_job.failure = str(metadata)
+                    test_job.save()
+                    error_type = metadata.get('error_type', None)
+                    # detect jobs failed because of infrastructure issues
+                    if error_type in ['Infrastructure', 'Job', 'Lava']:
+                        completed = False
+                    # automatically resubmit in some cases
+                    if error_type in ['Infrastructure', 'Job', 'Test']:
+                        self.__resubmit_job__(test_job, metadata)
 
         return (data['status'], completed, job_metadata, results, metrics)
+
+    def __resubmit_job__(self, test_job, metadata):
+        infra_messages_re_list = []
+        for message_re in self.settings.get('CI_LAVA_INFRA_ERROR_MESSAGES', []):
+            try:
+                r = re.compile(message_re, re.I)
+                infra_messages_re_list.append(r)
+            except re.error:
+                # ignore incorrect expressions
+                self.log_debug("'%s' is not a valid regex" % message_re)
+
+        for regex in infra_messages_re_list:
+            if regex.search(metadata['error_msg']) is not None and \
+                    test_job.resubmitted_count < 3:
+                resubmitted_job = self.resubmit(test_job)
+                if self.settings.get('CI_LAVA_SEND_ADMIN_EMAIL', True):
+                    # delay sending email by 15 seconds to allow the database object to be saved
+                    send_testjob_resubmit_admin_email.apply_async(args=[test_job.pk, resubmitted_job.pk], countdown=15)
+                # re-submit the job only once
+                # even if there are more matches
+                break
 
     def receive_event(self, topic, data):
         if topic.split('.')[-1] != "testjob":
