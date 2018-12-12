@@ -1,3 +1,24 @@
+# 0.56
+
+* api:
+  * add schema for REST API clients.
+  * make api/data returns all results if the metrics is not specified.
+  * add endpoint for delayed reports, which are produced in the background
+* ci
+  * lava: add option to handle lava suite
+  * ensure that CI test jobs are always explicitly linked to a target Build
+    object.
+* core:
+  * Always create a ProjectStatus instance together with a Build one. This
+    solves a long-standing issue where builds that did not receive any test
+    results yet do not show up in the UI.
+* core, frontend:
+  * add support specifying metric thresholds.
+  * add support for marking points as outliers.
+  * squad.core.data: fix result checking
+* frontend:
+  * limit filtering on build page to suite names
+
 # 0.55
 
 * frontend:
