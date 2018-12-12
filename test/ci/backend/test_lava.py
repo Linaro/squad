@@ -75,6 +75,20 @@ TEST_RESULTS = [
      'timeout': '',
      'unit': '',
      'url': '/results/testcase/12345'},
+    {'duration': '',
+     'job': '123456',
+     'level': 'None',
+     'logged': '2018-02-15 11:31:21.973616+00:00',
+     'measurement': '0E-10',
+     'metadata': {'case': 'power-off',
+                  'definition': 'lava',
+                  'result': 'pass'},
+     'name': 'power-off',
+     'result': 'pass',
+     'suite': 'lava',
+     'timeout': '',
+     'unit': '',
+     'url': '/results/testcase/123456'},
 ]
 
 TEST_RESULTS_INFRA_FAILURE = [
@@ -329,60 +343,79 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results_ignore_lava_suite_backend_settings(self, get_results, get_details, get_logs):
         self.backend.backend_settings = 'CI_LAVA_HANDLE_SUITE: true'
-        lava = self.backend.get_implementation()
+        lava = self.backend
         testjob = TestJob(
             job_id='1234',
-            backend=self.backend)
-        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+            backend=self.backend,
+            target=self.project,
+            target_build=self.build)
+        lava.fetch(testjob)
+        results = testjob.testrun.tests
+        metrics = testjob.testrun.metrics
 
-        self.assertEqual(lava.settings.get('CI_LAVA_HANDLE_SUITE'), True)
-        self.assertEqual(len(results), 2)
-        self.assertEqual(len(metrics), 2)
-        self.assertEqual(None, results.get('boot/device_foo'))
-        self.assertEqual('pass', results['lava/validate'])
-        self.assertEqual(29.72, metrics['lava/auto-login-action'])
+        self.assertEqual(True, lava.get_implementation().settings.get('CI_LAVA_HANDLE_SUITE'))
+        self.assertEqual(2, results.count())
+        self.assertEqual(3, metrics.count())
+        self.assertEqual(0, results.filter(name='device_foo').count())
+        self.assertEqual(True, results.filter(name='validate').get().result)
+        self.assertEqual(3, testjob.testrun.metrics.count())
+        self.assertEqual(29.72, metrics.filter(name='auto-login-action').get().result)
+        self.assertEqual(0.0, metrics.filter(name='power-off').get().result)
+        self.assertEqual(10.0, metrics.filter(name='case_foo').get().result)
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results_ignore_lava_suite_project_settings(self, get_results, get_details, get_logs):
         self.project.project_settings = 'CI_LAVA_HANDLE_SUITE: true'
-        lava = self.backend.get_implementation()
+        lava = self.backend
         testjob = TestJob(
             job_id='1234',
             backend=self.backend,
-            target=self.project)
-        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+            target=self.project,
+            target_build=self.build)
+        lava.fetch(testjob)
+        results = testjob.testrun.tests
+        metrics = testjob.testrun.metrics
 
-        self.assertEqual(lava.settings.get('CI_LAVA_HANDLE_SUITE'), None)
-        self.assertEqual(len(results), 2)
-        self.assertEqual(len(metrics), 2)
-        self.assertEqual(None, results.get('boot/device_foo'))
-        self.assertEqual('pass', results['lava/validate'])
-        self.assertEqual(29.72, metrics['lava/auto-login-action'])
+        self.assertEqual(None, lava.get_implementation().settings.get('CI_LAVA_HANDLE_SUITE'))
+        self.assertEqual(2, results.count())
+        self.assertEqual(3, metrics.count())
+        self.assertEqual(0, results.filter(name='device_foo').count())
+        self.assertEqual(True, results.filter(name='validate').get().result)
+        self.assertEqual(3, testjob.testrun.metrics.count())
+        self.assertEqual(29.72, metrics.filter(name='auto-login-action').get().result)
+        self.assertEqual(0.0, metrics.filter(name='power-off').get().result)
+        self.assertEqual(10.0, metrics.filter(name='case_foo').get().result)
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results_ignore_lava_suite_project_settings_overwrites_backend(self, get_results, get_details, get_logs):
         self.backend.backend_settings = 'CI_LAVA_HANDLE_SUITE: true'
-        lava = self.backend.get_implementation()
+        lava = self.backend
 
         # Project settings has higher priority than backend settings
         self.project.project_settings = 'CI_LAVA_HANDLE_SUITE: false'
         testjob = TestJob(
             job_id='1234',
             backend=self.backend,
-            target=self.project)
-        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+            target=self.project,
+            target_build=self.build)
+        lava.fetch(testjob)
+        results = testjob.testrun.tests
+        metrics = testjob.testrun.metrics
 
-        self.assertEqual(lava.settings.get('CI_LAVA_HANDLE_SUITE'), True)
-        self.assertEqual(len(results), 2)
-        self.assertEqual(len(metrics), 2)
-        self.assertEqual('pass', results['boot/device_foo'])
-        self.assertEqual(29.72, metrics['boot/time-device_foo'])
-        self.assertEqual(None, results.get('lava/validate'))
-        self.assertEqual(None, metrics.get('lava/auto-login-action'))
+        self.assertEqual(True, lava.get_implementation().settings.get('CI_LAVA_HANDLE_SUITE'))
+        self.assertEqual(2, results.count())
+        self.assertEqual(2, metrics.count())
+        self.assertEqual(1, results.filter(name='device_foo').count())
+        self.assertEqual(0, results.filter(name='validate').count())
+        self.assertEqual(2, testjob.testrun.metrics.count())
+        self.assertEqual(0, metrics.filter(name='power-off').count())
+        self.assertEqual(0, metrics.filter(name='auto-login-action').count())
+        self.assertEqual(29.72, metrics.filter(name='time-device_foo').get().result)
+        self.assertEqual(10.0, metrics.filter(name='case_foo').get().result)
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
