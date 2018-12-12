@@ -2,10 +2,10 @@ from django.db.models import Max
 from django.utils import timezone
 
 from squad.celery import app as celery
-from squad.core.models import Project, ProjectStatus, Build
+from squad.core.models import Project, ProjectStatus, Build, DelayedReport
 from squad.core.notification import send_status_notification
 
-
+import requests
 import logging
 
 
@@ -67,3 +67,26 @@ def notify_patch_build_finished(build_id):
     if patch_source:
         plugin = patch_source.get_implementation()
         plugin.notify_patch_build_finished(build)
+
+
+@celery.task
+def notify_delayed_report_callback(delayed_report_id):
+    delayed_report = DelayedReport.objects.get(pk=delayed_report_id)
+    if delayed_report.callback and not delayed_report.callback_notified:
+        data = {'text': delayed_report.output_text, 'html': delayed_report.output_html}
+        session = requests.Session()
+        req = requests.Request('POST', delayed_report.callback, data=data)
+        prepared_post = session.prepare_request(req)
+        if delayed_report.callback_token:
+            prepared_post.headers['Authorization'] = delayed_report.callback_token
+            prepared_post.headers['Auth-Token'] = delayed_report.callback_token
+        session.send(prepared_post)
+        delayed_report.callback_notified = True
+        delayed_report.save()
+
+
+@celery.task
+def notify_delayed_report_email(delayed_report_id):
+    delayed_report = DelayedReport.objects.get(pk=delayed_report_id)
+    if delayed_report.email_recipient and not delayed_report.email_recipient_notified:
+        delayed_report.send()

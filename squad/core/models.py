@@ -12,12 +12,13 @@ from django.db.models import Q, Count
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import Group as UserGroup
 from django.contrib.auth.models import User
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
 from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
-
 
 from squad.core.utils import random_token, parse_name, join_name, yaml_validator
 from squad.core.comparison import TestComparison
@@ -389,6 +390,40 @@ class BuildPlaceholder(models.Model):
 
     class Meta:
         unique_together = ('project', 'version',)
+
+
+class DelayedReport(models.Model):
+    build = models.ForeignKey(Build, related_name="delayed_reports")
+    baseline = models.ForeignKey('ProjectStatus', related_name="delayed_report_baselines", null=True, blank=True)
+    output_format_choices = (('text/plain', 'text/plain'), ('text/html', 'text/html'))
+    output_format = models.CharField(max_length=32, choices=output_format_choices)
+    template = models.ForeignKey(EmailTemplate, null=True, blank=True)
+    email_recipient = models.EmailField(null=True, blank=True)
+    email_recipient_notified = models.BooleanField(default=False)
+    callback = models.URLField(null=True, blank=True)
+    callback_token = models.CharField(max_length=128, null=True, blank=True)
+    callback_notified = models.BooleanField(default=False)
+    data_retention_days = models.PositiveSmallIntegerField(default=5, validators=[MaxValueValidator(30)])
+    output_text = models.TextField(null=True, blank=True)
+    output_html = models.TextField(null=True, blank=True)
+    error_message = models.CharField(max_length=1024, null=True, blank=True, validators=[yaml_validator])
+    status_code = models.PositiveSmallIntegerField(blank=True, null=True, validators=[MaxValueValidator(511), MinValueValidator(100)])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def send(self):
+        recipients = [self.email_recipient]
+        if not recipients:
+            return
+
+        sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
+        subject = "Custom report %s" % self.pk
+
+        message = EmailMultiAlternatives(subject, self.output_text, sender, recipients)
+        if self.output_html:
+            message.attach_alternative(self.output_html, "text/html")
+        message.send()
+        self.email_recipient_notified = True
+        self.save()
 
 
 class Environment(models.Model):

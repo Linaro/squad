@@ -3,8 +3,9 @@ import yaml
 
 from django.contrib.auth.models import Group as UserGroup
 from squad.api.filters import ComplexFilterBackend
-from squad.core.models import Annotation, Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, MetricThreshold, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata
-from squad.core.notification import Notification
+from squad.core.models import Annotation, Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, MetricThreshold, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata, DelayedReport
+from squad.core.tasks import prepare_report, update_delayed_report
+from squad.core.tasks.notification import notify_delayed_report_callback, notify_delayed_report_email
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
 from django.urls import reverse
@@ -13,10 +14,11 @@ from rest_framework import routers, serializers, views, viewsets, status
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
+from rest_framework.reverse import reverse as rest_reverse
 from rest_framework.pagination import CursorPagination, PageNumberPagination
+from rest_framework.permissions import AllowAny
 
 import rest_framework_filters as filters
-from jinja2 import TemplateSyntaxError
 
 import logging
 
@@ -138,6 +140,28 @@ class MetricThresholdFilter(filters.FilterSet):
     class Meta:
         model = MetricThreshold
         fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains']}
+
+
+class DelayedReportFilter(filters.FilterSet):
+    build = filters.RelatedFilter(BuildFilter, name="build", queryset=Build.objects.all(), widget=forms.TextInput)
+    baseline = filters.RelatedFilter(BuildFilter, name="baseline", queryset=Build.objects.all(), widget=forms.TextInput)
+
+    class Meta:
+        model = DelayedReport
+        fields = {
+            "output_format": ['exact', 'in', 'startswith', 'contains', 'icontains'],
+            "template": ['exact', 'in'],
+            "email_recipient": ['exact', 'in', 'startswith', 'contains', 'icontains'],
+            "email_recipient_notified": ['exact'],
+            "callback": ['exact', 'in', 'startswith', 'contains', 'icontains'],
+            "callback_notified": ['exact'],
+            "data_retention_days": ['exact', 'in'],
+            "output_text": ['exact', 'in', 'startswith', 'contains', 'icontains'],
+            "output_html": ['exact', 'in', 'startswith', 'contains', 'icontains'],
+            "error_message": ['exact', 'in', 'startswith', 'contains', 'icontains'],
+            "status_code": ['exact', 'in'],
+            "created_at": ['exact', 'gt', 'lt'],
+        }
 
 
 class API(routers.APIRootView):
@@ -455,6 +479,23 @@ class PatchSourceViewSet(viewsets.ModelViewSet):
     filter_fields = ('implementation', 'url', 'name')
 
 
+class DelayedReportSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = DelayedReport
+        exclude = ('callback_token',)
+
+
+class DelayedReportViewSet(viewsets.ReadOnlyModelViewSet):
+
+    queryset = DelayedReport.objects
+    serializer_class = DelayedReportSerializer
+    filter_fields = ('build', 'baseline', 'callback', 'callback_notified', 'email_recipient', 'status_code', 'error_message', 'created_at')
+    filter_class = DelayedReportFilter
+    ordering_fields = ('id', 'created_at')
+
+
 class BuildSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField(read_only=True)
     testruns = serializers.HyperlinkedIdentityField(view_name='build-testruns')
@@ -511,19 +552,25 @@ class BuildViewSet(ModelViewSet):
         serializer = TestJobSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
-    @detail_route(methods=['get'], suffix='email')
-    def email(self, request, pk=None):
-        """
-        This method produces the body of email notification for the build.
-        By default it uses the project settings for HTML and template.
-        These settings can be overwritten by using GET parameters:
-         * output - sets the output format (text/plan, text/html)
-         * template - sets the template used (id of existing template or
-                      "default" for default SQUAD templates)
-        """
+    def __return_delayed_report(self, request):
         output_format = request.query_params.get("output", "text/plain")
         template_id = request.query_params.get("template", None)
         baseline_id = request.query_params.get("baseline", None)
+        email_recipient = request.query_params.get("email_recipient", None)
+        callback = request.query_params.get("callback", None)
+        callback_token = request.query_params.get("callback_token", None)
+        # keep the cached reports for 1 day by default
+        data_retention_days = request.query_params.get("keep", 1)
+        if request.method == "POST":
+            output_format = request.data.get("output", "text/plain")
+            template_id = request.data.get("template", None)
+            baseline_id = request.data.get("baseline", None)
+            email_recipient = request.data.get("email_recipient", None)
+            callback = request.data.get("callback", None)
+            callback_token = request.data.get("callback_token", None)
+            # keep the cached reports for 1 day by default
+            data_retention_days = request.data.get("keep", 1)
+
         template = None
         if template_id != "default":
             template = self.get_object().project.custom_email_template
@@ -534,53 +581,63 @@ class BuildViewSet(ModelViewSet):
                 pass
 
         baseline = None
+        delayed_report, created = self.get_object().delayed_reports.get_or_create(
+            baseline=baseline,
+            template=template,
+            output_format=output_format,
+            email_recipient=email_recipient,
+            callback=callback,
+            callback_token=callback_token,
+            data_retention_days=data_retention_days
+        )
         if baseline_id is not None:
             try:
                 previous_build = Build.objects.get(pk=baseline_id)
                 baseline = previous_build.status
             except Build.DoesNotExist:
                 data = {
-                    "message": "Build %s does not exist" % baseline_id
+                    "message": "Baseline build %s does not exist" % baseline_id
                 }
-                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                # return created=False to avoid running prepare_report
+                return update_delayed_report(delayed_report, data, status.HTTP_400_BAD_REQUEST), False
             except ProjectStatus.DoesNotExist:
                 data = {
                     "message": "Build %s has no status" % baseline_id
                 }
-                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                # return created=False to avoid running prepare_report
+                return update_delayed_report(delayed_report, data, status.HTTP_400_BAD_REQUEST), False
 
-        if hasattr(self.get_object(), "status"):
-            pr_status = self.get_object().status
-            notification = Notification(pr_status, baseline)
-            produce_html = self.get_object().project.html_mail
-            if output_format == "text/html":
-                produce_html = True
-            try:
-                txt, html = notification.message(produce_html, template)
-                if len(html) > 0:
-                    return HttpResponse(html, content_type=output_format)
-                return HttpResponse(txt, content_type=output_format)
-            except TemplateSyntaxError as e:
-                data = {
-                    "lineno": e.lineno,
-                    "message": e.message
-                }
-                if template is not None:
-                    data.update({
-                        "txt": template.plain_text,
-                        "html": template.html
-                    })
-                return Response(data, status=status.HTTP_400_BAD_REQUEST)
-            except TypeError as te:
-                data = {"message": str(te)}
-                if template is not None:
-                    data.update({
-                        "txt": template.plain_text,
-                        "html": template.html
-                    })
-                return Response(data, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({}, status=status.HTTP_404_NOT_FOUND)
+        return delayed_report, created
+
+    @detail_route(methods=['get'], suffix='email')
+    def email(self, request, pk=None):
+        """
+        This method produces the body of email notification for the build.
+        By default it uses the project settings for HTML and template.
+        These settings can be overwritten by using GET parameters:
+         * output - sets the output format (text/plan, text/html)
+         * template - sets the template used (id of existing template or
+                      "default" for default SQUAD templates)
+         * force - force email report re-generation even if there is
+                   existing one cached
+        """
+        force = request.query_params.get("force", False)
+        delayed_report, created = self.__return_delayed_report(request)
+        if created or force:
+            delayed_report = prepare_report(delayed_report.pk)
+        if delayed_report.status_code != status.HTTP_200_OK:
+            return Response(yaml.load(delayed_report.error_message), delayed_report.status_code)
+        if delayed_report.output_html:
+            return HttpResponse(delayed_report.output_html, content_type=delayed_report.output_format)
+        return HttpResponse(delayed_report.output_text, content_type=delayed_report.output_format)
+
+    @detail_route(methods=['get', 'post'], suffix='report', permission_classes=[AllowAny])
+    def report(self, request, pk=None):
+        delayed_report, created = self.__return_delayed_report(request)
+        if created:
+            prepare_report.delay(delayed_report.pk)
+        data = {"message": "OK", "url": rest_reverse('delayedreport-detail', args=[delayed_report.pk], request=request)}
+        return Response(data, status=status.HTTP_202_ACCEPTED)
 
 
 class EnvironmentSerializer(serializers.HyperlinkedModelSerializer):
@@ -900,3 +957,4 @@ router.register(r'patchsources', PatchSourceViewSet)
 router.register(r'suitemetadata', SuiteMetadataViewset)
 router.register(r'annotations', AnnotationViewSet)
 router.register(r'metricthresholds', MetricThresholdViewSet)
+router.register(r'reports', DelayedReportViewSet)

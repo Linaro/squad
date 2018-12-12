@@ -269,7 +269,14 @@ CELERY_BEAT_SCHEDULE = {
     'cleanup': {
         'task': 'squad.core.tasks.cleanup_old_builds',
         'schedule': crontab(hour='3', minute=41),
+    },
+    'report_cleanup': {
+        'task': 'squad.core.tasks.remove_delayed_reports',
+        'schedule': crontab(hour='7', minute=21),
     }
+}
+CELERY_TASK_ROUTES = {
+    'squad.core.tasks.prepare_report': {'queue': 'reporting_queue'},
 }
 
 REST_FRAMEWORK = {
