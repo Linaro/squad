@@ -52,7 +52,7 @@
                     {% endwith %}
                 {% endfor %}
             </tr>
-	    <tr id='details-{{suite.id}}' ng-show='(match("tests-{{suite.id}}") || match("details-{{suite.id}}")) && details_visible["details-{{suite.id}}"]'>
+	    <tr id='details-{{suite.id}}' ng-show='details_visible["details-{{suite.id}}"]'>
                 <td></td>
                 <td colspan="{{test_results.environments|length}}">
 		    {% with entries=results.values() %}
@@ -73,7 +73,7 @@
                             </tr>
                         {% for entry in entries %}
                             {% for status in entry.statuses %}
-			    <tr id='details-row-{{status.id}}' ng-show='match("details-row-{{status.id}}")'>
+			    <tr id='details-row-{{status.id}}' ng-show='details_visible["details-{{suite.id}}"]''>
                                     <td>
 					<a href="{{url("testrun", args=[project.group.slug, project.slug, build.version, status.test_run.job_id])}}">
                                             {{status.test_run.job_id}}
