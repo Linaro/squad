@@ -35,6 +35,6 @@ class Command(BaseCommand):
         project, _ = group.projects.get_or_create(slug=project_slug)
         build = project.builds.create(version=str(time.time()))
 
-        testjob = backend.test_jobs.create(target=project, job_id=job_id, build=build.version)
+        testjob = backend.test_jobs.create(target=project, job_id=job_id, target_build=build)
 
         backend.fetch(testjob)
