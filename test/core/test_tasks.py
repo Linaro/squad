@@ -1,6 +1,7 @@
 import datetime
 import json
 import re
+import yaml
 
 
 from dateutil.relativedelta import relativedelta
@@ -23,6 +24,238 @@ from squad.core.tasks import exceptions
 from squad.core.tasks import cleanup_old_builds
 from squad.core.tasks import cleanup_build
 from squad.core.tasks import prepare_report
+from squad.core.tasks import update_delayed_report
+
+
+LONG_ERROR_MESSAGE = """Traceback: =20
+
+File "/srv/qa-reports/lib/python3.5/site-packages/squad/core/tas=
+ks/__init__.py" in prepare_report
+  311.         txt, html =3D notification.message(produce_html, delayed_rep=
+ort.template)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/squad/core/not=
+ification.py" in message
+  123.             text_template =3D jinja2.from_string(custom_email_templa=
+te.plain_text)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/templat=
+e/backends/jinja2.py" in from_string
+  41.         return Template(self.env.from_string(template_code), self)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/environ=
+ment.py" in from_string
+  880.         return cls.from_code(self, self.compile(source), globals, No=
+ne)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/environ=
+ment.py" in compile
+  591.         self.handle_exception(exc_info, source_hint=3Dsource_hint)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/environ=
+ment.py" in handle_exception
+  780.         reraise(exc_type, exc_value, tb)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/_compat=
+.py" in reraise
+  37.             raise value.with_traceback(tb)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/environ=
+ment.py" in _parse
+  497.         return Parser(self, source, name, encode_filename(filename))=
+.parse()
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/parser.=
+py" in parse
+  901.         result =3D nodes.Template(self.subparse(), lineno=3D1)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/parser.=
+py" in subparse
+  883.                     rv =3D self.parse_statement()
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/parser.=
+py" in parse_statement
+  130.                 return getattr(self, 'parse_' + self.stream.current.=
+value)()
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/parser.=
+py" in parse_for
+  199.         body =3D self.parse_statements(('name:endfor', 'name:else'))
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/parser.=
+py" in parse_statements
+  165.         result =3D self.subparse(end_tokens)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/parser.=
+py" in subparse
+  883.                     rv =3D self.parse_statement()
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/parser.=
+py" in parse_statement
+  130.                 return getattr(self, 'parse_' + self.stream.current.=
+value)()
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/parser.=
+py" in parse_for
+  199.         body =3D self.parse_statements(('name:endfor', 'name:else'))
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/parser.=
+py" in parse_statements
+  165.         result =3D self.subparse(end_tokens)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/parser.=
+py" in subparse
+  883.                     rv =3D self.parse_statement()
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/parser.=
+py" in parse_statement
+  130.                 return getattr(self, 'parse_' + self.stream.current.=
+value)()
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/parser.=
+py" in parse_if
+  223.                                                      drop_needle=3DT=
+rue)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/parser.=
+py" in parse_statements
+  164.         self.stream.expect('block_end')
+
+File "/srv/qa-reports/lib/python3.5/site-packages/jinja2/lexer.p=
+y" in expect
+  384.                                       self.name, self.filename)
+ =20
+   =20
+      During handling of the above exception (expected token 'end of statem=
+ent block', got '-'), another exception occurred:
+   =20
+ =20
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/db/back=
+ends/utils.py" in execute
+  64.                 return self.cursor.execute(sql, params)
+ =20
+   =20
+      The above exception (value too long for type character varying(1024)
+) was the direct cause of the following exception:
+   =20
+ =20
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/core/ha=
+ndlers/exception.py" in inner
+  41.             response =3D get_response(request)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/core/ha=
+ndlers/base.py" in _legacy_get_response
+  249.             response =3D self._get_response(request)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/core/ha=
+ndlers/base.py" in _get_response
+  187.                 response =3D self.process_exception_by_middleware(e,=
+ request)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/core/ha=
+ndlers/base.py" in _get_response
+  185.                 response =3D wrapped_callback(request, *callback_arg=
+s, **callback_kwargs)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/views/d=
+ecorators/csrf.py" in wrapped_view
+  58.         return view_func(*args, **kwargs)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/rest_framework=
+/viewsets.py" in view
+  103.             return self.dispatch(request, *args, **kwargs)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/rest_framework=
+/views.py" in dispatch
+  483.             response =3D self.handle_exception(exc)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/rest_framework=
+/views.py" in handle_exception
+  443.             self.raise_uncaught_exception(exc)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/rest_framework=
+/views.py" in dispatch
+  480.             response =3D handler(request, *args, **kwargs)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/squad/api/rest=
+.py" in email
+  627.             delayed_report =3D prepare_report(delayed_report.pk)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/celery/local.p=
+y" in __call__
+  191.         return self._get_current_object()(*a, **kw)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/squad/celery.p=
+y" in __call__
+  27.             return super(MemoryUseLoggingTask, self).__call__(*args, =
+**kwargs)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/celery/app/tas=
+k.py" in __call__
+  380.             return self.run(*args, **kwargs)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/squad/core/tas=
+ks/__init__.py" in prepare_report
+  324.         return update_delayed_report(delayed_report, data, status.HT=
+TP_400_BAD_REQUEST)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/squad/core/tas=
+ks/__init__.py" in update_delayed_report
+  285.     delayed_report.save()
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/db/mode=
+ls/base.py" in save
+  808.                        force_update=3Dforce_update, update_fields=3D=
+update_fields)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/db/mode=
+ls/base.py" in save_base
+  838.             updated =3D self._save_table(raw, cls, force_insert, for=
+ce_update, using, update_fields)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/db/mode=
+ls/base.py" in _save_table
+  905.                                       forced_update)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/db/mode=
+ls/base.py" in _do_update
+  955.         return filtered._update(values) > 0
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/db/mode=
+ls/query.py" in _update
+  664.         return query.get_compiler(self.db).execute_sql(CURSOR)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/db/mode=
+ls/sql/compiler.py" in execute_sql
+  1205.         cursor =3D super(SQLUpdateCompiler, self).execute_sql(resul=
+t_type)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/db/mode=
+ls/sql/compiler.py" in execute_sql
+  900.             raise original_exception
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/db/mode=
+ls/sql/compiler.py" in execute_sql
+  890.             cursor.execute(sql, params)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/db/back=
+ends/utils.py" in execute
+  64.                 return self.cursor.execute(sql, params)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/db/util=
+s.py" in __exit__
+  94.                 six.reraise(dj_exc_type, dj_exc_value, traceback)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/utils/s=
+ix.py" in reraise
+  685.             raise value.with_traceback(tb)
+
+File "/srv/qa-reports/lib/python3.5/site-packages/django/db/back=
+ends/utils.py" in execute
+  64.                 return self.cursor.execute(sql, params)
+"""
 
 
 class CommonTestCase(TestCase):
@@ -558,6 +791,16 @@ class PrepareDelayedReport(TestCase):
         report = self.build2.delayed_reports.create()
         prepared_report = prepare_report(report.pk)
         self.assertEqual(200, prepared_report.status_code)
+
+    def test_long_error_message(self):
+        report = self.build2.delayed_reports.create()
+        prepared_report = prepare_report(report.pk)
+        data = {
+            "lineno": 1234,
+            "message": LONG_ERROR_MESSAGE
+        }
+        update_delayed_report(prepared_report, data, 400)
+        self.assertEqual(yaml.load(prepared_report.error_message)['message'], LONG_ERROR_MESSAGE)
 
     @patch('squad.core.tasks.notification.notify_delayed_report_email.delay')
     def test_email_notification(self, email_notification_mock):
