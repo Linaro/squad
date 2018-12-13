@@ -406,7 +406,7 @@ class DelayedReport(models.Model):
     data_retention_days = models.PositiveSmallIntegerField(default=5, validators=[MaxValueValidator(30)])
     output_text = models.TextField(null=True, blank=True)
     output_html = models.TextField(null=True, blank=True)
-    error_message = models.CharField(max_length=1024, null=True, blank=True, validators=[yaml_validator])
+    error_message = models.TextField(null=True, blank=True, validators=[yaml_validator])
     status_code = models.PositiveSmallIntegerField(blank=True, null=True, validators=[MaxValueValidator(511), MinValueValidator(100)])
     created_at = models.DateTimeField(auto_now_add=True)
 
