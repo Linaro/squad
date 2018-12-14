@@ -220,13 +220,31 @@ class RestApiTest(TestCase):
     def test_build_report_retry(self, prepare_report_mock):
         response = self.client.get('/api/builds/%d/report/' % self.build3.id)
         self.assertEqual(202, response.status_code)
+        self.client.get('/api/builds/%d/report/' % self.build3.id)
         report_object = self.build3.delayed_reports.last()
         self.assertTrue(response.json()['url'].endswith(reverse('delayedreport-detail', args=[report_object.pk])))
         self.assertIsNotNone(report_object)
         self.assertIsNone(report_object.status_code)
-        prepare_report_mock.assert_called()
+        prepare_report_mock.assert_called_once()
+        prepare_report_mock.reset_mock()
         response2 = self.client.get('/api/builds/%d/report/' % self.build3.id)
         self.assertEqual(response.json(), response2.json())
+        prepare_report_mock.assert_not_called()
+
+    @patch('squad.core.tasks.prepare_report.delay')
+    def test_build_report_retry_force(self, prepare_report_mock):
+        response = self.client.get('/api/builds/%d/report/' % self.build3.id)
+        self.assertEqual(202, response.status_code)
+        self.client.get('/api/builds/%d/report/' % self.build3.id)
+        report_object = self.build3.delayed_reports.last()
+        self.assertTrue(response.json()['url'].endswith(reverse('delayedreport-detail', args=[report_object.pk])))
+        self.assertIsNotNone(report_object)
+        self.assertIsNone(report_object.status_code)
+        prepare_report_mock.assert_called_once()
+        prepare_report_mock.reset_mock()
+        response2 = self.client.get('/api/builds/%d/report/?force=true' % self.build3.id)
+        self.assertEqual(response.json(), response2.json())
+        prepare_report_mock.assert_called_once()
 
     def test_build_testruns(self):
         data = self.hit('/api/builds/%d/testruns/' % self.build.id)
