@@ -594,6 +594,8 @@ class BuildViewSet(ModelViewSet):
             try:
                 previous_build = Build.objects.get(pk=baseline_id)
                 baseline = previous_build.status
+                delayed_report.baseline = baseline
+                delayed_report.save()
             except Build.DoesNotExist:
                 data = {
                     "message": "Baseline build %s does not exist" % baseline_id
