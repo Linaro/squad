@@ -635,8 +635,9 @@ class BuildViewSet(ModelViewSet):
 
     @detail_route(methods=['get', 'post'], suffix='report', permission_classes=[AllowAny])
     def report(self, request, pk=None):
+        force = request.query_params.get("force", False)
         delayed_report, created = self.__return_delayed_report(request)
-        if created:
+        if created or force:
             prepare_report.delay(delayed_report.pk)
         data = {"message": "OK", "url": rest_reverse('delayedreport-detail', args=[delayed_report.pk], request=request)}
         return Response(data, status=status.HTTP_202_ACCEPTED)

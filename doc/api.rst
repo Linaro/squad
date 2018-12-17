@@ -209,6 +209,7 @@ following additional routes:
   - template - ID of the EmailTemplate to be used
   - baseline - ID of the Build object to be used as comparison baseline. The default
     is "previous finished" build in the same project.
+  - force - if set to true invalidates cached object. Default is false
 
 - report (/api/build/<id>/report/)
 
@@ -243,6 +244,7 @@ following additional routes:
     call. It is recommended to send this option usig POST request to avoid password
     leakage.
   - keep - number of days to keep the cached reports in the database
+  - force - if set to true invalidates cached object. Default is false
 
 With enough privileges Builds can also be created, modified and deleted
 using REST API with POST, PUT and DELETE HTTP requests respectively. This is
