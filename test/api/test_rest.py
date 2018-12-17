@@ -154,6 +154,7 @@ class RestApiTest(TestCase):
         UpdateProjectStatus()(self.testrun3)
         response = self.hit('/api/builds/%d/email/' % self.build3.id)
         self.assertIn('foo/test2', response)  # sanity check
+        self.assertIn('Regressions (compared to build 2)', response)  # make sure proper baseline is used
 
     def test_builds_email_custom_template(self):
         # update ProjectStatus
@@ -173,7 +174,14 @@ class RestApiTest(TestCase):
     def test_builds_email_custom_baseline(self):
         UpdateProjectStatus()(self.testrun)
         UpdateProjectStatus()(self.testrun3)
-        self.hit('/api/builds/%d/email/?baseline=%s' % (self.build3.id, self.build.id))
+        response = self.client.get('/api/builds/%d/email/?baseline=%s&output=text/plain' % (self.build3.id, self.build.id))
+        self.assertContains(response, "Regressions (compared to build 1)")
+
+    def test_builds_email_custom_baseline_html(self):
+        UpdateProjectStatus()(self.testrun)
+        UpdateProjectStatus()(self.testrun3)
+        response = self.client.get('/api/builds/%d/email/?baseline=%s&output=text/html' % (self.build3.id, self.build.id))
+        self.assertContains(response, "Regressions (compared to build 1)", html=True)
 
     def test_builds_email_custom_baseline_missing_status(self):
         UpdateProjectStatus()(self.testrun)
@@ -194,6 +202,18 @@ class RestApiTest(TestCase):
         self.assertTrue(response.json()['url'].endswith(reverse('delayedreport-detail', args=[report_object.pk])))
         self.assertIsNotNone(report_object)
         self.assertIsNone(report_object.status_code)
+        self.assertEqual(report_object.baseline, None)  # default baseline is used
+        prepare_report_mock.assert_called()
+
+    @patch('squad.core.tasks.prepare_report.delay')
+    def test_build_report_baseline(self, prepare_report_mock):
+        response = self.client.get('/api/builds/%d/report/?baseline=%s' % (self.build3.id, self.build.id))
+        self.assertEqual(202, response.status_code)
+        report_object = self.build3.delayed_reports.last()
+        self.assertTrue(response.json()['url'].endswith(reverse('delayedreport-detail', args=[report_object.pk])))
+        self.assertIsNotNone(report_object)
+        self.assertIsNone(report_object.status_code)
+        self.assertEqual(report_object.baseline, self.build.status)
         prepare_report_mock.assert_called()
 
     @patch('squad.core.tasks.prepare_report.delay')

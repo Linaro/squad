@@ -594,6 +594,8 @@ class BuildViewSet(ModelViewSet):
             try:
                 previous_build = Build.objects.get(pk=baseline_id)
                 baseline = previous_build.status
+                delayed_report.baseline = baseline
+                delayed_report.save()
             except Build.DoesNotExist:
                 data = {
                     "message": "Baseline build %s does not exist" % baseline_id
@@ -627,7 +629,7 @@ class BuildViewSet(ModelViewSet):
             delayed_report = prepare_report(delayed_report.pk)
         if delayed_report.status_code != status.HTTP_200_OK:
             return Response(yaml.load(delayed_report.error_message), delayed_report.status_code)
-        if delayed_report.output_html:
+        if delayed_report.output_format == "text/html" and delayed_report.output_html:
             return HttpResponse(delayed_report.output_html, content_type=delayed_report.output_format)
         return HttpResponse(delayed_report.output_text, content_type=delayed_report.output_format)
 
