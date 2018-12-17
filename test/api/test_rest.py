@@ -215,6 +215,7 @@ class RestApiTest(TestCase):
         self.assertIsNone(report_object.status_code)
         self.assertEqual(report_object.baseline, self.build.status)
         prepare_report_mock.assert_called()
+        self.hit(response.json()['url'])  # should not crash
 
     @patch('squad.core.tasks.prepare_report.delay')
     def test_build_report_retry(self, prepare_report_mock):
