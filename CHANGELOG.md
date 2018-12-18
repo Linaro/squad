@@ -1,3 +1,8 @@
+# 0.58 (0.57)
+
+* api:
+  * fix the /builds/<id>/report API
+
 # 0.56
 
 * api:
