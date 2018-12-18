@@ -481,7 +481,10 @@ class PatchSourceViewSet(viewsets.ModelViewSet):
 
 class DelayedReportSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    baseline = serializers.HyperlinkedIdentityField(view_name='build-status')
+    baseline = serializers.HyperlinkedRelatedField(
+        view_name='build-status',
+        read_only=True,
+        many=False)
 
     class Meta:
         model = DelayedReport

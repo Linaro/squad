@@ -211,11 +211,22 @@ class RestApiTest(TestCase):
         self.assertEqual(202, response.status_code)
         report_object = self.build3.delayed_reports.last()
         self.assertTrue(response.json()['url'].endswith(reverse('delayedreport-detail', args=[report_object.pk])))
+        report_json = self.client.get(response.json()['url'])
+        self.assertTrue(report_json.json()['baseline'].endswith(reverse('build-status', args=[self.build.id])))
         self.assertIsNotNone(report_object)
         self.assertIsNone(report_object.status_code)
         self.assertEqual(report_object.baseline, self.build.status)
         prepare_report_mock.assert_called()
-        self.hit(response.json()['url'])  # should not crash
+
+    @patch('squad.core.tasks.prepare_report.delay')
+    def test_build_report_baseline2(self, prepare_report_mock):
+        response = self.client.get('/api/builds/%d/report/?baseline=%s' % (self.build3.id, self.build2.id))
+        self.assertEqual(202, response.status_code)
+        report_object = self.build3.delayed_reports.last()
+        self.assertTrue(response.json()['url'].endswith(reverse('delayedreport-detail', args=[report_object.pk])))
+        report_object = self.client.get(response.json()['url'])
+        self.assertTrue(report_object.json()['baseline'].endswith(reverse('build-status', args=[self.build2.id])))
+        prepare_report_mock.assert_called()
 
     @patch('squad.core.tasks.prepare_report.delay')
     def test_build_report_retry(self, prepare_report_mock):
