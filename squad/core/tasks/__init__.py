@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.core.exceptions import MultipleObjectsReturned
 from django.utils import timezone
 from collections import defaultdict
 import json
@@ -279,7 +280,15 @@ def get_suite_version(test_run, suite):
         return None
 
 
-def update_delayed_report(delayed_report, error_message, status_code):
+def update_delayed_report(delayed_report, error_message, status_code, **kwargs):
+    if delayed_report is None:
+        try:
+            delayed_report, created = DelayedReport.objects.get_or_create(**kwargs)
+        except MultipleObjectsReturned:
+            if "build" in kwargs.keys():
+                delayed_report = kwargs["build"].delayed_reports.all()[0]   # return first available object
+            else:
+                delayed_report = DelayedReport.create(**kwargs)
     delayed_report.error_message = yaml.dump(error_message)
     delayed_report.status_code = status_code
     delayed_report.save()

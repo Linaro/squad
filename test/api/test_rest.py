@@ -219,6 +219,35 @@ class RestApiTest(TestCase):
         prepare_report_mock.assert_called()
 
     @patch('squad.core.tasks.prepare_report.delay')
+    def test_build_report_baseline_cache(self, prepare_report_mock):
+        response = self.client.get('/api/builds/%d/report/?baseline=%s' % (self.build3.id, self.build.id))
+        self.assertEqual(202, response.status_code)
+        report_object = self.build3.delayed_reports.last()
+        report_url = response.json()['url']
+        self.assertTrue(report_url.endswith(reverse('delayedreport-detail', args=[report_object.pk])))
+        report_json = self.client.get(report_url)
+        self.assertTrue(report_json.json()['baseline'].endswith(reverse('build-status', args=[self.build.id])))
+        self.assertIsNotNone(report_object)
+        self.assertIsNone(report_object.status_code)
+        self.assertEqual(report_object.baseline, self.build.status)
+        prepare_report_mock.assert_called()
+        response2 = self.client.get('/api/builds/%d/report/?baseline=%s' % (self.build3.id, self.build.id))
+        self.assertEqual(report_url, response2.json()['url'])
+
+    @patch('squad.core.tasks.prepare_report.delay')
+    def test_build_report_invalid_baseline(self, prepare_report_mock):
+        response = self.client.get('/api/builds/%d/report/?baseline=123456789' % (self.build3.id))
+        self.assertEqual(202, response.status_code)
+        report_object = self.build3.delayed_reports.last()
+        self.assertTrue(response.json()['url'].endswith(reverse('delayedreport-detail', args=[report_object.pk])))
+        report_json = self.client.get(response.json()['url'])
+        self.assertIsNone(report_json.json()['baseline'])
+        self.assertIsNotNone(report_object)
+        self.assertIsNotNone(report_object.status_code)
+        self.assertEqual(report_object.status_code, 400)
+        prepare_report_mock.assert_not_called()
+
+    @patch('squad.core.tasks.prepare_report.delay')
     def test_build_report_baseline2(self, prepare_report_mock):
         response = self.client.get('/api/builds/%d/report/?baseline=%s' % (self.build3.id, self.build2.id))
         self.assertEqual(202, response.status_code)
