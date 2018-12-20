@@ -80,6 +80,9 @@ class Notification(object):
 
     @property
     def subject(self):
+        return self.create_subject()
+
+    def create_subject(self, custom_email_template=None):
         summary = self.summary
         subject_data = {
             'build': self.build.version,
@@ -91,7 +94,8 @@ class Notification(object):
             'tests_pass': summary.tests_pass,
             'tests_total': summary.tests_total,
         }
-        custom_email_template = self.project.custom_email_template
+        if custom_email_template is None and self.project.custom_email_template is not None:
+            custom_email_template = self.project.custom_email_template
         if custom_email_template and custom_email_template.subject:
             template = custom_email_template.subject
         else:

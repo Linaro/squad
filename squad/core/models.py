@@ -404,6 +404,7 @@ class DelayedReport(models.Model):
     callback_token = models.CharField(max_length=128, null=True, blank=True)
     callback_notified = models.BooleanField(default=False)
     data_retention_days = models.PositiveSmallIntegerField(default=5, validators=[MaxValueValidator(30)])
+    output_subject = models.TextField(null=True, blank=True)
     output_text = models.TextField(null=True, blank=True)
     output_html = models.TextField(null=True, blank=True)
     error_message = models.TextField(null=True, blank=True, validators=[yaml_validator])

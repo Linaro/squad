@@ -320,6 +320,7 @@ def prepare_report(delayed_report_id):
         txt, html = notification.message(produce_html, delayed_report.template)
         delayed_report.output_text = txt
         delayed_report.output_html = html
+        delayed_report.output_subject = notification.create_subject(delayed_report.template)
     except TemplateSyntaxError as e:
         data = {
             "lineno": e.lineno,
@@ -341,6 +342,7 @@ def prepare_report(delayed_report_id):
         return update_delayed_report(delayed_report, data, status.HTTP_400_BAD_REQUEST)
 
     delayed_report.status_code = status.HTTP_200_OK
+    delayed_report.error_message = None
     delayed_report.save()
     if delayed_report.email_recipient:
         notify_delayed_report_email.delay(delayed_report.pk)
