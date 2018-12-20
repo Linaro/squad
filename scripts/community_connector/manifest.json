@@ -1,0 +1,18 @@
+{
+    "timeZone": "America/Los_Angeles",
+    "dependencies": {
+    },
+    "webapp": {
+        "access": "MYSELF",
+        "executeAs": "USER_DEPLOYING"
+    },
+    "dataStudio": {
+        "name": "SQUAD data - from Linaro",
+        "logoUrl": "https://www.linaro.org/assets/content/linaro-logo.png",
+        "company": "Linaro Ltd.",
+        "companyUrl": "https://linaro.org",
+        "addonUrl": "https://github.com/Linaro/squad",
+        "supportUrl": "https://github.com/google/datastudio/issues",
+        "description": "SQUAD metrics"
+    }
+}
