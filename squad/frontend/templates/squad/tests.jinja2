@@ -13,8 +13,14 @@
 {% endwith %}
 
 <div>
+    <div class='row row-bordered'>
+        <div class='col-md-12 col-sm-12 filter'>
+          <a id="searchLink"><button type='button' class='btn btn-primary fa fa-search'></button></a>
+          <input name='search' id='search' type='text' placeholder='Filter results ...' value='{{search}}' />
+        </div>
+    </div>
 
-    <table class='test-results' data-param="filter">
+    <table class='test-results'>
         <thead>
             <th>Test</th>
             {% for env in results.environments %}
@@ -52,5 +58,23 @@
 <script type="text/javascript" src='{{static("squad/table.js")}}'></script>
 <script type="text/javascript">
 csrf_token = '{{ csrf_token }}'
+function loadSearchURL(pageParam, search) {
+  searchURL = pageParam + "&search=" + search;
+  window.location = searchURL;
+}
+$("#search").keypress(function(e) {
+  if(e.which == 13) {
+    window.location = "?page=1&search=" + $("#search").val();
+    return false;
+  }
+});
+$("#searchLink").click(function(event) {
+  window.location = "?page=1&search=" + $("#search").val();
+  return false;
+});
+$(".pagination > li > a").click(function(event) {
+  window.location = $(this).attr("href") + "&search=" + $("#search").val();
+  return false;
+});
 </script>
 {% endblock %}

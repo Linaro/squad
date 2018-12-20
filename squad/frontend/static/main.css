@@ -100,7 +100,7 @@ h1 {
   margin-top: 0px;
 }
 
-form.filter .fa {
+form.filter .fa, button.fa {
   float: left;
   padding-top: 5px;
 }
