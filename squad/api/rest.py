@@ -479,9 +479,18 @@ class PatchSourceViewSet(viewsets.ModelViewSet):
     filter_fields = ('implementation', 'url', 'name')
 
 
+class HyperlinkedProjectStatusField(serializers.HyperlinkedRelatedField):
+    def get_url(self, obj, view_name, request, format):
+        try:
+            project_status = ProjectStatus.objects.get(pk=obj.pk)
+            return rest_reverse(view_name, kwargs={'pk': project_status.build.pk}, request=request, format=format)
+        except ProjectStatus.DoesNotExist:
+            return None
+
+
 class DelayedReportSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    baseline = serializers.HyperlinkedRelatedField(
+    baseline = HyperlinkedProjectStatusField(
         view_name='build-status',
         read_only=True,
         many=False)
