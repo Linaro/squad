@@ -1,4 +1,6 @@
+import os
 import re
+import sys
 from setuptools import setup, find_packages
 
 
@@ -13,6 +15,9 @@ def valid_requirement(req):
 requirements_txt = open('requirements.txt').read().splitlines()
 requirements = [req for req in requirements_txt if valid_requirement(req)]
 
+
+if len(sys.argv) > 1 and sys.argv[1] in ['sdist', 'bdist', 'bdist_wheel'] and not os.getenv('SQUAD_RELEASE'):
+    raise RuntimeError('Please use scripts/release to make releases!')
 
 setup(
     name='squad',
