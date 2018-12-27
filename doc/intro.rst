@@ -92,7 +92,7 @@ Example with test data as regular ``POST`` parameters::
         --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
         --form tests='{"test1": "pass", "test2": "fail"}' \
         --form metrics='{"metric1": 21, "metric2": 4}' \
-        --form metadata'{"foo": "bar", "baz": "qux"}' \
+        --form metadata='{"foo": "bar", "baz": "qux"}' \
         --form log='log text ...' \
         --form attachment=@/path/to/screenshot.png \
         --form attachment=@/path/to/extra-info.txt \
