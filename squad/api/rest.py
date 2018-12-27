@@ -254,8 +254,8 @@ class GroupViewSet(viewsets.ModelViewSet):
     search_fields = ('slug', 'name')
     ordering_fields = ('slug', 'name')
 
-#    def get_queryset(self):
-#        return self.queryset.accessible_to(self.request.user)
+    def get_queryset(self):
+        return self.queryset.accessible_to(self.request.user)
 
 
 class ProjectSerializer(serializers.HyperlinkedModelSerializer):
