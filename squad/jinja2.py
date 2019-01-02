@@ -1,5 +1,5 @@
 from importlib import import_module
-from jinja2 import Environment
+from jinja2 import Environment, select_autoescape
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.utils import translation
 
@@ -38,6 +38,10 @@ def environment(**options):
     env.filters.update(_local_env['filters'])
     env.tests.update(_local_env['tests'])
     env.install_gettext_translations(translation)
+    env.autoescape = select_autoescape(
+        disabled_extensions=('txt.jinja2',),
+        default_for_string=False,
+        default=True)
     return env
 
 
