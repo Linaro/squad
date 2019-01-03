@@ -1,5 +1,6 @@
 from django.db import connection
-from django.db.models import Q
+from django.db.models import Q, Sum, Case, When
+from django.db.models.fields import IntegerField
 from django.shortcuts import render
 
 from squad.http import auth
@@ -48,25 +49,15 @@ class TestResultTable(list):
 
     # count how many unique tests are represented in the given build, and sets
     # pagination data
-    def __count_pages__(self, build_id, per_page):
-        query = """
-            SELECT COUNT(*)
-            FROM (
-                SELECT distinct suite_id, name
-                FROM core_test
-                JOIN core_testrun ON core_testrun.id = core_test.test_run_id
-                WHERE core_testrun.build_id = %s
-            ) unique_tests
-        """
-        with connection.cursor() as cursor:
-            cursor.execute(query, [build_id])
-            count = cursor.fetchone()[0]
-            # count pages
-            self.num_pages = count // per_page
-            if count % per_page > 0:
-                self.num_pages += 1
+    def __count_pages__(self, build_id, search, per_page):
+        count = Test.objects.filter(
+            test_run__build_id=build_id, name__icontains=search).values(
+                'suite_id', 'name').distinct().count()
+        self.num_pages = count // per_page
+        if count % per_page > 0:
+            self.num_pages += 1
 
-    def __get_page_filter__(self, build_id, page, per_page):
+    def __get_page_filter__(self, build_id, page, search, per_page):
         """
         Query to obtain one page os test results. It is used to know which tests
         should be in the page. It's ordered so that the tests with more failures
@@ -79,28 +70,33 @@ class TestResultTable(list):
         conditions = {}
         offset = (page - 1) * per_page
 
-        query = """
-        SELECT
-          suite_id,
-          core_test.name,
-          SUM(CASE when result is null then 1 else 0 end) as skips,
-          SUM(CASE when result is not null and not result and (has_known_issues is null or not has_known_issues) then 1 else 0 end) as fails,
-          SUM(CASE when result is not null and not result and has_known_issues then 1 else 0 end) as xfails,
-          SUM(CASE when result is null then 0 when result then 1 else 0 end) as passes
-        FROM core_test
-        JOIN core_testrun ON core_testrun.id = core_test.test_run_id
-        JOIN core_suite ON core_test.suite_id = core_suite.id
-        WHERE core_testrun.build_id = %s
-        GROUP BY suite_id, core_suite.slug, core_test.name
-        ORDER BY fails DESC, xfails DESC, skips DESC, passes DESC, core_suite.slug, core_test.name
-        LIMIT %s
-        OFFSET %s
-        """
-        with connection.cursor() as cursor:
-            cursor.execute(query, [build_id, per_page, offset])
-            for suite_id, name, _, _, _, _ in cursor.fetchall():
-                conditions.setdefault(suite_id, [])
-                conditions[suite_id].append(name)
+        mylist = Test.objects.filter(
+            test_run__build_id=build_id,
+            name__icontains=search).values(
+                'suite_id', 'suite__slug', 'name').annotate(
+                    skips=Sum(Case(
+                        When(result__isnull=True, then=1),
+                        default=0,
+                        output_field=IntegerField())),
+                    fails=Sum(Case(
+                        When(Q(result__isnull=False) & Q(result=False) & (Q(has_known_issues__isnull=True) | Q(has_known_issues=False)), then=1),
+                        default=0,
+                        output_field=IntegerField())),
+                    xfails=Sum(Case(
+                        When(Q(result__isnull=False) & Q(result=False) & Q(has_known_issues=True), then=1),
+                        default=0,
+                        output_field=IntegerField())),
+                    passes=Sum(Case(
+                        When(result__isnull=True, then=0),
+                        When(result=True, then=1),
+                        default=0,
+                        output_field=IntegerField()))).order_by(
+                            '-fails', '-xfails', '-skips', '-passes',
+                            'suite__slug', 'name')[offset:offset + per_page]
+
+        for item in mylist:
+            conditions.setdefault(item['suite_id'], [])
+            conditions[item['suite_id']].append(item['name'])
 
         the_filter = Q(id__lt=0)  # always false
         for suite_id, names in conditions.items():
@@ -110,17 +106,17 @@ class TestResultTable(list):
         return the_filter
 
     @classmethod
-    def get(cls, build, page, per_page=50):
+    def get(cls, build, page, search, per_page=50):
         table = cls()
         table.number = page
-        table.__count_pages__(build.id, per_page)
+        table.__count_pages__(build.id, search, per_page)
 
         table.environments = set([t.environment for t in build.test_runs.prefetch_related('environment').all()])
 
         tests = Test.objects.filter(
             test_run__build=build
         ).filter(
-            table.__get_page_filter__(build.id, page, per_page)
+            table.__get_page_filter__(build.id, page, search, per_page)
         ).prefetch_related(
             'test_run',
             'suite',
@@ -151,10 +147,13 @@ def tests(request, group_slug, project_slug, build_version):
     except ValueError:
         page = 1
 
+    search = request.GET.get('search', '')
+
     context = {
         "project": project,
         "build": build,
-        "results": TestResultTable.get(build, page),
+        "search": search,
+        "results": TestResultTable.get(build, page, search),
     }
 
     return render(request, 'squad/tests.jinja2', context)
