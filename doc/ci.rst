@@ -7,7 +7,7 @@ CI: continous integration support
 CI module in SQUAD
 ------------------
 
-Thissubsystem has the following features:
+This subsystem has the following features:
 
 * receiving test job requests
 * submitting test job requests to test execution backends
@@ -35,7 +35,7 @@ So for example you can have multiple backends of the same type (e.g. different
 2 LAVA servers).
 
 For the CI loop integration to work, you need to run a few extra
-processes beyond the web interface. See :ref:`install_python` for details.
+processes beyond the web interface. See :ref:`production_install_ref_label` for details.
 
 .. _ci_job_ref_label:
 
@@ -44,9 +44,9 @@ Submitting test job requests
 
 The API is the following
 
-**POST** /api/submitjob/:team/:project/:build/:environment
+**POST** /api/submitjob/:group/:project/:build/:environment
 
-* ``team``, ``project``, ``build`` and ``environment`` are used to
+* ``group``, ``project``, ``build`` and ``environment`` are used to
   identify which project/build/environment will be used to record the
   results of the test job.
 * The following data must be submitted as POST parameters:
@@ -64,7 +64,7 @@ Example (with test job definition as POST parameter)::
         --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
         --form backend=lava \
         --form definition="$DEFINITION" \
-        https://squad.example.com/api/submitjob/my-team/my-project/x.y.z/my-ci-env
+        https://squad.example.com/api/submitjob/my-group/my-project/x.y.z/my-ci-env
 
 Example (with test job definition as file upload)::
 
@@ -72,7 +72,7 @@ Example (with test job definition as file upload)::
         --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
         --form backend=lava \
         --form definition=@/path/to/definition.txt \
-        https://squad.example.com/api/submitjob/my-team/my-project/x.y.z/my-ci-env
+        https://squad.example.com/api/submitjob/my-group/my-project/x.y.z/my-ci-env
 
 .. _ci_watch_ref_label:
 
@@ -84,9 +84,9 @@ that some other service submitted the test job for execution and SQUAD is
 requested to track the progress. After test job is finished SQUAD will retrieve
 the results and do post processing. The API is following:
 
-**POST** /api/submitjob/:team/:project/:build/:environment
+**POST** /api/submitjob/:group/:project/:build/:environment
 
-* ``team``, ``project``, ``build`` and ``environment`` are used to
+* ``group``, ``project``, ``build`` and ``environment`` are used to
   identify which project/build/environment will be used to record the
   results of the test job.
 * The following data must be submitted as POST parameters:
@@ -102,7 +102,9 @@ Example (with test job definition as POST parameter)::
         --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
         --form backend=lava \
         --form testjob_id=123456 \
-        https://squad.example.com/api/watchjob/my-team/my-project/x.y.z/my-ci-env
+        https://squad.example.com/api/watchjob/my-group/my-project/x.y.z/my-ci-env
+
+.. _`backend_settings_ref_label`:
 
 Backend settings
 ----------------
