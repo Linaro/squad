@@ -273,7 +273,7 @@ class Backend(BaseBackend):
     def __parse_results__(self, data, test_job):
         handle_lava_suite = self.settings.get('CI_LAVA_HANDLE_SUITE', False)
         if hasattr(test_job, 'target') and test_job.target.project_settings is not None:
-            project_settings = yaml.load(test_job.target.project_settings)
+            project_settings = yaml.load(test_job.target.project_settings) or {}
             tmp_handle_lava = project_settings.get('CI_LAVA_HANDLE_SUITE')
             if tmp_handle_lava is not None:
                 handle_lava_suite = tmp_handle_lava
