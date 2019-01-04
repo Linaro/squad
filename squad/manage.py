@@ -17,7 +17,8 @@ def main():
             sys.stdout.flush()
             sys.stderr.flush()
             tests = [t for t in sys.argv[2:] if t.startswith('test.')]
-            if not tests:
+            __help = '--help' in sys.argv or '-h' in sys.argv
+            if not tests and not __help:
                 # only run when not running specific tests
                 rc = performance_tests()
                 rc += javascript_tests()
