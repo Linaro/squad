@@ -1,3 +1,13 @@
+# 0.59
+
+* Add community connector files for Google Data Studio data source.
+* doc: correct errata in curl example
+* api:
+  * restrict visibility of groups via the API
+  * Add all test results filtering.
+* ci:
+  * ci/backend/lava.py: fallback `project_settings`
+
 # 0.58 (0.57)
 
 * api:
