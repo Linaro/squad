@@ -2,6 +2,7 @@ import json
 import yaml
 
 from django.contrib.auth.models import Group as UserGroup
+from django.core.exceptions import MultipleObjectsReturned
 from squad.api.filters import ComplexFilterBackend
 from squad.core.models import Annotation, Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, MetricThreshold, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata, DelayedReport
 from squad.core.tasks import prepare_report, update_delayed_report
@@ -479,9 +480,18 @@ class PatchSourceViewSet(viewsets.ModelViewSet):
     filter_fields = ('implementation', 'url', 'name')
 
 
+class HyperlinkedProjectStatusField(serializers.HyperlinkedRelatedField):
+    def get_url(self, obj, view_name, request, format):
+        try:
+            project_status = ProjectStatus.objects.get(pk=obj.pk)
+            return rest_reverse(view_name, kwargs={'pk': project_status.build.pk}, request=request, format=format)
+        except ProjectStatus.DoesNotExist:
+            return None
+
+
 class DelayedReportSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    baseline = serializers.HyperlinkedRelatedField(
+    baseline = HyperlinkedProjectStatusField(
         view_name='build-status',
         read_only=True,
         many=False)
@@ -585,33 +595,39 @@ class BuildViewSet(ModelViewSet):
                 pass
 
         baseline = None
-        delayed_report, created = self.get_object().delayed_reports.get_or_create(
-            baseline=baseline,
-            template=template,
-            output_format=output_format,
-            email_recipient=email_recipient,
-            callback=callback,
-            callback_token=callback_token,
-            data_retention_days=data_retention_days
-        )
+
+        report_kwargs = {
+            "baseline": baseline,
+            "template": template,
+            "output_format": output_format,
+            "email_recipient": email_recipient,
+            "callback": callback,
+            "callback_token": callback_token,
+            "data_retention_days": data_retention_days
+        }
         if baseline_id is not None:
             try:
                 previous_build = Build.objects.get(pk=baseline_id)
-                baseline = previous_build.status
-                delayed_report.baseline = baseline
-                delayed_report.save()
+                report_kwargs["baseline"] = previous_build.status
             except Build.DoesNotExist:
                 data = {
                     "message": "Baseline build %s does not exist" % baseline_id
                 }
+                report_kwargs.update({"build": self.get_object()})
                 # return created=False to avoid running prepare_report
-                return update_delayed_report(delayed_report, data, status.HTTP_400_BAD_REQUEST), False
+                return update_delayed_report(None, data, status.HTTP_400_BAD_REQUEST, **report_kwargs), False
             except ProjectStatus.DoesNotExist:
                 data = {
                     "message": "Build %s has no status" % baseline_id
                 }
+                report_kwargs.update({"build": self.get_object()})
                 # return created=False to avoid running prepare_report
-                return update_delayed_report(delayed_report, data, status.HTTP_400_BAD_REQUEST), False
+                return update_delayed_report(None, data, status.HTTP_400_BAD_REQUEST, **report_kwargs), False
+        try:
+            delayed_report, created = self.get_object().delayed_reports.get_or_create(**report_kwargs)
+        except MultipleObjectsReturned:
+            delayed_report = self.get_object().delayed_reports.all()[0]  # return first available object
+            created = False
 
         return delayed_report, created
 

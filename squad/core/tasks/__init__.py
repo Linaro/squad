@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.core.exceptions import MultipleObjectsReturned
 from django.utils import timezone
 from collections import defaultdict
 import json
@@ -279,7 +280,15 @@ def get_suite_version(test_run, suite):
         return None
 
 
-def update_delayed_report(delayed_report, error_message, status_code):
+def update_delayed_report(delayed_report, error_message, status_code, **kwargs):
+    if delayed_report is None:
+        try:
+            delayed_report, created = DelayedReport.objects.get_or_create(**kwargs)
+        except MultipleObjectsReturned:
+            if "build" in kwargs.keys():
+                delayed_report = kwargs["build"].delayed_reports.all()[0]   # return first available object
+            else:
+                delayed_report = DelayedReport.create(**kwargs)
     delayed_report.error_message = yaml.dump(error_message)
     delayed_report.status_code = status_code
     delayed_report.save()
@@ -311,6 +320,7 @@ def prepare_report(delayed_report_id):
         txt, html = notification.message(produce_html, delayed_report.template)
         delayed_report.output_text = txt
         delayed_report.output_html = html
+        delayed_report.output_subject = notification.create_subject(delayed_report.template)
     except TemplateSyntaxError as e:
         data = {
             "lineno": e.lineno,
@@ -332,6 +342,7 @@ def prepare_report(delayed_report_id):
         return update_delayed_report(delayed_report, data, status.HTTP_400_BAD_REQUEST)
 
     delayed_report.status_code = status.HTTP_200_OK
+    delayed_report.error_message = None
     delayed_report.save()
     if delayed_report.email_recipient:
         notify_delayed_report_email.delay(delayed_report.pk)
