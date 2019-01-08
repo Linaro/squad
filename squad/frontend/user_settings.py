@@ -1,3 +1,5 @@
+import logging
+
 from django import forms
 from django.conf.urls import url
 from django.contrib.auth.models import User
@@ -13,6 +15,9 @@ from rest_framework.authtoken.models import Token
 
 from squad.http import auth
 from squad.core.models import Group, Subscription
+
+
+logger = logging.getLogger()
 
 
 @login_required
@@ -64,20 +69,24 @@ def subscriptions(request):
     groups = Group.objects.all().prefetch_related('projects')
 
     if request.method == "POST":
-        for project_id in request.POST.getlist("subscriptions[]"):
-            try:
-                Subscription.objects.create(
-                    project_id=project_id,
-                    user=request.user)
-            except IntegrityError:
-                # log that object was not added.
-                pass
+        try:
+            Subscription.objects.create(
+                project_id=request.POST.get("subscription"),
+                notification_strategy=request.POST.get(
+                    "notification-strategy"),
+                user=request.user
+            )
+        except IntegrityError:
+            logger.warning("Subscription for given user %s already exists on project: %s", request.user, request.POST.get("subscription"))
+            pass
 
         return redirect(reverse('settings-subscriptions'))
 
     context = {
         'subscriptions': subscriptions,
-        'groups': groups
+        'groups': groups,
+        'notification_strategies': {elem[0]: elem[1] for elem in
+                                    Subscription.STRATEGY_CHOICES},
     }
     return render(request, 'squad/user_settings/subscriptions.jinja2', context)
 

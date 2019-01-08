@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -7,7 +8,7 @@ from django.test import TestCase
 from unittest.mock import patch, MagicMock, PropertyMock
 
 
-from squad.core.models import Group, Project, Build, ProjectStatus, EmailTemplate, MetricThreshold
+from squad.core.models import Group, Project, Build, ProjectStatus, EmailTemplate, MetricThreshold, Subscription
 from squad.core.notification import Notification, send_status_notification
 
 
@@ -47,7 +48,8 @@ class TestSendNotificationFirstTime(TestCase):
         self.project = group.projects.create(slug='myproject')
         t0 = timezone.now() - relativedelta(hours=3)
         self.build = self.project.builds.create(version='1', datetime=t0)
-        self.project.subscriptions.create(email='foo@example.com')
+        self.subscription = self.project.subscriptions.create(
+            email='foo@example.com')
 
     def test_send_if_notifying_all_builds(self):
         status = ProjectStatus.create_or_update(self.build)
@@ -55,8 +57,15 @@ class TestSendNotificationFirstTime(TestCase):
         self.assertEqual(1, len(mail.outbox))
 
     def test_dont_send_if_notifying_on_change(self):
-        self.project.notification_strategy = Project.NOTIFY_ON_CHANGE
-        self.project.save()
+        self.subscription.notification_strategy = Subscription.NOTIFY_ON_CHANGE
+        self.subscription.save()
+        status = ProjectStatus.create_or_update(self.build)
+        send_status_notification(status)
+        self.assertEqual(0, len(mail.outbox))
+
+    def test_dont_send_if_notifying_on_regression(self):
+        self.subscription.notification_strategy = Subscription.NOTIFY_ON_REGRESSION
+        self.subscription.save()
         status = ProjectStatus.create_or_update(self.build)
         send_status_notification(status)
         self.assertEqual(0, len(mail.outbox))
@@ -103,9 +112,17 @@ class TestSendNotification(TestCase):
         self.assertEqual(2, len(mail.outbox))
 
     def test_send_notification_on_change_only_with_no_changes(self):
-        self.project.notification_strategy = Project.NOTIFY_ON_CHANGE
-        self.project.save()
-        self.project.subscriptions.create(email='foo@example.com')
+        self.project.subscriptions.create(
+            email='foo@example.com',
+            notification_strategy=Subscription.NOTIFY_ON_CHANGE)
+        status = ProjectStatus.create_or_update(self.build2)
+        send_status_notification(status)
+        self.assertEqual(0, len(mail.outbox))
+
+    def test_send_notification_on_regression_only_with_no_regressions(self):
+        self.project.subscriptions.create(
+            email='foo@example.com',
+            notification_strategy=Subscription.NOTIFY_ON_REGRESSION)
         status = ProjectStatus.create_or_update(self.build2)
         send_status_notification(status)
         self.assertEqual(0, len(mail.outbox))
@@ -113,9 +130,19 @@ class TestSendNotification(TestCase):
     @patch("squad.core.comparison.TestComparison.diff", new_callable=PropertyMock)
     def test_send_notification_on_change_only(self, diff):
         diff.return_value = fake_diff()
-        self.project.notification_strategy = Project.NOTIFY_ON_CHANGE
-        self.project.save()
-        self.project.subscriptions.create(email='foo@example.com')
+        self.project.subscriptions.create(
+            email='foo@example.com',
+            notification_strategy=Subscription.NOTIFY_ON_CHANGE)
+        status = ProjectStatus.create_or_update(self.build2)
+        send_status_notification(status)
+        self.assertEqual(1, len(mail.outbox))
+
+    @patch("squad.core.comparison.TestComparison.regressions", new_callable=PropertyMock)
+    def test_send_notification_on_regression_only(self, regressions):
+        regressions.return_value = OrderedDict({'key': 'value'})
+        self.project.subscriptions.create(
+            email='foo@example.com',
+            notification_strategy=Subscription.NOTIFY_ON_REGRESSION)
         status = ProjectStatus.create_or_update(self.build2)
         send_status_notification(status)
         self.assertEqual(1, len(mail.outbox))

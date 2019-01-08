@@ -444,7 +444,6 @@ class ProjectConfig(SquadBaseConfig):
         enabled_plugins_list = StringProperty()
         wait_before_notification = IntegerProperty()
         notification_timeout = IntegerProperty()
-        notification_strategy = StringProperty(choices=['all', 'change'])
 
     _endpoint = "projects"
     _object_name = "project"

@@ -7,19 +7,30 @@
 {% block settings %}
 <h1>Subscriptions</h1>
 
-<p>Add subscriptions:</p>
+<p>Add subscription:</p>
 <form method="POST">
   {{ csrf_input }}
-  <div>
-    <select id="project_subscriptions" name="subscriptions[]" multiple="multiple" style="width: 100%;">
-      {% for group in groups %}
-      <optgroup label="{{ group.name }}">
-        {% for project in group.projects.all() %}
-        <option value="{{ project.id }}">{{ project.name }}</option>
+  <div class="row">
+    <div class="col-md-10">
+      <select id="project_subscriptions" name="subscription" style="width: 100%;">
+        {% for group in groups %}
+        <optgroup label="{{ group.name }}">
+          {% for project in group.projects.all() %}
+          <option value="{{ project.id }}">{{ project.name }}</option>
         {% endfor %}
-      </optgroup>
-      {% endfor %}
-    </select>
+        </optgroup>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4" style="margin-top: 10px;">
+      <select name="notification-strategy" class="form-control">
+        {% for key, name in notification_strategies.items() %}
+          <option value="{{ key }}">{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
   </div>
   <div style="margin-top: 10px;">
     <input type="submit" class="btn btn-primary" value="Submit"/>
@@ -29,7 +40,7 @@
 <p style="margin-top: 10px;">Your current subscriptions:</p>
 {% if subscriptions %}
 {% for sub in subscriptions %}
-<pre>{{ sub.project.group.name }}/{{ sub.project.name }}
+<pre>{{ sub.project.group.name }}/{{ sub.project.name }} ({{ sub.notification_strategy }})
   <a href="{{url('settings-subscription-remove', args=[sub.id])}}" class="btn btn-xs btn-danger btn-group-vertical pull-right" title="Remove subscription">
     <span class="glyphicon glyphicon-trash"></span>
   </a>
