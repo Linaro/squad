@@ -364,8 +364,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                      'is_public',
                      'html_mail',
                      'custom_email_template',
-                     'moderate_notifications',
-                     'notification_strategy')
+                     'moderate_notifications')
     filter_backends = (ComplexFilterBackend, )
     filter_class = ProjectFilter
     search_fields = ('slug',

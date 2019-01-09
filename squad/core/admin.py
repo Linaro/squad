@@ -41,7 +41,7 @@ class TokenInline(admin.StackedInline):
 
 class SubscriptionInline(admin.StackedInline):
     model = models.Subscription
-    fields = ['email', 'user']
+    fields = ['email', 'user', 'notification_strategy']
     extra = 0
 
 
@@ -52,8 +52,8 @@ class AdminSubscriptionInline(admin.StackedInline):
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'is_public', 'notification_strategy', 'moderate_notifications', 'custom_email_template']
-    list_filter = ['group', 'is_public', 'notification_strategy', 'moderate_notifications', 'custom_email_template']
+    list_display = ['__str__', 'is_public', 'moderate_notifications', 'custom_email_template']
+    list_filter = ['group', 'is_public', 'moderate_notifications', 'custom_email_template']
     inlines = [EnvironmentInline, TokenInline, SubscriptionInline, AdminSubscriptionInline]
 
 

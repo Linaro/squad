@@ -112,14 +112,6 @@ class Project(models.Model):
         blank=True,
     )
 
-    NOTIFY_ALL_BUILDS = 'all'
-    NOTIFY_ON_CHANGE = 'change'
-    notification_strategy = models.CharField(
-        max_length=32,
-        choices=((NOTIFY_ALL_BUILDS, 'All builds'), (NOTIFY_ON_CHANGE, 'Only on change')),
-        default='all'
-    )
-
     data_retention_days = models.IntegerField(
         default=0,
         help_text="Delete builds older than this number of days. Set to 0 or any negative number to disable.",
@@ -1019,6 +1011,22 @@ class Subscription(models.Model):
         null=True,
         blank=True,
         default=None
+    )
+
+    NOTIFY_ALL_BUILDS = 'all'
+    NOTIFY_ON_CHANGE = 'change'
+    NOTIFY_ON_REGRESSION = 'regression'
+
+    STRATEGY_CHOICES = (
+        (NOTIFY_ALL_BUILDS, "All builds"),
+        (NOTIFY_ON_CHANGE, "Only on change"),
+        (NOTIFY_ON_REGRESSION, "Only on regression"),
+    )
+
+    notification_strategy = models.CharField(
+        max_length=32,
+        choices=STRATEGY_CHOICES,
+        default='all'
     )
 
     class Meta:

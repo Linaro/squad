@@ -7,7 +7,7 @@ from django.template.loader import render_to_string
 from re import sub
 
 
-from squad.core.models import Project, ProjectStatus, Build, KnownIssue, NotificationDelivery
+from squad.core.models import Project, ProjectStatus, Build, KnownIssue, NotificationDelivery, Subscription
 from squad.core.comparison import TestComparison
 
 
@@ -65,6 +65,14 @@ class Notification(object):
     def recipients(self):
         emails = []
         for subscription in self.project.subscriptions.all():
+            if subscription.notification_strategy == Subscription.NOTIFY_ON_CHANGE:
+                if not self.previous_build or not self.diff:
+                    continue
+            elif subscription.notification_strategy == Subscription.NOTIFY_ON_REGRESSION:
+                if not self.previous_build or \
+                   len(self.comparison.regressions) == 0:
+                    continue
+
             email = subscription.get_email()
             if email:
                 emails.append(email)
@@ -205,10 +213,6 @@ def send_status_notification(status, project=None):
         notification = PreviewNotification(status)
     else:
         notification = Notification(status)
-
-    if project.notification_strategy == Project.NOTIFY_ON_CHANGE:
-        if not notification.diff or not notification.previous_build:
-            return
 
     notification.send()
 
