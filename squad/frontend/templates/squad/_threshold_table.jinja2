@@ -57,36 +57,40 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="modalClosed()">&times;</button>
         <h4 class="modal-title">Metric threshold</h4>
       </div>
       <form class="well" id="threshold_form" ng-submit="updateMetricThreshold()">
         <div class="modal-body">
           {% raw %}
-          <p ng-repeat="(name, errs) in errors" class="alert alert-danger"><strong>{{ name }}</strong>: {{ errs.join(', ') }}</p>
+          <p ng-repeat="(name, errs) in errors" class="alert alert-danger errors"><strong>{{ name }}</strong>: {{ errs.join(', ') }}</p>
           {% endraw %}
 
           <div class="row form-group">
             <label for="name" class="col-md-3 control-label">Metric name:</label>
             <div class="col-md-10">
-              <input name="name" ng-model="currentThreshold.name" />
+              <select id="metric_name" name="name" ng-model="currentThreshold.name" style="width: 100%;">
+              {% for metric in metrics %}
+                <option value="{{ metric.name }}">{{ metric.name }}</option>
+              {% endfor %}
+              </select>
             </div>
           </div>
           <div class="row form-group">
             <label for="value" class="col-md-3 control-label">Value:</label>
             <div class="col-md-10">
-              <input name="value" ng-model="currentThreshold.value" />
+              <input id="value" name="value" ng-model="currentThreshold.value" style="width: 100%;" />
             </div>
           </div>
           <div class="row form-group">
-            <label for="is_higher_better" class="col-md-3 control-label">Higher is better:</label>
-            <div class="col-md-10">
-              <input type="checkbox" name="is_higher_better" ng-model="currentThreshold.is_higher_better" />
+            <label for="is_higher_better" class="col-md-4 control-label">Higher is better:</label>
+            <div class="col-md-2">
+              <input id="is_higher_better" type="checkbox" name="is_higher_better" ng-model="currentThreshold.is_higher_better" />
             </div>
           </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="modalClosed()">Close</button>
         <button class="btn btn-primary">Save</button>
       </div>
       </form>

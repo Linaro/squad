@@ -82,6 +82,17 @@ def __get_statuses__(project, limit=None):
     return statuses
 
 
+def __get_metrics_list__(project):
+
+    metric_set = Metric.objects.filter(
+        test_run__environment__project=project
+    ).values('suite__slug', 'name').order_by('suite__slug', 'name').distinct()
+
+    metrics = [{"name": ":tests:", "label": "Test pass %", "max": 100, "min": 0}]
+    metrics += [{"name": join_name(m['suite__slug'], m['name'])} for m in metric_set]
+    return metrics
+
+
 @auth
 def project(request, group_slug, project_slug):
     group = Group.objects.get(slug=group_slug)
@@ -443,13 +454,7 @@ def metrics(request, group_slug, project_slug):
     project = group.projects.get(slug=project_slug)
 
     environments = [{"name": e.slug} for e in project.environments.order_by('id').all()]
-
-    metric_set = Metric.objects.filter(
-        test_run__environment__project=project
-    ).values('suite__slug', 'name').order_by('suite__slug', 'name').distinct()
-
-    metrics = [{"name": ":tests:", "label": "Test pass %", "max": 100, "min": 0}]
-    metrics += [{"name": join_name(m['suite__slug'], m['name'])} for m in metric_set]
+    metrics = __get_metrics_list__(project)
 
     data = get_metric_data(
         project,
@@ -474,10 +479,12 @@ def thresholds(request, group_slug, project_slug):
     project = group.projects.get(slug=project_slug)
 
     environments = [{"name": e.slug} for e in project.environments.order_by('id').all()]
+    metrics = __get_metrics_list__(project)
 
     context = {
         "project": project,
         "environments": environments,
+        "metrics": metrics,
     }
     return render(request, 'squad/thresholds.jinja2', context)
 

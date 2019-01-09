@@ -89,6 +89,12 @@ function MetricThresholdController($scope, $http, Threshold, $httpParamSerialize
     $scope.$watch('$viewContentLoaded', function () {
         $scope.initMetricThresholds()
     });
+
+    $scope.modalClosed = function() {
+      // Reset threshold in modal dialog.
+      $scope.currentThreshold = new Threshold()
+      $scope.errors = null
+    }
 }
 
 app.controller(
