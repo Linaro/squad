@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from dateutil.relativedelta import relativedelta
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
 from django.utils import timezone
@@ -8,7 +7,7 @@ from django.test import TestCase
 from unittest.mock import patch, MagicMock, PropertyMock
 
 
-from squad.core.models import Group, Project, Build, ProjectStatus, EmailTemplate, MetricThreshold, Subscription
+from squad.core.models import Group, ProjectStatus, EmailTemplate, Subscription
 from squad.core.notification import Notification, send_status_notification
 
 

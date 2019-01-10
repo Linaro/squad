@@ -1,5 +1,5 @@
 import time
-from squad.core.models import Group, Project, TestRun
+from squad.core.models import Group
 from squad.ci.models import Backend
 from django.core.management.base import BaseCommand
 

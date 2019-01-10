@@ -1,10 +1,8 @@
-from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from squad.http import auth_write, read_file_upload
-from squad.ci import models
 from squad.ci.tasks import submit
 from squad.ci.models import Backend, TestJob
 from squad.core.models import Project

@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 
-from squad.core.utils import join_name, parse_name
+from squad.core.utils import parse_name
 from squad.core import models
 
 

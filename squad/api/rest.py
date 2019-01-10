@@ -6,12 +6,11 @@ from django.core.exceptions import MultipleObjectsReturned
 from squad.api.filters import ComplexFilterBackend
 from squad.core.models import Annotation, Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, MetricThreshold, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata, DelayedReport
 from squad.core.tasks import prepare_report, update_delayed_report
-from squad.core.tasks.notification import notify_delayed_report_callback, notify_delayed_report_email
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
 from django.urls import reverse
 from django import forms
-from rest_framework import routers, serializers, views, viewsets, status
+from rest_framework import routers, serializers, viewsets, status
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response

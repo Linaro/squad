@@ -1,4 +1,3 @@
-from django.db import connection
 from django.db.models import Q, Sum, Case, When
 from django.db.models.fields import IntegerField
 from django.shortcuts import render
@@ -6,7 +5,6 @@ from django.shortcuts import render
 from squad.http import auth
 from squad.core.models import Group, Test, Suite
 from squad.core.history import TestHistory
-from django.shortcuts import get_object_or_404
 from django.http import Http404
 from squad.frontend.views import get_build
 

@@ -1,12 +1,10 @@
-from django.db.models import Max
 from django.utils import timezone
 
 from squad.celery import app as celery
-from squad.core.models import Project, ProjectStatus, Build, DelayedReport
+from squad.core.models import ProjectStatus, Build, DelayedReport
 from squad.core.notification import send_status_notification
 
 import requests
-import logging
 
 
 @celery.task

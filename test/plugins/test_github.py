@@ -3,7 +3,7 @@ from unittest.mock import patch, ANY
 
 
 from squad.plugins.github import Plugin
-from squad.core.models import Group, PatchSource, ProjectStatus
+from squad.core.models import Group, PatchSource
 
 
 class GithubPluginTest(TestCase):

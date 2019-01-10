@@ -1,5 +1,4 @@
 from squad.settings import *  # noqa
-import logging
 
 
 LOGGING['loggers']['django']['level'] = 999  # noqa

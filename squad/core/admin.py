@@ -4,8 +4,8 @@ from simple_history.admin import SimpleHistoryAdmin
 
 
 from . import models
-from .tasks import notify_project_status, postprocess_test_run
-from squad.core.plugins import PluginLoader
+from .tasks import postprocess_test_run
+from .tasks.notification import notify_project_status
 
 
 class TokenAdmin(admin.ModelAdmin):

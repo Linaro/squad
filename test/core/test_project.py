@@ -1,10 +1,9 @@
 from django.test import TestCase
 from django.contrib.auth.models import AnonymousUser
-from django.core.exceptions import ValidationError
 
 
 from django.contrib.auth.models import Group as UserGroup, User
-from squad.core.models import Group, Project, Token
+from squad.core.models import Group, Project
 
 
 class ProjectTest(TestCase):

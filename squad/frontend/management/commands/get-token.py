@@ -3,7 +3,6 @@ from django.core.management.base import BaseCommand
 from squad.core.models import Group
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
-import sys
 
 
 class Command(BaseCommand):

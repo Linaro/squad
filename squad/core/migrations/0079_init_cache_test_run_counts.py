@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
-from django.db.models import Count, Sum, Case, When
 
 
 def update(apps, schema_editor):

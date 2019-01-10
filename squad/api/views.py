@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponseForbidden
 from django.http import HttpResponse
 import json
 import logging
@@ -11,14 +10,9 @@ from squad.http import read_file_upload
 from squad.http import auth_write
 
 
-from squad.core.models import Annotation
 from squad.core.models import Group
-from squad.core.models import Project
 from squad.core.models import Build
-from squad.core.models import Environment
 from squad.core.models import PatchSource
-from squad.core.models import TestRun
-from squad.core.models import Token
 
 
 from squad.core.tasks import CreateBuild

@@ -1,22 +1,20 @@
-from collections import defaultdict
 import json
 import mimetypes
-import os
 import svgwrite
 
-from django.db.models import Case, When, Q
+from django.db.models import Case, When
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
-from squad.core.models import Group, Project, Metric, ProjectStatus, Status, KnownIssue
+from squad.core.models import Group, Metric, ProjectStatus, Status
 from squad.core.models import Build
 from squad.core.queries import get_metric_data
 from squad.core.utils import join_name
 from squad.frontend.utils import file_type
-from squad.http import auth, auth_write
+from squad.http import auth
 from collections import OrderedDict
 
 

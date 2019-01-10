@@ -3,8 +3,6 @@ import subprocess
 import shutil
 
 
-from django.test import TestCase
-
 karma = os.path.join(os.path.dirname(__file__), '../node_modules/.bin/karma')
 
 

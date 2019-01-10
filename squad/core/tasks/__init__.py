@@ -1,4 +1,3 @@
-from datetime import datetime
 from django.core.exceptions import MultipleObjectsReturned
 from django.utils import timezone
 from collections import defaultdict
@@ -26,7 +25,6 @@ from squad.core.models import (
     Build,
     BuildPlaceholder,
     Project,
-    EmailTemplate,
     DelayedReport
 )
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
@@ -39,7 +37,7 @@ from jinja2 import TemplateSyntaxError
 from . import exceptions
 
 
-from .notification import notify_project_status, maybe_notify_project_status
+from .notification import maybe_notify_project_status
 from .notification import notify_patch_build_created
 from .notification import notify_delayed_report_callback, notify_delayed_report_email
 

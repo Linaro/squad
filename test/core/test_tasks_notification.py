@@ -1,6 +1,5 @@
 import datetime
-from unittest.mock import patch, MagicMock, call, PropertyMock
-from celery.exceptions import Retry
+from unittest.mock import patch, MagicMock
 from django.test import TestCase
 from django.utils import timezone
 

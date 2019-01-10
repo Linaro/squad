@@ -7,7 +7,7 @@ import yaml
 from dateutil.relativedelta import relativedelta
 from django.test import TestCase
 from django.utils import timezone
-from unittest.mock import patch, PropertyMock
+from unittest.mock import patch
 
 
 from squad.core.models import Group, TestRun, Status, Build, ProjectStatus, SuiteVersion, PatchSource, KnownIssue, EmailTemplate

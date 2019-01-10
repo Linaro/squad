@@ -1,7 +1,5 @@
 import os
 from django.test import TestCase, Client
-from django.test.utils import override_settings
-from django.conf import settings
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from test.api import APIClient
