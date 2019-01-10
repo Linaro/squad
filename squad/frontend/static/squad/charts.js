@@ -587,6 +587,13 @@ function ChartsController($scope, $http, $location, $compile, ChartPanel) {
         $scope.calculate_max_results()
 
         $scope.redraw()
+
+        // Initialize chart on all environments if there's no user set params.
+        var selectedEnvs = $scope.getEnvironmentIds()
+        if (selectedEnvs.length == 0 && $scope.selectedMetrics.length == 0) {
+            $scope.toggleEnvironments()
+            $scope.addMetric(_.find($scope.metrics, function(m) {return m.name == ":tests:"}))
+        }
     }
 
     $scope.filterData = ChartPanel.filterData
