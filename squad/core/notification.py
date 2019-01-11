@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from django.db import models
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 import django.template
@@ -7,7 +6,7 @@ from django.template.loader import render_to_string
 from re import sub
 
 
-from squad.core.models import Project, ProjectStatus, Build, KnownIssue, NotificationDelivery, Subscription
+from squad.core.models import KnownIssue, NotificationDelivery, Subscription
 from squad.core.comparison import TestComparison
 
 

@@ -1,6 +1,5 @@
 import re
 import os
-from collections import OrderedDict
 from glob import glob
 from importlib import import_module
 

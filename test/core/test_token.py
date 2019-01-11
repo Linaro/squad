@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from squad.core.models import Group, Project, Token
+from squad.core.models import Group, Token
 
 
 class TokenTest(TestCase):

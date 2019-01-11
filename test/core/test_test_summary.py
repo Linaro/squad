@@ -1,8 +1,6 @@
 from django.test import TestCase
-from unittest.mock import patch
 
-
-from squad.core.models import Group, Build, TestSummary, KnownIssue
+from squad.core.models import Group, Build, TestSummary
 
 
 class TestSummaryTest(TestCase):

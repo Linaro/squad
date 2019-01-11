@@ -29,12 +29,10 @@ should be removed.
 """
 import re
 from collections import namedtuple
-from contextlib import contextmanager
 from urllib.parse import unquote
 
 from django.db.models import QuerySet
 from django.http import QueryDict
-from django_filters import compat
 from django_filters.rest_framework import backends
 from django.utils.translation import ugettext as _
 from rest_framework.serializers import ValidationError as SerializerValidationError

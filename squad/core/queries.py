@@ -1,5 +1,5 @@
 from squad.core import models
-from django.db.models import Q, F, Value, Sum
+from django.db.models import Q, F, Sum
 
 
 def get_metric_data(project, metrics, environments):

@@ -1,10 +1,7 @@
-import json
-import yaml
-
 from django import template
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.urls import resolve, NoReverseMatch
+from django.urls import NoReverseMatch
 from django.template.defaultfilters import safe
 from django.template.defaultfilters import date as django_date
 from hashlib import md5

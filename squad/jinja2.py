@@ -1,11 +1,9 @@
 from importlib import import_module
 from jinja2 import Environment
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.core.urlresolvers import reverse
 from django.utils import translation
 
 
-import django.template.defaultfilters
 import inspect
 
 

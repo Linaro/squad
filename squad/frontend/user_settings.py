@@ -5,7 +5,6 @@ from django.conf.urls import url
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db.utils import IntegrityError
-from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 
@@ -13,7 +12,6 @@ from django.contrib.auth.decorators import login_required
 from rest_framework.authtoken.models import Token
 
 
-from squad.http import auth
 from squad.core.models import Group, Subscription
 
 

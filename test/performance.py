@@ -2,7 +2,6 @@ from contextlib import contextmanager
 import json
 import os
 import re
-import sys
 from django.conf import settings
 from django.db import connection, reset_queries
 

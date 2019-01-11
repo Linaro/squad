@@ -1,8 +1,6 @@
 from glob import glob
-import json
 import os
 import re
-import sys
 from django.core.management.base import BaseCommand
 
 

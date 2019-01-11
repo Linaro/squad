@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 from celery.schedules import crontab
 from email.utils import parseaddr
 import os
-import sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -302,7 +301,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_METHODS = ['GET', 'HEAD']
 
 try:
-    from squad.local_settings import *  # noqa: F403
+    from squad.local_settings import *  # noqa: F401,F403
 except ImportError:
     pass
 

@@ -1,4 +1,3 @@
-from collections import namedtuple
 from squad.core.plugins import Plugin as BasePlugin
 
 

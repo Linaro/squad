@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django.utils import timezone
-from unittest.mock import patch
 
 from squad.core.models import Group, KnownIssue
 

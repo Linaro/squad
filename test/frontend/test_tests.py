@@ -3,7 +3,6 @@ from squad.core.tasks import ReceiveTestRun
 from django.test import TestCase
 from django.test import Client
 import json
-from mock import patch
 
 tests_file = {
     ("suite1/test%d" % i): "fail" for i in range(0, 50)

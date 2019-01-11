@@ -1,5 +1,4 @@
 from django.conf.urls import include, url
-from django.shortcuts import redirect
 from rest_framework.schemas import get_schema_view
 
 from . import views

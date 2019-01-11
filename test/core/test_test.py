@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from unittest.mock import patch
-from squad.core.models import Group, Test, Suite, KnownIssue
+from squad.core.models import Group, Test, Suite
 
 
 def test(**kwargs):

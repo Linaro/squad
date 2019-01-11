@@ -3,7 +3,7 @@ from django.core.paginator import Paginator
 
 
 from squad.core.utils import parse_name
-from squad.core.models import Test, KnownIssue
+from squad.core.models import Test
 
 
 class TestResult(object):
