@@ -1,3 +1,12 @@
+# 0.60
+
+* Make notification strategy a per-recipient choice.
+* api:
+  * fix URL generated to baseline in DelayedReport
+  * fix report caching
+  * add 'subject' to reports
+*  frontend: turn Thresholds metrics name into a select control.
+
 # 0.59
 
 * Add community connector files for Google Data Studio data source.
