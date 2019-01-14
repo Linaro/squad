@@ -1,3 +1,5 @@
+import yaml
+
 from django.utils import timezone
 from django.test import TestCase
 from dateutil.relativedelta import relativedelta
@@ -278,3 +280,28 @@ class ProjectStatusTest(TestCase):
         self.assertEqual(len(thresholds), 1)
         self.assertEqual(thresholds[0][1].name, 'metric1')
         self.assertEqual(thresholds[0][1].result, 3)
+
+    def test_last_build_comparison(self):
+        # Test that the build that we compare agains is truly the last one
+        # time wise.
+        build1 = self.create_build('1', datetime=h(10))
+        test_run1 = build1.test_runs.first()
+        test_run1.tests.create(name='foo', suite=self.suite, result=False)
+        test_run1.tests.create(name='bar', suite=self.suite, result=False)
+        ProjectStatus.create_or_update(build1)
+
+        build2 = self.create_build('2', datetime=h(9))
+        test_run2 = build2.test_runs.first()
+        test_run2.tests.create(name='foo', suite=self.suite, result=False)
+        test_run2.tests.create(name='bar', suite=self.suite, result=True)
+        ProjectStatus.create_or_update(build2)
+
+        build3 = self.create_build('3', datetime=h(8))
+        test_run3 = build3.test_runs.first()
+        test_run3.tests.create(name='foo', suite=self.suite, result=True)
+        test_run3.tests.create(name='bar', suite=self.suite, result=True)
+        status3 = ProjectStatus.create_or_update(build3)
+
+        fixes3 = yaml.load(status3.fixes)
+        self.assertEqual(len(fixes3['theenvironment']), 1)
+        self.assertEqual(fixes3['theenvironment'][0], 'foo')
