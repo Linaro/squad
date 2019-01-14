@@ -832,7 +832,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status__finished=True,
             datetime__lt=build.datetime,
             project=build.project,
-        ).order_by('build__datetime').last()
+        ).order_by('datetime').last()
         if previous_build is not None:
             comparison = TestComparison(previous_build, build)
             if comparison.regressions:
