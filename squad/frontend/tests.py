@@ -1,3 +1,5 @@
+import json
+
 from django.db.models import Q, Sum, Case, When
 from django.db.models.fields import IntegerField
 from django.shortcuts import render
@@ -20,7 +22,7 @@ class TestResult(list):
         self.totals = {"pass": 0, "fail": 0, "xfail": 0, "skip": 0, "n/a": 0}
 
     def append(self, item):
-        self.totals[item] += 1
+        self.totals[item[0]] += 1
         return super(TestResult, self).append(item)
 
     def ordering(self):
@@ -122,11 +124,23 @@ class TestResultTable(list):
         memo = {}
         for test in tests:
             memo.setdefault(test.full_name, {})
-            memo[test.full_name][test.test_run.environment_id] = test.status
+            memo[test.full_name][test.test_run.environment_id] = [test.status]
+            if test.metadata.description or test.suite.metadata.instructions_to_reproduce or test.metadata.instructions_to_reproduce or test.log:
+                error_info = {
+                    "test_description": test.metadata.description,
+                    "suite_instructions": test.suite.metadata.instructions_to_reproduce,
+                    "test_instructions": test.metadata.instructions_to_reproduce,
+                    "test_log": test.log
+                }
+                memo[test.full_name][test.test_run.environment_id].append(
+                    json.dumps(error_info))
+            else:
+                memo[test.full_name][test.test_run.environment_id].append(None)
         for name, results in memo.items():
             test_result = TestResult(name)
             for env in table.environments:
-                test_result.append(results.get(env.id, "n/a"))
+                test_result.append(results.get(
+                    env.id, ["n/a", None]))
             table.append(test_result)
 
         table.sort()
