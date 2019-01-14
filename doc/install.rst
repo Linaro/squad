@@ -1,16 +1,17 @@
+.. _production_install_ref_label:
+
 =====================================================
 Installation Instructions for production environments
 =====================================================
-
-.. _install_python:
 
 Installation using the Python package manager pip
 -------------------------------------------------
 
 Make sure you have the ``pip`` Python package manager installed on your Python 3
-environment. On Debian/Ubuntu, the easiest way to do that is::
+environment, and the C library for YAML development. On Debian/Ubuntu,
+the easiest way to do that is::
 
-    apt-get install python3-pip
+    apt-get install python3-pip libyaml-dev
 
 Install squad::
 
@@ -25,7 +26,7 @@ need to install an AMQP server. We recommend RabbitMQ::
     apt-get install rabbitmq-server
 
 By default SQUAD will look for an AMQP server running on localhost, listening
-to the standard port,, so for a single-server deployment you don't need to do
+to the standard port, so for a single-server deployment you don't need to do
 anything else.
 
 If you have a multi-server setup, then each server needs to be configured with
@@ -47,6 +48,8 @@ application as ``root``!)::
 
     squad
 
+* Note: if that doesn't work, ``~/.local/bin`` is probably missing in the ``$PATH`` environment variable.
+
 This will make the web UI available at http://localhost:8000/. To serve the UI
 to external users, you will need to setup a public-facing web server such as
 Apache or nginx and reverse proxy to localhost on port 8000. You can change the
@@ -65,9 +68,9 @@ an admin user for yourself, use::
 
 These are the command lines to run the other processes:
 
-+-----------+----------------------------
-| Process   | Command                   |
 +-----------+---------------------------+
+| Process   | Command                   |
++===========+===========================+
 | worker    | celery -A squad worker    |
 +-----------+---------------------------+
 | scheduler | celery -A squad beat      |

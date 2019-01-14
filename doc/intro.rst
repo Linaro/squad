@@ -19,7 +19,7 @@ Core data model
               |ProjectStatus|-+       |Environment|
               +-------------+         +-----------+
 
-SQUAD is multi-team and multi-project. Each team can have multiple
+SQUAD is multi-group and multi-project. Each group can have multiple
 projects. For each project, you can have multiple builds, and for each
 build, multiple test runs. Each test run can include multiple test
 results, which can be either pass/fail results, or metrics, containing
@@ -47,9 +47,9 @@ Submitting results
 
 The API is the following
 
-**POST** /api/submit/:team/:project/:build/:environment
+**POST** /api/submit/:group/:project/:build/:environment
 
--  ``:team`` is the team identifier. It must exist previously.
+-  ``:group`` is the group identifier. It must exist previously.
 -  ``:project`` is the project identifier. It must exist previously.
 -  ``:build`` is the build identifier. It can be a git commit hash, a
    Android manifest hash, or anything really. Extra information on the
@@ -58,7 +58,7 @@ The API is the following
 -  ``:environment`` is the environmenr identitifer. It will be created
    automatically if does not exist before.
 
-All of the above identifiers (``:team``, ``:project``, ``:build``, and
+All of the above identifiers (``:group``, ``:project``, ``:build``, and
 ``:environment``) must match the regular expression
 ``[a-zA-Z0-9][a-zA-Z0-9_.-]*``.
 
@@ -84,7 +84,7 @@ Example with test data as file uploads::
         --form log=@/path/to/log.txt \
         --form attachment=@/path/to/screenshot.png \
         --form attachment=@/path/to/extra-info.txt \
-        https://squad.example.com/api/submit/my-team/my-project/x.y.z/my-ci-env
+        https://squad.example.com/api/submit/my-group/my-project/x.y.z/my-ci-env
 
 Example with test data as regular ``POST`` parameters::
 
@@ -96,7 +96,7 @@ Example with test data as regular ``POST`` parameters::
         --form log='log text ...' \
         --form attachment=@/path/to/screenshot.png \
         --form attachment=@/path/to/extra-info.txt \
-        https://squad.example.com/api/submit/my-team/my-project/x.y.z/my-ci-env
+        https://squad.example.com/api/submit/my-group/my-project/x.y.z/my-ci-env
 
 Since test results should always come from automation systems, the API
 is the only way to submit results into the system. Even manual testing

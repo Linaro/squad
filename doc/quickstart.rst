@@ -5,9 +5,14 @@ Quick start: Running SQUAD locally
 SQUAD is a Django application and works just like any other Django
 application. If you are new to Django and want to setup a development
 environment, you can follow the instructions below. If you want to
-install SQUAD for production usage, see [INSTALL](INSTALL.rst) instead.
+install SQUAD for production usage, see :ref:`production_install_ref_label` instead.
 
 Note that SQUAD is Python3-only, so it won't work with Python 2.
+
+Before moving on, there's a system dependency needed for Python to load yaml content
+with the C library, install it with::
+
+    apt-get install libyaml-dev
 
 To install the dependencies::
 

@@ -17,6 +17,7 @@ SQUAD — Software Quality Dashboard
    install
    ci
    api
+   lava_usecase
 
 Indices and tables
 ==================
