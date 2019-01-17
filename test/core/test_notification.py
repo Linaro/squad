@@ -178,6 +178,19 @@ class TestSendNotification(TestCase):
         msg = mail.outbox[0]
         self.assertEqual(0, len(msg.alternatives))
 
+    def test_dont_html_escape_metadata_for_plain_text(self):
+        self.project.subscriptions.create(email='foo@example.com')
+        self.project.html_mail = False
+        self.project.save()
+        env = self.project.environments.create(slug='myenv')
+        self.build2.test_runs.create(environment=env, metadata_file='{"foo": "foo\'bar"}')
+
+        status = ProjectStatus.create_or_update(self.build2)
+        send_status_notification(status)
+
+        msg = mail.outbox[0]
+        self.assertIn("foo'bar", msg.body)
+
 
 class TestModeratedNotifications(TestCase):
 
@@ -278,3 +291,25 @@ class TestCustomEmailTemplate(TestCase):
 
         msg = mail.outbox[0]
         self.assertEqual('lalala', msg.subject)
+
+    def test_escaping_custom_template(self):
+        template = EmailTemplate.objects.create(
+            subject='subject: {{ project.name }}',
+            plain_text='foo: {{ notification.project.name }}',
+            html='{% autoescape True %}bar: {{ notification.project.name }}{% endautoescape %}')
+        self.project.name = "Project's name"
+        self.project.use_custom_email_template = True
+        self.project.custom_email_template = template
+        self.project.save()
+
+        status = ProjectStatus.create_or_update(self.build2)
+        send_status_notification(status)
+
+        msg = mail.outbox[0]
+        subject = msg.subject
+        txt = msg.body
+        html = msg.alternatives[0][0]
+
+        self.assertEqual("subject: Project's name", subject)
+        self.assertEqual("foo: Project's name", txt)
+        self.assertEqual("bar: Project&#39;s name", html)

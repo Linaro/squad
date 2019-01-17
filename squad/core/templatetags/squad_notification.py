@@ -1,4 +1,3 @@
-from squad.core.utils import format_metadata
 from squad.jinja2 import register_global_function, register_filter
 
 
@@ -37,7 +36,5 @@ def tabulate_test_comparison(comparison, test_results=None):
 
 @register_filter
 def metadata_txt(v, key=None):
-    separator = " "
-    if key:
-        separator = "\n" + " " * (len(key) + 2)
-    return format_metadata(v, separator)
+    separator = ("\n" + " " * (len(key) + 2)) if key else " "
+    return separator.join(v) if type(v) is list else v

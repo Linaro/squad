@@ -107,6 +107,7 @@ class Notification(object):
             template = custom_email_template.subject
         else:
             template = '{{project}}: {{tests_total}} tests, {{tests_fail}} failed, {{tests_pass}} passed (build {{build}})'
+
         return jinja2.from_string(template).render(subject_data)
 
     def message(self, do_html=True, custom_email_template=None):
