@@ -1,3 +1,6 @@
+.. image:: squad.svg
+   :target: squad.svg
+
 SQUAD - Software Quality Dashboard
 ==================================
 
