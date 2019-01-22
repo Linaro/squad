@@ -12,6 +12,12 @@ class TestResult(object):
         self.known_issues = test.known_issues.all()
         self.status = test.status
         self.test_run = test.test_run
+        self.info = {
+            "test_description": test.metadata.description,
+            "suite_instructions": test.suite.metadata.instructions_to_reproduce,
+            "test_instructions": test.metadata.instructions_to_reproduce,
+            "test_log": test.log
+        }
 
 
 class TestHistory(object):

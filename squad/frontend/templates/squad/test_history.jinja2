@@ -42,6 +42,9 @@
             {% with known_issues=result.known_issues %}
               <td class='{{result.status|slugify}}'>
                 <a href="{{project_url(result.test_run)}}">{{result.status}}</a>
+                {% if result.info['test_description'] or result.info['suite_instructions'] or result.info['test_instructions'] or result.info['test_log'] %}
+                  <a href='#' data-toggle="modal" data-target="#info_modal" data-info="{{ result.info }}"><span data-toggle="tooltip" data-placement="right" title="Show info" class='fa fa-info-circle'></span></a>
+                {% endif %}
                 {% if known_issues %}
                   <button type='button' class='known-issue btn btn-xs btn-info pull-right' data-toggle='popover'>
                     <i title='Known issue' class='fa fa-info-circle'></i>
@@ -78,6 +81,39 @@
   {% include "squad/_pagination.jinja2" %}
   {% endwith %}
 
+<!-- Modal HTML -->
+<div id="info_modal" class="modal fade" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Test Info</h4>
+      </div>
+      <div class="modal-body">
+        <div id="test_description" style="display: none;">
+          <p><strong>Test description:</strong></p>
+          <div id="test_description_inner">
+          </div>
+        </div>
+        <div id="test_reproduce" style="display: none;">
+          <p><strong>How to reproduce:</strong></p>
+          <div id="test_reproduce_inner">
+          </div>
+        </div>
+        <div id="test_log" style="display: none;">
+          <p><strong>Test log:</strong></p>
+          <div id="test_log_inner">
+            <pre></pre>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="modalClosed()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 {% block javascript %}
 <script type="text/javascript" src='{{static("squad/table.js")}}'></script>
@@ -88,6 +124,27 @@
       html: true,
       content: function() {
         return $(this).parent().find('.known-issue-details').html()
+      }
+    })
+    $('[data-toggle="tooltip"]').tooltip();
+    $('#info_modal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget);
+      var info = JSON.parse(button.data('info').replace(/'/g, '"').replace(/None/g, null));
+      if(info['test_description']) {
+        $('#test_description').show();
+        $('#test_description_inner').html(info['test_description']);
+      }
+      if(info['suite_instructions'] || info['test_instructions']) {
+        $('#test_reproduce').show();
+        if(info['suite_instructions']) {
+          $('#test_reproduce_inner').html(info['suite_instructions']);
+        } else if (info['test_instructions']) {
+          $('#test_reproduce_inner').html(info['test_instructions']);
+        }
+      }
+      if(info['test_log']) {
+        $('#test_log').show();
+        $('#test_log_inner pre:first').html(info['test_log']);
       }
     })
   })

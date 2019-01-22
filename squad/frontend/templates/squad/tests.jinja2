@@ -32,7 +32,11 @@
             <tr id='test-{{test.name|slugify}}' ng-show="match('test-{{test.name|slugify}}')">
                 <td><a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test.name])}}">{{test.name}}</a></td>
                 {% for status in test %}
-                <td class="{{status}}"><a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test.name])}}">{{status}}</a></td>
+                <td class="{{status[0]}}"><a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test.name])}}">{{status[0]}}</a>
+                  {% if status[1] %}
+                  <a href='#' data-toggle="modal" data-target="#info_modal" data-status="{{ status[1] }}"><span data-toggle="tooltip" data-placement="right" title="Show info" class='fa fa-info-circle'></span></a>
+                  {% endif %}
+                </td>
                 {% endfor %}
             </tr>
             {% endfor %}
@@ -47,6 +51,39 @@
 
 </div>
 
+<!-- Modal HTML -->
+<div id="info_modal" class="modal fade" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Test Info</h4>
+      </div>
+      <div class="modal-body">
+        <div id="test_description" style="display: none;">
+          <p><strong>Test description:</strong></p>
+          <div id="test_description_inner">
+          </div>
+        </div>
+        <div id="test_reproduce" style="display: none;">
+          <p><strong>How to reproduce:</strong></p>
+          <div id="test_reproduce_inner">
+          </div>
+        </div>
+        <div id="test_log" style="display: none;">
+          <p><strong>Test log:</strong></p>
+          <div id="test_log_inner">
+            <pre></pre>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="modalClosed()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% with items=results %}
 {% include "squad/_pagination.jinja2" %}
 {% endwith %}
@@ -58,6 +95,7 @@
 <script type="text/javascript" src='{{static("squad/table.js")}}'></script>
 <script type="text/javascript">
 csrf_token = '{{ csrf_token }}'
+$('[data-toggle="tooltip"]').tooltip();
 function loadSearchURL(pageParam, search) {
   searchURL = pageParam + "&search=" + search;
   window.location = searchURL;
@@ -76,5 +114,25 @@ $(".pagination > li > a").click(function(event) {
   window.location = $(this).attr("href") + "&search=" + $("#search").val();
   return false;
 });
+$('#info_modal').on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget);
+  var status = button.data('status');
+  if(status['test_description']) {
+    $('#test_description').show();
+    $('#test_description_inner').html(status['test_description']);
+  }
+  if(status['suite_instructions'] || status['test_instructions']) {
+    $('#test_reproduce').show();
+    if(status['suite_instructions']) {
+      $('#test_reproduce_inner').html(status['suite_instructions']);
+    } else if (status['test_instructions']) {
+      $('#test_reproduce_inner').html(status['test_instructions']);
+    }
+  }
+  if(status['test_log']) {
+    $('#test_log').show();
+    $('#test_log_inner pre:first').html(status['test_log']);
+  }
+})
 </script>
 {% endblock %}
