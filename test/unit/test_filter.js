@@ -1,5 +1,17 @@
+import {FilterController} from '../../squad/frontend/static/squad/controllers/filter.js'
+
+angular.module('filterApp', []).controller(
+    'FilterController',
+    [
+        '$scope',
+        '$attrs',
+        '$location',
+        FilterController
+    ]
+);
+
 describe('FilterController', function() {
-    beforeEach(module('Build'));
+    beforeEach(module('filterApp'));
 
     var $controller;
 
@@ -8,18 +20,19 @@ describe('FilterController', function() {
     }));
 
     describe('$scope.update', function() {
-        var $scope, controller, $attrs, location, dummyElement;
+        var $scope, controller, $attrs, $location, dummyElement, URL;
 
         beforeEach(function() {
             $scope = {};
             $attrs = {};
             $location = "";
-            URL = {};
             controller = $controller('FilterController', {
                 $scope: $scope,
                 $attrs: $attrs,
                 $location: $location
             });
+
+            URL = $scope.URL;
         });
 
         it('checks if URL variable is properly updated', function() {
@@ -118,3 +131,4 @@ describe('FilterController', function() {
         });
     });
 });
+

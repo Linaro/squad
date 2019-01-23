@@ -8,4 +8,3 @@ $(document).ready(function(){
             content: function() { return $(this).parent().find('.hidden').html() }
     });
 });
-

@@ -1,6 +1,19 @@
+import {ResubmitController} from '../../squad/frontend/static/squad/controllers/resubmit.js'
+
+angular.module('resubmitApp', []).controller(
+    'ResubmitController',
+    [
+        '$scope',
+        '$http',
+        '$location',
+        '$timeout',
+        ResubmitController
+    ]
+);
+
 describe("ResubmitController", function () {
 
-    beforeEach(module("Build"));
+    beforeEach(module("resubmitApp"));
 
     var $controller;
 
@@ -10,7 +23,7 @@ describe("ResubmitController", function () {
 
     describe("$scope.resubmit", function () {
 
-        var $httpBackend;
+        var $scope, $attrs, $location, $httpBackend, $timeout, controller;
 
         beforeEach(function() {
             $scope = {};
@@ -24,6 +37,7 @@ describe("ResubmitController", function () {
         });
 
         beforeEach(inject(function($injector) {
+            
             $timeout = $injector.get('$timeout');
             $httpBackend = $injector.get('$httpBackend');
             $httpBackend.whenGET("/api/resubmit/1").respond(
