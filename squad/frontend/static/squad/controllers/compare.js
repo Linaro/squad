@@ -158,8 +158,16 @@ function CompareController($scope, $http, $location) {
     $scope.hasKnownIssue = false;
     $scope.projectSearchResponses = 0;
 
+    var ngAjax = function(params, success){
+        var url = params.url + '?' + $.param(params.data)
+        var request = $http.get(url)
+        request.then(success)
+        return request
+    }
+
     $(".project-select").select2({
         ajax: {
+            transport: ngAjax,
             url: "/api/projects",
             dataType: 'json',
             data: function (params) {
@@ -179,8 +187,9 @@ function CompareController($scope, $http, $location) {
                 };
             },
             processResults: function (data, params) {
+                data = data.data
                 params.page = params.page || 0;
-                for(item in data.results){
+                for(var item in data.results){
                     data.results[item].text = data.results[item].full_name;
                 }
                 return {
@@ -203,6 +212,7 @@ function CompareController($scope, $http, $location) {
     });
     $(".suite-select").select2({
         ajax: {
+            transport: ngAjax,
             url: "/api/suitemetadata/",
             dataType: 'json',
             data: function (params) {
@@ -215,8 +225,9 @@ function CompareController($scope, $http, $location) {
                 };
             },
             processResults: function (data, params) {
+                data = data.data
                 params.page = params.page || 0;
-                for(item in data.results){
+                for(var item in data.results){
                     data.results[item].text = data.results[item].suite;
                 }
                 return {
@@ -239,6 +250,7 @@ function CompareController($scope, $http, $location) {
 
     $(".test-select").select2({
         ajax: {
+            transport: ngAjax,
             url: "/api/suitemetadata/",
             dataType: 'json',
             data: function (params) {
@@ -252,8 +264,9 @@ function CompareController($scope, $http, $location) {
                 };
             },
             processResults: function (data, params) {
+                data = data.data
                 params.page = params.page || 0;
-                for(item in data.results){
+                for(var item in data.results){
                     data.results[item].text = data.results[item].name;
                 }
                 return {

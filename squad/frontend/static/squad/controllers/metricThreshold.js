@@ -14,7 +14,7 @@ function ThresholdResource($resource) {
     )
 }
 
-function MetricThresholdController($scope, $http, Threshold, $httpParamSerializerJQLike) {
+function MetricThresholdController($scope, Threshold) {
 
     $scope.initMetricThresholds = function() {
         // Initialize threshold for modal dialog.

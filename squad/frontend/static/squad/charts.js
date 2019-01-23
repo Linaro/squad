@@ -1,15 +1,11 @@
 import {ChartSlider, ChartPanel, ChartsController} from './controllers/charts.js'
+import {Config as appConfig} from './config.js'
 
 var app = angular.module('SquadCharts', []);
 
-app.config(['$locationProvider', function($locationProvider) {
-    $locationProvider.html5Mode({
-        enabled: true,
-        requireBase: false
-    })
-}])
+appConfig(app, ['locationProvider', 'httpProvider']);
 
-app.factory('ChartPanel', ChartPanel);
+app.factory('ChartPanel', ['$http', ChartPanel]);
 
 app.controller(
     'ChartsController',

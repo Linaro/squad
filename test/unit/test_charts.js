@@ -2,13 +2,6 @@ import {ChartPanel as _ChartPanel, ChartsController} from '../../squad/frontend/
 
 var app = angular.module('chartsApp', []);
 
-app.config(['$locationProvider', function($locationProvider) {
-    $locationProvider.html5Mode({
-        enabled: true,
-        requireBase: false
-    })
-}])
-
 app.factory('ChartPanel', _ChartPanel);
 
 app.controller(
@@ -35,9 +28,11 @@ describe("ChartsController", function () {
 
     describe("ChartPanel", function () {
         var metric, data, environments, ChartPanel
+        var metric_boot, data_boot
         var DATA = {}
         beforeEach(function() {
             metric = {"max":100,"name":":tests:","min":0,"label":"Test pass %"}
+            metric_boot = {"name":"boot/time-hi6220-hikey-r2"}
             data = {
                 "hi6220-hikey":
                 [
@@ -50,7 +45,19 @@ describe("ChartsController", function () {
                     [1498422468, 98, "v4.12-rc6-175-g412572b"]
                 ]
             }
-            environments = ["hi6220-hikey", "x86"]
+            data_boot = {
+                "hi6220-hikey_4.14":
+                [
+                    [1528282625, 4.25, "3", "", 1383135, "False"],
+                    [1528772626, 4.27, "3", "", 1383138, "False"],
+                    [1528274629, 8.25, "3", "", 1383139, "False"],
+                    [1528292621, 2.26, "3", "", 1383140, "False"],
+                    [1528217620, 1.75, "3", "", 1383141, "False"],
+                    [1528288624, 9.26, "3", "", 1383142, "False"],
+                    [1528202625, 1.86, "3", "", 1383144, "False"],
+                ]
+            }
+            environments = ["hi6220-hikey", "hi6220-hikey_4.14", "x86"]
         });
 
         beforeEach(inject(function($injector) {
@@ -127,6 +134,21 @@ describe("ChartsController", function () {
             expect(filtered_data.length).toEqual(0)
         });
 
+        it('tests if draw works', function(){
+            var envs = [{
+                name: 'hi6220-hikey_4.14',
+                fill_color: 'blue',
+                line_color: 'black',
+                selected: true
+            }]
+            var target = document.createElement('div')
+            document.body.appendChild(target)
+
+            var chartPanel = new ChartPanel(metric_boot, data_boot, environments)
+            chartPanel.draw(target, envs)
+
+            expect(target.getElementsByTagName('canvas').length).toEqual(1)
+        })
     });
 
     describe('$scope.getEnvironmentIds', function() {

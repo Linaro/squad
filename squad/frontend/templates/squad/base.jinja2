@@ -78,8 +78,11 @@
     <script type="text/javascript" src="{{static("lodash.js")}}"></script>
     <script type="text/javascript" src="{{static("floatThread/dist/jquery.floatThead.js")}}"></script>
     <script type="text/javascript" src="{{static("squad/common.js")}}"></script>
+    <script type="text/javascript">
+        csrf_token = '{{ csrf_token }}'
+        user = '{{request.user}}'
+    </script>
     {% block javascript %}{% endblock %}
-
   </body>
 </html>
 

@@ -191,105 +191,268 @@ function ChartSlider($document) {
     };
 }
 
-function ChartPanel() {
+function ChartPanel($http) {
 
-    var ChartPanel = function(metric, data, environmentIds) {
+    var chartPanel = function(metric, data, environmentIds) {
         this.metric = metric
         this.data = data
+
+        this.draw = function(target, environments, range) {
+            var metric = this.metric
+            var data = this.data
+
+            var selected_environments = _.filter(environments, function(env) {
+                return env.selected
+            })
+
+            var minCoefficient = chartPanel.slider.defaultResultsLimit
+            var maxCoefficient = 1
+            if (typeof range !== 'undefined' && range.length > 0) {
+                minCoefficient = range[0] / 100
+                maxCoefficient = range[1] / 100
+            }
+
+            var minLimit = this.minDate +
+                Math.round((this.maxDate - this.minDate) * minCoefficient)
+            var maxLimit = this.minDate +
+                Math.round((this.maxDate - this.minDate) * maxCoefficient)
+
+            // Filter out outliers from data[env.name] first here and manage them
+            // separately.
+            data[chartPanel.OUTLIER_LABEL] = []
+            _.each(selected_environments, function(env) {
+                data[env.name] = _.filter(data[env.name], function(point) {
+                    if (point.length < 6 || point[5] == 'False') {
+                        return true
+                    } else {
+                        data[chartPanel.OUTLIER_LABEL].push(point)
+                        return false
+                    }
+                })
+            })
+
+            var datasets = _.map(selected_environments, function(env) {
+                return {
+                    label: env.name,
+                    fill: false,
+                    borderWidth: 2,
+                    pointRadius: 1,
+                    lineTension: 0,
+                    backgroundColor: env.fill_color,
+                    borderColor: env.line_color,
+                    data: chartPanel.filterData(data[env.name], minLimit, maxLimit)
+                }
+            })
+
+            // Add outliers to dataset.
+            if (data[chartPanel.OUTLIER_LABEL].length) {
+                // Shallow clone the static dict.
+                var outlier_dataset = Object.assign(
+                    {}, chartPanel.OUTLIER_DATASET_OPTIONS)
+                outlier_dataset.data = chartPanel.filterData(
+                    data[chartPanel.OUTLIER_LABEL],
+                    minLimit, maxLimit)
+                datasets.push(outlier_dataset)
+            }
+
+            var ctx = document.createElement('canvas')
+            target.appendChild(ctx)
+
+            var scatterChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: datasets
+                },
+                options: {
+                    title: {
+                        display: false,
+                        text: metric.label
+                    },
+                    tooltips: {
+                        callbacks: {
+                            title: function(t, data_objects) {
+                                var tooltip = t[0]
+                                var dataset = data_objects.datasets[tooltip.datasetIndex]
+                                var data_point = dataset.data[tooltip.index]
+                                return chartPanel.formatDate(data_point.x)
+                            },
+                            beforeBody: function(t, data_objects) {
+                                var tooltip = t[0]
+                                var dataset = data_objects.datasets[tooltip.datasetIndex]
+                                var data_point = dataset.data[tooltip.index]
+                                var build_id = dataset.data[tooltip.index]
+                                return "Build #" + data_point.build_id
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 0,
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                max: metric.max,
+                                min: metric.min
+                            }
+                        }],
+                        xAxes: [{
+                            type: 'linear',
+                            position: 'bottom',
+                            ticks: {
+                                callback: chartPanel.formatDate
+                            }
+                        }]
+                    },
+                    annotation: {
+                        drawTime: "afterDatasetsDraw",
+                        annotations: [],
+                    }
+                }
+            });
+            this.scatterChart = scatterChart
+
+            var env_ids = _.map(selected_environments, function(env) {
+                return env.name
+            })
+            this.updateAnnotations(env_ids, minLimit, maxLimit)
+
+            var user = ''
+            if(window.user !== 'undefined') {
+                user = window.user;
+            }
+
+            ctx.onclick = function(evt) {
+                var point = scatterChart.getElementAtEvent(evt)[0]
+                if (point === undefined || point === null) {
+                    return
+                }
+
+                var data_point = datasets[point._datasetIndex].data[point._index]
+                data_point._index = point._index
+
+                var project_location = '/' + DATA.project
+                var build_location = project_location + '/build/' + data_point.build_id + '/'
+                if (metric.name == ":tests:" || user == 'AnonymousUser') {
+                    window.open(build_location, '_blank')
+                    return
+                }
+
+                $("#point_menu").show()
+                document.getElementById('metric-' + metric.name)
+                        .appendChild(document.getElementById("point_menu"))
+                $("#point_menu").offset({
+                    top: evt.clientY + $(window).scrollTop() - 10,
+                    left: evt.clientX - 10
+                })
+
+                $("#point_menu > ul > li:first-child > a").attr("href", build_location)
+                $("#point_menu > ul > li:nth-child(2) > a").unbind("click").bind("click", function() {
+                    var url = project_location + '/toggle-outlier-metric/' + data_point.metric_id;
+                    $http.post(url).then(function (result) {
+                        var data = result.data
+                        var is_outlier = datasets[point._datasetIndex].label === chartPanel.OUTLIER_LABEL;
+                        chartPanel.moveOutlierDatapoint(datasets, data_point, data.environment, is_outlier);
+                        scatterChart.update()
+                        $("#point_menu").hide()
+                    });
+                });
+            }
+        }
+
+        this.updateMinDate = function(environmentIds) {
+            // This assumes that the metrics data is sorted by date.
+            var minDate = Math.round(new Date() / 1000)
+            var data = this.data
+            _.each(environmentIds, function(name) {
+                if (typeof data[name] !== "undefined" && data[name].length > 0) {
+                    if (data[name][0][0] < minDate) {
+                        minDate = data[name][0][0]
+                    }
+                }
+            })
+            this.minDate = minDate
+        }
+
+        this.updateMaxDate = function(environmentIds) {
+            // This assumes that the metrics data is sorted by date.
+            var maxDate = 0
+            var data = this.data
+            _.each(environmentIds, function(name) {
+                if (typeof data[name] !== "undefined" && data[name].length > 0) {
+                    if (data[name][data[name].length-1][0] > maxDate) {
+                        maxDate = data[name][data[name].length-1][0]
+                    }
+                }
+            })
+            this.maxDate = maxDate
+        }
+
+        this.getThresholdAnnotations = function() {
+            var metric_name = this.metric
+            var annotations = []
+            _.each(DATA.thresholds, function(threshold) {
+                if (threshold.name == metric_name) {
+                    annotations.push({
+                        type: "line",
+                        mode: "horizontal",
+                        scaleID: "y-axis-0",
+                        value: threshold.value,
+                        borderColor: 'rgba(0,0,0,0.3)',
+                        borderWidth: 2,
+                        label: {
+                            backgroundColor: 'rgba(169,68,66,0.5)',
+                            content: threshold.name + "  " + threshold.value,
+                            enabled: true
+                        },
+                    })
+                }
+            })
+
+            return annotations
+        }
+
+        this.updateAnnotations = function(environmentIds, minLimit,
+                                                          maxLimit) {
+            var data = this.data
+            var annotations = {}
+            var y_adjust = 0
+
+            _.each(environmentIds, function(name) {
+                _.each(data[name], function(elem) {
+                    if (elem[3] != "") {
+                        if (elem[0] < maxLimit && elem[0] > minLimit) {
+                            annotations[elem[0]] = {
+                                type: "line",
+                                mode: "vertical",
+                                scaleID: "x-axis-0",
+                                value: elem[0],
+                                borderColor: 'rgba(0,0,0,0.3)',
+                                borderWidth: 2,
+                                label: {
+                                    backgroundColor: 'rgba(51,122,183,0.5)',
+                                    content: elem[3],
+                                    yAdjust: -150 + y_adjust,
+                                    enabled: true
+                                },
+                            }
+                            // Offset the labels so they don't overlap
+                            y_adjust += 25
+                            if (y_adjust > 200) { y_adjust = 0 }
+                        }
+                    }
+                })
+            })
+
+            this.scatterChart.options.annotation.annotations = Object.values(
+                annotations).concat(this.getThresholdAnnotations())
+            this.scatterChart.update()
+        }
+
         this.updateMinDate(environmentIds)
         this.updateMaxDate(environmentIds)
     }
 
-    ChartPanel.prototype.updateMinDate = function(environmentIds) {
-        // This assumes that the metrics data is sorted by date.
-        var minDate = Math.round(new Date() / 1000)
-        var data = this.data
-        _.each(environmentIds, function(name) {
-            if (typeof data[name] !== "undefined" && data[name].length > 0) {
-                if (data[name][0][0] < minDate) {
-                    minDate = data[name][0][0]
-                }
-            }
-        })
-        this.minDate = minDate
-    }
-
-    ChartPanel.prototype.updateMaxDate = function(environmentIds) {
-        // This assumes that the metrics data is sorted by date.
-        var maxDate = 0
-        var data = this.data
-        _.each(environmentIds, function(name) {
-            if (typeof data[name] !== "undefined" && data[name].length > 0) {
-                if (data[name][data[name].length-1][0] > maxDate) {
-                    maxDate = data[name][data[name].length-1][0]
-                }
-            }
-        })
-        this.maxDate = maxDate
-    }
-
-    ChartPanel.prototype.getThresholdAnnotations = function() {
-
-        var annotations = []
-        _.each(DATA.thresholds, function(threshold) {
-            if (threshold.name == this.metric) {
-                annotations.push({
-                    type: "line",
-                    mode: "horizontal",
-                    scaleID: "y-axis-0",
-                    value: threshold.value,
-                    borderColor: 'rgba(0,0,0,0.3)',
-                    borderWidth: 2,
-                    label: {
-                        backgroundColor: 'rgba(169,68,66,0.5)',
-                        content: threshold.name + "  " + threshold.value,
-                        enabled: true
-                    },
-                })
-            }
-        })
-
-        return annotations
-    }
-
-    ChartPanel.prototype.updateAnnotations = function(environmentIds, minLimit,
-                                                      maxLimit) {
-        var data = this.data
-        var annotations = {}
-        var y_adjust = 0
-
-        _.each(environmentIds, function(name) {
-            _.each(data[name], function(elem) {
-                if (elem[3] != "") {
-                    if (elem[0] < maxLimit && elem[0] > minLimit) {
-                        annotations[elem[0]] = {
-                            type: "line",
-                            mode: "vertical",
-                            scaleID: "x-axis-0",
-                            value: elem[0],
-                            borderColor: 'rgba(0,0,0,0.3)',
-                            borderWidth: 2,
-                            label: {
-                                backgroundColor: 'rgba(51,122,183,0.5)',
-                                content: elem[3],
-                                yAdjust: -150 + y_adjust,
-                                enabled: true
-                            },
-                        }
-                        // Offset the labels so they don't overlap
-                        y_adjust += 25
-                        if (y_adjust > 200) { y_adjust = 0 }
-                    }
-                }
-            })
-        })
-
-        this.scatterChart.options.annotation.annotations = Object.values(
-            annotations).concat(this.getThresholdAnnotations())
-        this.scatterChart.update()
-    }
-
-    ChartPanel.filterData = function(data, minLimit, maxLimit) {
+    chartPanel.filterData = function(data, minLimit, maxLimit) {
         var current_data = _.filter(data, function(point) {
             return point[0] >= minLimit && point[0] <= maxLimit
         }).map(function(point){
@@ -306,7 +469,7 @@ function ChartPanel() {
         return current_data
     }
 
-    ChartPanel.formatDate = function(x) {
+    chartPanel.formatDate = function(x) {
         // Javascript Date() takes milliseconds and x
         // is seconds, so multiply by 1000
         // Check if x 'defaults' to [-1, 1] range which means there are no
@@ -318,19 +481,19 @@ function ChartPanel() {
         }
     }
 
-    ChartPanel.getDatasetByLabel = function(datasets, label) {
+    chartPanel.getDatasetByLabel = function(datasets, label) {
         return _.find(datasets, function(element) {
             return element.label == label
         })
     }
 
-    ChartPanel.slider = {
+    chartPanel.slider = {
         defaultResultsLimit: 0.8,
         rangeMax: 100
     };
-    ChartPanel.OUTLIER_LABEL = "outliers"
-    ChartPanel.OUTLIER_DATASET_OPTIONS = {
-        label: ChartPanel.OUTLIER_LABEL,
+    chartPanel.OUTLIER_LABEL = "outliers"
+    chartPanel.OUTLIER_DATASET_OPTIONS = {
+        label: chartPanel.OUTLIER_LABEL,
         fill: false,
         borderWidth: 2,
         pointRadius: 1.5,
@@ -340,7 +503,7 @@ function ChartPanel() {
         data: []
     }
 
-    ChartPanel.putDatapoint = function(data, data_point) {
+    chartPanel.putDatapoint = function(data, data_point) {
         // Finds the right place for the data_point in data, based
         // on the datetime value, via binary search.
         var left = 0
@@ -367,206 +530,29 @@ function ChartPanel() {
         }
     }
 
-    ChartPanel.moveOutlierDatapoint = function(datasets, data_point,
+    chartPanel.moveOutlierDatapoint = function(datasets, data_point,
                                                environment, is_outlier) {
         // Move a datapoint from/to one dataset to/from the 'outlier' dataset.
         // If the outlier dataset is not defined yet, set some default options
         // for it and add it to the chart datasets.
-        var outlier_dataset = ChartPanel.getDatasetByLabel(
-            datasets, ChartPanel.OUTLIER_LABEL)
+        var outlier_dataset = chartPanel.getDatasetByLabel(
+            datasets, chartPanel.OUTLIER_LABEL)
         if (typeof outlier_dataset === 'undefined') {
-            outlier_dataset = ChartPanel.OUTLIER_DATASET_OPTIONS
+            outlier_dataset = chartPanel.OUTLIER_DATASET_OPTIONS
             datasets.push(outlier_dataset)
         }
-        var target_dataset = ChartPanel.getDatasetByLabel(
+        var target_dataset = chartPanel.getDatasetByLabel(
             datasets, environment)
         if (!is_outlier) {
             target_dataset.data.splice(data_point._index, 1)
             outlier_dataset.data.push(data_point)
         } else {
             outlier_dataset.data.splice(data_point._index, 1)
-            ChartPanel.putDatapoint(target_dataset.data, data_point)
-        }
-
-    }
-
-    ChartPanel.prototype.draw = function(target, environments, range) {
-        var metric = this.metric
-        var data = this.data
-
-        var selected_environments = _.filter(environments, function(env) {
-            return env.selected
-        })
-
-        var minCoefficient = ChartPanel.slider.defaultResultsLimit
-        var maxCoefficient = 1
-        if (typeof range !== 'undefined' && range.length > 0) {
-            minCoefficient = range[0] / 100
-            maxCoefficient = range[1] / 100
-        }
-
-        var minLimit = this.minDate +
-            Math.round((this.maxDate - this.minDate) * minCoefficient)
-        var maxLimit = this.minDate +
-            Math.round((this.maxDate - this.minDate) * maxCoefficient)
-
-        // Filter out outliers from data[env.name] first here and manage them
-        // separately.
-        data[ChartPanel.OUTLIER_LABEL] = []
-        _.each(selected_environments, function(env) {
-            data[env.name] = _.filter(data[env.name], function(point) {
-                if (point.length < 6 || point[5] == 'False') {
-                    return true
-                } else {
-                    data[ChartPanel.OUTLIER_LABEL].push(point)
-                    return false
-                }
-            })
-        })
-
-        var datasets = _.map(selected_environments, function(env) {
-            return {
-                label: env.name,
-                fill: false,
-                borderWidth: 2,
-                pointRadius: 1,
-                lineTension: 0,
-                backgroundColor: env.fill_color,
-                borderColor: env.line_color,
-                data: ChartPanel.filterData(data[env.name], minLimit, maxLimit)
-            }
-        })
-
-        // Add outliers to dataset.
-        if (data[ChartPanel.OUTLIER_LABEL].length) {
-            // Shallow clone the static dict.
-            var outlier_dataset = Object.assign(
-                {}, ChartPanel.OUTLIER_DATASET_OPTIONS)
-            outlier_dataset.data = ChartPanel.filterData(
-                data[ChartPanel.OUTLIER_LABEL],
-                minLimit, maxLimit)
-            datasets.push(outlier_dataset)
-        }
-
-        var ctx = document.createElement('canvas')
-        target.appendChild(ctx)
-
-        var scatterChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                datasets: datasets
-            },
-            options: {
-                title: {
-                    display: false,
-                    text: metric.label
-                },
-                tooltips: {
-                    callbacks: {
-                        title: function(t, data_objects) {
-                            tooltip = t[0]
-                            dataset = data_objects.datasets[tooltip.datasetIndex]
-                            data_point = build_id = dataset.data[tooltip.index]
-                            return ChartPanel.formatDate(data_point.x)
-                        },
-                        beforeBody: function(t, data_objects) {
-                            tooltip = t[0]
-                            dataset = data_objects.datasets[tooltip.datasetIndex]
-                            data_point = build_id = dataset.data[tooltip.index]
-                            return "Build #" + data_point.build_id
-                        }
-                    }
-                },
-                animation: {
-                    duration: 0,
-                },
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            max: metric.max,
-                            min: metric.min
-                        }
-                    }],
-                    xAxes: [{
-                        type: 'linear',
-                        position: 'bottom',
-                        ticks: {
-                            callback: ChartPanel.formatDate
-                        }
-                    }]
-                },
-                annotation: {
-                    drawTime: "afterDatasetsDraw",
-                    annotations: [],
-                }
-            }
-        });
-        this.scatterChart = scatterChart
-
-        var env_ids = _.map(selected_environments, function(env) {
-            return env.name
-        })
-        this.updateAnnotations(env_ids, minLimit, maxLimit)
-
-        var user = ''
-        if(window.user !== 'undefined') {
-            user = window.user;
-        }
-
-        ctx.onclick = function(evt) {
-            var point = scatterChart.getElementAtEvent(evt)[0]
-            if (point) {
-                var data_point = datasets[point._datasetIndex].data[point._index]
-                data_point._index = point._index
-                var project_location = '/' + DATA.project
-                var build_location = project_location + '/build/' +
-                    data_point.build_id + '/'
-                if (metric.name == ":tests:" || user == 'AnonymousUser') {
-                    window.open(build_location, '_blank')
-                } else {
-                    $("#point_menu").show()
-                    document.getElementById(
-                        'metric-' + metric.name).appendChild(
-                            document.getElementById("point_menu"))
-                    $("#point_menu").offset({
-                        top: evt.clientY + $(window).scrollTop() - 10,
-                        left: evt.clientX - 10
-                    })
-
-                    $("#point_menu > ul > li:first-child > a").attr(
-                        "href", build_location)
-                    $("#point_menu > ul > li:nth-child(2) > a").unbind("click").bind(
-                        "click",
-                        function() {
-                            var url = '/' + DATA.project
-                            $.ajax({
-                                url: project_location +
-                                    '/toggle-outlier-metric/' +
-                                    data_point.metric_id,
-                                type: "POST",
-                                data: {
-                                    csrfmiddlewaretoken: csrf_token,
-                                },
-                                success: function (data) {
-                                    var is_outlier = datasets[point._datasetIndex].label === ChartPanel.OUTLIER_LABEL
-                                    ChartPanel.moveOutlierDatapoint(
-                                        datasets,
-                                        data_point,
-                                        data.environment,
-                                        is_outlier)
-                                    scatterChart.update()
-                                    $("#point_menu").hide()
-                                },
-                            });
-
-                        }
-                    )
-                }
-            }
+            chartPanel.putDatapoint(target_dataset.data, data_point)
         }
     }
 
-    return ChartPanel
+    return chartPanel
 }
 
 var DATA = {}
@@ -575,8 +561,6 @@ if(typeof window.DATA !== 'undefined') {
 }
 
 function ChartsController($scope, $http, $location, $compile, ChartPanel) {
-
-
     $scope.toggleEnvironments = function() {
         _.each($scope.environments, function(env) {
             env.selected = !env.selected
