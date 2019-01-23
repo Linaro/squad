@@ -1,8 +1,18 @@
-var csrf_token = "token";
+import {AnnotationController} from '../../squad/frontend/static/squad/controllers/annotation.js'
+
+angular.module('annotationApp', []).controller(
+    'AnnotationController',
+    [
+        '$scope',
+        '$http',
+        '$httpParamSerializerJQLike',
+        AnnotationController
+    ]
+);
 
 describe("AnnotationController", function () {
 
-    beforeEach(module("Build"));
+    beforeEach(module("annotationApp"));
 
     var $controller;
 
@@ -12,7 +22,7 @@ describe("AnnotationController", function () {
 
     describe("$scope.updateAnnotation", function () {
 
-        var $httpBackend;
+        var $scope, $attrs, $location, $httpBackend, controller;
 
         beforeEach(function() {
             $scope = {};

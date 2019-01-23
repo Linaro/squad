@@ -16,10 +16,9 @@
 
 {% block javascript %}
 <script type="text/javascript" src='{{static("angularjs/angular-resource.min.js")}}'></script>
-<script type="text/javascript" src='{{static("squad/metric.threshold.js")}}'></script>
+<script type="module" src='{{static("squad/metric.threshold.js")}}'></script>
 <script type="text/javascript" src='{{static("select2.js/select2.min.js")}}'></script>
 <script type="text/javascript">
-csrf_token = '{{ csrf_token }}'
 $(document).ready(function() {
   $("#metric_name").select2();
 });

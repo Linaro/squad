@@ -14,8 +14,8 @@ module.exports = function(config) {
             'squad/frontend/static/chartjs/Chart.bundle.js',
             'squad/frontend/static/select2.js/select2.min.js',
 
-            'squad/frontend/static/squad/*.js',
-            'test/unit/*.js'
+            {pattern: 'squad/frontend/static/squad/controllers/*.js', type: 'module'},
+            {pattern: 'test/unit/*.js', type: 'module'},
         ],
 
         autoWatch : false,

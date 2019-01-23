@@ -1,6 +1,27 @@
+import {CompareController} from '../../squad/frontend/static/squad/controllers/compare.js'
+
+var app = angular.module('compareApp', []);
+
+app.config(['$locationProvider', function($locationProvider) {
+    $locationProvider.html5Mode({
+        enabled: true,
+        requireBase: false
+    })
+}])
+
+app.controller(
+    'CompareController',
+    [
+        '$scope',
+        '$http',
+        '$location',
+        CompareController
+    ]
+);
+
 describe("CompareController", function () {
 
-    beforeEach(module("SquadCompare"));
+    beforeEach(module("compareApp"));
 
     var $controller;
 
@@ -10,7 +31,7 @@ describe("CompareController", function () {
 
     describe("$scope.updateKnownIssue", function () {
 
-        var $httpBackend;
+        var $httpBackend, $scope, $attrs, $location, controller;
 
         beforeEach(function() {
             $scope = {};
@@ -66,7 +87,7 @@ describe("CompareController", function () {
     });
 
     describe("$scope.updateURL", function () {
-
+        var $scope, $attrs, $location, controller;
         beforeEach(function() {
             $scope = {};
             $attrs = {};
@@ -119,7 +140,7 @@ describe("CompareController", function () {
     });
 
     describe("$scope.addProject", function () {
-
+        var $scope, $attrs, controller;
         beforeEach(function() {
             $scope = {};
             $attrs = {};
@@ -153,7 +174,7 @@ describe("CompareController", function () {
     });
 
     describe("$scope.removeProject", function () {
-
+        var $scope, $attrs, $location, controller;
         beforeEach(function() {
             $scope = {};
             $attrs = {};
@@ -175,9 +196,7 @@ describe("CompareController", function () {
 
 
     describe("$scope.loadMoreData", function () {
-
-        var $httpBackend;
-
+        var $scope, $attrs, $location, $httpBackend, controller;
         beforeEach(function() {
             $scope = {};
             $attrs = {};
@@ -205,7 +224,6 @@ describe("CompareController", function () {
                 200, {results: [{id: "1"}]});
             $httpBackend.whenGET(/.*?api\/knownissues?.*/g).respond(
                 200, {results: "1", count: 1});
-
         }));
 
         afterEach(function() {
@@ -225,9 +243,6 @@ describe("CompareController", function () {
 
             expect($scope.projectBuilds[1]).toEqual("build_data")
             expect($scope.loadedLimits[1]).toEqual(10)
-
         });
-
     });
-
 });

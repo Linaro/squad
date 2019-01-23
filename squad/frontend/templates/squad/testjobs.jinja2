@@ -71,8 +71,5 @@
 {% endblock %}
 
 {% block javascript %}
-<script type="text/javascript" src='{{static("squad/build.js")}}'></script>
-<script type="text/javascript">
-csrf_token = '{{ csrf_token }}'
-</script>
+<script type="module" src='{{static("squad/build.js")}}'></script>
 {% endblock %}

@@ -91,10 +91,9 @@
 {% endblock %}
 
 {% block javascript %}
-<script type="text/javascript" src='{{static("squad/build.js")}}'></script>
+<script type="module" src='{{static("squad/build.js")}}'></script>
 <script type="text/javascript" src='{{static("squad/table.js")}}'></script>
 <script type="text/javascript">
-csrf_token = '{{ csrf_token }}'
 $('[data-toggle="tooltip"]').tooltip();
 function loadSearchURL(pageParam, search) {
   searchURL = pageParam + "&search=" + search;
