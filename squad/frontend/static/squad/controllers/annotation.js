@@ -14,7 +14,8 @@ export function AnnotationController($scope, $http, $httpParamSerializerJQLike) 
         $http({
             method: method,
             url: url,
-            data: $httpParamSerializerJQLike(data)
+            data: $httpParamSerializerJQLike(data),
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'}
         }).then(function(response) {
             $("#annotation_text").html("<strong>Annotation: </strong>" +
                                        $scope.description)

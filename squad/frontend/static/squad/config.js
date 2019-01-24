@@ -19,7 +19,6 @@ var available_configs = {
     'httpProvider': function (app) {
         app.config(['$httpProvider', function($httpProvider) {
             $httpProvider.defaults.headers.common['X-CSRFToken'] = window.csrf_token;
-            $httpProvider.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded';
         }]);
     }
 }
