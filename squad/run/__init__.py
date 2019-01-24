@@ -54,6 +54,3 @@ def main():
     argv = [sys.executable, '-m', 'gunicorn.app.wsgiapp', 'squad.wsgi'] + argv[1:]
     os.execv(sys.executable, argv)
 
-
-if __name__ == "__main__":
-    main()
