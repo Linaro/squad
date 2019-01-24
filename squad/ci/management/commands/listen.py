@@ -36,8 +36,7 @@ class Listener(object):
 
 class ListenerManager(object):
 
-    def __init__(self, argv):
-        self.argv = argv
+    def __init__(self):
         self.__processes__ = {}
         self.__fields__ = {}
 
@@ -71,7 +70,7 @@ class ListenerManager(object):
             self.stop(backend_id)
 
     def start(self, backend):
-        argv = self.argv + [backend.name]
+        argv = [sys.executable, '-m', 'squad.manage', 'listen', backend.name]
         listener = subprocess.Popen(argv)
         self.__processes__[backend.id] = listener
         self.__fields__[backend.id] = fields(backend)
@@ -121,4 +120,4 @@ class Command(BaseCommand):
             backend = Backend.objects.get(name=backend_name)
             Listener(backend).run()
         else:
-            ListenerManager(sys.argv).run()
+            ListenerManager().run()
