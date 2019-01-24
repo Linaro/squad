@@ -32,7 +32,7 @@ ALLOWED_MODULE_DEPENDENCIES = (
 
 def filename2modulename(f):
     dotted = re.sub('/', '.', f)
-    return re.sub('.py$', '', dotted)
+    return re.sub('(__main__)?.py$', '', dotted)
 
 
 def match_module(contained, container):
