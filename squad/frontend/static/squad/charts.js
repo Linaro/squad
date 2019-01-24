@@ -5,7 +5,10 @@ var app = angular.module('SquadCharts', []);
 
 appConfig(app, ['locationProvider', 'httpProvider']);
 
-app.factory('ChartPanel', ['$http', ChartPanel]);
+app.value('DATA', window.DATA);
+
+app.factory('ChartPanel', ['$http', 'DATA', ChartPanel]);
+
 
 app.controller(
     'ChartsController',
@@ -15,6 +18,7 @@ app.controller(
         '$location',
         '$compile',
         'ChartPanel',
+        'DATA',
         ChartsController
     ]
 );
