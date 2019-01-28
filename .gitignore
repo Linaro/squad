@@ -16,7 +16,7 @@
 /squad/local_settings.py.off
 /static
 /.tests
-/__pycache__
+__pycache__
 *.pyc
 *.swp
 /tmp

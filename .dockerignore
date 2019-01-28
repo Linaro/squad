@@ -1,14 +1,18 @@
 # KEEP THIS IN SYNC WITH .gitignore
-Dockerfile
 db.sqlite3
 .git
 .puzzle
-dist
-build
 secret.dat
+squad/local_settings.py
+squad/local_settings.py.off
 static
 .tests
 **/__pycache__
 **/*.pyc
 **/*.swp
 tmp
+dist
+build
+.metadata.json
+celerybeat-schedule.db
+node_modules
