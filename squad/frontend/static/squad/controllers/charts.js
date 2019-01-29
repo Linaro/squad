@@ -191,7 +191,7 @@ function ChartSlider($document) {
     };
 }
 
-function ChartPanel($http) {
+function ChartPanel($http, DATA) {
 
     var chartPanel = function(metric, data, environmentIds) {
         this.metric = metric
@@ -474,7 +474,7 @@ function ChartPanel($http) {
         // is seconds, so multiply by 1000
         // Check if x 'defaults' to [-1, 1] range which means there are no
         // results, and in that case return an empty string.
-        if (x <= 1 && x >= -1) {
+        if (Number.isNaN(x) || (x <= 1 && x >= -1)) {
             return ""
         } else {
             return (new Date(x * 1000)).toISOString().slice(0,10)
@@ -555,12 +555,7 @@ function ChartPanel($http) {
     return chartPanel
 }
 
-var DATA = {}
-if(typeof window.DATA !== 'undefined') {
-    DATA = window.DATA
-}
-
-function ChartsController($scope, $http, $location, $compile, ChartPanel) {
+function ChartsController($scope, $http, $location, $compile, ChartPanel, DATA) {
     $scope.toggleEnvironments = function() {
         _.each($scope.environments, function(env) {
             env.selected = !env.selected

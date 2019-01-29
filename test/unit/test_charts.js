@@ -2,7 +2,8 @@ import {ChartPanel as _ChartPanel, ChartsController} from '../../squad/frontend/
 
 var app = angular.module('chartsApp', []);
 
-app.factory('ChartPanel', _ChartPanel);
+app.value('DATA', {});
+app.factory('ChartPanel', ['$http', 'DATA', _ChartPanel]);
 
 app.controller(
     'ChartsController',
@@ -12,24 +13,18 @@ app.controller(
         '$location',
         '$compile',
         'ChartPanel',
+        'DATA',
         ChartsController
     ]
 );
 
-describe("ChartsController", function () {
+describe("Charts", function () {
 
     beforeEach(module("chartsApp"));
-
-    var $controller, chartsController;
-
-    beforeEach(inject(function(_$controller_){
-        $controller = _$controller_;
-    }));
 
     describe("ChartPanel", function () {
         var metric, data, environments, ChartPanel
         var metric_boot, data_boot
-        var DATA = {}
         beforeEach(function() {
             metric = {"max":100,"name":":tests:","min":0,"label":"Test pass %"}
             metric_boot = {"name":"boot/time-hi6220-hikey-r2"}
@@ -151,109 +146,138 @@ describe("ChartsController", function () {
         })
     });
 
-    describe('$scope.getEnvironmentIds', function() {
-        var $scope, controller, $attrs, $location;
+    describe('ChartsController', function(){
+        var $controller, $scope, $attrs, $location, controller, DATA;
 
-        beforeEach(function() {
-            $scope = {};
-            $attrs = {};
-            $location = "";
-            controller = $controller('ChartsController', {
-                $scope: $scope,
-                $attrs: $attrs,
-                $location: $location
-            });
-        });
-
-        it('checks if returns environment names correctly', function() {
-            $scope.environments = [
-                {name: "hi6220-hikey", line_color: "#4e9a06", selected: true},
-                {name: "x86", line_color: "#204a87", selected: true},
-                {name: "juno-r2", line_color: "#563c66"},
-                {name: "x15", line_color: "#a40000", selected: true}
-            ]
-            var env_ids = $scope.getEnvironmentIds()
-            expect(env_ids.length).toEqual(3)
-            expect($scope.getEnvironmentIds()).toEqual(
-                ["hi6220-hikey", "x86", "x15"])
-        });
-
-    });
-
-    describe('$scope.download', function() {
-        var $scope, controller, $attrs, $httpBackend, 
-            $location, responseData, obj
-
-        beforeEach(function() {
-            $scope = {};
-            $attrs = {};
-            $location = "";
-            controller = $controller('ChartsController', {
-                $scope: $scope,
-                $attrs: $attrs,
-                $location: $location
-            });
-
-            obj = {
-                callback: function(value) {}
-            }
-            spyOn(obj, 'callback')
-
-            responseData =
-                {
-                    "hi6220-hikey":
-                    [
-                        [1498242465, 98, "v4.12-rc6-102-ga38371c"],
-                        [1498244093, 98, "v4.12-rc6-81-g8d829b9"],
-                        [1498307267, 98, "v4.12-rc6-158-g94a6df2"],
-                        [1498321658, 98, "v4.12-rc6-160-gf65013d"],
-                        [1498350465, 98, "v4.12-rc6-167-gbb9b8fd"],
-                        [1498422458, 98, "v4.12-rc6-191-ga4fd8b3"],
-                        [1498422468, 98, "v4.12-rc6-175-g412572b"]
-                    ]
-                }
-        });
-
-        beforeEach(inject(function($injector) {
-            $httpBackend = $injector.get('$httpBackend');
-            $httpBackend.whenGET(/.*?api\/data?.*/g).respond(
-                200, responseData);
+        beforeEach(inject(function(_$controller_){
+            $controller = _$controller_;
         }));
 
-        afterEach(function() {
-            $httpBackend.verifyNoOutstandingExpectation();
-            $httpBackend.verifyNoOutstandingRequest();
+        beforeEach(function() {
+            DATA = {
+                metrics: [
+                    {'min': 0, 'max': 100, 'name':
+                     ':tests:', 'label': 'Test pass %'},
+                    {'name': 'boot/time-hi6220-hikey'}
+                ],
+                data: {
+                    'boot/time-hi6220-hikey': {
+                        'hi6220-hikey_4.9': [
+                            [1528282625, 4.62, '3', '', 1383125, 'False'],
+                            [1528282626, 4.63, '3', '', 1383130, 'False'],
+                            [1528282627, 4.62, '3', '', 1383131, 'False'],
+                        ],
+                    },
+                    ':tests:': {
+                        'hi6220-hikey_4.9': [
+                            [1528282625, 100, '3', ''],
+                            [1528293161, 99, '4', ''],
+                            [1528299832, 99, '5', ''],
+                        ],
+                    }
+                }
+            };
+
+            var charts = document.createElement('div')
+            charts.id = 'charts'
+            document.body.appendChild(charts)
+
+            $scope = {};
+            $attrs = {};
+            $location = "";
+            controller = $controller('ChartsController', {
+                $scope: $scope,
+                $attrs: $attrs,
+                $location: $location,
+                DATA: DATA,
+            });
         });
 
-        it('checks if $scope.data is undefined if environments is empty',
-           function() {
-               $scope.environments = {}
-               $scope.selectedMetrics = ["Test pass %", "some_metric"]
-               $scope.project = "test_project"
+        describe('$scope.getEnvironmentIds', function() {
 
-               $scope.download(obj.callback)
+            it('checks if returns environment names correctly', function() {
 
-               expect(obj.callback).toHaveBeenCalled()
-               expect($scope.data).toBeUndefined()
-           })
+                $scope.environments = [
+                    {name: "hi6220-hikey", line_color: "#4e9a06", selected: true},
+                    {name: "x86", line_color: "#204a87", selected: true},
+                    {name: "juno-r2", line_color: "#563c66"},
+                    {name: "x15", line_color: "#a40000", selected: true}
+                ]
 
-        it('checks if returns environment names correctly', function() {
-            $scope.environments = [
-                {name: "hi6220-hikey", line_color: "#4e9a06", selected: true},
-                {name: "x86", line_color: "#204a87", selected: true},
-                {name: "juno-r2", line_color: "#563c66"},
-                {name: "x15", line_color: "#a40000", selected: true}
-            ]
-            $scope.selectedMetrics = ["Test pass %", "some_metric"]
-            $scope.project = "test_project"
+                var env_ids = $scope.getEnvironmentIds()
+                expect(env_ids.length).toEqual(3)
+                expect($scope.getEnvironmentIds()).toEqual(["hi6220-hikey", "x86", "x15"])
+            });
 
-            $scope.download(obj.callback)
-            $httpBackend.flush();
+        });
 
-            expect(obj.callback).toHaveBeenCalled()
-            expect(Object.keys($scope.data)).toEqual(Object.keys(responseData))
-            expect($scope.data["hi6220-hikey"].length).toEqual(
-                responseData["hi6220-hikey"].length)
+        describe('$scope.download', function() {
+            var $httpBackend, responseData, obj
+
+            beforeEach(function() {
+
+                obj = {
+                    callback: function(value) {}
+                }
+                spyOn(obj, 'callback')
+
+                responseData =
+                    {
+                        "hi6220-hikey":
+                        [
+                            [1498242465, 98, "v4.12-rc6-102-ga38371c"],
+                            [1498244093, 98, "v4.12-rc6-81-g8d829b9"],
+                            [1498307267, 98, "v4.12-rc6-158-g94a6df2"],
+                            [1498321658, 98, "v4.12-rc6-160-gf65013d"],
+                            [1498350465, 98, "v4.12-rc6-167-gbb9b8fd"],
+                            [1498422458, 98, "v4.12-rc6-191-ga4fd8b3"],
+                            [1498422468, 98, "v4.12-rc6-175-g412572b"]
+                        ]
+                    }
+            });
+
+            beforeEach(inject(function($injector) {
+                $httpBackend = $injector.get('$httpBackend');
+                $httpBackend.whenGET(/.*?api\/data?.*/g).respond(
+                    200, responseData);
+            }));
+
+            afterEach(function() {
+                $httpBackend.verifyNoOutstandingExpectation();
+                $httpBackend.verifyNoOutstandingRequest();
+            });
+
+            it('checks if $scope.data is undefined if environments is empty',
+               function() {
+                   $scope.environments = {}
+                   $scope.data = {}
+                   $scope.selectedMetrics = ["Test pass %", "some_metric"]
+                   $scope.project = "test_project"
+
+                   $scope.download(obj.callback)
+
+                   expect(obj.callback).toHaveBeenCalled()
+                   expect($scope.data).toEqual({})
+               })
+
+            it('checks if returns environment names correctly', function() {
+                $scope.environments = [
+                    {name: "hi6220-hikey", line_color: "#4e9a06", selected: true},
+                    {name: "x86", line_color: "#204a87", selected: true},
+                    {name: "juno-r2", line_color: "#563c66"},
+                    {name: "x15", line_color: "#a40000", selected: true}
+                ]
+                $scope.selectedMetrics = ["Test pass %", "some_metric"]
+                $scope.project = "test_project"
+
+                $scope.download(obj.callback)
+                $httpBackend.flush();
+
+                expect(obj.callback).toHaveBeenCalled()
+                expect(Object.keys($scope.data)).toEqual(Object.keys(responseData))
+                expect($scope.data["hi6220-hikey"].length).toEqual(
+                    responseData["hi6220-hikey"].length)
+            });
         });
     });
 });
