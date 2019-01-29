@@ -5,7 +5,8 @@ set -o pipefail
 
 python3 -m squad.frontend
 
-(./manage.py test --noinput -v 2 2>&1 || true) | tee .tests
+rc=0
+(./manage.py test --noinput -v 2 2>&1 | tee .tests) || rc="$?"
 
 echo "{
   \"job_id\": \"$TRAVIS_JOB_NUMBER\",
@@ -19,4 +20,4 @@ if [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_BRANCH" = "master" ]; then
   ./scripts/dogfood "${SUBMIT_TO}" qa/squad "$TESTENV" "$TRAVIS_BUILD_NUMBER"
 fi
 
-! grep -q '^FAILED ' .tests
+exit "$rc"
