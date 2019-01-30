@@ -1,3 +1,25 @@
+# 0.61
+
+* Add management command to update project statues from scratch.
+* travis:
+  * fix detection of Javascript test failures
+  * fix capture of exit status
+* Fix a few javascripting
+* config.js: removed 'content-type' configuration
+* Add import to appConfig for compare.js
+* Fix broken charts tests
+* Refactor ng apps
+* squad/_threshold_table.jinja2: restrict admin controls
+* squad/_threshold_table.jinja2: give more specific restriction
+* Make all ajax requests contain CSRF header
+* Refactor angular apps
+* Initialize charts with default summary on all environments.
+* Error output missing from failed test cases in tests view.
+* api: add missing fields to ProjectStatusSerializer
+* core/notification.py: turn off escaping for text emails
+* docs: add step-by-step on how to set up SQUAD with LAVA
+* Fix previous build ordering in project status test comparison.
+
 # 0.60
 
 * Make notification strategy a per-recipient choice.
