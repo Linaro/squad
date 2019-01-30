@@ -1,5 +1,5 @@
 from django.test import TestCase
-from mock import patch, MagicMock, call
+from test.mock import patch, MagicMock, call
 
 
 from squad.ci.models import Backend

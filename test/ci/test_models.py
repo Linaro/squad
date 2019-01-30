@@ -1,7 +1,7 @@
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from django.test import TestCase
-from mock import patch, MagicMock
+from test.mock import patch, MagicMock
 
 
 from squad.core import models as core_models

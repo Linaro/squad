@@ -3,7 +3,7 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from test.api import APIClient
-from mock import patch, MagicMock
+from test.mock import patch, MagicMock
 
 
 from squad.core import models as core_models
