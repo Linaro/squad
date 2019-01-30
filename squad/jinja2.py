@@ -99,5 +99,5 @@ def _load_django_default_filters():
         for tupl in all_funcs:
             name, func = tupl
 
-            if name[0] is not '_' and func.__module__ == mod.__name__:
+            if name[0] != '_' and func.__module__ == mod.__name__:
                 register_filter(func)
