@@ -1,6 +1,7 @@
 import random
 import string
 import yaml
+import jinja2
 from django.template.defaultfilters import safe, escape
 from django.core.exceptions import ValidationError
 
@@ -64,4 +65,15 @@ def yaml_validator(value):
         if not isinstance(yaml.load(value), dict):
             raise ValidationError("Dictionary object expected")
     except yaml.YAMLError as e:
+        raise ValidationError(e)
+
+
+def jinja2_validator(template):
+    if template is None or len(template) == 0:
+        return
+    try:
+        env = jinja2.Environment()
+        if not isinstance(env.parse(template), jinja2.nodes.Template):
+            raise ValidationError("Jinja2 template object expected")
+    except jinja2.exceptions.TemplateSyntaxError as e:
         raise ValidationError(e)
