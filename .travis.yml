@@ -11,10 +11,13 @@ addons:
       - chromium-browser
       - snakefood
       - software-properties-common
+services:
+  - docker
 env:
   - SCRIPT=./scripts/travis TESTENV=travis-postgresql DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432
   - SCRIPT=./scripts/travis TESTENV=travis-sqlite3 DATABASE=
   - SCRIPT="./scripts/check-ignore"
+  - SCRIPT="./scripts/test-docker"
 
 before_install:
   - if test -n "$DATABASE"; then ./scripts/travis-postgresql; fi
