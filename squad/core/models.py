@@ -18,7 +18,7 @@ from django.core.validators import RegexValidator, MaxValueValidator, MinValueVa
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
 
-from squad.core.utils import random_token, parse_name, join_name, yaml_validator
+from squad.core.utils import random_token, parse_name, join_name, yaml_validator, jinja2_validator
 from squad.core.comparison import TestComparison
 from squad.core.statistics import geomean
 from squad.core.plugins import Plugin
@@ -68,9 +68,14 @@ class ProjectManager(models.Manager):
 
 class EmailTemplate(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    subject = models.CharField(max_length=1024, null=True, blank=True, help_text='Jinja2 template for subject (single line)')
-    plain_text = models.TextField(help_text='Jinja2 template for text/plain content')
-    html = models.TextField(blank=True, null=True, help_text='Jinja2 template for text/html content')
+    subject = models.CharField(
+        max_length=1024,
+        null=True,
+        blank=True,
+        help_text='Jinja2 template for subject (single line)',
+        validators=[jinja2_validator])
+    plain_text = models.TextField(help_text='Jinja2 template for text/plain content', validators=[jinja2_validator])
+    html = models.TextField(blank=True, null=True, help_text='Jinja2 template for text/html content', validators=[jinja2_validator])
 
     # If any of the attributes need not to be tracked, just pass excluded_fields=['attr']
     history = HistoricalRecords(cascade_delete_history=True)
