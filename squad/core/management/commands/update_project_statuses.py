@@ -1,10 +1,14 @@
 import argparse
+import logging
 
 from datetime import timedelta, datetime
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from squad.core.models import ProjectStatus, Build
+
+
+logger = logging.getLogger()
 
 
 def valid_date(date):
@@ -39,7 +43,8 @@ class Command(BaseCommand):
         total = builds.count()
         for index, build in enumerate(builds):
             ProjectStatus.create_or_update(build)
-            print('\rProgress: {1:>2}%[{0:10}]'.format(
-                '#' * int((index + 1) * 10 / total),
-                int((index + 1) * 100 / total)), end='')
-        print('\n')
+
+            if index % 100 == 0:
+                logger.info('Progress: {1:>2}%[{0:10}]'.format(
+                    '#' * int((index + 1) * 10 / total),
+                    int((index + 1) * 100 / total)), end='')
