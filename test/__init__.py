@@ -38,4 +38,4 @@ class Runner(DiscoverRunner):
 
     def suite_result(self, suite, result, **kwargs):
         write_results(result)
-        super(Runner, self).suite_result(suite, result, **kwargs)
+        return super(Runner, self).suite_result(suite, result, **kwargs)
