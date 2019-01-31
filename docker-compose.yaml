@@ -1,0 +1,43 @@
+version: '3.4'
+
+x-common-config: &common_config
+  image: squad
+  build:
+    context: .
+  volumes:
+    - home:/home
+  environment:
+    - SQUAD_CELERY_BROKER_URL=amqp://rabbitmq
+    - XDG_DATA_HOME=/home
+
+volumes:
+  home:
+
+services:
+  rabbitmq:
+    image: rabbitmq
+
+  dbmigrate:
+    <<: *common_config
+    command: squad-admin migrate
+    deploy:
+      restart_policy:
+        condition: none
+
+  web:
+    <<: *common_config
+    command: squad --fast --bind 0.0.0.0:8000
+    ports:
+      - '8000:8000'
+
+  worker:
+    <<: *common_config
+    command: squad-worker
+
+  listener:
+    <<: *common_config
+    command: squad-listener
+
+  scheduler:
+    <<: *common_config
+    command: squad-scheduler
