@@ -260,6 +260,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CELERY_BROKER_URL = os.getenv('SQUAD_CELERY_BROKER_URL')
 CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
 CELERY_TASK_SERIALIZER = 'msgpack'
+CELERY_BEAT_SCHEDULE_FILENAME = os.path.join(DATA_DIR, 'celerybeat-schedule')
 CELERY_BEAT_SCHEDULE = {
     'poll-every-hour': {
         'task': 'squad.ci.tasks.poll',
