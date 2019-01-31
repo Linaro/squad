@@ -5,6 +5,7 @@ import sys
 import time
 from django.core.management.base import BaseCommand
 from django.db.models import Field
+from django.db.utils import OperationalError
 
 
 from squad.ci.models import Backend
@@ -42,12 +43,27 @@ class ListenerManager(object):
 
     def run(self):
         self.setup_signals()
+        self.wait_for_setup()
         self.loop()
         self.cleanup()
 
     def setup_signals(self):
         # make SIGTERM equivalent to SIGINT (e.g. control-c)
         signal.signal(signal.SIGTERM, signal.getsignal(signal.SIGINT))
+
+    def wait_for_setup(self):
+        n = 0
+        while n < 24:  # wait up to 2 min
+            try:
+                Backend.objects.count()
+                logger.info("listener manager started")
+                return
+            except OperationalError:
+                logger.info("Waiting to database to be up; will retry in 5s ...")
+                time.sleep(5)
+                n += 1
+        logger.error("Timed out waiting for database to be up")
+        sys.exit(1)
 
     def keep_listeners_running(self):
         ids = list(self.__processes__.keys())
