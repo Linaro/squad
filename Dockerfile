@@ -30,6 +30,8 @@ RUN apt-get update && \
 WORKDIR /app
 COPY . ./
 
+RUN ln -sfT container_settings.py /app/squad/local_settings.py
+
 # downloads if needed and prepares static assets
 RUN python3 -m squad.frontend
 RUN ./manage.py collectstatic --noinput --verbosity 0
