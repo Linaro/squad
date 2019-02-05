@@ -1,8 +1,10 @@
 from collections import OrderedDict
+from django.db.models import F
 
 
 from squad.core.utils import parse_name
 from squad.core import models
+from squad.core.utils import join_name
 
 
 class TestComparison(object):
@@ -64,9 +66,6 @@ class TestComparison(object):
         ).prefetch_related(
             'build',
             'environment',
-            'tests',
-            'tests__suite',
-            'tests__known_issues',
         )
         for build in self.builds:
             self.environments[build] = set()
@@ -81,15 +80,20 @@ class TestComparison(object):
             self.environments[build] = sorted(self.environments[build])
 
     def __extract_test_results__(self, test_run):
-        for test in test_run.tests.all():
+        tests = test_run.tests.annotate(
+            suite_slug=F('suite__slug')
+        )
+        for test in tests.iterator():
             key = (test_run.build, str(test_run.environment))
-            if test.full_name not in self.results:
-                self.results[test.full_name] = OrderedDict()
-            self.results[test.full_name][key] = test.status
-            for issue in test.known_issues.all():
-                if issue.intermittent:
-                    env = str(test_run.environment)
-                    self.__intermittent__[(test.full_name, env)] = True
+            test_full_name = join_name(test.suite_slug, test.name)
+            if test_full_name not in self.results:
+                self.results[test_full_name] = OrderedDict()
+            self.results[test_full_name][key] = test.status
+            if test.has_known_issues:
+                for issue in test.known_issues.all():
+                    if issue.intermittent:
+                        env = str(test_run.environment)
+                        self.__intermittent__[(test_full_name, env)] = True
 
     __diff__ = None
 
