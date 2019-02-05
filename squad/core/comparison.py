@@ -77,6 +77,7 @@ class TestComparison(object):
             self.all_environments.add(str(environment))
             self.environments[build].add(str(environment))
             self.__extract_test_results__(test_run)
+        self.results = OrderedDict(sorted(self.results.items()))
         for build in self.builds:
             self.environments[build] = sorted(self.environments[build])
 
@@ -90,7 +91,6 @@ class TestComparison(object):
                 if issue.intermittent:
                     env = str(test_run.environment)
                     self.__intermittent__[(test.full_name, env)] = True
-        self.results = OrderedDict(sorted(self.results.items()))
 
     __diff__ = None
 
