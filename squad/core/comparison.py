@@ -46,7 +46,6 @@ class TestComparison(object):
         self.results = OrderedDict()
         self.__intermittent__ = {}
 
-        models.Build.prefetch_related(self.builds)
         self.__extract_results__()
 
     @classmethod
