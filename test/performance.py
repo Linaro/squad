@@ -41,8 +41,9 @@ def export(f):
     rc = 0
     if os.path.exists(f):
         rc = diff(f)
-    with open(f, 'w') as output:
-        output.write(json.dumps(count))
+    if rc == 0:
+        with open(f, 'w') as output:
+            output.write(json.dumps(count))
     return rc
 
 
