@@ -191,7 +191,10 @@ def builds(request, group_slug, project_slug):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
 
-    statuses = __get_statuses__(project)
+    all_statuses = __get_statuses__(project)
+    paginator = Paginator(all_statuses, 25)
+    page = request.GET.get('page', 1)
+    statuses = paginator.page(page)
 
     context = {
         'project': project,

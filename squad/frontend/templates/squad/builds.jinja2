@@ -1,11 +1,22 @@
 {% extends "squad/base.jinja2" %}
 
 {% block content %}
+
 {% with pagetitle="» Builds" %}
 {% include "squad/project-nav.jinja2" %}
 {% endwith %}
 <div style='margin-top: 20px'></div>
+
+{% with items=statuses %}
+  {% include "squad/_pagination.jinja2" %}
+{% endwith %}
+
 <div>
 {% include "squad/_builds_table.jinja2" %}
 </div>
+
+{% with items=statuses %}
+  {% include "squad/_pagination.jinja2" %}
+{% endwith %}
+
 {% endblock %}
