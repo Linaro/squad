@@ -314,3 +314,11 @@ table.test-results-details {
     border-color: #466086;
     -moz-border-radius: 0; -webkit-border-radius: 0; border-radius: 0;
 }
+
+.popover-regressions-fixes {
+    background:none!important;
+    float:none!important;
+    border:none;
+    padding:0!important;
+    cursor:pointer;
+}
