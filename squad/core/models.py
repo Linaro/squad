@@ -229,18 +229,6 @@ class Build(models.Model):
     def __str__(self):
         return '%s (%s)' % (self.version, self.datetime)
 
-    @staticmethod
-    def prefetch_related(builds):
-        prefetch_related_objects(
-            builds,
-            'project',
-            'project__group',
-            'test_runs',
-            'test_runs__environment',
-            'test_runs__tests',
-            'test_runs__tests__suite',
-        )
-
     def prefetch(self, *related):
         prefetch_related_objects([self], *related)
 

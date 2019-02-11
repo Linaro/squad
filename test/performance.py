@@ -18,11 +18,20 @@ def count_queries(k):
         reset_queries()
         yield
         q = len(connection.queries)
+        log_queries(k, connection.queries)
     finally:
         settings.DEBUG = debug
     count.setdefault(k, 0)
     count[k] += q
     return q
+
+
+def log_queries(k, queries):
+    os.makedirs('tmp/queries', exist_ok=True)
+    with open('tmp/queries/%s.log' % re.sub('/', '_', k), 'w') as log:
+        for query in connection.queries:
+            log.write(repr(query))
+            log.write("\n")
 
 
 def export(f):
@@ -32,8 +41,9 @@ def export(f):
     rc = 0
     if os.path.exists(f):
         rc = diff(f)
-    with open(f, 'w') as output:
-        output.write(json.dumps(count))
+    if rc == 0:
+        with open(f, 'w') as output:
+            output.write(json.dumps(count))
     return rc
 
 
