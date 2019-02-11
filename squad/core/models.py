@@ -40,7 +40,14 @@ class GroupManager(models.Manager):
         return self.filter(id__in=group_ids).annotate(project_count=Count('projects', filter=Q(id__in=project_ids)))
 
 
-class Group(models.Model):
+class DisplayName(object):
+
+    @property
+    def display_name(self):
+        return self.name or self.slug
+
+
+class Group(models.Model, DisplayName):
     objects = GroupManager()
 
     slug = models.CharField(max_length=100, unique=True, validators=[slug_validator], db_index=True)
@@ -84,7 +91,7 @@ class EmailTemplate(models.Model):
         return self.name
 
 
-class Project(models.Model):
+class Project(models.Model, DisplayName):
     objects = ProjectManager()
 
     group = models.ForeignKey(Group, related_name='projects')
