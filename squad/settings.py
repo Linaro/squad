@@ -258,6 +258,9 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Celery settings
 CELERY_BROKER_URL = os.getenv('SQUAD_CELERY_BROKER_URL')
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'max_retries': 5,
+}
 CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
 CELERY_TASK_SERIALIZER = 'msgpack'
 CELERY_BEAT_SCHEDULE = {
