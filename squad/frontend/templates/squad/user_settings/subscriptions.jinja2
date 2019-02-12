@@ -14,9 +14,9 @@
     <div class="col-md-10">
       <select id="project_subscriptions" name="subscription" style="width: 100%;">
         {% for group in groups %}
-        <optgroup label="{{ group.name }}">
+        <optgroup label="{{ group.display_name }}">
           {% for project in group.projects.all() %}
-          <option value="{{ project.id }}">{{ project.name }}</option>
+          <option value="{{ project.id }}">{{ project.display_name }}</option>
         {% endfor %}
         </optgroup>
         {% endfor %}
@@ -40,7 +40,7 @@
 <p style="margin-top: 10px;">Your current subscriptions:</p>
 {% if subscriptions %}
 {% for sub in subscriptions %}
-<pre>{{ sub.project.group.name }}/{{ sub.project.name }} ({{ sub.notification_strategy }})
+<pre>{{ sub.project.group.display_name }}/{{ sub.project.display_name }} ({{ sub.notification_strategy }})
   <a href="{{url('settings-subscription-remove', args=[sub.id])}}" class="btn btn-xs btn-danger btn-group-vertical pull-right" title="Remove subscription">
     <span class="glyphicon glyphicon-trash"></span>
   </a>

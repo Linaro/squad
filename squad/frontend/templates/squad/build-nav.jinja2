@@ -1,6 +1,6 @@
 <h2 class="page-header well">
-    <a class="h2 text-primitive" href="{{group_url(project.group)}}">{{project.group.name}}</a>
-    » <a class="h2 text-primitive" href="{{project_url(project)}}">{{project.name}}</a>
+    <a class="h2 text-primitive" href="{{group_url(project.group)}}">{{project.group.display_name}}</a>
+    » <a class="h2 text-primitive" href="{{project_url(project)}}">{{project.display_name}}</a>
     » {% include "squad/_unfinished_build.jinja2" %} <a class="h2 text-primary" href="{{build_url(build)}}">Build {{build.version}}</a>
 </h2>
 
