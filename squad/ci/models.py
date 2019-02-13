@@ -1,6 +1,8 @@
 import json
 import logging
 import traceback
+import yaml
+from io import StringIO
 from django.db import models
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
@@ -179,6 +181,22 @@ class TestJob(models.Model):
     resubmitted_count = models.IntegerField(default=0)
     # reference to the job that was used as base for resubmission
     parent_job = models.ForeignKey('self', default=None, blank=True, null=True, related_name="resubmitted_jobs")
+
+    @property
+    def show_definition(self):
+        try:
+            # we'll loose comments in web UI
+            yaml_def = yaml.load(self.definition)
+        except yaml.parser.ParserError:
+            # in case yaml is not valid, return original string
+            return self.definition
+        if 'secrets' in yaml_def.keys():
+            # prevent displaying 'secrets' in the web UI
+            for key, value in yaml_def['secrets'].items():
+                yaml_def['secrets'][key] = "****"
+        stream = StringIO()
+        yaml.dump(yaml_def, stream, default_flow_style=False, allow_unicode=True, encoding=None)
+        return stream.getvalue()
 
     def success(self):
         return not self.failure
