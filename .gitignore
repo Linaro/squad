@@ -25,3 +25,5 @@ __pycache__
 /.metadata.json
 /celerybeat-schedule.db
 /node_modules
+/tags
+/doc/_build
