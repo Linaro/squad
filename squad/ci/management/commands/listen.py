@@ -5,6 +5,7 @@ import sys
 import time
 from django.core.management.base import BaseCommand
 from django.db.models import Field
+from django.db.utils import OperationalError
 
 
 from squad.ci.models import Backend
@@ -36,19 +37,33 @@ class Listener(object):
 
 class ListenerManager(object):
 
-    def __init__(self, argv):
-        self.argv = argv
+    def __init__(self):
         self.__processes__ = {}
         self.__fields__ = {}
 
     def run(self):
         self.setup_signals()
+        self.wait_for_setup()
         self.loop()
         self.cleanup()
 
     def setup_signals(self):
         # make SIGTERM equivalent to SIGINT (e.g. control-c)
         signal.signal(signal.SIGTERM, signal.getsignal(signal.SIGINT))
+
+    def wait_for_setup(self):
+        n = 0
+        while n < 24:  # wait up to 2 min
+            try:
+                Backend.objects.count()
+                logger.info("listener manager started")
+                return
+            except OperationalError:
+                logger.info("Waiting to database to be up; will retry in 5s ...")
+                time.sleep(5)
+                n += 1
+        logger.error("Timed out waiting for database to be up")
+        sys.exit(1)
 
     def keep_listeners_running(self):
         ids = list(self.__processes__.keys())
@@ -71,7 +86,7 @@ class ListenerManager(object):
             self.stop(backend_id)
 
     def start(self, backend):
-        argv = self.argv + [backend.name]
+        argv = [sys.executable, '-m', 'squad.manage', 'listen', backend.name]
         listener = subprocess.Popen(argv)
         self.__processes__[backend.id] = listener
         self.__fields__[backend.id] = fields(backend)
@@ -121,4 +136,4 @@ class Command(BaseCommand):
             backend = Backend.objects.get(name=backend_name)
             Listener(backend).run()
         else:
-            ListenerManager(sys.argv).run()
+            ListenerManager().run()

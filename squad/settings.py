@@ -253,6 +253,8 @@ if not EMAIL_FROM:
     EMAIL_FROM = 'noreply@%s' % HOSTNAME
 SERVER_EMAIL = EMAIL_FROM
 
+EMAIL_HOST = os.getenv("SQUAD_EMAIL_HOST", "localhost")
+
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -260,6 +262,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CELERY_BROKER_URL = os.getenv('SQUAD_CELERY_BROKER_URL')
 CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
 CELERY_TASK_SERIALIZER = 'msgpack'
+CELERY_BEAT_SCHEDULE_FILENAME = os.path.join(DATA_DIR, 'celerybeat-schedule')
 CELERY_BEAT_SCHEDULE = {
     'poll-every-hour': {
         'task': 'squad.ci.tasks.poll',

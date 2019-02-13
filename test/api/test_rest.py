@@ -1,6 +1,6 @@
 import datetime
 import json
-from mock import patch
+from test.mock import patch
 from django.test import TestCase
 from django.utils import timezone
 from squad.core import models

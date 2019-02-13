@@ -1,6 +1,6 @@
 from django.core import mail
 from django.test import TestCase
-from mock import patch, MagicMock
+from test.mock import patch, MagicMock
 import os
 import yaml
 import xmlrpc

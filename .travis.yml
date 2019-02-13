@@ -11,22 +11,29 @@ addons:
       - chromium-browser
       - snakefood
       - software-properties-common
+services:
+  - docker
 env:
-  - TESTENV=travis-postgresql DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432
-  - TESTENV=travis-sqlite3 DATABASE=
+  - SCRIPT=./scripts/travis TESTENV=travis-postgresql DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432
+  - SCRIPT=./scripts/travis TESTENV=travis-sqlite3 DATABASE=
+  - SCRIPT="./scripts/check-ignore"
+  - SCRIPT="./scripts/test-docker"
 
 before_install:
   - if test -n "$DATABASE"; then ./scripts/travis-postgresql; fi
 
 install:
-  - pip install --upgrade setuptools
-  - pip install -r requirements-dev.txt
-  - pip freeze
-  - sudo apt-get install nodejs npm
-  - npm install
+  - |
+    if test "$SCRIPT" = "./scripts/travis"; then
+      pip install --upgrade setuptools
+      pip install -r requirements-dev.txt
+      pip freeze
+      sudo apt-get install nodejs npm
+      npm install
+    fi
 
 script:
-  - ./scripts/travis
+  - $SCRIPT
 
 notifications:
   email:

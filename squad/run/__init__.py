@@ -8,13 +8,13 @@ __usage__ = """usage: squad [OPTIONS]
 
 Options:
 
-  -f, --fast            Fast startup: skip potentially slow operations, such as
+    -f, --fast          Fast startup: skip potentially slow operations, such as
                         running database migrations and compiling static assets
-  -h, --help            show this help message and exit
-  -v, --version         show program's version number and exit
+    -h, --help          show this help message and exit
+    -v, --version       show program's version number and exit
 
-  ALL other options are passed as-is to gunicorn. See gunicorn(1),
-  gunicorn3(1), or http://docs.gunicorn.org/ for details.
+    ALL other options are passed as-is to gunicorn. See gunicorn(1),
+    gunicorn3(1), or http://docs.gunicorn.org/ for details.
 
 gunicorn options:\
 """
@@ -53,7 +53,3 @@ def main():
 
     argv = [sys.executable, '-m', 'gunicorn.app.wsgiapp', 'squad.wsgi'] + argv[1:]
     os.execv(sys.executable, argv)
-
-
-if __name__ == "__main__":
-    main()

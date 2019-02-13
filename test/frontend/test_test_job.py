@@ -2,7 +2,7 @@ from squad.core import models as core_models
 from squad.ci import models
 from django.test import TestCase
 from django.test import Client
-from mock import patch
+from test.mock import patch
 
 
 class TestJobViewTest(TestCase):

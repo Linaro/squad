@@ -31,6 +31,9 @@ setup(
         'console_scripts': [
             'squad-admin=squad.manage:main',
             'squad=squad.run:main',
+            'squad-worker=squad.run.worker:main',
+            'squad-listener=squad.run.listener:main',
+            'squad-scheduler=squad.run.scheduler:main',
         ]
     },
     install_requires=requirements,

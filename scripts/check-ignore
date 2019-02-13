@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -eu
+
+newdockerignore=$(mktemp)
+trap "rm -rf $newdockerignore" INT TERM EXIT
+
+sed -e '
+s/SYNC WITH .dockerignore/SYNC WITH .gitignore/
+/\/squad\/frontend\/static\// d
+s#^[^/#]#**/&#
+s#^/##
+' .gitignore > "$newdockerignore"
+
+if [ "${1:-}" = '--update' ]; then
+    cat "$newdockerignore" > .dockerignore
+else
+    if ! diff -u .dockerignore "$newdockerignore"; then
+        echo
+        echo "# .dockerignore is out of date! Re-run this script as \`$0 --update\`"
+    fi
+fi

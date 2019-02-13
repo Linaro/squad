@@ -1,5 +1,5 @@
 from django.test import TestCase
-from mock import patch
+from test.mock import patch
 
 
 from celery.exceptions import Retry

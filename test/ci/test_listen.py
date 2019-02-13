@@ -1,5 +1,5 @@
 from django.test import TestCase
-from mock import patch, MagicMock, call
+from test.mock import patch, MagicMock, call
 
 
 from squad.ci.models import Backend
@@ -7,24 +7,21 @@ from squad.ci.management.commands.listen import ListenerManager, Command
 from squad.ci.management.commands.listen import Listener
 
 
-argv = ['./manage.py', 'listen']
-
-
 class TestListenerManager(TestCase):
 
     @patch('squad.ci.management.commands.listen.subprocess.Popen')
     def test_start(self, Popen):
         backend = Backend.objects.create(name="foo")
-        manager = ListenerManager(argv)
+        manager = ListenerManager()
 
         manager.start(backend)
 
-        Popen.assert_called_with(argv + ['foo'])
+        self.assertEqual(Popen.call_args[0][-1][-1], "foo")
 
     @patch('squad.ci.management.commands.listen.subprocess.Popen')
     def test_stop(self, Popen):
         backend = Backend.objects.create(name="foo")
-        manager = ListenerManager(argv)
+        manager = ListenerManager()
 
         Popen.return_value.poll.return_value = None
 
@@ -39,7 +36,7 @@ class TestListenerManager(TestCase):
     def test_cleanup(self, Popen):
         backend1 = Backend.objects.create(name="foo")
         backend2 = Backend.objects.create(name="bar")
-        manager = ListenerManager(argv)
+        manager = ListenerManager()
         manager.start(backend1)
         manager.start(backend2)
 
@@ -51,7 +48,7 @@ class TestListenerManager(TestCase):
 
     @patch('squad.ci.management.commands.listen.subprocess.Popen')
     def test_keep_listeners_running_added(self, Popen):
-        manager = ListenerManager(argv)
+        manager = ListenerManager()
         backend1 = Backend.objects.create(name="foo")
 
         manager.start = MagicMock()
@@ -70,7 +67,7 @@ class TestListenerManager(TestCase):
 
     @patch('squad.ci.management.commands.listen.subprocess.Popen')
     def test_keep_listeners_running_removed(self, Popen):
-        manager = ListenerManager(argv)
+        manager = ListenerManager()
         backend = Backend.objects.create(name="foo")
 
         manager.stop = MagicMock()
@@ -86,7 +83,7 @@ class TestListenerManager(TestCase):
 
     @patch('squad.ci.management.commands.listen.subprocess.Popen')
     def test_keep_listeners_running_changed(self, Popen):
-        manager = ListenerManager(argv)
+        manager = ListenerManager()
         backend = Backend.objects.create(name="foo")
 
         # start existing backends
