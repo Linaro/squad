@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^(%s)/(%s)/build/([^/]+)/tests/$' % ((slug_pattern,) * 2), tests.tests, name='tests'),
     url(r'^(%s)/(%s)/build/([^/]+)/testjobs/$' % ((slug_pattern,) * 2), ci.testjobs, name='testjobs'),
     url(r'^(%s)/(%s)/build/([^/]+)/metadata/$' % ((slug_pattern,) * 2), views.build_metadata, name='build_metadata'),
+    url(r'^(%s)/(%s)/build/([^/]+)/settings/$' % ((slug_pattern,) * 2), views.build_settings, name='build_settings'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/$' % ((slug_pattern,) * 2), views.test_run, name='testrun'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/suite/([^/]+)/tests/$' % ((slug_pattern,) * 2), views.test_run_suite_tests, name='testrun_suite_tests'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/suite/([^/]+)/metrics/$' % ((slug_pattern,) * 2), views.test_run_suite_metrics, name='testrun_suite_metrics'),
