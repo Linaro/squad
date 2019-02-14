@@ -9,6 +9,8 @@
 
 import subprocess
 
+from squad.settings import EMAIL_HOST
+
 
 __implicit_email_host__ = """
 ########################################################################
@@ -22,7 +24,6 @@ __implicit_email_host__ = """
 # environment variable.
 ########################################################################
 """
-from squad.settings import EMAIL_HOST
 if EMAIL_HOST == 'localhost':
     EMAIL_HOST = subprocess.check_output(
         ['ip', 'route', 'show', '0.0.0.0/0']
