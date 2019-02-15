@@ -6,7 +6,7 @@ from hashlib import sha1
 
 from django.db import models
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Count, Sum, Case, When
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import Group as UserGroup
 from django.contrib.auth.models import User
@@ -35,10 +35,21 @@ class GroupManager(models.Manager):
 
     def accessible_to(self, user):
         if user.is_superuser:
-            return self.all()
-        public_project_groups = Q(projects__is_public=True)
-        user_groups = Q(user_groups__in=user.groups.all())
-        return self.filter(public_project_groups | user_groups)
+            return self.all().annotate(project_count=Count('projects'))
+        projects = Project.objects.accessible_to(user)
+        project_ids = [p.id for p in projects]
+        group_ids = set([p.group_id for p in projects])
+        return self.filter(
+            Q(id__in=group_ids) | Q(user_groups__in=user.groups.all())
+        ).annotate(
+            project_count=Sum(
+                Case(
+                    When(projects__id__in=project_ids, then=1),
+                    default=0,
+                    output_field=models.IntegerField(),
+                )
+            )
+        )
 
 
 class DisplayName(object):
