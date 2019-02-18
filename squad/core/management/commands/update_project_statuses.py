@@ -32,19 +32,32 @@ class Command(BaseCommand):
             type=valid_date,
             help="Start date for project status updates (default: 6 months before current date, format: YYYY-MM-DD)."
         )
+        parser.add_argument(
+            '--date-end',
+            dest="date_end",
+            default=datetime.now(),
+            type=valid_date,
+            help="End date for project status updates (default: today, format: YYYY-MM-DD)."
+        )
 
     def handle(self, *args, **options):
         self.options = options
 
         builds = Build.objects.filter(
-            datetime__gt=timezone.make_aware(self.options['date_start']),
+            datetime__range=(
+                timezone.make_aware(self.options['date_start']),
+                timezone.make_aware(self.options['date_end'])),
             status__finished=True
         )
         total = builds.count()
-        for index, build in enumerate(builds):
-            ProjectStatus.create_or_update(build)
 
+        logger.info("Updating ProjectStatus objects from builds...")
+        logger.info("Total build count in selected date range: %s" % total)
+
+        for index, build in enumerate(builds.iterator()):
+            ProjectStatus.create_or_update(build)
             if index % 100 == 0:
                 logger.info('Progress: {1:>2}%[{0:10}]'.format(
                     '#' * int((index + 1) * 10 / total),
-                    int((index + 1) * 100 / total)), end='')
+                    int((index + 1) * 100 / total)))
+        logger.info('Progress: {1:>2}%[{0:10}]'.format('#' * 10, 100))
