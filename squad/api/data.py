@@ -26,6 +26,8 @@ def get(request, group_slug, project_slug):
     project = get_object_or_404(group.projects, slug=project_slug)
 
     metrics = request.GET.getlist('metric')
+    date_start = request.GET.get('date_start', None)
+    date_end = request.GET.get('date_end', None)
     # If the metrics parameter is not present, return data for all metrics.
     if not metrics:
         metric_set = models.Metric.objects.filter(
@@ -37,7 +39,8 @@ def get(request, group_slug, project_slug):
 
     environments = request.GET.getlist('environment')
 
-    results = get_metric_data(project, metrics, environments)
+    results = get_metric_data(project, metrics, environments,
+                              date_start, date_end)
 
     fmt = request.GET.get('format', 'json')
     if fmt == 'json':

@@ -1,24 +1,36 @@
+import datetime
+
 from squad.core import models
 from django.db.models import Q, F, Sum
+from django.utils import timezone
 
 
-def get_metric_data(project, metrics, environments):
+def get_metric_data(project, metrics, environments, date_start=None,
+                    date_end=None):
+
+    date_start = timezone.make_aware(
+        date_start or datetime.datetime.fromtimestamp(0))
+    date_end = timezone.make_aware(date_end or datetime.datetime.now())
+
     results = {}
     for metric in metrics:
         if metric == ':tests:':
-            results[metric] = get_tests_series(project, environments)
+            results[metric] = get_tests_series(project, environments,
+                                               date_start, date_end)
         else:
-            results[metric] = get_metric_series(project, metric, environments)
+            results[metric] = get_metric_series(project, metric, environments,
+                                                date_start, date_end)
 
     return results
 
 
-def get_metric_series(project, metric, environments):
+def get_metric_series(project, metric, environments, date_start, date_end):
     entry = {}
     for environment in environments:
         series = models.Metric.objects.by_full_name(metric).filter(
             test_run__build__project=project,
             test_run__environment__slug=environment,
+            test_run__created_at__range=(date_start, date_end)
         ).order_by(
             'test_run__datetime',
         ).values(
@@ -35,7 +47,7 @@ def get_metric_series(project, metric, environments):
     return entry
 
 
-def get_tests_series(project, environments):
+def get_tests_series(project, environments, date_start, date_end):
     results = {}
     tests_total = (F('tests_pass') + F('tests_skip') + F('tests_fail') + F('tests_xfail'))
     for environment in environments:
@@ -43,6 +55,7 @@ def get_tests_series(project, environments):
             test_run__build__project=project,
             suite=None,
             test_run__environment__slug=environment,
+            test_run__created_at__range=(date_start, date_end)
         ).filter(
             Q(tests_pass__gt=0) | Q(tests_skip__gt=0) | Q(tests_fail__gt=0) | Q(tests_xfail__gt=0)
         ).order_by(
