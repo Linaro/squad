@@ -1,3 +1,4 @@
+import re
 from django.test import TestCase
 from django.test import Client
 from django.contrib.auth.models import User
@@ -14,6 +15,7 @@ class FrontendTest(TestCase):
     def setUp(self):
         self.group = models.Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
+        self.other_project = self.group.projects.create(slug='yourproject')
         self.user = User.objects.create(username='theuser')
 
         self.client = Client()
@@ -38,7 +40,9 @@ class FrontendTest(TestCase):
         return response
 
     def test_home(self):
-        self.hit('/')
+        response = self.hit('/')
+        self.assertContains(response, '<strong>mygroup</strong>', html=True, count=1)
+        self.assertIsNotNone(re.search(r'2</span>\s*projects', response.content.decode()))
 
     def test_compare(self):
         self.hit('/_/compare/')

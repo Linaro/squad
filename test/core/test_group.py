@@ -42,3 +42,16 @@ class GroupTest(TestCase):
             [self.group],
             list(Group.objects.accessible_to(self.admin))
         )
+
+    def test_count_accessible_projects(self):
+        self.group.projects.create(slug='foo')
+        self.group.projects.create(slug='bar', is_public=False)
+
+        admin_groups = list(Group.objects.accessible_to(self.admin))
+        self.assertEqual(admin_groups[0].project_count, 2)
+
+        member_groups = list(Group.objects.accessible_to(self.user1))
+        self.assertEqual(member_groups[0].project_count, 2)
+
+        anonymous_user_groups = list(Group.objects.accessible_to(AnonymousUser()))
+        self.assertEqual(anonymous_user_groups[0].project_count, 1)
