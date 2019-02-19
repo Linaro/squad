@@ -35,7 +35,9 @@ if [ -n "$changed" ]; then
     exit 1
 fi
 
-./manage.py test
+if [ "${TEST:-yes}" != "no" ]; then
+    ./manage.py test
+fi
 
 git commit --message "New release: ${v}" CHANGELOG.md squad/version.py || true
 
