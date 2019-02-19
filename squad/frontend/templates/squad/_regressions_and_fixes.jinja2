@@ -1,7 +1,7 @@
 {% with regressions=build.status.get_regressions() %}
 {% if regressions %}
-<span>
-    <i class="fa fa-exclamation-triangle text-danger popover-hover popover-regressions"></i>
+<span data-toggle="tooltip" title="Click to display regressions">
+    <button class="fa fa-exclamation-triangle text-danger popover-regressions-fixes"></button>
     <span title="Regressions" class="hidden">
         {% for regression_key, regression_value in regressions.items() %}
         <p>Regressions found on <strong>{{ regression_key }}</strong>:</p>
@@ -18,8 +18,8 @@
 
 {% with fixes=build.status.get_fixes() %}
 {% if fixes %}
-<span>
-    <i class="fa fa-check-circle text-success popover-hover popover-fixes"></i>
+<span data-toggle="tooltip" title="Click to display fixes">
+    <button class="fa fa-check-circle text-success popover-regressions-fixes"></button>
     <div title="Fixes" class="hidden">
         {% for fix_key, fix_value in fixes.items() %}
         <p>Fixes found on <strong>{{ fix_key }}</strong>:</p>
