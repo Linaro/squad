@@ -3,8 +3,7 @@
 set -eu
 
 newdockerignore=$(mktemp)
-newmanifest=$(mktemp)
-trap "rm -rf $newdockerignore $newmanifest" INT TERM EXIT
+trap "rm -rf $newdockerignore" INT TERM EXIT
 
 sed -e '
 s/SYNC WITH .dockerignore/SYNC WITH .gitignore/
@@ -13,28 +12,11 @@ s#^[^/#]#**/&#
 s#^/##
 ' .gitignore > "$newdockerignore"
 
-sed -e '
-s/SYNC WITH .dockerignore/SYNC WITH .gitignore\nrecursive-include */
-/^\s*$/ d
-s#^[^#/]#exclude &#
-s#/\(squad/frontend/static/.*\)#recursive-include \1 *#
-s#^/#exclude #
-' .gitignore > "$newmanifest"
-
-rc=0
 if [ "${1:-}" = '--update' ]; then
     cat "$newdockerignore" > .dockerignore
-    cat "$newmanifest" > MANIFEST.in
 else
     if ! diff -u .dockerignore "$newdockerignore"; then
         echo
         echo "# .dockerignore is out of date! Re-run this script as \`$0 --update\`"
-        rc=$((rc+1))
-    fi
-    if ! diff -u MANIFEST.in "$newmanifest"; then
-        echo
-        echo "# MANIFEST.in is out of date! Re-run this script as \`$0 --update\`"
-        rc=$((rc+1))
     fi
 fi
-exit "$rc"

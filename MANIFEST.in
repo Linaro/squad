@@ -1,30 +1,23 @@
-# KEEP THIS IN SYNC WITH .gitignore
-recursive-include *
-exclude db.sqlite3
-exclude .git
-exclude .puzzle
-exclude secret.dat
-recursive-include squad/frontend/static/angularjs *
-recursive-include squad/frontend/static/bootstrap *
-recursive-include squad/frontend/static/font-awesome *
-recursive-include squad/frontend/static/lodash.js *
-recursive-include squad/frontend/static/chartjs *
-recursive-include squad/frontend/static/jquery.js *
-recursive-include squad/frontend/static/floatThread *
-recursive-include squad/frontend/static/select2.js/ *
-recursive-include squad/frontend/static/download.status *
-exclude squad/local_settings.py
-exclude squad/local_settings.py.off
-exclude static
-exclude .tests
-exclude __pycache__
-exclude *.pyc
-exclude *.swp
-exclude tmp
-exclude dist
-exclude build
-exclude .metadata.json
-exclude celerybeat-schedule.db
-exclude node_modules
-exclude tags
-exclude doc/_build
+include Dockerfile
+include dev-docker
+include Procfile
+include CHANGELOG.md
+include COPYING
+include requirements*.txt
+include manage.py
+include INSTALL.rst
+include HACKING.rst
+include CODEOWNERS
+include package.json
+include package-lock.json
+
+include           squad/core/management/commands/import_data.rst
+recursive-include squad/frontend/static/ *
+recursive-include squad/*/templates/ *
+recursive-include test/ *.py *.json *.csv *.log *.png *.yaml *.js
+recursive-include scripts/ *
+recursive-include doc/ *
+
+exclude           squad/local_settings.py
+exclude           squad/local_settings.py.off
+recursive-exclude doc/_build/ *
