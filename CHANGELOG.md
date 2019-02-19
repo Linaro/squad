@@ -1,3 +1,8 @@
+# 0.62.1
+
+This release has no functional changes. It just fixes the artifacts published
+for the previous release.
+
 # 0.62
 
 * core:
