@@ -1,3 +1,25 @@
+# 0.62
+
+* core:
+  * models.EmailTemplate: add jinja2 syntax validation
+  * TestComparison: avoid loading too many objects at once.
+    This fixes a long-running issue with excess RAM usage on workers.
+  * allow superuser access to all groups, as well as access to empty groups by
+    group members.
+  * Refactor project status rebuild command
+* frontend:
+  * add pagination to builds view
+  * support groups and project with empty name
+  * prevent displaying 'secrets' from LAVA job definition
+  * make regressions and fixes popover stay on screen until explicitly closed,
+    so the data in them can be copied for pasting elsewhere.
+* docker
+  * docker-compose.yaml: add initial version
+* celery:
+  * set maximum number of producer connection attempts
+* api:
+  * Add query result limit to api/data
+
 # 0.61
 
 * Add management command to update project statues from scratch.
