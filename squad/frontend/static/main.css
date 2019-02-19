@@ -322,3 +322,8 @@ table.test-results-details {
     padding:0!important;
     cursor:pointer;
 }
+
+.popover .close-popover {
+    margin-top: -4px;
+    margin-right: -4px;
+}
