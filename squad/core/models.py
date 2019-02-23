@@ -11,7 +11,7 @@ from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import Group as UserGroup
 from django.contrib.auth.models import User
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
+from squad.mail import Message
 from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
@@ -421,7 +421,7 @@ class DelayedReport(models.Model):
         sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)
         subject = "Custom report %s" % self.pk
 
-        message = EmailMultiAlternatives(subject, self.output_text, sender, recipients)
+        message = Message(subject, self.output_text, sender, recipients)
         if self.output_html:
             message.attach_alternative(self.output_html, "text/html")
         message.send()

@@ -2,7 +2,7 @@ from squad.celery import app as celery
 from squad.ci.models import Backend, TestJob
 from squad.ci.exceptions import SubmissionIssue, FetchIssue
 from celery.utils.log import get_task_logger
-from django.core.mail import EmailMultiAlternatives
+from squad.mail import Message
 from django.conf import settings
 from django.template.loader import render_to_string
 
@@ -82,7 +82,7 @@ def send_testjob_resubmit_admin_email(job_id, resubmitted_job_id):
         context=context,
     )
 
-    message = EmailMultiAlternatives(subject, text_message, sender, emails)
+    message = Message(subject, text_message, sender, emails)
     if test_job.target.html_mail:
         message.attach_alternative(html_message, "text/html")
     message.send()

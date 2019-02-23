@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from django.core.mail import EmailMultiAlternatives
+from squad.mail import Message
 from django.conf import settings
 import django.template
 from django.template.loader import render_to_string
@@ -162,7 +162,7 @@ class Notification(object):
         if NotificationDelivery.exists(self.status, subject, txt, html):
             return
 
-        message = EmailMultiAlternatives(subject, txt, sender, recipients)
+        message = Message(subject, txt, sender, recipients)
         if self.project.html_mail:
             message.attach_alternative(html, "text/html")
         message.send()
@@ -241,7 +241,7 @@ def send_admin_notification(status, project):
     recipients = [r.email for r in project.admin_subscriptions.all()]
     txt = render_to_string('squad/notification/failed_test_jobs.txt.jinja2', data)
 
-    message = EmailMultiAlternatives(subject, txt, sender, recipients)
+    message = Message(subject, txt, sender, recipients)
     html = ''
     if project.html_mail:
         html = render_to_string('squad/notification/failed_test_jobs.html.jinja2', data)
