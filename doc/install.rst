@@ -161,3 +161,46 @@ __ https://docs.djangoproject.com/en/1.11/topics/email/
 
 * ``SQUAD_CELERY_BROKER_URL``: URL to the broker to be used by Celery for
   background jobs. Defaults to ``amqp://localhost:5672``.
+
+
+User management
+---------------
+
+SQUAD provides 'users' management command that allows to list, add, update
+and display details about users. This command comes handy when trying to
+automate SQUAD setup with containers. Details about user management with
+'users' command:
+
+ * list
+   Displays list of all available users with their names (first, last)
+   from database
+
+ * details <username>
+   Displays details about requested username. Details include:
+
+   * username
+   * is_active
+   * is_staff
+   * is_superuser
+   * groups
+
+ * add <username>
+   Adds new user with given 'username'. It also takes additional parameters
+
+   * --email EMAIL email of the user
+   * --passwd PASSWD Password for this user. If empty, a random password is
+     generated.
+   * --staff Make this user a staff member
+   * --superuser Make this user a super user
+
+ * update <username>
+   Updates database record of existing user identified with 'username'. It takes
+   additional parameters
+
+   * --email EMAIL Change email of the user
+   * --active Make this user active
+   * --not-active Make this user inactive
+   * --staff Make this user a staff member
+   * --not-staff Make this user no longer a staff member
+   * --superuser Make this user a superuser
+   * --not-superuser Make this user no longer a superuser
