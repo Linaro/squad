@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.contrib.auth.models import AnonymousUser
 
@@ -53,3 +54,14 @@ class GroupTest(TestCase):
 
         anonymous_user_groups = list(Group.objects.accessible_to(AnonymousUser()))
         self.assertEqual(anonymous_user_groups[0].project_count, 1)
+
+    def test_writable_by(self):
+        self.assertTrue(self.group.writable_by(self.member))
+        self.assertFalse(self.group.writable_by(self.non_member))
+
+
+class TestGroupSlug(TestCase):
+
+    def test_does_not_accept_user_namespace_slug(self):
+        with self.assertRaises(ValidationError):
+            Group(slug='~foo').full_clean()
