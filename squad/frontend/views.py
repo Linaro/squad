@@ -12,7 +12,7 @@ from squad.ci.models import TestJob
 from squad.core.models import Group, Metric, ProjectStatus, Status
 from squad.core.models import Build
 from squad.core.queries import get_metric_data
-from squad.core.utils import join_name
+from squad.frontend.queries import get_metrics_list
 from squad.frontend.utils import file_type
 from squad.http import auth
 from collections import OrderedDict
@@ -78,17 +78,6 @@ def __get_statuses__(project, limit=None):
     if limit:
         statuses = statuses[:limit]
     return statuses
-
-
-def __get_metrics_list__(project):
-
-    metric_set = Metric.objects.filter(
-        test_run__environment__project=project
-    ).values('suite__slug', 'name').order_by('suite__slug', 'name').distinct()
-
-    metrics = [{"name": ":tests:", "label": "Test pass %", "max": 100, "min": 0}]
-    metrics += [{"name": join_name(m['suite__slug'], m['name'])} for m in metric_set]
-    return metrics
 
 
 @auth
@@ -459,7 +448,7 @@ def metrics(request, group_slug, project_slug):
     project = request.project
 
     environments = [{"name": e.slug} for e in project.environments.order_by('id').all()]
-    metrics = __get_metrics_list__(project)
+    metrics = get_metrics_list(project)
 
     data = get_metric_data(
         project,
@@ -476,21 +465,6 @@ def metrics(request, group_slug, project_slug):
         "data": data,
     }
     return render(request, 'squad/metrics.jinja2', context)
-
-
-@auth
-def thresholds(request, group_slug, project_slug):
-    project = request.project
-
-    environments = [{"name": e.slug} for e in project.environments.order_by('id').all()]
-    metrics = __get_metrics_list__(project)
-
-    context = {
-        "project": project,
-        "environments": environments,
-        "metrics": metrics,
-    }
-    return render(request, 'squad/thresholds.jinja2', context)
 
 
 @auth

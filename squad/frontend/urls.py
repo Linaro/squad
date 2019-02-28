@@ -7,6 +7,7 @@ from . import views
 from . import comparison
 from . import tests
 from . import ci
+from . import project_settings
 from . import user_settings
 from squad.core.models import slug_pattern, group_slug_pattern
 
@@ -23,11 +24,12 @@ urlpatterns = [
     url(r'^_/settings/', include(user_settings.urls)),
     url(r'^(%s)/$' % group_slug_pattern, views.group_home, name='group'),
     url(r'^(%s)/(%s)/$' % group_and_project, views.project_home, name='project'),
+    url(r'^(%s)/(%s)/settings/' % group_and_project, include(project_settings.urls)),
+    url(r'^(%s)/(%s)/thresholds/' % group_and_project, project_settings.thresholds_legacy),
     url(r'^(%s)/(%s)/badge$' % group_and_project, views.project_badge, name='project_badge'),
     url(r'^(%s)/(%s)/tests/(.+)$' % group_and_project, tests.test_history, name='test_history'),
     url(r'^(%s)/(%s)/metrics/$' % group_and_project, views.metrics, name='metrics'),
     url(r'^(%s)/(%s)/builds/$' % group_and_project, views.builds, name='builds'),
-    url(r'^(%s)/(%s)/thresholds/$' % group_and_project, views.thresholds, name='thresholds'),
     url(r'^(%s)/(%s)/build/([^/]+)/$' % group_and_project, views.build, name='build'),
     url(r'^(%s)/(%s)/build/([^/]+)/tests/$' % group_and_project, tests.tests, name='tests'),
     url(r'^(%s)/(%s)/build/([^/]+)/testjobs/$' % group_and_project, ci.testjobs, name='testjobs'),
