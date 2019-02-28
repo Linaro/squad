@@ -327,3 +327,7 @@ table.test-results-details {
     margin-top: -4px;
     margin-right: -4px;
 }
+
+a[ng-click] {
+  cursor: pointer;
+}
