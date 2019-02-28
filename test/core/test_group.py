@@ -8,25 +8,25 @@ from squad.core.models import Group
 
 class GroupTest(TestCase):
     def setUp(self):
-        self.user1 = User.objects.create(username='u1')
+        self.member = User.objects.create(username='u1')
 
-        self.user2 = User.objects.create(username='u2')
+        self.non_member = User.objects.create(username='u2')
 
         self.admin = User.objects.create(username='admin', is_superuser=True)
 
         self.group = Group.objects.create(slug='mygroup')
-        self.group.add_admin(self.user1)
+        self.group.add_admin(self.member)
 
     def test_accessible_manager_non_member(self):
         self.assertEqual(
             [],
-            list(Group.objects.accessible_to(self.user2))
+            list(Group.objects.accessible_to(self.non_member))
         )
 
     def test_accessible_manager_member(self):
         self.assertEqual(
             [self.group],
-            list(Group.objects.accessible_to(self.user1))
+            list(Group.objects.accessible_to(self.member))
         )
 
     def test_accessible_manager_anonymous_user(self):
@@ -48,7 +48,7 @@ class GroupTest(TestCase):
         admin_groups = list(Group.objects.accessible_to(self.admin))
         self.assertEqual(admin_groups[0].project_count, 2)
 
-        member_groups = list(Group.objects.accessible_to(self.user1))
+        member_groups = list(Group.objects.accessible_to(self.member))
         self.assertEqual(member_groups[0].project_count, 2)
 
         anonymous_user_groups = list(Group.objects.accessible_to(AnonymousUser()))
