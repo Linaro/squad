@@ -61,7 +61,7 @@ function MetricThresholdController($scope, Threshold) {
     $scope.removeThreshold = function(threshold) {
         // Delete threshold.
         Threshold.delete({id: threshold.id}).$promise.then(function(response) {
-            index = $scope.thresholds.indexOf(threshold)
+            var index = $scope.thresholds.indexOf(threshold)
             $scope.thresholds.splice(index, 1)
         })
     }
