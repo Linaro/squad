@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from rest_framework.authtoken.models import Token
 
 
-from squad.core.models import Group, Subscription
+from squad.core.models import Group, Subscription, UserNamespace
 
 
 logger = logging.getLogger()
@@ -97,10 +97,28 @@ def remove_subscription(request, id):
     return redirect(reverse('settings-subscriptions'))
 
 
+@login_required
+def projects(request):
+    if request.method == "POST":
+        UserNamespace.objects.create_for(request.user)
+        return redirect(request.path)
+
+    try:
+        user_namespace = UserNamespace.objects.get_for(request.user)
+    except UserNamespace.DoesNotExist:
+        user_namespace = None
+
+    context = {
+        'user_namespace': user_namespace,
+    }
+    return render(request, 'squad/user_settings/projects.jinja2', context)
+
+
 urls = [
     url('^$', home, name='settings-home'),
     url('^profile/$', profile, name='settings-profile'),
     url('^api-token/$', api_token, name='settings-api-token'),
     url('^subscriptions/$', subscriptions, name='settings-subscriptions'),
     url(r'^remove-subscription/(?P<id>\d+)$', remove_subscription, name='settings-subscription-remove'),
+    url('^projects/$', projects, name='settings-projects'),
 ]
