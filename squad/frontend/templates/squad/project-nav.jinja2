@@ -2,7 +2,7 @@
   <a class="h2 text-primitive" href="{{group_url(project.group) }}">{{project.group.display_name}}</a>
   » <a class="h2 text-primary" href="{{project_url(project)}}">{{project.display_name}}</a>
   {{pagetitle|default("")}}
-</h1>
+</h2>
 <ul class="page-header nav nav-pills">
   {% with url_name=request.resolver_match.url_name %}
   <li role="presentation" {% if url_name == 'project' %}class="active"{% endif %}>
