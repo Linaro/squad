@@ -59,7 +59,7 @@ def home(request):
     return render(request, 'squad/index.jinja2', context)
 
 
-def group(request, group_slug):
+def group_home(request, group_slug):
     group = get_object_or_404(Group, slug=group_slug)
     context = {
         'group': group,
@@ -92,7 +92,7 @@ def __get_metrics_list__(project):
 
 
 @auth
-def project(request, group_slug, project_slug):
+def project_home(request, group_slug, project_slug):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
 
