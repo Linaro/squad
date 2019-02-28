@@ -93,8 +93,7 @@ def __get_metrics_list__(project):
 
 @auth
 def project_home(request, group_slug, project_slug):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    project = request.project
 
     statuses = __get_statuses__(project, 11)
     last_status = statuses.first()
@@ -112,8 +111,7 @@ def project_home(request, group_slug, project_slug):
 
 @auth
 def project_badge(request, group_slug, project_slug):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    project = request.project
 
     status = ProjectStatus.objects.filter(
         build__project=project,
@@ -188,8 +186,7 @@ def project_badge(request, group_slug, project_slug):
 
 @auth
 def builds(request, group_slug, project_slug):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    project = request.project
 
     all_statuses = __get_statuses__(project)
     paginator = Paginator(all_statuses, 25)
@@ -242,8 +239,7 @@ class TestResultTable(object):
 
 @auth
 def build(request, group_slug, project_slug, version):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    project = request.project
     build = get_build(project, version)
     build.prefetch('test_runs')
 
@@ -272,8 +268,7 @@ def build(request, group_slug, project_slug, version):
 
 @auth
 def build_metadata(request, group_slug, project_slug, version):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    project = request.project
 
     build = get_build(project, version)
     build.prefetch('test_runs')
@@ -302,8 +297,7 @@ def build_settings(request, group_slug, project_slug, version):
 
 @auth
 def test_run(request, group_slug, project_slug, build_version, job_id):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    project = request.project
     build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
@@ -330,8 +324,7 @@ def test_run(request, group_slug, project_slug, build_version, job_id):
 
 
 def __test_run_suite_context__(request, group_slug, project_slug, build_version, job_id, suite_slug):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    project = request.project
     build = get_build(project, build_version)
 
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
@@ -408,8 +401,7 @@ def __download__(filename, data, content_type=None):
 
 @auth
 def test_run_log(request, group_slug, project_slug, build_version, job_id):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    project = request.project
     build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
@@ -421,8 +413,8 @@ def test_run_log(request, group_slug, project_slug, build_version, job_id):
 
 @auth
 def test_run_tests(request, group_slug, project_slug, build_version, job_id):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    group = request.group
+    project = request.project
     build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
@@ -432,8 +424,8 @@ def test_run_tests(request, group_slug, project_slug, build_version, job_id):
 
 @auth
 def test_run_metrics(request, group_slug, project_slug, build_version, job_id):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    group = request.group
+    project = request.project
     build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
@@ -443,8 +435,8 @@ def test_run_metrics(request, group_slug, project_slug, build_version, job_id):
 
 @auth
 def test_run_metadata(request, group_slug, project_slug, build_version, job_id):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    group = request.group
+    project = request.project
     build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
@@ -454,8 +446,7 @@ def test_run_metadata(request, group_slug, project_slug, build_version, job_id):
 
 @auth
 def attachment(request, group_slug, project_slug, build_version, job_id, fname):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    project = request.project
     build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, job_id=job_id)
 
@@ -465,8 +456,7 @@ def attachment(request, group_slug, project_slug, build_version, job_id, fname):
 
 @auth
 def metrics(request, group_slug, project_slug):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    project = request.project
 
     environments = [{"name": e.slug} for e in project.environments.order_by('id').all()]
     metrics = __get_metrics_list__(project)
@@ -490,8 +480,7 @@ def metrics(request, group_slug, project_slug):
 
 @auth
 def thresholds(request, group_slug, project_slug):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    project = request.project
 
     environments = [{"name": e.slug} for e in project.environments.order_by('id').all()]
     metrics = __get_metrics_list__(project)

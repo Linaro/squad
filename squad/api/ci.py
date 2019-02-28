@@ -5,7 +5,6 @@ from django.views.decorators.http import require_http_methods
 from squad.http import auth_write, read_file_upload
 from squad.ci.tasks import submit
 from squad.ci.models import Backend, TestJob
-from squad.core.models import Project
 
 
 @require_http_methods(["POST"])
@@ -22,7 +21,7 @@ def submit_job(request, group_slug, project_slug, version, environment_slug):
         return HttpResponseBadRequest("requested backend does not exist")
 
     # project has to exist or request will result with 404
-    project = Project.objects.get(slug=project_slug, group__slug=group_slug)
+    project = request.project
     if project is None:
         return HttpResponseBadRequest("malformed request")
 
@@ -68,7 +67,7 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
         return HttpResponseBadRequest("requested backend does not exist")
 
     # project has to exist or request will result with 400
-    project = Project.objects.get(slug=project_slug, group__slug=group_slug)
+    project = request.project
     if backend is None or project is None:
         return HttpResponseBadRequest("malformed request")
 

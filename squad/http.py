@@ -31,6 +31,9 @@ def auth(func, mode=AuthMode.READ):
         group = get_object_or_404(models.Group, slug=group_slug)
         project = get_object_or_404(group.projects, slug=project_slug)
 
+        request.group = group
+        request.project = project
+
         tokenkey = request.META.get('HTTP_AUTH_TOKEN', None)
         user = request.user
         token = None

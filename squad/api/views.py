@@ -1,4 +1,3 @@
-from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
@@ -10,7 +9,6 @@ from squad.http import read_file_upload
 from squad.http import auth_submit
 
 
-from squad.core.models import Group
 from squad.core.models import Build
 from squad.core.models import PatchSource
 
@@ -27,8 +25,7 @@ logger = logging.getLogger()
 @require_http_methods(["POST"])
 @auth_submit
 def create_build(request, group_slug, project_slug, version):
-    group = get_object_or_404(Group, slug=group_slug)
-    project = get_object_or_404(group.projects, slug=project_slug)
+    project = request.project
 
     fields = {}
     patch_source = request.POST.get('patch_source', None)
@@ -58,8 +55,7 @@ def create_build(request, group_slug, project_slug, version):
 @require_http_methods(["POST"])
 @auth_submit
 def add_test_run(request, group_slug, project_slug, version, environment_slug):
-    group = get_object_or_404(Group, slug=group_slug)
-    project = get_object_or_404(group.projects, slug=project_slug)
+    project = request.project
 
     test_run_data = {
         'version': version,

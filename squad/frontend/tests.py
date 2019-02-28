@@ -5,7 +5,7 @@ from django.db.models.fields import IntegerField
 from django.shortcuts import render
 
 from squad.http import auth
-from squad.core.models import Group, Test, Suite
+from squad.core.models import Test, Suite
 from squad.core.history import TestHistory
 from django.http import Http404
 from squad.frontend.views import get_build
@@ -150,8 +150,7 @@ class TestResultTable(list):
 
 @auth
 def tests(request, group_slug, project_slug, build_version):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    project = request.project
     build = get_build(project, build_version)
 
     try:
@@ -173,8 +172,7 @@ def tests(request, group_slug, project_slug, build_version):
 
 @auth
 def test_history(request, group_slug, project_slug, full_test_name):
-    group = Group.objects.get(slug=group_slug)
-    project = group.projects.get(slug=project_slug)
+    project = request.project
 
     try:
         page = int(request.GET.get('page', '1'))
