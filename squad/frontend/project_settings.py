@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, reverse
 
 from squad.core.models import Project
 from squad.http import auth_write
+from squad.frontend.forms import DeleteConfirmationForm
 from squad.frontend.queries import get_metrics_list
 
 
@@ -52,7 +53,31 @@ def thresholds_legacy(request, group_slug, project_slug):
     return redirect(reverse('project-settings-thresholds', args=[group_slug, project_slug]))
 
 
+class DeleteProjectForm(DeleteConfirmationForm):
+    label = 'Type the project slug (the name used in URLs) to confirm'
+    no_match_message = 'The confirmation does not match the project slug'
+
+
+@auth_write
+def delete(request, group_slug, project_slug):
+    project = request.project
+    if request.method == "POST":
+        form = DeleteProjectForm(request.POST, deletable=project)
+        if form.is_valid():
+            project.delete()
+            return redirect(reverse('group', args=[group_slug]))
+    else:
+        form = DeleteProjectForm(deletable=project)
+
+    context = {
+        'project': project,
+        'form': form,
+    }
+    return render(request, 'squad/project_settings/delete.jinja2', context)
+
+
 urls = [
     url('^$', settings, name='project-settings'),
     url(r'^thresholds/$', thresholds, name='project-settings-thresholds'),
+    url(r'^delete/$', delete, name='project-settings-delete'),
 ]

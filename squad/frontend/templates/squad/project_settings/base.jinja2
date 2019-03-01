@@ -18,6 +18,7 @@
         {% with url_name=request.resolver_match.url_name %}
         <li class="list-group-item {% if url_name == "project-settings" %}active{% endif %}"><a href="{{project_section_url(project, 'project-settings')}}">Basics</a></li>
         <li class="list-group-item {% if url_name == "project-settings-thresholds" %}active{% endif %}"><a href="{{project_section_url(project, 'project-settings-thresholds')}}">Metric thresholds</a></li>
+        <li class="list-group-item {% if url_name == "project-settings-delete" %}active{% endif %}"><a href="{{project_section_url(project, 'project-settings-delete')}}">Delete project</a></li>
         {% endwith %}
       </ul>
     </div>
