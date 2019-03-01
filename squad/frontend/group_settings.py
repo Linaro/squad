@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect, reverse
 
 from squad.core.models import Group
 from squad.core.models import Project
+from squad.frontend.forms import DeleteConfirmationForm
 from squad.http import auth_write
 
 
@@ -30,6 +31,28 @@ def settings(request, group_slug):
         'form': form,
     }
     return render(request, 'squad/group_settings/index.jinja2', context)
+
+
+class DeleteGroupForm(DeleteConfirmationForm):
+    label = 'Type the group slug (the name used in URLs) to confirm'
+    no_match_message = 'The confirmation does not match the group slug'
+
+
+@auth_write
+def delete(request, group_slug):
+    group = request.group
+    if request.method == "POST":
+        form = DeleteGroupForm(request.POST, deletable=group)
+        if form.is_valid():
+            group.delete()
+            return redirect(reverse('home'))
+    else:
+        form = DeleteGroupForm(deletable=group)
+    context = {
+        'group': group,
+        'form': form,
+    }
+    return render(request, 'squad/group_settings/delete.jinja2', context)
 
 
 class NewGroupForm(GroupForm):
@@ -83,5 +106,6 @@ def new_project(request, group_slug):
 
 urls = [
     url('^$', settings, name='group-settings'),
+    url('^delete/$', delete, name='group-delete'),
     url('^new-project/$', new_project, name='group-new-project'),
 ]

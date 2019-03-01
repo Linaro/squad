@@ -17,6 +17,7 @@
             <ul class="list-group settings-nav">
                 {% with url_name=request.resolver_match.url_name %}
                 <li class="list-group-item {% if url_name == "group-settings" %}active{% endif %}"><a href="{{url("group-settings", args=[group.slug])}}">Basics</a></li>
+                <li class="list-group-item {% if url_name == "group-delete" %}active{% endif %}"><a href="{{url("group-delete", args=[group.slug])}}">Delete group</a></li>
                 {% endwith %}
             </ul>
         </div>

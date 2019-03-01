@@ -10,6 +10,10 @@ Personal projects are enabled for you. You can go to your personal <a
 href="{{group_url(user_namespace)}}"><strong>user namespace</strong></a> to
 manage your personal projects.
 </p>
+<p>
+To remove your user namespace, and consequentially disable personal projects,
+you can access its <a href="{{url('group-delete', args=[user_namespace.slug])}}">Delete group</a> page.
+</p>
 </div>
 
 {% else %}
