@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^_/compare/$', comparison.compare_projects, name='compare_projects'),
     url(r'^_/comparetest/$', comparison.compare_test, name='compare_test'),
     url(r'^_/settings/', include(user_settings.urls)),
+    url(r'^_/new-group/', group_settings.new_group, name='new-group'),
     url(r'^_/group-settings/(%s)/' % group_slug_pattern, include(group_settings.urls)),
     url(r'^(%s)/$' % group_slug_pattern, views.group_home, name='group'),
     url(r'^(%s)/(%s)/$' % group_and_project, views.project_home, name='project'),

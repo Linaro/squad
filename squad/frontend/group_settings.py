@@ -1,5 +1,6 @@
 from django import forms
 from django.conf.urls import url
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, reverse
 
 
@@ -29,6 +30,28 @@ def settings(request, group_slug):
         'form': form,
     }
     return render(request, 'squad/group_settings/index.jinja2', context)
+
+
+class NewGroupForm(GroupForm):
+    class Meta(GroupForm.Meta):
+        fields = ['slug'] + GroupForm.Meta.fields
+
+
+@login_required
+def new_group(request):
+    if request.method == "POST":
+        form = NewGroupForm(request.POST, instance=Group())
+        if form.is_valid():
+            group = form.save()
+            group.setup_for(request.user)
+            return redirect(reverse('group-settings', args=[group.slug]))
+    else:
+        form = NewGroupForm()
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'squad/group_settings/new_group.jinja2', context)
 
 
 class NewProjectForm(forms.ModelForm):
