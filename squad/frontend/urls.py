@@ -7,6 +7,7 @@ from . import views
 from . import comparison
 from . import tests
 from . import ci
+from . import group_settings
 from . import project_settings
 from . import user_settings
 from squad.core.models import slug_pattern, group_slug_pattern
@@ -22,6 +23,7 @@ urlpatterns = [
     url(r'^_/compare/$', comparison.compare_projects, name='compare_projects'),
     url(r'^_/comparetest/$', comparison.compare_test, name='compare_test'),
     url(r'^_/settings/', include(user_settings.urls)),
+    url(r'^_/group-settings/(%s)/' % group_slug_pattern, include(group_settings.urls)),
     url(r'^(%s)/$' % group_slug_pattern, views.group_home, name='group'),
     url(r'^(%s)/(%s)/$' % group_and_project, views.project_home, name='project'),
     url(r'^(%s)/(%s)/settings/' % group_and_project, include(project_settings.urls)),

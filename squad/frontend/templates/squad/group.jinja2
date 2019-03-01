@@ -1,13 +1,14 @@
 {% extends "squad/base.jinja2" %}
 
 {% block content %}
-<h2 class="page-header well">{{group.display_name}}</h2>
 
-<p>
-{{group.description|default("")}}
-</p>
+{% include "squad/group-nav.jinja2" %}
 
 {% with hide_group=True %}
 {% include "squad/_project_list.jinja2" %}
 {% endwith %}
 {% endblock %}
+
+{% if group.writable_by(user) %}
+<a href="" class='btn btn-primary'><span class='fa fa-plus'></span> New project</a>
+{% endif %}
