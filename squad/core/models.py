@@ -66,8 +66,8 @@ class Group(models.Model, DisplayName):
 
     slug = models.CharField(max_length=100, unique=True, validators=[group_slug_validator], db_index=True)
     valid_slug_pattern = slug_pattern
-    name = models.CharField(max_length=100, null=True)
-    description = models.TextField(null=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
     members = models.ManyToManyField(User, through='GroupMember')
 
     def add_user(self, user, access=None):
@@ -200,7 +200,7 @@ class Project(models.Model, DisplayName):
 
     group = models.ForeignKey(Group, related_name='projects')
     slug = models.CharField(max_length=100, validators=[slug_validator], db_index=True)
-    name = models.CharField(max_length=100, null=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
     is_public = models.BooleanField(default=True)
     html_mail = models.BooleanField(default=True)
     moderate_notifications = models.BooleanField(default=False)
