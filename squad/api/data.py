@@ -1,4 +1,7 @@
 import json
+
+from datetime import datetime
+
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseBadRequest
@@ -28,6 +31,19 @@ def get(request, group_slug, project_slug):
     metrics = request.GET.getlist('metric')
     date_start = request.GET.get('date_start', None)
     date_end = request.GET.get('date_end', None)
+
+    if date_start:
+        try:
+            date_start = datetime.strptime(date_start, "%m-%d-%Y")
+        except ValueError:
+            return HttpResponseBadRequest("Invalid date_start format: %s. Try using %s notation." % (date_start, "%m-%d-%Y"))
+    if date_end:
+        try:
+            date_end = datetime.strptime(date_end, "%m-%d-%Y")
+        except ValueError:
+            return HttpResponseBadRequest(
+                "Invalid date_end format: %s. Try using %s notation." % (date_end, "%m-%d-%Y"))
+
     # If the metrics parameter is not present, return data for all metrics.
     if not metrics:
         metric_set = models.Metric.objects.filter(
