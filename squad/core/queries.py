@@ -7,6 +7,8 @@ from django.utils import timezone
 
 def get_metric_data(project, metrics, environments, date_start=None,
                     date_end=None):
+    # Note that date_start and date_end **must** be datetime objects and not
+    # strings, if used.
 
     date_start = timezone.make_aware(
         date_start or datetime.datetime.fromtimestamp(0))
