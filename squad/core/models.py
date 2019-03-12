@@ -248,8 +248,15 @@ class Build(models.Model):
     def __str__(self):
         return '%s (%s)' % (self.version, self.datetime)
 
+    def __get_help_text(self, field):
+        return self._meta.get_field(field).help_text
+
     def prefetch(self, *related):
         prefetch_related_objects([self], *related)
+
+    @property
+    def keep_data_help_text(self):
+        return self.__get_help_text('keep_data')
 
     @property
     def test_summary(self):

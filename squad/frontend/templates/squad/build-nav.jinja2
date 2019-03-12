@@ -52,6 +52,13 @@
         </a>
     </li>
     {% endif %}
+    {% if project.accessible_to(user) %}
+    <li role="presentation" {% if url_name == 'build_settings' %}class="active"{% endif %}>
+        <a href="{{build_section_url(build, 'build_settings')}}">
+            Settings
+        </a>
+    </li>
+    {% endif %}
 
     {% endwith %}
 </ul>
