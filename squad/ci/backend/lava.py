@@ -313,8 +313,9 @@ class Backend(BaseBackend):
                     # add artificial 'boot' test result for each test job
                     if result['name'] == 'auto-login-action':
                         # by default the boot test is named after the device_type
-                        res_name = "boot/%s" % (definition['device_type'])
-                        res_time_name = "boot/time-%s" % (definition['device_type'])
+                        boot = "boot-%s" % test_job.name
+                        res_name = "%s/%s" % (boot, definition['device_type'])
+                        res_time_name = "%s/time-%s" % (boot, definition['device_type'])
                         if 'testsuite' in job_metadata.keys():
                             # If 'testsuite' metadata key is present in the job
                             # it's appended to the test name. This way regressions can
