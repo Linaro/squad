@@ -209,6 +209,7 @@ class Project(models.Model, DisplayName):
     important_metadata_keys = models.TextField(null=True, blank=True)
     enabled_plugins_list = PluginListField(
         null=True,
+        blank=True,
         features=[
             Plugin.postprocess_testrun,
             Plugin.postprocess_testjob,
