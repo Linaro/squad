@@ -66,7 +66,7 @@ def new_group(request):
         form = NewGroupForm(request.POST, instance=Group())
         if form.is_valid():
             group = form.save()
-            group.setup_for(request.user)
+            group.add_admin(request.user)
             return redirect(reverse('group-settings', args=[group.slug]))
     else:
         form = NewGroupForm()
