@@ -74,6 +74,7 @@ __apps__ = [
     'rest_framework_filters',
     'simple_history',
     'django_filters',
+    'crispy_forms',
     'squad.core',
     'squad.api',
     'squad.frontend',
@@ -305,6 +306,8 @@ REST_FRAMEWORK = {
 # CORS setup
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_METHODS = ['GET', 'HEAD']
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 try:
     from squad.local_settings import *  # noqa: F401,F403

@@ -1,5 +1,6 @@
 celery
 coreapi
+django_crispy_forms
 Django>=1.11,<1.12
 django-cors-headers
 django-simple-history
