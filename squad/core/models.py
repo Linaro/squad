@@ -28,9 +28,9 @@ from squad.core.plugins import get_plugin_instance
 
 
 slug_pattern = '[a-zA-Z0-9][a-zA-Z0-9_.-]*'
-slug_validator = RegexValidator(regex='^' + slug_pattern)
+slug_validator = RegexValidator(regex='^' + slug_pattern + '$')
 group_slug_pattern = '~?' + slug_pattern
-group_slug_validator = RegexValidator(regex='^' + group_slug_pattern)
+group_slug_validator = RegexValidator(regex='^' + group_slug_pattern + '$')
 
 
 class GroupManager(models.Manager):

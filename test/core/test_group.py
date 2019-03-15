@@ -65,3 +65,10 @@ class TestGroupSlug(TestCase):
     def test_does_not_accept_user_namespace_slug(self):
         with self.assertRaises(ValidationError):
             Group(slug='~foo').full_clean()
+
+    def test_invalid_slug(self):
+        group = Group(slug='foo/bar')
+        with self.assertRaises(ValidationError):
+            group.full_clean()
+        group.slug = 'foo-bar'
+        group.full_clean()  # if this raises no exception, we are fine
