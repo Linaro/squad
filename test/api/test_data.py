@@ -1,7 +1,7 @@
 from django.test import TestCase
 import json
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 
 from test.api import Client, APIClient
 from squad.core.tasks import ReceiveTestRun
@@ -11,9 +11,7 @@ from squad.core import models
 class ApiDataTest(TestCase):
 
     def setUp(self):
-        self.user_group = Group.objects.create(name='foo')
         self.group = models.Group.objects.create(slug='mygroup')
-        self.group.user_groups.add(self.user_group)
         self.project = self.group.projects.create(slug='myproject')
         self.project.tokens.create(key='thekey')
         self.client = APIClient('thekey')
@@ -117,7 +115,7 @@ class ApiDataTest(TestCase):
 
         web_client = Client()
         user = User.objects.create(username='theuser')
-        user.groups.add(self.user_group)
+        self.group.add_admin(user)
         web_client.force_login(user)
 
         resp = web_client.get('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')

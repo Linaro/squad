@@ -239,7 +239,7 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Group
-        fields = '__all__'
+        exclude = ('members',)
 
 
 class GroupViewSet(viewsets.ModelViewSet):

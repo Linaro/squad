@@ -40,7 +40,7 @@ class GroupManager(models.Manager):
         project_ids = [p.id for p in projects]
         group_ids = set([p.group_id for p in projects])
         return self.filter(
-            Q(id__in=group_ids) | Q(user_groups__in=user.groups.all())
+            Q(id__in=group_ids) | Q(members__id=user.id)
         ).annotate(
             project_count=Sum(
                 Case(
@@ -66,6 +66,32 @@ class Group(models.Model, DisplayName):
     name = models.CharField(max_length=100, null=True)
     description = models.TextField(null=True)
     user_groups = models.ManyToManyField(UserGroup)
+    members = models.ManyToManyField(User, through='GroupMember')
+
+    def add_user(self, user, access=None):
+        member = GroupMember(group=self, user=user)
+        if access:
+            member.access = access
+        member.save()
+
+    def add_admin(self, user):
+        self.add_user(user, 'admin')
+
+    def accessible_to(self, user):
+        return GroupMember.objects.filter(group=self, user=user.id).exists() or self.writable_by(user)
+
+    def can_submit(self, user):
+        return user.is_superuser or user.is_staff or self.has_access(user, 'admin', 'submitter')
+
+    def writable_by(self, user):
+        return user.is_superuser or user.is_staff or self.has_access(user, 'admin')
+
+    def has_access(self, user, *access_levels):
+        return GroupMember.objects.filter(
+            group=self,
+            user=user.id,
+            access__in=access_levels
+        ).exists()
 
     def __str__(self):
         return self.slug
@@ -74,13 +100,29 @@ class Group(models.Model, DisplayName):
         ordering = ['slug']
 
 
+class GroupMember(models.Model):
+    ACCESS_LEVELS = (
+        ('member', "Member"),
+        ('submitter', 'Result submitter'),
+        ('admin', "Administrator"),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    access = models.CharField(max_length=10, choices=ACCESS_LEVELS, default='member')
+    member_since = models.DateField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Group member'
+        verbose_name_plural = 'Group members'
+
+
 class ProjectManager(models.Manager):
 
     def accessible_to(self, user):
         if user.is_superuser or user.is_staff:
             return self.all()
         else:
-            groups = Group.objects.filter(user_groups__in=user.groups.all())
+            groups = Group.objects.filter(members__id=user.id)
             group_ids = [g['id'] for g in groups.values('id')]
             return self.filter(Q(group_id__in=group_ids) | Q(is_public=True))
 
@@ -161,10 +203,13 @@ class Project(models.Model, DisplayName):
         return self.__status__
 
     def accessible_to(self, user):
-        return self.is_public or self.writable_by(user)
+        return self.is_public or self.group.accessible_to(user)
+
+    def can_submit(self, user):
+        return self.group.can_submit(user)
 
     def writable_by(self, user):
-        return user.is_superuser or user.is_staff or self.group.user_groups.filter(id__in=user.groups.all()).exists()
+        return self.group.writable_by(user)
 
     @property
     def full_name(self):

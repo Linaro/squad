@@ -20,8 +20,7 @@ class CiApiTest(TestCase):
         self.project = self.group.projects.create(slug='myproject')
 
         self.project_submission_user = User.objects.create(username='project-user')
-        usergroup = self.group.user_groups.create()
-        self.project_submission_user.groups.add(usergroup)
+        self.group.add_admin(self.project_submission_user)
         self.build = self.project.builds.create(version='1')
         Token.objects.create(user=self.project_submission_user, key='thekey')
 
