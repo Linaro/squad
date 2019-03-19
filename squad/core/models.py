@@ -8,7 +8,6 @@ from django.db import models
 from django.db import transaction
 from django.db.models import Q, Count, Sum, Case, When
 from django.db.models.query import prefetch_related_objects
-from django.contrib.auth.models import Group as UserGroup
 from django.contrib.auth.models import User
 from django.conf import settings
 from squad.mail import Message
@@ -65,7 +64,6 @@ class Group(models.Model, DisplayName):
     slug = models.CharField(max_length=100, unique=True, validators=[slug_validator], db_index=True)
     name = models.CharField(max_length=100, null=True)
     description = models.TextField(null=True)
-    user_groups = models.ManyToManyField(UserGroup)
     members = models.ManyToManyField(User, through='GroupMember')
 
     def add_user(self, user, access=None):

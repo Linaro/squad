@@ -1,7 +1,6 @@
 import json
 import yaml
 
-from django.contrib.auth.models import Group as UserGroup
 from django.core.exceptions import MultipleObjectsReturned
 from squad.api.filters import ComplexFilterBackend
 from squad.core.models import Annotation, Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, MetricThreshold, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata, DelayedReport
@@ -209,33 +208,9 @@ class ModelViewSet(viewsets.ModelViewSet):
         return [p['id'] for p in projects]
 
 
-class UserGroupSerializer(serializers.HyperlinkedModelSerializer):
-
-    url = serializers.HyperlinkedIdentityField(view_name='usergroups-detail')
-
-    class Meta:
-        model = UserGroup
-        fields = ('id', 'name', 'url')
-
-
-class UserGroupViewSet(viewsets.ModelViewSet):
-    """
-    List of user groups.
-    """
-    queryset = UserGroup.objects
-    serializer_class = UserGroupSerializer
-    filter_fields = ('name',)
-    search_fields = ('name',)
-    ordering_fields = ('name',)
-
-
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
-    user_groups = serializers.HyperlinkedRelatedField(
-        many=True,
-        queryset=UserGroup.objects.all(),
-        view_name='usergroups-detail')
 
     class Meta:
         model = Group
@@ -972,7 +947,6 @@ class MetricThresholdViewSet(viewsets.ModelViewSet):
 
 router = APIRouter()
 router.register(r'groups', GroupViewSet)
-router.register(r'usergroups', UserGroupViewSet, 'usergroups')
 router.register(r'projects', ProjectViewSet)
 router.register(r'builds', BuildViewSet)
 router.register(r'testjobs', TestJobViewSet)
