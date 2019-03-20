@@ -188,14 +188,50 @@ class CreateTestRunApiTest(ApiTest):
     def test_unauthorized(self):
         client = Client()  # regular client without auth support
         response = client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(models.TestRun.objects.count(), 0)
 
     def test_wrong_token(self):
         self.client.token = 'wrongtoken'
         response = self.client.post('/api/submit/mygroup/myproject/1.0.0/myenv')
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(models.TestRun.objects.count(), 0)
+
+    def test_good_token_but_non_member_on_private_project(self):
+        non_member = User.objects.create(username='nonmember')
+        Token.objects.create(user=non_member, key='nonmemberkey')
+        self.project.is_public = False
+        self.project.save()
+        client = APIClient('nonmemberkey')
+        response = client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
         self.assertEqual(response.status_code, 401)
         self.assertEqual(models.TestRun.objects.count(), 0)
+
+    def test_good_token_but_non_member(self):
+        non_member = User.objects.create(username='nonmember')
+        Token.objects.create(user=non_member, key='nonmemberkey')
+        client = APIClient('nonmemberkey')
+        response = client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(models.TestRun.objects.count(), 0)
+
+    def test_good_token_but_member_without_submit_access(self):
+        member = User.objects.create(username='member')
+        self.group.add_user(member)
+        Token.objects.create(user=member, key='memberkey')
+        client = APIClient('memberkey')
+        response = client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(models.TestRun.objects.count(), 0)
+
+    def test_good_token_for_member_with_submit_access(self):
+        member = User.objects.create(username='member')
+        self.group.add_user(member, 'submitter')
+        Token.objects.create(user=member, key='memberkey')
+        client = APIClient('memberkey')
+        response = client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(models.TestRun.objects.count(), 1)
 
     def test_auth_with_global_token(self):
         self.client.token = self.global_token.key

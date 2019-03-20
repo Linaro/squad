@@ -34,7 +34,7 @@ class CiApiTest(TestCase):
         }
         self.client.token = 'invalid-token'
         r = self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
-        self.assertEqual(401, r.status_code)
+        self.assertEqual(403, r.status_code)
 
     def test_creates_test_run(self):
         args = {
@@ -95,7 +95,7 @@ class CiApiTest(TestCase):
         }
         self.client.token = 'invalid-token'
         r = self.client.post('/api/watchjob/mygroup/myproject/1/myenv', args)
-        self.assertEqual(401, r.status_code)
+        self.assertEqual(403, r.status_code)
 
     @patch("squad.ci.tasks.fetch.delay")
     def test_watch_testjob(self, fetch):
