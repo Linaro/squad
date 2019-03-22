@@ -1,7 +1,10 @@
 from django import forms
 from django.conf.urls import url
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, reverse
+from django.shortcuts import redirect, reverse
+
+from django.utils.decorators import method_decorator
+from django.views.generic.edit import FormView, UpdateView, CreateView
 
 
 from squad.core.models import Group
@@ -10,71 +13,85 @@ from squad.frontend.forms import DeleteConfirmationForm
 from squad.http import auth_write
 
 
+class ExtraFormArgsMixin(object):
+
+    def get_extra_form_kwargs(self):
+        return {}
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update(self.get_extra_form_kwargs())
+        return kwargs
+
+
+class GroupViewMixin(object):
+
+    @property
+    def group(self):
+        return self.request.group
+
+    def get_object(self):
+        return self.request.group
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['group'] = self.request.group
+        return context
+
+
 class GroupForm(forms.ModelForm):
+
     class Meta:
         model = Group
         fields = ['name', 'description']
 
 
-@auth_write
-def settings(request, group_slug):
-    if request.method == "POST":
-        form = GroupForm(request.POST, instance=request.group)
-        if form.is_valid():
-            form.save()
-            return redirect(request.path)
-    else:
-        form = GroupForm(instance=request.group)
+@method_decorator(auth_write, name='dispatch')
+class BaseSettingsView(GroupViewMixin, UpdateView):
 
-    context = {
-        'group': request.group,
-        'form': form,
-    }
-    return render(request, 'squad/group_settings/index.jinja2', context)
+    template_name = 'squad/group_settings/index.jinja2'
+    form_class = GroupForm
+
+    def get_success_url(self):
+        return self.request.path
 
 
 class DeleteGroupForm(DeleteConfirmationForm):
+
     label = 'Type the group slug (the name used in URLs) to confirm'
     no_match_message = 'The confirmation does not match the group slug'
 
 
-@auth_write
-def delete(request, group_slug):
-    group = request.group
-    if request.method == "POST":
-        form = DeleteGroupForm(request.POST, deletable=group)
-        if form.is_valid():
-            group.delete()
-            return redirect(reverse('home'))
-    else:
-        form = DeleteGroupForm(deletable=group)
-    context = {
-        'group': group,
-        'form': form,
-    }
-    return render(request, 'squad/group_settings/delete.jinja2', context)
+@method_decorator(auth_write, name='dispatch')
+class DeleteGroupView(GroupViewMixin, ExtraFormArgsMixin, FormView):
+
+    template_name = 'squad/group_settings/delete.jinja2'
+    form_class = DeleteGroupForm
+
+    def get_extra_form_kwargs(self):
+        return {'deletable': self.group}
+
+    def form_valid(self, form):
+        self.group.delete()
+        return redirect(reverse('home'))
 
 
 class NewGroupForm(GroupForm):
+
     class Meta(GroupForm.Meta):
         fields = ['slug'] + GroupForm.Meta.fields
 
 
-@login_required
-def new_group(request):
-    if request.method == "POST":
-        form = NewGroupForm(request.POST, instance=Group())
-        if form.is_valid():
-            group = form.save()
-            group.add_admin(request.user)
-            return redirect(reverse('group-settings', args=[group.slug]))
-    else:
-        form = NewGroupForm()
+@method_decorator(login_required, name='dispatch')
+class NewGroupView(CreateView):
 
-    context = {
-        'form': form,
-    }
-    return render(request, 'squad/group_settings/new_group.jinja2', context)
+    template_name = 'squad/group_settings/new_group.jinja2'
+    form_class = NewGroupForm
+
+    def form_valid(self, form):
+        group = form.save()
+        group.add_admin(self.request.user)
+        return redirect(reverse('group-settings', args=[group.slug]))
 
 
 class NewProjectForm(forms.ModelForm):
@@ -89,23 +106,22 @@ class NewProjectForm(forms.ModelForm):
         fields = ['group', 'slug', 'name', 'is_public', 'description']
 
 
-@auth_write
-def new_project(request, group_slug):
-    group = request.group
-    if request.method == "POST":
-        form = NewProjectForm(request.POST, instance=Project(group=group))
-        if form.is_valid():
-            project = form.save()
-            return redirect(reverse('project-settings', args=[group.slug, project.slug]))
-    else:
-        form = NewProjectForm(instance=Project(group=group))
+@method_decorator(auth_write, name='dispatch')
+class NewProjectView(GroupViewMixin, ExtraFormArgsMixin, CreateView):
 
-    context = {'group': group, 'form': form}
-    return render(request, 'squad/group_settings/new_project.jinja2', context)
+    template_name = 'squad/group_settings/new_project.jinja2'
+    form_class = NewProjectForm
+
+    def get_extra_form_kwargs(self):
+        return {'instance': Project(group=self.group)}
+
+    def form_valid(self, form):
+        project = form.save()
+        return redirect(reverse('project-settings', args=[self.group.slug, project.slug]))
 
 
 urls = [
-    url('^$', settings, name='group-settings'),
-    url('^delete/$', delete, name='group-delete'),
-    url('^new-project/$', new_project, name='group-new-project'),
+    url('^$', BaseSettingsView.as_view(), name='group-settings'),
+    url('^delete/$', DeleteGroupView.as_view(), name='group-delete'),
+    url('^new-project/$', NewProjectView.as_view(), name='group-new-project'),
 ]
