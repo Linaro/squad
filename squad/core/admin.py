@@ -8,6 +8,23 @@ from .tasks import postprocess_test_run
 from .tasks.notification import notify_project_status
 
 
+class GroupMemberAdmin(admin.TabularInline):
+    """
+    Handles group members
+    """
+    model = models.GroupMember
+
+    readonly_fields = ['member_since']
+
+
+class GroupAdmin(admin.ModelAdmin):
+    """
+    Handles groups
+    """
+    model = models.Group
+    inlines = [GroupMemberAdmin]
+
+
 class TokenAdmin(admin.ModelAdmin):
     """
     Handles global tokens, i.e. tokens that are not projec-specific.
@@ -193,7 +210,7 @@ class KnownIssueAdmin(admin.ModelAdmin):
     form = KnownIssueAdminForm
 
 
-admin.site.register(models.Group)
+admin.site.register(models.Group, GroupAdmin)
 admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.EmailTemplate, SimpleHistoryAdmin)
 admin.site.register(models.Token, TokenAdmin)

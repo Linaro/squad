@@ -2,23 +2,21 @@ from django.test import TestCase
 from django.contrib.auth.models import AnonymousUser
 
 
-from django.contrib.auth.models import Group as UserGroup, User
+from django.contrib.auth.models import User
 from squad.core.models import Group, Project
 
 
 class ProjectTest(TestCase):
 
     def setUp(self):
-        self.user_group = UserGroup.objects.create(name='mygroup')
         self.user1 = User.objects.create(username='u1')
-        self.user1.groups.add(self.user_group)
 
         self.user2 = User.objects.create(username='u2')
 
         self.admin = User.objects.create(username='admin', is_superuser=True)
 
         self.group = Group.objects.create(slug='mygroup')
-        self.group.user_groups.add(self.user_group)
+        self.group.add_admin(self.user1)
 
         self.public_project = self.group.projects.create(slug='public')
         self.private_project = self.group.projects.create(slug='private', is_public=False)

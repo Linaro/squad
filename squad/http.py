@@ -1,4 +1,5 @@
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from enum import Enum
 from rest_framework.authtoken.models import Token
@@ -10,10 +11,15 @@ from squad.core import models
 class AuthMode(Enum):
     READ = 0
     WRITE = 1
+    SUBMIT = 2
 
 
 def auth_write(func):
     return auth(func, AuthMode.WRITE)
+
+
+def auth_submit(func):
+    return auth(func, AuthMode.SUBMIT)
 
 
 def auth(func, mode=AuthMode.READ):
@@ -40,14 +46,21 @@ def auth(func, mode=AuthMode.READ):
         if not (project.is_public or user.is_authenticated or token):
             raise PermissionDenied()
 
-        if (mode == AuthMode.READ and project.is_public) or project.writable_by(user):
-            # authentication OK, call the original view
-            return func(*args, **kwargs)
-        else:
-            # `401 Authentication needed` on purpose, and not `403 Forbidden`.
-            # If you don't have credentials, you are not allowed to know
-            # whether that given team/project exists at all
+        if not project.accessible_to(user):
+            # PermissionDenied = `401 Authentication needed` on purpose, and
+            # not `403 Forbidden`.  If the project is not accessible to you,
+            # you are not allowed to know whether that given team/project even
+            # exists.
             raise PermissionDenied()
+
+        if mode == AuthMode.SUBMIT and not project.can_submit(user):
+            return HttpResponseForbidden()
+
+        if mode == AuthMode.WRITE and not project.writable_by(user):
+            return HttpResponseForbidden()
+
+        # authentication OK, call the original view
+        return func(*args, **kwargs)
 
     return auth_wrapper
 
