@@ -8,12 +8,13 @@ from django.views.generic.edit import FormView, UpdateView, CreateView
 
 
 from squad.core.models import Group
+from squad.core.models import GroupMember
 from squad.core.models import Project
 from squad.frontend.forms import DeleteConfirmationForm
 from squad.http import auth_write
 
 
-class ExtraFormArgsMixin(object):
+class GroupViewMixin(object):
 
     def get_extra_form_kwargs(self):
         return {}
@@ -23,9 +24,6 @@ class ExtraFormArgsMixin(object):
         kwargs.update(self.get_extra_form_kwargs())
         return kwargs
 
-
-class GroupViewMixin(object):
-
     @property
     def group(self):
         return self.request.group
@@ -33,9 +31,13 @@ class GroupViewMixin(object):
     def get_object(self):
         return self.request.group
 
+    def get_extra_context_data(self):
+        return {}
+
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         context['group'] = self.request.group
+        context.update(self.get_extra_context_data())
         return context
 
 
@@ -63,7 +65,7 @@ class DeleteGroupForm(DeleteConfirmationForm):
 
 
 @method_decorator(auth_write, name='dispatch')
-class DeleteGroupView(GroupViewMixin, ExtraFormArgsMixin, FormView):
+class DeleteGroupView(GroupViewMixin, FormView):
 
     template_name = 'squad/group_settings/delete.jinja2'
     form_class = DeleteGroupForm
@@ -74,6 +76,65 @@ class DeleteGroupView(GroupViewMixin, ExtraFormArgsMixin, FormView):
     def form_valid(self, form):
         self.group.delete()
         return redirect(reverse('home'))
+
+
+class GroupRelationshipForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['group'].widget = forms.HiddenInput()
+        self.fields['group'].disabled = True
+
+
+class GroupMemberForm(GroupRelationshipForm):
+
+    class Meta:
+        model = GroupMember
+        fields = ['group', 'user', 'access']
+
+
+@method_decorator(auth_write, name='dispatch')
+class GroupMembersView(GroupViewMixin, FormView):
+
+    template_name = 'squad/group_settings/members.jinja2'
+    form_class = GroupMemberForm
+
+    def dispatch(self, *args, **kwargs):
+        method = self.request.POST.get('_method', '').lower()
+        if method == 'delete':
+            return self.delete(*args, **kwargs)
+        elif method == 'put':
+            return self.put(*args, **kwargs)
+        else:
+            return super().dispatch(*args, **kwargs)
+
+    def __get_member__(self):
+        member_id = int(self.request.POST['member_id'])
+        return GroupMember.objects.filter(group=self.group).get(pk=member_id)
+
+    def put(self, *args, **kwargs):
+        member = self.__get_member__()
+        member.access = self.request.POST['access']
+        member.full_clean()
+        member.save()
+        return redirect(self.request.path)
+
+    def delete(self, *args, **kwargs):
+        self.__get_member__().delete()
+        return redirect(self.request.path)
+
+    def form_valid(self, form):
+        form.save()
+        return redirect(self.request.path)
+
+    def get_initial(self):
+        return {'group': self.group.id}
+
+    def get_extra_context_data(self):
+        return {
+            'members': GroupMember.objects.filter(group=self.group).prefetch_related('user').all(),
+            'access': GroupMember._meta.get_field('access').choices,
+        }
 
 
 class NewGroupForm(GroupForm):
@@ -94,12 +155,7 @@ class NewGroupView(CreateView):
         return redirect(reverse('group-settings', args=[group.slug]))
 
 
-class NewProjectForm(forms.ModelForm):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['group'].widget = forms.HiddenInput()
-        self.fields['group'].disabled = True
+class NewProjectForm(GroupRelationshipForm):
 
     class Meta:
         model = Project
@@ -107,7 +163,7 @@ class NewProjectForm(forms.ModelForm):
 
 
 @method_decorator(auth_write, name='dispatch')
-class NewProjectView(GroupViewMixin, ExtraFormArgsMixin, CreateView):
+class NewProjectView(GroupViewMixin, CreateView):
 
     template_name = 'squad/group_settings/new_project.jinja2'
     form_class = NewProjectForm
@@ -122,6 +178,7 @@ class NewProjectView(GroupViewMixin, ExtraFormArgsMixin, CreateView):
 
 urls = [
     url('^$', BaseSettingsView.as_view(), name='group-settings'),
+    url('^members/$', GroupMembersView.as_view(), name='group-members'),
     url('^delete/$', DeleteGroupView.as_view(), name='group-delete'),
     url('^new-project/$', NewProjectView.as_view(), name='group-new-project'),
 ]
