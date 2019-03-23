@@ -125,6 +125,7 @@ class GroupMember(models.Model):
     member_since = models.DateField(auto_now_add=True)
 
     class Meta:
+        unique_together = ('group', 'user')
         verbose_name = 'Group member'
         verbose_name_plural = 'Group members'
 
