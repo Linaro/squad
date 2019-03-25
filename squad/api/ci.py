@@ -1,15 +1,16 @@
 from django.http import HttpResponse, HttpResponseBadRequest
+from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from squad.http import auth_write, read_file_upload
+from squad.http import auth_submit, read_file_upload
 from squad.ci.tasks import submit
 from squad.ci.models import Backend, TestJob
 
 
 @require_http_methods(["POST"])
 @csrf_exempt
-@auth_write
+@auth_submit
 def submit_job(request, group_slug, project_slug, version, environment_slug):
     backend_name = request.POST.get('backend')
     if backend_name is None:
@@ -55,7 +56,7 @@ def submit_job(request, group_slug, project_slug, version, environment_slug):
 
 @require_http_methods(["POST"])
 @csrf_exempt
-@auth_write
+@auth_submit
 def watch_job(request, group_slug, project_slug, version, environment_slug):
     backend_name = request.POST.get('backend')
     if backend_name is None:
@@ -94,27 +95,22 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
     return HttpResponse(test_job.id, status=201)
 
 
-def resubmit_job(request, test_job_id):
-    if not (request.user.is_staff or request.user.is_superuser):
-        # don't allow to resubmit
+@require_http_methods(["POST"])
+@csrf_exempt
+def resubmit_job(request, test_job_id, method='resubmit'):
+    testjob = get_object_or_404(TestJob.objects, pk=test_job_id)
+
+    project = testjob.target
+    if not project.can_submit(request.user):
         return HttpResponse(status=401)
-    try:
-        testjob = TestJob.objects.get(pk=test_job_id)
-        testjob.resubmit()
-    except TestJob.DoesNotExist:
-        return HttpResponseBadRequest("requested test job does not exist")
+
+    call = getattr(testjob, method)
+    call()
 
     return HttpResponse(status=201)
 
 
+@require_http_methods(["POST"])
+@csrf_exempt
 def force_resubmit_job(request, test_job_id):
-    if not (request.user.is_staff or request.user.is_superuser):
-        # don't allow to resubmit
-        return HttpResponse(status=401)
-    try:
-        testjob = TestJob.objects.get(pk=test_job_id)
-        testjob.force_resubmit()
-    except TestJob.DoesNotExist:
-        return HttpResponseBadRequest("requested test job does not exist")
-
-    return HttpResponse(status=201)
+    return resubmit_job(request, test_job_id, method='force_resubmit')

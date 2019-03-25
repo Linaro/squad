@@ -9,7 +9,7 @@ export function ResubmitController($scope, $http, $location, $timeout) {
 
         var endpoint = force ? "/api/forceresubmit/" : "/api/resubmit/";
 
-        $http.get(endpoint + test_job_id).then(
+        $http.post(endpoint + test_job_id).then(
             function(response) {
                 $timeout(function() {
                     $scope.loading = false
