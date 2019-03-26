@@ -2,6 +2,7 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from django.test import TestCase
 from test.mock import patch, MagicMock
+import yaml
 
 
 from squad.core import models as core_models
@@ -476,3 +477,19 @@ class TestJobTest(TestCase):
         )
         testjob.resubmit()
         self.assertEqual(1, testjob.resubmitted_count)
+
+    def test_show_definition_hides_secrets(self):
+        definition = "foo: bar\nsecrets:\n  baz: qux\n"
+        testjob = models.TestJob(
+            definition=definition
+        )
+        display = yaml.load(testjob.show_definition)
+        self.assertNotEqual('qux', display['secrets']['baz'])
+
+    def test_show_definition_non_dict(self):
+        definition = "something that doesn't matter"
+        testjob = models.TestJob(
+            definition=definition
+        )
+        display = yaml.load(testjob.show_definition)
+        self.assertEqual(definition, display)
