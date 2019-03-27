@@ -1,0 +1,25 @@
+<h2 class="page-header well">
+    <a class="h2 text-primitive" href="{{group_url(group) }}">{{group.display_name}}</a>
+    {{pagetitle|default("")}}
+</h2>
+<p>
+{{group.description|default("")}}
+</p>
+<ul class="page-header nav nav-pills">
+    {% with url_name=request.resolver_match.url_name %}
+    <li role="presentation" {% if url_name == "group" %}class="active"{% endif %}>
+        <a href="{{group_url(group)}}">Projects</a>
+    </li>
+
+    {% if group.writable_by(user) %}
+    <li role="presentation" {% if "group-settings" in url_name %}class="active"{% endif %}>
+        <a href="{{url("group-settings", args=[group.slug])}}">Group settings</a>
+    </li>
+
+    <li role="presentation" {% if url_name == "group-new-project" %}class="active"{% endif %}>
+        <a href="{{url("group-new-project", args=[group.slug])}}">New project</a>
+    </li>
+    {% endif %}
+    {% endwith %}
+</ul>
+<div>&nbsp;</div>

@@ -1,3 +1,5 @@
+from crispy_forms.helper import FormHelper
+from crispy_forms.utils import render_crispy_form
 from django import template
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -176,3 +178,12 @@ def date(datetime_obj, fmt=None):
         fmt = settings.DATE_FORMAT
 
     return django_date(datetime_obj, fmt)
+
+
+@register_global_function(takes_context=True)
+def crispy(context, form, **options):
+    helper = FormHelper()
+    helper.form_tag = False
+    for option, value in options.items():
+        setattr(helper, option, value)
+    return render_crispy_form(form, helper=helper, context=context)

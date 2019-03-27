@@ -190,6 +190,8 @@ class TestJob(models.Model):
         except yaml.parser.ParserError:
             # in case yaml is not valid, return original string
             return self.definition
+        if not isinstance(yaml_def, dict):
+            return yaml_def
         if 'secrets' in yaml_def.keys():
             # prevent displaying 'secrets' in the web UI
             for key, value in yaml_def['secrets'].items():

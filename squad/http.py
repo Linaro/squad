@@ -26,13 +26,23 @@ def auth(func, mode=AuthMode.READ):
     def auth_wrapper(*args, **kwargs):
         request = args[0]
         group_slug = args[1]
-        project_slug = args[2]
-
         group = get_object_or_404(models.Group, slug=group_slug)
+        request.group = group
+
+        user = request.user
+
+        if len(args) < 3:
+            # no project, authenticate against group only
+            if mode == AuthMode.READ or group.writable_by(user):
+                return func(*args, **kwargs)
+            else:
+                raise PermissionDenied()
+
+        project_slug = args[2]
         project = get_object_or_404(group.projects, slug=project_slug)
+        request.project = project
 
         tokenkey = request.META.get('HTTP_AUTH_TOKEN', None)
-        user = request.user
         token = None
         if tokenkey:
             try:

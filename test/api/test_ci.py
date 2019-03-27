@@ -145,7 +145,7 @@ class CiApiTest(TestCase):
         staff_user.save()
         client = Client()
         client.login(username=staff_user.username, password=staff_user_password)
-        r = client.get('/api/resubmit/%s' % t.pk)
+        r = client.post('/api/resubmit/%s' % t.pk)
         self.assertEqual(201, r.status_code)
         impl.resubmit.assert_called()
         t.refresh_from_db()
@@ -156,7 +156,7 @@ class CiApiTest(TestCase):
             target=self.project,
             can_resubmit=True
         )
-        r = self.client.get('/api/resubmit/%s' % t.pk)
+        r = self.client.post('/api/resubmit/%s' % t.pk)
         self.assertEqual(401, r.status_code)
 
     def test_resubmit_invalid_id(self):
@@ -170,5 +170,5 @@ class CiApiTest(TestCase):
         client = Client()
         client.login(username=staff_user.username, password=staff_user_password)
 
-        r = client.get('/api/resubmit/999')
-        self.assertEqual(400, r.status_code)
+        r = client.post('/api/resubmit/999')
+        self.assertEqual(404, r.status_code)

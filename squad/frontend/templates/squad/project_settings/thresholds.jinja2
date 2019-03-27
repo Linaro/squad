@@ -1,16 +1,12 @@
-{% extends "squad/base.jinja2" %}
+{% extends "squad/project_settings/base.jinja2" %}
 
 {% block styles %}
 <link rel="stylesheet" href="{{static("select2.js/select2.css")}}">
 {% endblock %}
 
-{% block content %}
-{% with pagetitle="» Threshold settings" %}
-{% include "squad/project-nav.jinja2" %}
-{% endwith %}
-<div style='margin-top: 20px'></div>
+{% block settings %}
 <div ng-app="MetricThreshold" ng-controller="MetricThresholdController" ng-init="project={{ project.id }}">
-{% include "squad/_threshold_table.jinja2" %}
+{% include "squad/project_settings/_threshold_table.jinja2" %}
 </div>
 {% endblock %}
 

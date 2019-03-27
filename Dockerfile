@@ -8,6 +8,7 @@ RUN apt-get update && \
         python3-coreapi  \
         python3-django \
         python3-django-cors-headers \
+        python3-django-crispy-forms \
         python3-django-simple-history \
         python3-django-filters \
         python3-djangorestframework \

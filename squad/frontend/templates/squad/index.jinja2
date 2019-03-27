@@ -3,6 +3,12 @@
 {% block content %}
 <h2 class="page-header well">All groups</h2>
 
+{% if user.is_authenticated %}
+<div style='margin-top: 2em; margin-bottom: 2em;'>
+    <a class='btn btn-default' href="{{url("new-group")}}">New group</a>
+</div>
+
+{% endif %}
 <div class='highlight-row'>
 {% for group in groups %}
 <div class="row row-bordered project">
@@ -25,6 +31,5 @@
 </div>
 {% endfor %}
 </div>
-
 
 {% endblock %}

@@ -3,7 +3,6 @@ import json
 from datetime import datetime
 
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 from django.http import HttpResponseBadRequest
 
 
@@ -25,8 +24,7 @@ def export_csv(results):
 
 @auth
 def get(request, group_slug, project_slug):
-    group = get_object_or_404(models.Group, slug=group_slug)
-    project = get_object_or_404(group.projects, slug=project_slug)
+    project = request.project
 
     metrics = request.GET.getlist('metric')
     date_start = request.GET.get('date_start', None)

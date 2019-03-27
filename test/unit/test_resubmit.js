@@ -40,9 +40,9 @@ describe("ResubmitController", function () {
             
             $timeout = $injector.get('$timeout');
             $httpBackend = $injector.get('$httpBackend');
-            $httpBackend.whenGET("/api/resubmit/1").respond(
+            $httpBackend.whenPOST("/api/resubmit/1").respond(
                 200, ["submitted"]);
-            $httpBackend.whenGET("/api/forceresubmit/1").respond(
+            $httpBackend.whenPOST("/api/forceresubmit/1").respond(
                 401, ["error"]);
         }));
 

@@ -1,0 +1,32 @@
+{% extends "squad/user_settings/base.jinja2" %}
+{% block settings %}
+<h1>Personal projects</h1>
+
+{% if user_namespace %}
+
+<div class='alert alert-info'>
+<p>
+Personal projects are enabled for you. You can go to your personal <a
+href="{{group_url(user_namespace)}}"><strong>user namespace</strong></a> to
+manage your personal projects.
+</p>
+<p>
+To remove your user namespace, and consequentially disable personal projects,
+you can access its <a href="{{url('group-delete', args=[user_namespace.slug])}}">Delete group</a> page.
+</p>
+</div>
+
+{% else %}
+
+<p class='alert alert-warning'>
+To be able to create personal projects, you need first to create a <em>user
+namespace</em> for projects.
+</p>
+<form method="POST">
+    {{ csrf_input }}
+    <input class='btn btn-primary' type="submit" value="Create user namespace" />
+</form>
+
+{% endif %}
+
+{% endblock %}

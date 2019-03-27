@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.contrib.auth.models import AnonymousUser
 
@@ -67,3 +68,10 @@ class ProjectTest(TestCase):
     def test_enabled_plugins(self):
         p = Project(enabled_plugins_list=['aaa', 'bbb'])
         self.assertEqual(['aaa', 'bbb'], p.enabled_plugins)
+
+    def test_invalid_slug(self):
+        p = Project(group=self.group, slug='foo/bar')
+        with self.assertRaises(ValidationError):
+            p.full_clean()
+        p.slug = 'foo-bar'
+        p.full_clean()  # it this raises no exception, then we are fine

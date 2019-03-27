@@ -1,0 +1,21 @@
+{% with YES="<td><i class='fa fa-check-circle'></i></td>"|safe %}
+{% with NO="<td></td>"|safe %}
+<table class='table'>
+  <tr>
+    <th>Action</th>
+    <th>Member</th>
+    <th>Result submitter</th>
+    <th>Administrator</th>
+  </tr>
+
+  <tr><td>View non-public projects</td> {{YES}} {{YES}} {{YES}} </tr>
+  <tr><td>Annonate builds</td>          {{NO}}  {{YES}} {{YES}} </tr>
+  <tr><td>Submit new test results</td>  {{NO}}  {{YES}} {{YES}} </tr>
+  <tr><td>Resubmit test jobs</td>       {{NO}}  {{YES}} {{YES}} </tr>
+  <tr><td>Update group settings</td>    {{NO}}  {{NO}}  {{YES}} </tr>
+  <tr><td>Update project settings</td>  {{NO}}  {{NO}}  {{YES}} </tr>
+  <tr><td>Update build settings</td>    {{NO}}  {{NO}}  {{YES}} </tr>
+  </tr>
+</table>
+{% endwith %}
+{% endwith %}

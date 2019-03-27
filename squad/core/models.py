@@ -2,6 +2,7 @@ import json
 import yaml
 from collections import OrderedDict
 from hashlib import sha1
+import re
 
 
 from django.db import models
@@ -27,7 +28,9 @@ from squad.core.plugins import get_plugin_instance
 
 
 slug_pattern = '[a-zA-Z0-9][a-zA-Z0-9_.-]*'
-slug_validator = RegexValidator(regex='^' + slug_pattern)
+slug_validator = RegexValidator(regex='^' + slug_pattern + '$')
+group_slug_pattern = '~?' + slug_pattern
+group_slug_validator = RegexValidator(regex='^' + group_slug_pattern + '$')
 
 
 class GroupManager(models.Manager):
@@ -61,9 +64,10 @@ class DisplayName(object):
 class Group(models.Model, DisplayName):
     objects = GroupManager()
 
-    slug = models.CharField(max_length=100, unique=True, validators=[slug_validator], db_index=True)
-    name = models.CharField(max_length=100, null=True)
-    description = models.TextField(null=True)
+    slug = models.CharField(max_length=100, unique=True, validators=[group_slug_validator], db_index=True)
+    valid_slug_pattern = slug_pattern
+    name = models.CharField(max_length=100, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
     members = models.ManyToManyField(User, through='GroupMember')
 
     def add_user(self, user, access=None):
@@ -94,6 +98,17 @@ class Group(models.Model, DisplayName):
     def __str__(self):
         return self.slug
 
+    def full_clean(self, **kwargs):
+        errors = {}
+        try:
+            super().full_clean(**kwargs)
+        except ValidationError as e:
+            errors = e.update_error_dict(errors)
+        if self.slug and not re.match(self.valid_slug_pattern, self.slug):
+            errors['slug'] = ['Enter a valid value.']
+        if errors:
+            raise ValidationError(errors)
+
     class Meta:
         ordering = ['slug']
 
@@ -110,8 +125,46 @@ class GroupMember(models.Model):
     member_since = models.DateField(auto_now_add=True)
 
     class Meta:
+        unique_together = ('group', 'user')
         verbose_name = 'Group member'
         verbose_name_plural = 'Group members'
+
+
+class UserNamespaceManager(models.Manager):
+
+    @transaction.atomic
+    def create_for(self, user):
+        slug = '~' + user.username
+        ns = self.create(slug=slug)
+        ns.add_admin(user)
+        return ns
+
+    def get_queryset(self):
+        return super().get_queryset().filter(slug__startswith='~')
+
+    def get_for(self, user):
+        return self.get(slug='~' + user.username)
+
+    def get_or_create_for(self, user):
+        try:
+            return self.get_for(user)
+        except self.model.DoesNotExist:
+            return self.create_for(user)
+
+
+class UserNamespace(Group):
+
+    """
+    A user namespace is just like a regular group. The only difference is that,
+    when created with UserNamespace.objects.create_for, it sets up the given
+    user as owner of the group, and adds `~` to the front of the group slug.
+    """
+
+    objects = UserNamespaceManager()
+    valid_slug_pattern = group_slug_pattern
+
+    class Meta:
+        proxy = True
 
 
 class ProjectManager(models.Manager):
@@ -148,7 +201,7 @@ class Project(models.Model, DisplayName):
 
     group = models.ForeignKey(Group, related_name='projects')
     slug = models.CharField(max_length=100, validators=[slug_validator], db_index=True)
-    name = models.CharField(max_length=100, null=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
     is_public = models.BooleanField(default=True)
     html_mail = models.BooleanField(default=True)
     moderate_notifications = models.BooleanField(default=False)
@@ -157,6 +210,7 @@ class Project(models.Model, DisplayName):
     important_metadata_keys = models.TextField(null=True, blank=True)
     enabled_plugins_list = PluginListField(
         null=True,
+        blank=True,
         features=[
             Plugin.postprocess_testrun,
             Plugin.postprocess_testjob,
