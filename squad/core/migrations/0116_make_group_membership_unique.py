@@ -6,6 +6,24 @@ from django.conf import settings
 from django.db import migrations
 
 
+def remove_duplicate_memberships(apps, schema_editor):
+    GroupMember = apps.get_model('core', 'GroupMember')
+    hierarchy = {'admin': 3, 'submitter': 2, 'member': 1}
+    keep = {}
+    for membership in GroupMember.objects.all().iterator():
+        key = (membership.group, membership.user)
+        if key in keep:
+            current = hierarchy[membership.access]
+            previous = hierarchy[keep[key].access]
+            if current < previous:
+                membership.delete()
+            else:
+                keep[key].delete()
+                keep[key] = membership
+        else:
+            keep[(membership.group, membership.user)] = membership
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -14,6 +32,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(
+            remove_duplicate_memberships,
+            reverse_code=migrations.RunPython.noop,
+        ),
         migrations.AlterUniqueTogether(
             name='groupmember',
             unique_together=set([('group', 'user')]),
