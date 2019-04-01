@@ -88,6 +88,10 @@ class GroupRelationshipForm(forms.ModelForm):
 
 class GroupMemberForm(GroupRelationshipForm):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['user'].queryset = self.fields['user'].queryset.order_by('username')
+
     class Meta:
         model = GroupMember
         fields = ['group', 'user', 'access']
