@@ -13,7 +13,6 @@ class ApiDataTest(TestCase):
     def setUp(self):
         self.group = models.Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
-        self.project.tokens.create(key='thekey')
         self.client = APIClient('thekey')
 
     def receive(self, datestr, metrics={}, tests={}):

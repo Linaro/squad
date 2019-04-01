@@ -18,7 +18,7 @@ from django.core.validators import RegexValidator, MaxValueValidator, MinValueVa
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
 
-from squad.core.utils import random_token, parse_name, join_name, yaml_validator, jinja2_validator
+from squad.core.utils import parse_name, join_name, yaml_validator, jinja2_validator
 from squad.core.comparison import TestComparison
 from squad.core.statistics import geomean
 from squad.core.plugins import Plugin
@@ -277,20 +277,6 @@ class Project(models.Model, DisplayName):
     @property
     def enabled_plugins(self):
         return self.enabled_plugins_list
-
-
-class Token(models.Model):
-    project = models.ForeignKey(Project, related_name='tokens', null=True)
-    key = models.CharField(max_length=64, unique=True)
-    description = models.CharField(max_length=100)
-
-    def save(self, **kwargs):
-        if not self.key:
-            self.key = random_token(64)
-        super(Token, self).save(**kwargs)
-
-    def __str__(self):
-        return self.description
 
 
 class PatchSource(models.Model):

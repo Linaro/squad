@@ -25,34 +25,12 @@ class GroupAdmin(admin.ModelAdmin):
     inlines = [GroupMemberAdmin]
 
 
-class TokenAdmin(admin.ModelAdmin):
-    """
-    Handles global tokens, i.e. tokens that are not projec-specific.
-    """
-    model = models.Token
-    fields = ['description', 'key']
-    readonly_fields = ['key']
-
-    def get_queryset(self, request):
-        return super(TokenAdmin, self).get_queryset(request).filter(project=None)
-
-
 class EnvironmentInline(admin.StackedInline):
     """
     Handles environments when editing a project.
     """
     model = models.Environment
     fields = ['slug', 'name', 'description', 'expected_test_runs']
-    extra = 0
-
-
-class TokenInline(admin.StackedInline):
-    """
-    Handles project-specific tokens inline when editing the project.
-    """
-    model = models.Token
-    fields = ['description', 'key']
-    readonly_fields = ['key']
     extra = 0
 
 
@@ -71,7 +49,7 @@ class AdminSubscriptionInline(admin.StackedInline):
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'is_public', 'moderate_notifications', 'custom_email_template']
     list_filter = ['group', 'is_public', 'moderate_notifications', 'custom_email_template']
-    inlines = [EnvironmentInline, TokenInline, SubscriptionInline, AdminSubscriptionInline]
+    inlines = [EnvironmentInline, SubscriptionInline, AdminSubscriptionInline]
 
 
 def __resend__notification__(queryset, approve):
@@ -213,7 +191,6 @@ class KnownIssueAdmin(admin.ModelAdmin):
 admin.site.register(models.Group, GroupAdmin)
 admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.EmailTemplate, SimpleHistoryAdmin)
-admin.site.register(models.Token, TokenAdmin)
 admin.site.register(models.ProjectStatus, ProjectStatusAdmin)
 admin.site.register(models.Build, BuildAdmin)
 admin.site.register(models.SuiteMetadata, SuiteMetadataAdmin)
