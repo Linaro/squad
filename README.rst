@@ -13,7 +13,7 @@ documentation online`_
 License
 -------
 
-Copyright © 2016-2017 Linaro Limited
+Copyright © 2016-2019 Linaro Limited
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
