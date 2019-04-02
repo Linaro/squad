@@ -66,6 +66,12 @@
   font-weight: bold;
 }
 
+.project.archived {
+  display: none;
+  background: #eeeeec;
+  color: #888a85;
+}
+
 thead {
   background: white
 }

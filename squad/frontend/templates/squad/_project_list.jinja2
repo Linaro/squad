@@ -1,12 +1,30 @@
+{% if has_archived_projects %}
+<div>
+    <span class="archived">
+    Displaying only non-archived projects.
+    <a href="#" onclick="$('.archived').toggle(); return false">Display archived and non-archived projects</a>.
+    </span>
+    <span class="archived" style='display: none'>
+    Displaying archived and non-archived projects.
+    <a href="#" onclick="$('.archived').toggle(); return false">Display only non-archived projects</a>.
+    </span>
+    <br/>
+    &nbsp;
+</div>
+{% endif %}
+
 <div class='highlight-row'>
 {% for project in projects %}
-<div class="row row-bordered project">
+<div class="row row-bordered project {% if project.is_archived %}archived{% endif %}">
     {% with status=project.status %}
     <a href="{{project_url(project)}}">
     <div class="col-md-4 col-sm-4">
         <strong>
             {% if not hide_group %}{{project.group.display_name}}/{% endif %}{{project.display_name}}
         </strong>
+        {% if project.is_archived %}
+        <em>(archived)</em>
+        {% endif %}
         {% if project.description%}
         <div class='description-{{project.id}}'>
             {{project.description|urlize|truncatechars_html(50)}}
