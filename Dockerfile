@@ -1,8 +1,12 @@
-FROM debian:buster
+FROM debian:buster-slim
 
-RUN apt-get update && \
-    apt-get install -qy auto-apt-proxy && \
-    apt-get install -qy \
+WORKDIR /app
+COPY . ./
+
+RUN apt-get update -q=2 && \
+    apt-get install -q=2 --no-install-recommends auto-apt-proxy && \
+    apt-get install -q=2 --no-install-recommends \
+        iproute2 \
         python3 \
         python3-celery \
         python3-coreapi  \
@@ -26,20 +30,15 @@ RUN apt-get update && \
         python3-svgwrite \
         python3-whitenoise \
         wget \
-        unzip
+        unzip \
+    && \
+    ln -sfT container_settings.py /app/squad/local_settings.py && \
+    python3 -m squad.frontend && \
+    ./manage.py collectstatic --noinput --verbosity 0 && \
+    python3 setup.py develop && \
+    useradd --create-home squad && \
+    mkdir -m 0755 /app/tmp && chown squad:squad /app/tmp
 
-WORKDIR /app
-COPY . ./
-
-RUN ln -sfT container_settings.py /app/squad/local_settings.py
-
-# downloads if needed and prepares static assets
-RUN python3 -m squad.frontend
-RUN ./manage.py collectstatic --noinput --verbosity 0
-RUN cd /app && python3 setup.py develop
-
-RUN useradd --create-home squad
-RUN mkdir -m 0755 /app/tmp && chown squad:squad /app/tmp
 USER squad
 ENV SQUAD_STATIC_DIR /app/static
 ENV ENV production
