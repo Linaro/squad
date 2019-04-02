@@ -35,7 +35,7 @@ Backend.objects.get_or_create(
 )
 EOF
 
-export AUTH_TOKEN=$(./manage.py get-token "$TEAM/$PROJECT")
+export AUTH_TOKEN=$(./manage.py get_token "$TEAM/$PROJECT")
 
 parallel -i curl --fail "http://localhost:8000/api/submitjob/$TEAM/$PROJECT/$BUILD/$ENVIRONMENT" \
   --fail \
