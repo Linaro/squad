@@ -17,6 +17,7 @@
 /static
 /.tests
 __pycache__
+*.mo
 *.pyc
 *.swp
 /tmp

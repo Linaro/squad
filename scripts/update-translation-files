@@ -1,0 +1,40 @@
+#!/bin/sh
+
+set -eu
+
+LANGUAGES=$(ls -1d squad/*/locale/*/LC_MESSAGES | cut -d / -f 4 | sort -u)
+MODULES='frontend core'
+
+for app in $MODULES; do
+
+  for language in $LANGUAGES; do
+    mkdir -p squad/${app}/locale/${language}/LC_MESSAGES
+  done
+
+  # extract messages
+  pot=squad/$app/locale/django.pot
+  pybabel extract \
+    --mapping-file babel.cfg \
+    --project squad.$app \
+    --output $pot \
+    $(find squad/$app -name '*.py' -or -name '*.jinja2' | grep -v squad/frontend/static)
+
+  if [ "$(msgattrib "${pot}" | wc -l)" -eq 0 ]; then
+    rm -f "${pot}"
+    continue
+  fi
+
+  # merge with existing translations
+  for language in $LANGUAGES; do
+    po=squad/${app}/locale/${language}/LC_MESSAGES/django.po
+    if [ -f "$po" ]; then
+      cp $po ${po}.old
+      msgmerge --output "${po}" "${po}.old" squad/$app/locale/django.pot
+      rm -f "${po}.old"
+    fi
+  done
+
+done
+
+./manage.py compilemessages
+find squad/*/locale -empty -delete
