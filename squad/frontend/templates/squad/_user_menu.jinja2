@@ -7,18 +7,18 @@
         <span class="caret"></span>
       </a>
       <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-        <li><div>Signed in as <strong>{{user.username}}</strong></div></li> <!-- FIXME -->
+        <li><div>{{ (_('Signed in as %s') % '<strong>' + user.username + '</strong>') | safe }}</div></li> <!-- FIXME -->
         {% if user.is_staff %}
           <li role="separator" class="divider"></li>
-          <li><a href="/admin/">Administration</a></li>
+          <li><a href="/admin/">{{ _('Administration') }}</a></li>
         {% endif %}
         <li role="separator" class="divider"></li>
-        <li><a href="{{url('settings-home')}}">Settings</a></li>
-        <li><a href="/logout">Sign out</a></li>
+        <li><a href="{{url('settings-home')}}">{{ _('Settings')}}</a></li>
+        <li><a href="/logout">{{ _('Sign out') }}</a></li>
       </ul>
   </li>
 {% else %}
   <li>
-    <a href="/login/?next={{request.path}}"><i class='fa fa-sign-in'></i> Log in</a>
+    <a href="/login/?next={{request.path}}"><i class='fa fa-sign-in'></i> {{ _('Log in') }}</a>
   </li>
 {% endif %}

@@ -1,0 +1,100 @@
+# Translations template for squad.frontend.
+# Copyright (C) 2019 ORGANIZATION
+# This file is distributed under the same license as the squad.frontend
+# project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: squad.frontend VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2019-04-03 18:41+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.6.0\n"
+
+#: squad/frontend/templates/squad/login.jinja2:6
+msgid ""
+"\n"
+"Please correct the error below.\n"
+msgid_plural ""
+"\n"
+"Please correct the errors below.\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: squad/frontend/templates/squad/_user_menu.jinja2:22
+#: squad/frontend/templates/squad/login.jinja2:25
+#: squad/frontend/templates/squad/login.jinja2:53
+msgid "Log in"
+msgstr ""
+
+#: squad/frontend/templates/squad/login.jinja2:49
+msgid "Forgotten your password or username?"
+msgstr ""
+
+#: squad/frontend/templates/squad/base.jinja2:42
+msgid "Explore"
+msgstr ""
+
+#: squad/frontend/templates/squad/base.jinja2:43
+msgid "Compare"
+msgstr ""
+
+#: squad/frontend/templates/squad/base.jinja2:44
+msgid "Compare Test"
+msgstr ""
+
+#: squad/frontend/templates/squad/base.jinja2:45
+msgid "API"
+msgstr ""
+
+#: squad/frontend/templates/squad/base.jinja2:64
+msgid ""
+"SQUAD is free software, distributed under the terms of <a "
+"href=\"https://www.gnu.org/licenses/agpl-3.0.html\">GNU Affero General "
+"Public License, version 3</a> or (at your option) any later version."
+msgstr ""
+
+#: squad/frontend/templates/squad/base.jinja2:65
+msgid ""
+"<a href=\"https://github.com/Linaro/squad\">Source code</a> and <a "
+"href=\"https://github.com/Linaro/squad/issues\">Issue tracker</a> are "
+"available on Github."
+msgstr ""
+
+#: squad/frontend/templates/squad/index.jinja2:4
+msgid "All groups"
+msgstr ""
+
+#: squad/frontend/templates/squad/index.jinja2:8
+msgid "New group"
+msgstr ""
+
+#: squad/frontend/templates/squad/index.jinja2:27
+#, python-format
+msgid "%s projects"
+msgstr ""
+
+#: squad/frontend/templates/squad/_user_menu.jinja2:10
+#, python-format
+msgid "Signed in as %s"
+msgstr ""
+
+#: squad/frontend/templates/squad/_user_menu.jinja2:13
+msgid "Administration"
+msgstr ""
+
+#: squad/frontend/templates/squad/_user_menu.jinja2:16
+msgid "Settings"
+msgstr ""
+
+#: squad/frontend/templates/squad/_user_menu.jinja2:17
+msgid "Sign out"
+msgstr ""
+
