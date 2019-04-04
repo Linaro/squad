@@ -1,11 +1,11 @@
 {% extends "squad/base.jinja2" %}
 
 {% block content %}
-<h2 class="page-header well">All groups</h2>
+<h2 class="page-header well">{{ _('All groups') }}</h2>
 
 {% if user.is_authenticated %}
 <div style='margin-top: 2em; margin-bottom: 2em;'>
-    <a class='btn btn-default' href="{{url("new-group")}}">New group</a>
+    <a class='btn btn-default' href="{{url("new-group")}}">{{ _('New group') }}</a>
 </div>
 
 {% endif %}
@@ -24,8 +24,7 @@
         </p>
     </div>
     <div class="col-md-3 col-sm-3">
-        <span class="badge" data-toggle="tooltip" data-placement="top" title="">{{group.project_count}}</span>
-        projects
+        {{ (_('%s projects') % ('<span class="badge" data-toggle="tooltip" data-placement="top" title="">%d</span>' % group.project_count)) | safe}}
     </div>
     </a>
 </div>

@@ -14,17 +14,18 @@ addons:
 services:
   - docker
 env:
-  - SCRIPT=./scripts/travis TESTENV=travis-postgresql DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432
-  - SCRIPT=./scripts/travis TESTENV=travis-sqlite3 DATABASE=
+  - SCRIPT=./scripts/travis TESTENV=travis-postgresql DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432 INSTALLPIP=yes
+  - SCRIPT=./scripts/travis TESTENV=travis-sqlite3 DATABASE= INSTALLPIP=yes
   - SCRIPT="./scripts/check-ignore"
   - SCRIPT="./scripts/test-docker"
+  - SCRIPT="./manage.py compilemessages" INSTALLPIP=yes
 
 before_install:
   - if test -n "$DATABASE"; then ./scripts/travis-postgresql; fi
 
 install:
   - |
-    if test "$SCRIPT" = "./scripts/travis"; then
+    if test "$INSTALLPIP" = "yes"; then
       pip install --upgrade setuptools
       pip install -r requirements-dev.txt
       pip freeze

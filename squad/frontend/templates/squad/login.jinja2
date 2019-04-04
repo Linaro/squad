@@ -22,7 +22,7 @@ Please correct the errors below.
 <div class='col-md-4 col-md-offset-4'>
   <div class='panel panel-default'>
     <div class='panel-heading'>
-      <h3 class="panel-title">{% trans %} Log in {% endtrans %}</h3>
+      <h3 class="panel-title">{% trans %}Log in{% endtrans %}</h3>
     </div>
     <div class='panel-body'>
       {% autoescape off %}
@@ -46,11 +46,11 @@ Please correct the errors below.
         {% set password_reset_url = url('admin_password_reset') %}
         {% if password_reset_url %}
         <div class="password-reset-link">
-          <a href="{{ password_reset_url }}">{% trans %} Forgotten your password or username? {% endtrans %}</a>
+          <a href="{{ password_reset_url }}">{% trans %}Forgotten your password or username?{% endtrans %}</a>
         </div>
         {% endif %}
         <div class="form-group">
-          <input class='btn btn-default' type="submit" value="{% trans %} Log in {% endtrans %}" />
+          <input class='btn btn-default' type="submit" value="{% trans %}Log in{% endtrans %}" />
         </div>
       </form>
     </div>
