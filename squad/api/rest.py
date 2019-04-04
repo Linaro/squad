@@ -240,6 +240,9 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
     )
     id = serializers.IntegerField(read_only=True)
     full_name = serializers.CharField(read_only=True)
+    enabled_plugins_list = serializers.ListField(
+        child=serializers.CharField()
+    )
 
     class Meta:
         model = Project
