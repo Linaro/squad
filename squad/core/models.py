@@ -239,6 +239,11 @@ class Project(models.Model, DisplayName):
         validators=[yaml_validator]
     )
 
+    is_archived = models.BooleanField(
+        default=False,
+        help_text='Makes the project hidden from the group page by default',
+    )
+
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
         self.__status__ = None

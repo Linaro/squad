@@ -24,7 +24,7 @@ checkdep curl
 checkdep jq
 checkdep openssl
 
-export AUTH_TOKEN=$(./manage.py get-token "$TEAM/$PROJECT")
+export AUTH_TOKEN=$(./manage.py get_token "$TEAM/$PROJECT")
 
 rand() {
   local max="$1"

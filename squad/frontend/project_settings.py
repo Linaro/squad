@@ -12,7 +12,7 @@ from squad.frontend.queries import get_metrics_list
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        fields = ['name', 'is_public', 'description']
+        fields = ['name', 'is_public', 'is_archived', 'description']
 
 
 @auth_write

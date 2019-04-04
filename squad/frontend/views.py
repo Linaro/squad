@@ -61,9 +61,12 @@ def home(request):
 
 def group_home(request, group_slug):
     group = get_object_or_404(Group, slug=group_slug)
+    projects = group.projects.accessible_to(request.user)
+    archived_projects = [p for p in projects if p.is_archived]
     context = {
         'group': group,
-        'projects': group.projects.accessible_to(request.user),
+        'projects': projects,
+        'has_archived_projects': len(archived_projects) > 0,
     }
     return render(request, 'squad/group.jinja2', context)
 
