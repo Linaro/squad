@@ -18,5 +18,6 @@ else
     if ! diff -u .dockerignore "$newdockerignore"; then
         echo
         echo "# .dockerignore is out of date! Re-run this script as \`$0 --update\`"
+        exit 1
     fi
 fi

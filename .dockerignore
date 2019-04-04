@@ -8,6 +8,7 @@ squad/local_settings.py.off
 static
 .tests
 **/__pycache__
+**/*.mo
 **/*.pyc
 **/*.swp
 tmp
