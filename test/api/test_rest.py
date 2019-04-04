@@ -1,16 +1,17 @@
 import datetime
 import json
 from test.mock import patch
-from django.test import TestCase
 from django.utils import timezone
 from squad.core import models
 from squad.core.tasks import UpdateProjectStatus
 from squad.ci import models as ci_models
+from rest_framework.authtoken.models import Token
 from rest_framework.reverse import reverse
+from rest_framework.test import APITestCase
 from test.performance import count_queries
 
 
-class RestApiTest(TestCase):
+class RestApiTest(APITestCase):
 
     def setUp(self):
         self.group = models.Group.objects.create(slug='mygroup')
@@ -121,6 +122,14 @@ class RestApiTest(TestCase):
         else:
             return text
 
+    def post(self, url, data):
+        user = models.User.objects.create(username='u', is_superuser=True)
+        self.group.add_admin(user)
+        token = Token.objects.create(user=user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = self.client.post(url, data)
+        return response
+
     def test_root(self):
         self.hit('/api/')
 
@@ -131,6 +140,32 @@ class RestApiTest(TestCase):
     def test_project_builds(self):
         data = self.hit('/api/projects/%d/builds/' % self.project.id)
         self.assertEqual(3, len(data['results']))
+
+    def test_create_project_with_enabled_plugin_list_1_element(self):
+        response = self.post(
+            '/api/projects/',
+            {
+                'group': "http://testserver/api/groups/%d/" % self.group.id,
+                'slug': 'newproject',
+                'enabled_plugins_list': ['foo'],
+            }
+        )
+        self.assertEqual(201, response.status_code)
+        project = self.hit('/api/projects/?slug=newproject')['results'][0]
+        self.assertEqual(['foo'], project['enabled_plugins_list'])
+
+    def test_create_project_with_enabled_plugin_list_2_elements(self):
+        response = self.post(
+            '/api/projects/',
+            {
+                'group': "http://testserver/api/groups/%d/" % self.group.id,
+                'slug': 'newproject',
+                'enabled_plugins_list': ['foo', 'bar'],
+            }
+        )
+        self.assertEqual(201, response.status_code)
+        project = self.hit('/api/projects/?slug=newproject')['results'][0]
+        self.assertEqual(['foo', 'bar'], project['enabled_plugins_list'])
 
     def test_builds(self):
         data = self.hit('/api/builds/')
