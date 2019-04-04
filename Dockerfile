@@ -3,6 +3,7 @@ FROM debian:buster-slim
 RUN apt-get update -q=2 && \
     apt-get install -q=2 --no-install-recommends iproute2 auto-apt-proxy && \
     apt-get install -q=2 --no-install-recommends \
+        gettext \
         python3 \
         python3-celery \
         python3-coreapi  \
@@ -34,6 +35,7 @@ COPY . ./
 RUN ln -sfT container_settings.py /app/squad/local_settings.py && \
     python3 -m squad.frontend && \
     ./manage.py collectstatic --noinput --verbosity 0 && \
+    ./manage.py compilemessages && \
     python3 setup.py develop && \
     useradd --create-home squad && \
     mkdir -m 0755 /app/tmp && chown squad:squad /app/tmp
