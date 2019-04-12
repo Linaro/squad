@@ -186,7 +186,7 @@ class TestJob(models.Model):
     def show_definition(self):
         try:
             # we'll loose comments in web UI
-            yaml_def = yaml.load(self.definition)
+            yaml_def = yaml.safe_load(self.definition)
         except yaml.parser.ParserError:
             # in case yaml is not valid, return original string
             return self.definition

@@ -172,7 +172,14 @@ class RestApiTest(APITestCase):
         self.assertEqual(3, len(data['results']))
 
     def test_builds_status(self):
-        self.hit('/api/builds/%d/status/' % self.build.id)
+        self.build2.test_jobs.all().delete()
+        self.build3.test_jobs.all().delete()
+        UpdateProjectStatus()(self.testrun2)
+        UpdateProjectStatus()(self.testrun3)
+
+        data = self.hit('/api/builds/%d/status/' % self.build3.id)
+        self.assertIn('foo/test2', data['regressions'])
+        self.assertIn('foo/test1', data['fixes'])
 
     def test_builds_email_missing_status(self):
         # this should not happen normally, but let's test it anyway

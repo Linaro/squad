@@ -483,7 +483,7 @@ class TestJobTest(TestCase):
         testjob = models.TestJob(
             definition=definition
         )
-        display = yaml.load(testjob.show_definition)
+        display = yaml.safe_load(testjob.show_definition)
         self.assertNotEqual('qux', display['secrets']['baz'])
 
     def test_show_definition_non_dict(self):
@@ -491,5 +491,5 @@ class TestJobTest(TestCase):
         testjob = models.TestJob(
             definition=definition
         )
-        display = yaml.load(testjob.show_definition)
+        display = yaml.safe_load(testjob.show_definition)
         self.assertEqual(definition, display)

@@ -1,5 +1,3 @@
-import yaml
-
 from django.utils import timezone
 from django.test import TestCase
 from dateutil.relativedelta import relativedelta
@@ -282,7 +280,7 @@ class ProjectStatusTest(TestCase):
         self.assertEqual(thresholds[0][1].result, 3)
 
     def test_last_build_comparison(self):
-        # Test that the build that we compare agains is truly the last one
+        # Test that the build that we compare against is truly the last one
         # time wise.
         build1 = self.create_build('1', datetime=h(10))
         test_run1 = build1.test_runs.first()
@@ -302,6 +300,6 @@ class ProjectStatusTest(TestCase):
         test_run3.tests.create(name='bar', suite=self.suite, result=True)
         status3 = ProjectStatus.create_or_update(build3)
 
-        fixes3 = yaml.load(status3.fixes)
+        fixes3 = status3.get_fixes()
         self.assertEqual(len(fixes3['theenvironment']), 1)
         self.assertEqual(fixes3['theenvironment'][0], 'foo')

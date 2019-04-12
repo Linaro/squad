@@ -991,7 +991,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
 
     def __get_yaml_field__(self, field_value):
         if field_value is not None:
-            return yaml.load(field_value)
+            return yaml.load(field_value, Loader=yaml.Loader)
         return {}
 
     def get_regressions(self):
