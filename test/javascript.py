@@ -7,7 +7,10 @@ karma = os.path.join(os.path.dirname(__file__), '../node_modules/.bin/karma')
 
 
 def javascript_tests():
-    if os.path.exists(karma):
+    if not shutil.which('nodejs'):
+        print("W: nodejs not available, skipping javascript tests")
+        return 0
+    elif os.path.exists(karma):
         chrome_exec = shutil.which('chromium') or shutil.which('chromium-browser')
         if chrome_exec:
             os.environ["CHROME_BIN"] = chrome_exec
