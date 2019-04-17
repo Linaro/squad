@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 from celery.schedules import crontab
+from django.conf import global_settings
 from email.utils import parseaddr
+from glob import glob
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -173,7 +175,14 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en'
+
+__local_languages__ = set([LANGUAGE_CODE])
+for f in glob('%s/squad/*/locale/*/LC_MESSAGES' % BASE_DIR):
+    lang = f.split('/')[-2]
+    __local_languages__.add(lang.replace('_', '-').lower())
+
+LANGUAGES = [e for e in global_settings.LANGUAGES if e[0] in __local_languages__]
 
 TIME_ZONE = 'UTC'
 
