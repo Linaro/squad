@@ -11,11 +11,9 @@ mkdir -p "$datadir"
 dockerfile="$datadir"/../Dockerfile.dev
 (
   sed -e '1,/WORKDIR/!d' "$basedir"/Dockerfile
-  echo "COPY requirements-dev.txt /srv"
-  echo "RUN pip3 install -r /srv/requirements-dev.txt"
-  echo 'RUN apt-get install -qy snakefood'
-  echo "RUN groupadd -g $(id -g) $(id -gn)"
-  echo "RUN useradd -m -u $(id -u) -g $(id -g) -s /bin/bash ${USER}"
+  echo 'RUN apt-get install -q2 snakefood flake8 && \'
+  echo "    groupadd -g $(id -g) $(id -gn) && \\"
+  echo "    useradd -m -u $(id -u) -g $(id -g) -s /bin/bash ${USER}"
   echo "USER ${USER}"
   echo 'CMD sh -c "./manage.py test && ./manage.py migrate && ./manage.py runserver 0.0.0.0:8000"'
 ) > "$dockerfile"
