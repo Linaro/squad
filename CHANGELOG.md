@@ -1,3 +1,41 @@
+# 0.63
+
+* api:
+  * Fix api/data call date arguments
+  * avoid crash on delayed reports with empty error message
+  * fix serialization of `Project.enabled_plugins_list`
+* ci:
+  * lava: compose boot test identifier from `job_name`, i.e. instead of just
+    "boot", the boot tests results from lava will be named
+    "boot-${device-type}"
+* core:
+  * add 'users' management command
+  * group membership is now represented explicitly, and there are three access levels:
+    * members (can see private project)
+    * result submitters (can submit test results)
+    * admins (can change anything in the project)
+  * drop obsolete Token model
+  * Add support for archiving projects (Archived projects are hidden by default
+    from from the group page)
+* docker: reduce image size
+* frontend:
+  * Add build settings tab
+  * Add group and project self service interfaces. it is now possible for
+    regular users to:
+    - Create new groups (authenticated users only)
+    - Create users namespaces (groups in the format "~${username}"), to host
+      personal projects
+    - On groups where one is an admin:
+      - Edit group setttings
+      - Delete the group
+      - Create new projects
+    - On projects where one is a admin:
+      - Edit project settings
+      - Delete the project
+  * mark strings that compose the home page as translatable
+* i18n: add initial infrastructure
+* mail: add bulk mail headers to outgoing mail to avoid autoreplied
+
 # 0.62.1
 
 This release has no functional changes. It just fixes the artifacts published
