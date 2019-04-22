@@ -1,53 +1,14 @@
 {% extends "squad/base.jinja2" %}
 
 {% block content %}
-<div ng-app='Build'>
 {% include "squad/build-nav.jinja2" %}
 
   <h2>Build settings</h2>
 
-  <div ng-controller="BuildSettingsController">
-    <form id="build_settings_form" ng-submit="updateBuild('{{ build.id }}')">
-      {% set is_disabled = 'disabled' if not project.writable_by(user) else '' %}
-      <div class="form-group">
-        <div class="form-check form-check-inline">
-          <label class="form-check-label">
-            <input ng-model="keep_data" class="form-check-input" type="checkbox" {{ is_disabled }}> Keep data
-          </label>
-        </div>
-        <small id="keep_data_help" class="form-text text-muted">
-          {{ build.keep_data_help_text }}
-        </small>
-      </div>
-      {% if not is_disabled %}
-      {% raw %}
-      <div class="container">
-        <div class="row">
-          <div class="col-md-1" style="padding-left: 0px;">
-            <button type="submit" class="btn btn-primary" ng-disabled="!form_changed" title="{{ form_changed ? '' : 'Button becomes available on form change' }}">Save</button>
-          </div>
-          <div class="col-md-5">
-            <div id="build-settings-alert" class="alert alert-{{ alert_type }} alert-dismissible" role="alert" style="padding: 6px; padding-left: 10px; padding-right: 35px; margin: 0">
-              {{ alert_message }}
-            </div>
-          </div>
-        </div>
-      </div>
-      {% endraw %}
-      {% endif %}
-    </form>
-  </div>
+  <form method="POST">
+    {{crispy(form)}}
+    <input type="submit" class="btn btn-primary" value="Save"/>
+  </form>
 
 </div>
 {% endblock %}
-
-{% block javascript %}
-<script type="text/javascript">
-build = {
-    "id": {{ build.id }},
-    "keep_data": {{ 'true' if build.keep_data else 'false' }}
-}
-</script>
-<script type="module" src='{{static("squad/build.js")}}'></script>
-{% endblock %}
-
