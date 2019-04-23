@@ -55,7 +55,7 @@
     {% if project.writable_by(user) %}
     <li role="presentation" {% if url_name == 'build_settings' %}class="active"{% endif %}>
         <a href="{{build_section_url(build, 'build_settings')}}">
-            Settings
+            Build settings
         </a>
     </li>
     {% endif %}
