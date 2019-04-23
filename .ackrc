@@ -1,0 +1,10 @@
+--ignore-dir=squad/frontend/static/angularjs
+--ignore-dir=squad/frontend/static/bootstrap
+--ignore-dir=squad/frontend/static/font-awesome
+--ignore-dir=squad/frontend/static/lodash.js
+--ignore-dir=squad/frontend/static/chartjs
+--ignore-dir=squad/frontend/static/jquery.js
+--ignore-dir=squad/frontend/static/floatThread
+--ignore-dir=squad/frontend/static/select2.js/
+--ignore-dir=squad/frontend/static/download.status
+--ignore-dir=static
