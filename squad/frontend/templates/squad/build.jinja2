@@ -73,7 +73,7 @@
                             </tr>
                         {% for entry in entries %}
                             {% for status in entry.statuses %}
-			    <tr id='details-row-{{status.id}}' ng-show='details_visible["details-{{suite.id}}"]''>
+			    <tr id='details-row-{{status.id}}' ng-show='details_visible["details-{{suite.id}}"]'>
                                     <td>
 					<a href="{{url("testrun", args=[project.group.slug, project.slug, build.version, status.test_run.job_id])}}">
                                             {{status.test_run.job_id}}
