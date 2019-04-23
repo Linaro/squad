@@ -10,6 +10,7 @@ from . import ci
 from . import group_settings
 from . import project_settings
 from . import user_settings
+from . import build_settings
 from squad.core.models import slug_pattern, group_slug_pattern
 
 
@@ -37,7 +38,7 @@ urlpatterns = [
     url(r'^(%s)/(%s)/build/([^/]+)/tests/$' % group_and_project, tests.tests, name='tests'),
     url(r'^(%s)/(%s)/build/([^/]+)/testjobs/$' % group_and_project, ci.testjobs, name='testjobs'),
     url(r'^(%s)/(%s)/build/([^/]+)/metadata/$' % group_and_project, views.build_metadata, name='build_metadata'),
-    url(r'^(%s)/(%s)/build/([^/]+)/settings/$' % group_and_project, views.build_settings, name='build_settings'),
+    url(r'^(%s)/(%s)/build/([^/]+)/settings/$' % group_and_project, build_settings.BuildSettingsView.as_view(), name='build_settings'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/$' % group_and_project, views.test_run, name='testrun'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/suite/([^/]+)/tests/$' % group_and_project, views.test_run_suite_tests, name='testrun_suite_tests'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/suite/([^/]+)/metrics/$' % group_and_project, views.test_run_suite_metrics, name='testrun_suite_metrics'),

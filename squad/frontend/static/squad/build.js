@@ -1,5 +1,4 @@
 import {AnnotationController} from './controllers/annotation.js'
-import {BuildSettingsController} from './controllers/buildSettings.js'
 import {FilterController} from './controllers/filter.js'
 import {ResubmitController} from './controllers/resubmit.js'
 import {Config as appConfig} from './config.js'
@@ -17,16 +16,6 @@ app.controller(
         '$http',
         '$httpParamSerializerJQLike',
         AnnotationController
-    ]
-)
-
-app.controller(
-    'BuildSettingsController',
-    [
-        '$scope',
-        '$http',
-        'build',
-        BuildSettingsController
     ]
 )
 
