@@ -21,7 +21,7 @@ class Backend(object):
         if self.data is not None and \
                 self.data.backend_settings is not None and \
                 len(self.data.backend_settings) > 0:
-            self.settings = yaml.load(self.data.backend_settings)
+            self.settings = yaml.safe_load(self.data.backend_settings)
 
     def submit(self, test_job):
         """

@@ -800,7 +800,7 @@ class PrepareDelayedReport(TestCase):
             "message": LONG_ERROR_MESSAGE
         }
         update_delayed_report(prepared_report, data, 400)
-        self.assertEqual(yaml.load(prepared_report.error_message)['message'], LONG_ERROR_MESSAGE)
+        self.assertEqual(yaml.safe_load(prepared_report.error_message)['message'], LONG_ERROR_MESSAGE)
 
     @patch('squad.core.tasks.notification.notify_delayed_report_email.delay')
     def test_email_notification(self, email_notification_mock):

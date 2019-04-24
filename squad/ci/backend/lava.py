@@ -174,7 +174,7 @@ class Backend(BaseBackend):
         return None
 
     def __lava_job_name(self, definition):
-        yaml_definition = yaml.load(definition)
+        yaml_definition = yaml.safe_load(definition)
         if 'job_name' in yaml_definition.keys():
             # only return first 255 characters
             return yaml_definition['job_name'][:255]
@@ -243,7 +243,7 @@ class Backend(BaseBackend):
     def __get_testjob_results_yaml__(self, job_id):
         logger.debug("Retrieving result summary for job: %s" % job_id)
         suites = self.proxy.results.get_testjob_suites_list_yaml(job_id)
-        y = yaml.load(suites)
+        y = yaml.safe_load(suites)
         lava_job_results = []
         for suite in y:
             limit = 500
@@ -273,14 +273,14 @@ class Backend(BaseBackend):
     def __parse_results__(self, data, test_job):
         handle_lava_suite = self.settings.get('CI_LAVA_HANDLE_SUITE', False)
         if hasattr(test_job, 'target') and test_job.target.project_settings is not None:
-            project_settings = yaml.load(test_job.target.project_settings) or {}
+            project_settings = yaml.safe_load(test_job.target.project_settings) or {}
             tmp_handle_lava = project_settings.get('CI_LAVA_HANDLE_SUITE')
             if tmp_handle_lava is not None:
                 handle_lava_suite = tmp_handle_lava
 
-        definition = yaml.load(data['definition'])
+        definition = yaml.safe_load(data['definition'])
         if data['multinode_definition']:
-            definition = yaml.load(data['multinode_definition'])
+            definition = yaml.safe_load(data['multinode_definition'])
         test_job.name = definition['job_name'][:255]
         job_metadata = definition.get('metadata', {})
 
@@ -387,9 +387,9 @@ class Backend(BaseBackend):
         if job.name is None:
             # fetch job name once
             data = self.__get_job_details__(lava_id)
-            definition = yaml.load(data['definition'])
+            definition = yaml.safe_load(data['definition'])
             if data['multinode_definition']:
-                definition = yaml.load(data['multinode_definition'])
+                definition = yaml.safe_load(data['multinode_definition'])
             job.name = definition['job_name'][:255]
         job.save()
         if job.job_status in self.complete_statuses:
