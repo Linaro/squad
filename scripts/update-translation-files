@@ -22,6 +22,9 @@ for app in $MODULES; do
   if [ "$(msgattrib "${pot}" | wc -l)" -eq 0 ]; then
     rm -f "${pot}"
     continue
+  else
+    # delete trailing empty line
+    sed -i -e '$ { /^$/d }' "${pot}"
   fi
 
   # merge with existing translations
