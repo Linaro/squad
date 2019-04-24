@@ -5,9 +5,9 @@
 {% endblock %}
 
 {% block settings %}
-<h1>Subscriptions</h1>
+<h1>{{ _('Subscriptions') }}</h1>
 
-<p>Add subscription:</p>
+<p>{{ _('Add subscription:') }}</p>
 <form method="POST">
   {{ csrf_input }}
   <div class="row">
@@ -33,15 +33,15 @@
     </div>
   </div>
   <div style="margin-top: 10px;">
-    <input type="submit" class="btn btn-primary" value="Submit"/>
+    <input type="submit" class="btn btn-primary" value="{{ _('Submit') }}"/>
   </div>
 </form>
 
-<p style="margin-top: 10px;">Your current subscriptions:</p>
+<p style="margin-top: 10px;">{{ _('Your current subscriptions:') }}</p>
 {% if subscriptions %}
 {% for sub in subscriptions %}
 <pre>{{ sub.project.group.display_name }}/{{ sub.project.display_name }} ({{ sub.notification_strategy }})
-  <a href="{{url('settings-subscription-remove', args=[sub.id])}}" class="btn btn-xs btn-danger btn-group-vertical pull-right" title="Remove subscription">
+  <a href="{{url('settings-subscription-remove', args=[sub.id])}}" class="btn btn-xs btn-danger btn-group-vertical pull-right" title="{{ _('Remove subscription') }}">
     <span class="glyphicon glyphicon-trash"></span>
   </a>
 </pre>
@@ -49,7 +49,7 @@
 {% else %}
     <div class="info">
       <p>
-        You do not have an subscriptions yet.
+        {{ _('You do not have any subscriptions yet.') }}
       </p>
     </div>
 {% endif %}

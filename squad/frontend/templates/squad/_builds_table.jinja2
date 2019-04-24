@@ -13,25 +13,25 @@
     <div class='col-md-3 col-sm-3'>
         <div title='Test run status'>
             <i class='fa fa-cog'></i>
-            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.test_runs_total}} test runs</span>
+            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{ _('%d test runs') % status.test_runs_total }}</span>
             {% if status.test_runs_completed > 0 %}
-            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Completed">{{status.test_runs_completed}} completed</span>
+            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="{{ _('Completed') }}">{{ _('%d completed') % status.test_runs_completed }}</span>
             {% endif %}
             {% if status.test_runs_incomplete > 0 %}
-            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Incomplete">{{status.test_runs_incomplete}} incomplete</span>
+            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="{{ _('Incomplete') }}">{{ _('%d incomplete') % status.test_runs_incomplete }}</span>
             {% endif %}
         </div>
     </div>
     <div class="col-md-4 col-sm-4">
         {% if status.has_tests %}
-        <div title='Test results'>
+        <div title='{{ _('Test results') }}'>
             <i class='fa fa-check-square-o'></i>
             {% include "squad/_test_results_summary.jinja2" %}
         </div>
         {% endif %}
 
         {% if status.has_metrics %}
-        <div title='Metrics summary'>
+        <div title='{{ _('Metrics summary') }}'>
             <i class='fa fa-line-chart'></i>
             {{status.metrics_summary|floatformat(3)}}
          </div>

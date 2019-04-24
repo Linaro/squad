@@ -2,19 +2,19 @@
 {% with NO="<td></td>"|safe %}
 <table class='table'>
   <tr>
-    <th>Action</th>
-    <th>Member</th>
-    <th>Result submitter</th>
-    <th>Administrator</th>
+    <th>{{ _('Action') }}</th>
+    <th>{{ _('Member') }}</th>
+    <th>{{ _('Result submitter') }}</th>
+    <th>{{ _('Administrator') }}</th>
   </tr>
 
-  <tr><td>View non-public projects</td> {{YES}} {{YES}} {{YES}} </tr>
-  <tr><td>Annonate builds</td>          {{NO}}  {{YES}} {{YES}} </tr>
-  <tr><td>Submit new test results</td>  {{NO}}  {{YES}} {{YES}} </tr>
-  <tr><td>Resubmit test jobs</td>       {{NO}}  {{YES}} {{YES}} </tr>
-  <tr><td>Update group settings</td>    {{NO}}  {{NO}}  {{YES}} </tr>
-  <tr><td>Update project settings</td>  {{NO}}  {{NO}}  {{YES}} </tr>
-  <tr><td>Update build settings</td>    {{NO}}  {{NO}}  {{YES}} </tr>
+  <tr><td>{{ _('View non-public projects') }} </td> {{YES}} {{YES}} {{YES}} </tr>
+  <tr><td>{{ _('Annonate builds') }}          </td> {{NO}}  {{YES}} {{YES}} </tr>
+  <tr><td>{{ _('Submit new test results') }}  </td> {{NO}}  {{YES}} {{YES}} </tr>
+  <tr><td>{{ _('Resubmit test jobs') }}       </td> {{NO}}  {{YES}} {{YES}} </tr>
+  <tr><td>{{ _('Update group settings') }}    </td> {{NO}}  {{NO}}  {{YES}} </tr>
+  <tr><td>{{ _('Update project settings') }}  </td> {{NO}}  {{NO}}  {{YES}} </tr>
+  <tr><td>{{ _('Update build settings') }}    </td> {{NO}}  {{NO}}  {{YES}} </tr>
   </tr>
 </table>
 {% endwith %}

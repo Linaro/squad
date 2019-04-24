@@ -1,7 +1,7 @@
 from django import forms
 from django.conf.urls import url
 from django.shortcuts import render, redirect, reverse
-
+from django.utils.translation import ugettext_lazy as N_
 
 from squad.core.models import Project
 from squad.http import auth_write
@@ -54,8 +54,8 @@ def thresholds_legacy(request, group_slug, project_slug):
 
 
 class DeleteProjectForm(DeleteConfirmationForm):
-    label = 'Type the project slug (the name used in URLs) to confirm'
-    no_match_message = 'The confirmation does not match the project slug'
+    label = N_('Type the project slug (the name used in URLs) to confirm')
+    no_match_message = N_('The confirmation does not match the project slug')
 
 
 @auth_write

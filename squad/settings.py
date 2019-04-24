@@ -192,8 +192,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-DATE_FORMAT = 'N j, Y, P'
-
 # staticfile courtesy of whitenoise
 # http://whitenoise.evans.io/en/stable/django.html
 STATIC_URL = '/static/'

@@ -6,7 +6,7 @@
 {% include "squad/build-nav.jinja2" %}
 </div>
 
-<h2>All test results</h2>
+<h2>{{ _('All test results') }}</h2>
 
 {% with items=results %}
 {% include "squad/_pagination.jinja2" %}
@@ -16,13 +16,13 @@
     <div class='row row-bordered'>
         <div class='col-md-12 col-sm-12 filter'>
           <a id="searchLink"><button type='button' class='btn btn-primary fa fa-search'></button></a>
-          <input name='search' id='search' type='text' placeholder='Filter results ...' value='{{search}}' />
+          <input name='search' id='search' type='text' placeholder='{{ _('Filter results ...') }}' value='{{search}}' />
         </div>
     </div>
 
     <table class='test-results'>
         <thead>
-            <th>Test</th>
+            <th>{{ _('Test') }}</th>
             {% for env in results.environments %}
             <th>{{env}}</th>
             {% endfor %}
@@ -34,7 +34,7 @@
                 {% for status in test %}
                 <td class="{{status[0]}}"><a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test.name])}}">{{status[0]}}</a>
                   {% if status[1] %}
-                  <a href='#' data-toggle="modal" data-target="#info_modal" data-status="{{ status[1] }}"><span data-toggle="tooltip" data-placement="right" title="Show info" class='fa fa-info-circle'></span></a>
+                  <a href='#' data-toggle="modal" data-target="#info_modal" data-status="{{ status[1] }}"><span data-toggle="tooltip" data-placement="right" title="{{ _('Show info') }}" class='fa fa-info-circle'></span></a>
                   {% endif %}
                 </td>
                 {% endfor %}
@@ -43,7 +43,7 @@
         {% else %}
             <tr>
                 <td colspan="{{results.environments|length|add(1)}}" class='alert alert-warning'>
-                    <em>This build has no test results yet.</em>
+                    <em>{{ _('This build has no test results yet.') }}</em>
                 </td>
             </tr>
         {% endif %}
@@ -57,28 +57,28 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title">Test Info</h4>
+        <h4 class="modal-title">{{ _('Test Info') }}</h4>
       </div>
       <div class="modal-body">
         <div id="test_description" style="display: none;">
-          <p><strong>Test description:</strong></p>
+          <p><strong>{{ _('Test description:') }}</strong></p>
           <div id="test_description_inner">
           </div>
         </div>
         <div id="test_reproduce" style="display: none;">
-          <p><strong>How to reproduce:</strong></p>
+          <p><strong>{{ _('How to reproduce:') }}</strong></p>
           <div id="test_reproduce_inner">
           </div>
         </div>
         <div id="test_log" style="display: none;">
-          <p><strong>Test log:</strong></p>
+          <p><strong>{{ _('Test log:') }}</strong></p>
           <div id="test_log_inner">
             <pre></pre>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="modalClosed()">Close</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="modalClosed()">{{ _('Close') }}</button>
       </div>
     </div>
   </div>

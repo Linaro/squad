@@ -2,6 +2,7 @@ from django import forms
 from django.conf.urls import url
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, reverse
+from django.utils.translation import gettext_lazy as N_
 
 from django.utils.decorators import method_decorator
 from django.views.generic.edit import FormView, UpdateView, CreateView
@@ -60,8 +61,8 @@ class BaseSettingsView(GroupViewMixin, UpdateView):
 
 class DeleteGroupForm(DeleteConfirmationForm):
 
-    label = 'Type the group slug (the name used in URLs) to confirm'
-    no_match_message = 'The confirmation does not match the group slug'
+    label = N_('Type the group slug (the name used in URLs) to confirm')
+    no_match_message = N_('The confirmation does not match the group slug')
 
 
 @method_decorator(auth_write, name='dispatch')

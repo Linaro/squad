@@ -4,16 +4,15 @@
 
     <div class='panel panel-danger'>
         <div class='panel-heading'>
-        <h1>Delete project</h1>
+        <h1>{{ _('Delete project') }}</h1>
         </div>
         <div class='panel-body'>
             <p>
-            Once you delete your project, all of its data
-            will be <strong>removed permanently</strong>.
+            {{ _('Once you delete your project, all of its data will be <strong>removed permanently</strong>.') | safe }}
             </p>
             <form method="POST">
                 {{crispy(form)}}
-                <input class='btn btn-danger' type="submit" value="Delete project" />
+                <input class='btn btn-danger' type="submit" value="{{ _('Delete projec') }}t" />
             </form>
         </div>
     </div>

@@ -9,7 +9,7 @@
     » <a class="h2 text-primary" href="{{project_url(test_run)}}">{{test_run.job_id}} </a>
     <br>
       <i class='fa fa-microchip'></i>
-      Test environment: <strong>{{test_run.environment}}</strong>
+      {{ (_('Test environment: <strong>%s</strong>') % test_run.environment) | safe }}
       {% if test_run.environment.description %}
       <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
       {% endif %}
@@ -20,36 +20,36 @@
     {% endif %}
 </h2>
 
-<h2>Test run metadata</h2>
+<h2>{{ _('Test run metadata') }}</h2>
 {% include "squad/_metadata.jinja2" %}
 
-<h2>Related downloads</h2>
+<h2>{{ _('Related downloads') }}</h2>
 
 {% if test_run.log_file|length > 0 %}
 <a href="log" class='btn btn-default'>
     <i class='fa fa-file-text-o'></i>
-    Log file
+    {{ _('Log file') }}
 </a>
 {% endif %}
 
 {% if test_run.tests_file|length > 0 %}
 <a href="tests" class='btn btn-default'>
     <i class='fa fa-file-code-o'></i>
-    Tests file
+    {{ _('Tests file') }}
 </a>
 {% endif %}
 
 {% if test_run.metrics_file|length > 0 %}
 <a href="metrics" class='btn btn-default'>
     <i class='fa fa-file-code-o'></i>
-    Metrics file
+    {{ _('Metrics file') }}
 </a>
 {% endif %}
 
 {% if test_run.metadata_file|length > 0 %}
 <a href="metadata" class='btn btn-default'>
     <i class='fa fa-file-code-o'></i>
-    Metadata file
+    {{ _('Metadata file') }}
 </a>
 {% endif %}
 
@@ -67,27 +67,27 @@
 {% endfor %}
 {% endif %}
 
-<h2>Test results</h2>
+<h2>{{ _('Test results') }}</h2>
 <div class='test-results highlight-row'>
 {% for status in tests_status %}
 <a href="{{testrun_suite_tests_url(status.test_run.build.project.group, status.test_run.build.project, status.test_run.build, status)}}" class="status-fail{{status.tests_fail}}" id='tests-{{status.id}}'>
 <div class='row row-bordered {% if status.tests_fail%}fail{% else %}nofail{%endif%}'>
-    <div class='col-md-3 col-sm-3' title='Test suite'>
+    <div class='col-md-3 col-sm-3' title='{{ _('Test suite') }}'>
         <i class='fa fa-list'></i>
         <strong>{{status.suite}}</strong>
     </div>
 
-    <div class='col-md-3 col-sm-3' title='Environment'>
+    <div class='col-md-3 col-sm-3' title='{{ _('Environment') }}'>
         <i class='fa fa-microchip'></i>
         {{status.test_run.environment}}
     </div>
 
-    <div class='col-md-4 col-sm-4' title='Test results'>
+    <div class='col-md-4 col-sm-4' title='{{ _('Test results') }}'>
         <i class='fa fa-check-square-o'></i>
         {% include "squad/_test_results_summary.jinja2" %}
     </div>
 
-    <div class='col-md-2 col-sm-2' title='Test run'>
+    <div class='col-md-2 col-sm-2' title='{{ _('Test run') }}'>
         <i class='fa fa-cog'></i>
         {{status.test_run.job_id}}
     </div>
@@ -96,27 +96,27 @@
 {% endfor %}
 </div>
 
-<h2>Metrics</h2>
+<h2>{{ _('Metrics') }}</h2>
 <div class='metrics highlight-row'>
 {% for status in metrics_status %}
 <a href="{{testrun_suite_metrics_url(status.test_run.build.project.group, status.test_run.build.project, status.test_run.build, status)}}" id="metrics-{{status.id}}" ng-show="match('metrics-{{status.id}}')">
 <div class='row row-bordered'>
-    <div class='col-md-3 col-sm-3' title='Metrics suite'>
+    <div class='col-md-3 col-sm-3' title='{{ _('Metrics suite') }}'>
         <i class='fa fa-list'></i>
         <strong>{{status.suite}}</strong>
     </div>
 
-    <div class='col-md-3 col-sm-3' title='Environment'>
+    <div class='col-md-3 col-sm-3' title='{{ _('Environment') }}'>
         <i class='fa fa-microchip'></i>
         {{test_run.environment}}
     </div>
 
-    <div class='col-md-4 col-sm-4' title='Metrics summary'>
+    <div class='col-md-4 col-sm-4' title='{{ _('Metrics summary') }}'>
         <i class='fa fa-line-chart'></i>
         {{status.metrics_summary|floatformat(3)}}
     </div>
 
-    <div class='col-md-2 col-sm-2' title='Test runs'>
+    <div class='col-md-2 col-sm-2' title='{{ _('Test runs') }}'>
         <i class='fa fa-cog'></i>
         {{test_run.job_id}}
     </div>

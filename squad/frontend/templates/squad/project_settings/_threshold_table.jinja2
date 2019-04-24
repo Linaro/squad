@@ -1,9 +1,9 @@
-<h1>Metric thresholds</h1>
+<h1>{{ _('Metric thresholds') }}</h1>
 
 <div class='row'>
     <div class='col-md-4'>
         <a href="#" data-toggle="modal" data-target="#threshold_modal">
-            <button id="threshold_button" type="submit" class="btn btn-primary">Add threshold</button>
+            <button id="threshold_button" type="submit" class="btn btn-primary">{{ _('Add threshold') }}</button>
         </a>
     </div>
 </div>
@@ -12,17 +12,17 @@
     <div class='col-md-1'>
     </div>
     <div class='col-md-5'>
-      <strong>Name</strong>
+      <strong>{{ _('Name') }}</strong>
     </div>
     <div class='col-md-2'>
-      <strong>Higher is better</strong>
+      <strong>{{ _('Higher is better') }}</strong>
     </div>
     <div class='col-md-2'>
-      <strong>Value</strong>
+      <strong>{{ _('Value') }}</strong>
     </div>
 
     <div class='col-md-2'>
-      <strong>Action</strong>
+      <strong>{{ _('Action') }}</strong>
     </div>
 </div>
 <div class='row row-bordered' ng-repeat="threshold in thresholds">
@@ -57,7 +57,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="modalClosed()">&times;</button>
-        <h4 class="modal-title">Metric threshold</h4>
+        <h4 class="modal-title">{{ _('Metric threshold') }}</h4>
       </div>
       <form class="well" id="threshold_form" ng-submit="updateMetricThreshold()">
         <div class="modal-body">
@@ -66,7 +66,7 @@
           {% endraw %}
 
           <div class="row form-group">
-            <label for="name" class="col-md-3 control-label">Metric name:</label>
+            <label for="name" class="col-md-3 control-label">{{ _('Metric name:') }}</label>
             <div class="col-md-10">
               <select id="metric_name" name="name" ng-model="currentThreshold.name" style="width: 100%;">
               {% for metric in metrics %}
@@ -76,21 +76,21 @@
             </div>
           </div>
           <div class="row form-group">
-            <label for="value" class="col-md-3 control-label">Value:</label>
+            <label for="value" class="col-md-3 control-label">{{ _('Value:') }}</label>
             <div class="col-md-10">
               <input id="value" name="value" ng-model="currentThreshold.value" style="width: 100%;" />
             </div>
           </div>
           <div class="row form-group">
-            <label for="is_higher_better" class="col-md-4 control-label">Higher is better:</label>
+            <label for="is_higher_better" class="col-md-4 control-label">{{ _('Higher is better:') }}</label>
             <div class="col-md-2">
               <input id="is_higher_better" type="checkbox" name="is_higher_better" ng-model="currentThreshold.is_higher_better" />
             </div>
           </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="modalClosed()">Close</button>
-        <button class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="modalClosed()">{{ _('Close') }}</button>
+        <button class="btn btn-primary">{{ _('Save') }}</button>
       </div>
       </form>
     </div>
