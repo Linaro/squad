@@ -38,16 +38,7 @@
         {% if status.has_tests %}
         <div title='Test results'>
             <i class='fa fa-check-square-o'></i>
-            <span class="badge" data-toggle="tooltip" data-placement="top" title="Total">{{status.tests_total}} total</span>
-            {% if status.tests_pass > 0 %}
-            <span class="badge alert-success" data-toggle="tooltip" data-placement="top" title="Pass">{{status.tests_pass}} pass</span>
-            {% endif %}
-            {% if status.tests_skip > 0 %}
-            <span class="badge alert-warning" data-toggle="tooltip" data-placement="top" title="Skip">{{status.tests_skip}} skip</span>
-            {% endif %}
-            {% if status.tests_fail > 0 %}
-            <span class="badge alert-danger" data-toggle="tooltip" data-placement="top" title="Fail">{{status.tests_fail}} fail</span>
-            {% endif %}
+            {% include "squad/_test_results_summary.jinja2" %}
         </div>
         {% endif %}
 
