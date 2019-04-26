@@ -16,6 +16,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.utils import timezone
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as N_
 from simple_history.models import HistoricalRecords
 
 from squad.core.utils import parse_name, join_name, yaml_validator, jinja2_validator
@@ -64,11 +66,11 @@ class DisplayName(object):
 class Group(models.Model, DisplayName):
     objects = GroupManager()
 
-    slug = models.CharField(max_length=100, unique=True, validators=[group_slug_validator], db_index=True)
+    slug = models.CharField(max_length=100, unique=True, validators=[group_slug_validator], db_index=True, verbose_name=N_('Slug'))
     valid_slug_pattern = slug_pattern
-    name = models.CharField(max_length=100, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
-    members = models.ManyToManyField(User, through='GroupMember')
+    name = models.CharField(max_length=100, null=True, blank=True, verbose_name=N_('Name'))
+    description = models.TextField(null=True, blank=True, verbose_name=N_('Description'))
+    members = models.ManyToManyField(User, through='GroupMember', verbose_name=N_('Members'))
 
     def add_user(self, user, access=None):
         member = GroupMember(group=self, user=user)
@@ -105,7 +107,7 @@ class Group(models.Model, DisplayName):
         except ValidationError as e:
             errors = e.update_error_dict(errors)
         if self.slug and not re.match(self.valid_slug_pattern, self.slug):
-            errors['slug'] = ['Enter a valid value.']
+            errors['slug'] = [_('Enter a valid value.')]
         if errors:
             raise ValidationError(errors)
 
@@ -115,9 +117,9 @@ class Group(models.Model, DisplayName):
 
 class GroupMember(models.Model):
     ACCESS_LEVELS = (
-        ('member', "Member"),
-        ('submitter', 'Result submitter'),
-        ('admin', "Administrator"),
+        ('member', N_('Member')),
+        ('submitter', N_('Result submitter')),
+        ('admin', N_('Administrator')),
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
@@ -126,8 +128,8 @@ class GroupMember(models.Model):
 
     class Meta:
         unique_together = ('group', 'user')
-        verbose_name = 'Group member'
-        verbose_name_plural = 'Group members'
+        verbose_name = N_('Group member')
+        verbose_name_plural = N_('Group members')
 
 
 class UserNamespaceManager(models.Manager):
@@ -184,10 +186,10 @@ class EmailTemplate(models.Model):
         max_length=1024,
         null=True,
         blank=True,
-        help_text='Jinja2 template for subject (single line)',
+        help_text=N_('Jinja2 template for subject (single line)'),
         validators=[jinja2_validator])
-    plain_text = models.TextField(help_text='Jinja2 template for text/plain content', validators=[jinja2_validator])
-    html = models.TextField(blank=True, null=True, help_text='Jinja2 template for text/html content', validators=[jinja2_validator])
+    plain_text = models.TextField(help_text=N_('Jinja2 template for text/plain content'), validators=[jinja2_validator])
+    html = models.TextField(blank=True, null=True, help_text=N_('Jinja2 template for text/html content'), validators=[jinja2_validator])
 
     # If any of the attributes need not to be tracked, just pass excluded_fields=['attr']
     history = HistoricalRecords(cascade_delete_history=True)
@@ -200,13 +202,13 @@ class Project(models.Model, DisplayName):
     objects = ProjectManager()
 
     group = models.ForeignKey(Group, related_name='projects')
-    slug = models.CharField(max_length=100, validators=[slug_validator], db_index=True)
-    name = models.CharField(max_length=100, null=True, blank=True)
-    is_public = models.BooleanField(default=True)
+    slug = models.CharField(max_length=100, validators=[slug_validator], db_index=True, verbose_name=N_('Slug'))
+    name = models.CharField(max_length=100, null=True, blank=True, verbose_name=N_('Name'))
+    is_public = models.BooleanField(default=True, verbose_name=N_('Is public'))
     html_mail = models.BooleanField(default=True)
     moderate_notifications = models.BooleanField(default=False)
     custom_email_template = models.ForeignKey(EmailTemplate, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True, verbose_name=N_('Description'))
     important_metadata_keys = models.TextField(null=True, blank=True)
     enabled_plugins_list = PluginListField(
         null=True,
@@ -218,19 +220,19 @@ class Project(models.Model, DisplayName):
     )
 
     wait_before_notification = models.IntegerField(
-        help_text='Wait this many seconds before sending notifications',
+        help_text=N_('Wait this many seconds before sending notifications'),
         null=True,
         blank=True,
     )
     notification_timeout = models.IntegerField(
-        help_text='Force sending build notifications after this many seconds',
+        help_text=N_('Force sending build notifications after this many seconds'),
         null=True,
         blank=True,
     )
 
     data_retention_days = models.IntegerField(
         default=0,
-        help_text="Delete builds older than this number of days. Set to 0 or any negative number to disable.",
+        help_text=N_("Delete builds older than this number of days. Set to 0 or any negative number to disable."),
     )
 
     project_settings = models.TextField(
@@ -241,7 +243,8 @@ class Project(models.Model, DisplayName):
 
     is_archived = models.BooleanField(
         default=False,
-        help_text='Makes the project hidden from the group page by default',
+        help_text=N_('Makes the project hidden from the group page by default'),
+        verbose_name=N_('Is archived'),
     )
 
     def __init__(self, *args, **kwargs):
@@ -1116,9 +1119,9 @@ class Subscription(models.Model):
     NOTIFY_ON_REGRESSION = 'regression'
 
     STRATEGY_CHOICES = (
-        (NOTIFY_ALL_BUILDS, "All builds"),
-        (NOTIFY_ON_CHANGE, "Only on change"),
-        (NOTIFY_ON_REGRESSION, "Only on regression"),
+        (NOTIFY_ALL_BUILDS, N_("All builds")),
+        (NOTIFY_ON_CHANGE, N_("Only on change")),
+        (NOTIFY_ON_REGRESSION, N_("Only on regression")),
     )
 
     notification_strategy = models.CharField(

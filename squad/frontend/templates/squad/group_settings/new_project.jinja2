@@ -2,14 +2,14 @@
 
 {% block content %}
 
-{% with pagetitle="» New project" %}
+{% with pagetitle=_('New project') %}
 {% include "squad/group-nav.jinja2" %}
 {% endwith %}
 
 
 <form method="POST">
     {{crispy(form)}}
-    <input type="submit" class="btn btn-primary" value="Add project"/>
+    <input type="submit" class="btn btn-primary" value="{{ _('Add project') }}"/>
 </form>
 
 {% endblock %}

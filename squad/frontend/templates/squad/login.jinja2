@@ -12,11 +12,13 @@ Please correct the errors below.
 {% endif %}
 
 {% if form.non_field_errors %}
+<div class='col-md-4 col-md-offset-4'>
 {% for error in form.non_field_errors() %}
-<p class="errornote">
+<p class="alert alert-warning">
 {{ error }}
 </p>
 {% endfor %}
+</div>
 {% endif %}
 
 <div class='col-md-4 col-md-offset-4'>
@@ -32,12 +34,12 @@ Please correct the errors below.
         {{ csrf_input }}
         <div class="form-group">
           {{ form.username.errors }}
-          <label for="id_username" class="sr-only">Username</label>
+          <label for="id_username" class="sr-only">{{ _('Username') }}</label>
           <input type="text" id="id_username" name="username" class="form-control" placeholder="Username" required autofocus>
         </div>
         <div class="form-group">
           {{ form.password.errors }}
-          <label for="id_password" class="sr-only">Password</label>
+          <label for="id_password" class="sr-only">{{ _('Password') }}</label>
           <input type="password" id="id_password" name="password" class="form-control" placeholder="Password" required>
           <input type="hidden" name="next" value="{{ next }}" />
         </div>

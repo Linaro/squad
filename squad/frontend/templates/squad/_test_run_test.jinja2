@@ -6,42 +6,42 @@
         </a>
         {% if test.has_known_issues %}
         {% for known_issue in test.known_issues.all() %}
-            Known issue:
+            {{ _('Known issue:') }}
             {% if known_issue.url %}
-                <a href="{{known_issue.url}}">{{known_issue.title}}</a>{% if known_issue.intermittent %} (intermittent){% endif %}.
+                <a href="{{known_issue.url}}">{{known_issue.title}}</a>{% if known_issue.intermittent %} {{ _('(intermittent).') }}{% endif %}
             {% else %}
-                {{known_issue.title}}{% if known_issue.intermittent %} (intermittent){% endif %}.
+                {{known_issue.title}}{% if known_issue.intermittent %} {{ _('(intermittent.)') }}{% endif %}
             {% endif %}
         {% endfor %}
         {% endif %}
     </div>
     <div class='col-md-1 col-sm-1'>
-        <a class="pull-right" href="/_/comparetest/?project={{ test.test_run.build.project.pk }}&suite={{ test.suite.slug }}&test={{ test.name }}">compare</a>
+        <a class="pull-right" href="/_/comparetest/?project={{ test.test_run.build.project.pk }}&suite={{ test.suite.slug }}&test={{ test.name }}">{{ _('compare') }}</a>
     </div>
     <div class='col-md-2 col-sm-2'>
         {% if test.metadata.description or suite.metadata.instructions_to_reproduce or test.metadata.instructions_to_reproduce or test.log %}
         <a href='#'
            onclick='$(".test-description-{{test.id}}").toggle(); return false'
            class='test-description-{{test.id}}'
-        ><span class='fa fa-info-circle'></span> Show info</a>
+        ><span class='fa fa-info-circle'></span> {{ _('Show info') }}</a>
         <a href='#'
            onclick='$(".test-description-{{test.id}}").toggle(); return false'
            class='test-description-{{test.id}}'
            style='display: none'
-        ><span class='fa fa-info-circle'></span> Hide info</a>
+        ><span class='fa fa-info-circle'></span> {{ _('Hide info') }}</a>
         {% endif %}
     </div>
     {% if test.metadata.description or suite.metadata.instructions_to_reproduce or test.metadata.instructions_to_reproduce or test.log%}
     <div class='test-description test-description-{{test.id}} col-md-12 col-sm-12' style='display: none'>
         {% if test.metadata.description %}
-        <p><strong>Test description:</strong></p>
+        <p><strong>{{ _('Test description:') }}</strong></p>
         <div>
         {{test.metadata.description|markdown}}
         </div>
         {% endif %}
 
         {% if suite.metadata.instructions_to_reproduce or test.metadata.instructions_to_reproduce %}
-        <p><strong>How to reproduce:</strong></p>
+        <p><strong>{{ _('How to reproduce:') }}</strong></p>
         <div>
         {{suite.metadata.instructions_to_reproduce|markdown}}
         {{test.metadata.instructions_to_reproduce|markdown}}
@@ -49,7 +49,7 @@
         {% endif %}
 
         {% if test.log %}
-        <p><strong>Test log:</strong></p>
+        <p><strong>{{ _('Test log:') }}</strong></p>
         <pre>{{test.log}}</pre>
         {% endif %}
     </div>

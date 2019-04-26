@@ -1,0 +1,108 @@
+# Translations template for squad.core.
+# Copyright (C) 2019 ORGANIZATION
+# This file is distributed under the same license as the squad.core project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: squad.core VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2019-04-25 19:02-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.6.0\n"
+
+#: squad/core/models.py:69
+msgid "Slug"
+msgstr ""
+
+#: squad/core/models.py:71 squad/core/models.py:206
+msgid "Name"
+msgstr ""
+
+#: squad/core/models.py:72 squad/core/models.py:211
+msgid "Description"
+msgstr ""
+
+#: squad/core/models.py:73
+msgid "Members"
+msgstr ""
+
+#: squad/core/models.py:110
+msgid "Enter a valid value."
+msgstr ""
+
+#: squad/core/models.py:120
+msgid "Member"
+msgstr ""
+
+#: squad/core/models.py:121
+msgid "Result submitter"
+msgstr ""
+
+#: squad/core/models.py:122
+msgid "Administrator"
+msgstr ""
+
+#: squad/core/models.py:131
+msgid "Group member"
+msgstr ""
+
+#: squad/core/models.py:132
+msgid "Group members"
+msgstr ""
+
+#: squad/core/models.py:189
+msgid "Jinja2 template for subject (single line)"
+msgstr ""
+
+#: squad/core/models.py:191
+msgid "Jinja2 template for text/plain content"
+msgstr ""
+
+#: squad/core/models.py:192
+msgid "Jinja2 template for text/html content"
+msgstr ""
+
+#: squad/core/models.py:207
+msgid "Is public"
+msgstr ""
+
+#: squad/core/models.py:223
+msgid "Wait this many seconds before sending notifications"
+msgstr ""
+
+#: squad/core/models.py:228
+msgid "Force sending build notifications after this many seconds"
+msgstr ""
+
+#: squad/core/models.py:235
+msgid ""
+"Delete builds older than this number of days. Set to 0 or any negative "
+"number to disable."
+msgstr ""
+
+#: squad/core/models.py:246
+msgid "Makes the project hidden from the group page by default"
+msgstr ""
+
+#: squad/core/models.py:247
+msgid "Is archived"
+msgstr ""
+
+#: squad/core/models.py:1122
+msgid "All builds"
+msgstr ""
+
+#: squad/core/models.py:1123
+msgid "Only on change"
+msgstr ""
+
+#: squad/core/models.py:1124
+msgid "Only on regression"
+msgstr ""

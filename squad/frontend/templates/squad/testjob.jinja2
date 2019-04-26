@@ -1,11 +1,11 @@
 {% extends "squad/base.jinja2" %}
 
 {% block content %}
-<h3>The URL for requested test job ({{ testjob.id }}) doesn't yet exist.</h3>
+<h3>{{ _("The URL for requested test job (%s) doesn't yet exist.") % testjob.id }}</h3>
 {% if testjob.failure %}
-<p>TestJob submission failed</p>
+<p>{{ _('TestJob submission failed') }}</p>
 <pre>{{ testjob.failure }}</pre>
 {% else %}
-<p>Please try again later</p>
+<p>{{ _('Please try again later') }}</p>
 {% endif %}
 {% endblock %}

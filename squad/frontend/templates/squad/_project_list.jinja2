@@ -1,12 +1,12 @@
 {% if has_archived_projects %}
 <div>
     <span class="archived">
-    Displaying only non-archived projects.
-    <a href="#" onclick="$('.archived').toggle(); return false">Display archived and non-archived projects</a>.
+    {{ _('Displaying only non-archived projects.') }}
+    <a href="#" onclick="$('.archived').toggle(); return false">{{ _('Display archived and non-archived projects') }}</a>.
     </span>
     <span class="archived" style='display: none'>
-    Displaying archived and non-archived projects.
-    <a href="#" onclick="$('.archived').toggle(); return false">Display only non-archived projects</a>.
+    {{ _('Displaying archived and non-archived projects.') }}
+    <a href="#" onclick="$('.archived').toggle(); return false">{{ _('Display only non-archived projects') }}</a>.
     </span>
     <br/>
     &nbsp;
@@ -23,7 +23,7 @@
             {% if not hide_group %}{{project.group.display_name}}/{% endif %}{{project.display_name}}
         </strong>
         {% if project.is_archived %}
-        <em>(archived)</em>
+        <em>{{ _('(archived)') }}</em>
         {% endif %}
         {% if project.description%}
         <div class='description-{{project.id}}'>
@@ -36,14 +36,14 @@
     </div>
     <div class="col-md-5 col-sm-5 project-listing-info">
         {% if status.has_tests %}
-        <div title='Test results'>
+        <div title='{{ _('Test results') }}'>
             <i class='fa fa-check-square-o'></i>
             {% include "squad/_test_results_summary.jinja2" %}
         </div>
         {% endif %}
 
         {% if status.has_metrics %}
-        <div title='Metrics summary'>
+        <div title='{{ _('Metrics summary') }}'>
             <i class='fa fa-line-chart'></i>
             {{status.metrics_summary|floatformat(3)}}
          </div>
@@ -57,7 +57,8 @@
         </div>
         <div>
             <i class='fa fa-clock-o' style='color: transparent'>&nbsp;</i>
-            {{status.last_updated|date}}
+            {{status.last_updated|date}},
+            {{status.last_updated|time}}
         </div>
         {% endif %}
     </div>

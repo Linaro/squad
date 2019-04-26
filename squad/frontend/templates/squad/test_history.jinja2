@@ -11,7 +11,7 @@
       up to {{history.top.version}}
     {% else %}
       {% if history.top %}
-        <small>(<a href="?top={{history.top.version}}">permalink</a>)</small>
+        <small>(<a href="?top={{history.top.version}}">{{ _('permalink') }}</a>)</small>
       {% endif %}
     {% endif %}
   </h2>
@@ -20,13 +20,13 @@
     {% include "squad/_pagination.jinja2" %}
   {% endwith %}
 
-<h2> Test results history </h2>
+<h2> {{ _('Test results history') }} </h2>
 
   <table class='test-results'>
 
     <thead>
-      <th>Build</th>
-      <th>Date</th>
+      <th>{{ _('Build') }}</th>
+      <th>{{ _('Date') }}</th>
       {% for environment in history.environments %}
       <th>{{environment}}</th>
       {% endfor %}
@@ -43,22 +43,22 @@
               <td class='{{result.status|slugify}}'>
                 <a href="{{project_url(result.test_run)}}">{{result.status}}</a>
                 {% if result.info['test_description'] or result.info['suite_instructions'] or result.info['test_instructions'] or result.info['test_log'] %}
-                  <a href='#' data-toggle="modal" data-target="#info_modal" data-info="{{ result.info }}"><span data-toggle="tooltip" data-placement="right" title="Show info" class='fa fa-info-circle'></span></a>
+                  <a href='#' data-toggle="modal" data-target="#info_modal" data-info="{{ result.info }}"><span data-toggle="tooltip" data-placement="right" title="{{ _('Show info') }}" class='fa fa-info-circle'></span></a>
                 {% endif %}
                 {% if known_issues %}
                   <button type='button' class='known-issue btn btn-xs btn-info pull-right' data-toggle='popover'>
-                    <i title='Known issue' class='fa fa-info-circle'></i>
+                    <i title='{{ _('Known issue') }}' class='fa fa-info-circle'></i>
                   </button>
                   <div class='known-issue-details' style='display: none'>
                     {% for known_issue in known_issues %}
-                      Known issue:
+                      {{ _('Known issue:') }}
                       {% if known_issue.url %}
                         <a href="{{known_issue.url}}">{{known_issue.title}}</a>
                       {% else %}
                         {{known_issue.title}}
                       {% endif %}
                       {% if known_issue.intermittent %}
-                        (intermittent)
+                        {{ _('(intermittent)') }}
                       {% endif %}
                     {% endfor %}
                   </div>
@@ -67,7 +67,7 @@
             {% endwith %}
           {% else %}
             <td>
-              <i>n/a</i>
+              <i>{{ _('n/a') }}</i>
             </td>
           {% endif %}
         {% endwith %}
@@ -87,28 +87,28 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title">Test Info</h4>
+        <h4 class="modal-title">{{ _('Test Info') }}</h4>
       </div>
       <div class="modal-body">
         <div id="test_description" style="display: none;">
-          <p><strong>Test description:</strong></p>
+          <p><strong>{{ _('Test description:') }}</strong></p>
           <div id="test_description_inner">
           </div>
         </div>
         <div id="test_reproduce" style="display: none;">
-          <p><strong>How to reproduce:</strong></p>
+          <p><strong>{{ _('How to reproduce:') }}</strong></p>
           <div id="test_reproduce_inner">
           </div>
         </div>
         <div id="test_log" style="display: none;">
-          <p><strong>Test log:</strong></p>
+          <p><strong>{{ _('Test log:') }}</strong></p>
           <div id="test_log_inner">
             <pre></pre>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="modalClosed()">Close</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="modalClosed()">{{ _('Close') }}</button>
       </div>
     </div>
   </div>

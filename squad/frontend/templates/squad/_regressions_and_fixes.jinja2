@@ -1,10 +1,10 @@
 {% with regressions=build.status.get_regressions() %}
 {% if regressions %}
-<span data-toggle="tooltip" title="Click to display regressions">
+<span data-toggle="tooltip" title="{{ _('Click to display regressions') }}">
     <button class="fa fa-exclamation-triangle text-danger popover-regressions-fixes"></button>
-    <span title="Regressions" class="hidden">
+    <span title="{{ _('Regressions') }}" class="hidden">
         {% for regression_key, regression_value in regressions.items() %}
-        <p>Regressions found on <strong>{{ regression_key }}</strong>:</p>
+        <p>{{ (_('Regressions found on <strong>%s</strong>:')  % regression_key) | safe }}</p>
         <ul>
             {% for test in regression_value %}
             <li>{{ test }}</li>
@@ -18,11 +18,11 @@
 
 {% with fixes=build.status.get_fixes() %}
 {% if fixes %}
-<span data-toggle="tooltip" title="Click to display fixes">
+<span data-toggle="tooltip" title="{{ _('Click to display fixes') }}">
     <button class="fa fa-check-circle text-success popover-regressions-fixes"></button>
-    <div title="Fixes" class="hidden">
+    <div title="{{ _('Fixes') }}" class="hidden">
         {% for fix_key, fix_value in fixes.items() %}
-        <p>Fixes found on <strong>{{ fix_key }}</strong>:</p>
+        <p>{{ (_('Fixes found on <strong>%s</strong>:') % fix_key) | safe }}</p>
         <ul>
             {% for test in fix_value %}
             <li>{{ test }}</li>

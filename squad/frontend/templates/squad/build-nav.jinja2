@@ -1,7 +1,7 @@
 <h2 class="page-header well">
     <a class="h2 text-primitive" href="{{group_url(project.group)}}">{{project.group.display_name}}</a>
     » <a class="h2 text-primitive" href="{{project_url(project)}}">{{project.display_name}}</a>
-    » {% include "squad/_unfinished_build.jinja2" %} <a class="h2 text-primary" href="{{build_url(build)}}">Build {{build.version}}</a>
+    » {% include "squad/_unfinished_build.jinja2" %} <a class="h2 text-primary" href="{{build_url(build)}}">{{ _('Build %s') % build.version }}</a>
 </h2>
 
 {% if project.can_submit(user) %}
@@ -10,13 +10,13 @@
     <div class="row">
       <div id="annotation_text" class="col-md-11 annotation-text-col {% if not build.annotation %}hidden{% endif %}">
         {% if build.annotation %}
-        <strong>Annotation:</strong>
+        <strong>{{ _('Annotation:') }}</strong>
         {{ build.annotation.description }}
         {% endif %}
       </div>
       <div class="col-md-1">
         <a href="#" data-toggle="modal" data-target="#annotation_modal">
-          <button id="annotation_button" type="submit" class="btn btn-primary">{% if build.annotation %}Update{% else %}Add annotation{% endif %}</button>
+          <button id="annotation_button" type="submit" class="btn btn-primary">{% if build.annotation %}{{ _('Update') }}{% else %}{{ _('Add annotation') }}{% endif %}</button>
         </a>
       </div>
     </div>
@@ -29,23 +29,23 @@
 
     <li role="presentation" {% if url_name == 'build' %}class="active"{% endif %}>
         <a href="{{build_url(build)}}">
-            Build summary
+            {{ _('Build summary') }}
         </a>
     </li>
     <li role="presentation" {% if url_name == 'tests' or url_name == 'test_history' %}class="active"{% endif %}>
         <a href="{{build_section_url(build, 'tests')}}">
-            All test results
+            {{ _('All test results') }}
         </a>
     </li>
     <li role="presentation" {% if url_name == 'build_metadata' %}class="active"{% endif %}>
         <a href="{{build_section_url(build, 'build_metadata')}}">
-        Metadata
+        {{ _('Metadata') }}
         </a>
     </li>
     {% if build.test_jobs.count %}
     <li role="presentation" {% if url_name == 'testjobs' %}class="active"{% endif %}>
         <a href="{{build_section_url(build, 'testjobs')}}">
-            Test jobs
+            {{ _('Test jobs') }}
         {% for i in build|filter_jobs %}
         <span class="badge badge-{{ i.0 }}" data-toggle="tooltip" data-placement="top" title="{{ i.0 }}">{{ i.1 }}</span>
         {% endfor %}
@@ -55,7 +55,7 @@
     {% if project.writable_by(user) %}
     <li role="presentation" {% if url_name == 'build_settings' %}class="active"{% endif %}>
         <a href="{{build_section_url(build, 'build_settings')}}">
-            Build settings
+            {{ _('Build Settings') }}
         </a>
     </li>
     {% endif %}
@@ -69,13 +69,13 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title">Build annotation</h4>
+        <h4 class="modal-title">{{ _('Build annotation') }}</h4>
       </div>
       <form class="well" id="annotation_form" ng-controller="AnnotationController" ng-submit="updateAnnotation('{{ build.id }}')" ng-init="{% if build.annotation%}annotation_id={{ build.annotation.id }}{% endif %}">
         <div class="modal-body">
           <div class="row">
             <div class="col-md-2">
-              <label for="description">Description:</label>
+              <label for="description">{{ _('Description:') }}</label>
             </div>
             <div class="col-md-10">
               <input name="description" class="annotation-description" ng-model="description" placeholder="Annotation description" ng-init="description='{% if build.annotation %}{{ build.annotation.description }}{% endif %}'" />
@@ -83,8 +83,8 @@
           </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Close') }}</button>
+        <button class="btn btn-primary">{{ _('Save') }}</button>
       </div>
       </form>
     </div>

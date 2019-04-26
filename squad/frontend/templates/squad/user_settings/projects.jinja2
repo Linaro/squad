@@ -1,30 +1,26 @@
 {% extends "squad/user_settings/base.jinja2" %}
 {% block settings %}
-<h1>Personal projects</h1>
+<h1>{{ _('Personal projects') }}</h1>
 
 {% if user_namespace %}
 
 <div class='alert alert-info'>
 <p>
-Personal projects are enabled for you. You can go to your personal <a
-href="{{group_url(user_namespace)}}"><strong>user namespace</strong></a> to
-manage your personal projects.
+{{ (_('Personal projects are enabled for you. You can go to your personal <a href="%s"><strong>user namespace</strong></a> to manage your personal projects.') % group_url(user_namespace)) | safe }}
 </p>
 <p>
-To remove your user namespace, and consequentially disable personal projects,
-you can access its <a href="{{url('group-delete', args=[user_namespace.slug])}}">Delete group</a> page.
+{{ (_('To remove your user namespace, and consequentially disable personal projects, you can access its <a href="%s">Delete group</a> page.') % url('group-delete', args=[user_namespace.slug])) | safe }}
 </p>
 </div>
 
 {% else %}
 
 <p class='alert alert-warning'>
-To be able to create personal projects, you need first to create a <em>user
-namespace</em> for projects.
+{{ _('To be able to create personal projects, you need first to create a <em>user namespace</em> for projects.') | safe }}
 </p>
 <form method="POST">
     {{ csrf_input }}
-    <input class='btn btn-primary' type="submit" value="Create user namespace" />
+    <input class='btn btn-primary' type="submit" value="{{ _('Create user namespace') }}" />
 </form>
 
 {% endif %}

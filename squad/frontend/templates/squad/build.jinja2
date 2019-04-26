@@ -5,16 +5,16 @@
 <div ng-app='Build'>
 {% include "squad/build-nav.jinja2" %}
 
-<h2>Metadata</h2>
+<h2>{{ _('Metadata') }}</h2>
 {% include "squad/_metadata.jinja2" %}
 
 <div ng-controller='FilterController' data-param="filter-tests">
-<h2>Test results</h2>
+<h2>{{ _('Test results') }}</h2>
 <div class='row row-bordered'>
     <div class='col-md-12 col-sm-12'>
         <form class='filter'>
             <span class='fa fa-search'></span>
-            <input ng-model='filter' ng-change='update()' name='filter' type='text' placeholder='Filter results ...'/>
+            <input ng-model='filter' ng-change='update()' name='filter' type='text' placeholder='{{ _('Filter results ...') }}'/>
         </form>
     </div>
 </div>
@@ -22,7 +22,7 @@
     <div class='col-md-12 col-sm-12'>
         <table class='test-results'>
             <tr>
-                <th style='width: 150px'>Suite</th>
+                <th style='width: 150px'>{{ _('Suite') }}</th>
                 {% for environment in test_results.environments  %}
                 <th>{{environment}}</th>
                 {% endfor %}
@@ -60,15 +60,15 @@
                             <tr>
                                 <th>
 				    <i class='fa fa-microchip'></i>
-				    Test Run
+				    {{ _('Test Run') }}
 				</th>
                                 <th>
 				    <i class='fa fa-cog'></i>
-				    Environment
+				    {{ _('Environment') }}
 				</th>
                                 <th>
 				    <i class='fa fa-check-square-o'></i>
-				    Test Results
+				    {{ _('Test Results') }}
 				</th>
                             </tr>
                         {% for entry in entries %}
@@ -103,12 +103,12 @@
 </div> <!-- ng-controller=FilterController -->
 
 <div ng-controller='FilterController' data-param="filter-metrics">
-    <h2>Metrics</h2>
+    <h2>{{ _('Metrics') }}</h2>
     <div class='row row-bordered'>
 	<div class='col-md-12 col-sm-12'>
 	    <form class='filter'>
 		<span class='fa fa-search'></span>
-		<input ng-model='filter' ng-change='update()' name='filter' type='text' placeholder='Filter metrics ...'/>
+		<input ng-model='filter' ng-change='update()' name='filter' type='text' placeholder='{{ _('Filter metrics ...') }}'/>
 	    </form>
 	</div>
     </div>
@@ -150,25 +150,25 @@
 </div> <!-- ng-app=Filter -->
 
 <div class='testruns highlight-row'>
-    <h2>Test runs</h2>
+    <h2>{{ _('Test runs') }}</h2>
     {% for test_run in test_results.test_runs %}
     <a href="{{url("testrun", args=[project.group.slug, project.slug, build.version, test_run.job_id])}}">
 	<div class='row row-bordered'>
-	    <div class='col-md-3 col-sm-3' title='Job ID'>
+	    <div class='col-md-3 col-sm-3' title='{{ _('Job ID') }}'>
 		<i class='fa fa-list'></i>
 		<strong>{{test_run.job_id}}</strong>
 	    </div>
-	    <div class='col-md-3 col-sm-3' title='Environment'>
+	    <div class='col-md-3 col-sm-3' title='{{ _('Environment') }}'>
 		<i class='fa fa-microchip'></i>
 		{{test_run.environment}}
 	    </div>
 
-	    <div class='col-md-4 col-sm-4' title='Date &amp; time'>
+	    <div class='col-md-4 col-sm-4' title='{{ _('Date and time') }}'>
 		<i class='fa fa-calendar'></i>
 		{{test_run.datetime|date}}
 	    </div>
 
-	    <div class='col-md-2 col-sm-2' title='Completed: {{test_run.completed}}'>
+	    <div class='col-md-2 col-sm-2' title='{% if test_run.completed %}{{ _('Complete') }}{% else %}{{ _('Not completed') }}{% endif %}'>
 		{% if test_run.completed %}
 		<i class='fa fa-check-square-o'></i>
 		{% else %}

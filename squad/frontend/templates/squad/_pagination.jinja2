@@ -1,5 +1,5 @@
 {% if items.paginator.num_pages > 1 %}
-<nav aria-label="Page navigation">
+<nav aria-label="{{ _('Page navigation') }}">
     <ul class="pagination">
         {% with page_list=items|get_page_list %}
         {% if page_list.link_first %}

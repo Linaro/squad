@@ -3,12 +3,12 @@
 {% block content %}
 
 <h2 class="page-header well">
-New group
+{{ _('New group') }}
 </h2>
 
 <form method="POST">
     {{crispy(form)}}
-    <input type="submit" class="btn btn-primary" value="Add group"/>
+    <input type="submit" class="btn btn-primary" value="{{ _('Add group') }}"/>
 </form>
 
 {% endblock %}

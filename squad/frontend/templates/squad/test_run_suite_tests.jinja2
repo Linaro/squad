@@ -11,7 +11,7 @@
 
     <small>
       <i class='fa fa-microchip'></i>
-      Test environment: <strong> {{test_run.environment}} </strong>
+      {{ (_('Test environment: <strong>%s</strong>') % test_run.environment) | safe }}
       {% if test_run.environment.description %}
       <a href='#' onclick="$('#environment-description').toggle(); return false" class='btn btn-xs btn-info'><span class='fa fa-info'></span></a>
       {% endif %}
@@ -22,7 +22,7 @@
       {% endif %}
       <br>
       <i class='fa fa-list'></i>
-      Suite: <strong> {{suite}} </strong>
+      {{ (_('Suite: <strong>%s</strong>') % suite) | safe }}
       {% if status.suite_version %}
       {{status.suite_version.version}}
       {% endif %}
@@ -40,7 +40,7 @@
 </h2>
 
 <h2>
-    Test results
+    {{ _('Test results') }}
 </h2>
 
 {% with items=tests %}

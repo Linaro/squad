@@ -5,7 +5,6 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.urls import NoReverseMatch
 from django.template.defaultfilters import safe
-from django.template.defaultfilters import date as django_date
 from hashlib import md5
 from markdown import markdown as to_markdown
 
@@ -170,14 +169,6 @@ def add_class(field, class_name):
 def avatar_url(email, size=150):
     h = md5(email.encode('utf-8').strip().lower()).hexdigest()
     return 'https://www.gravatar.com/avatar/%s?s=%s&default=mm' % (h, size)
-
-
-@register_filter
-def date(datetime_obj, fmt=None):
-    if not fmt:
-        fmt = settings.DATE_FORMAT
-
-    return django_date(datetime_obj, fmt)
 
 
 @register_global_function(takes_context=True)

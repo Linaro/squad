@@ -2,14 +2,14 @@
 
 {% block content %}
 {% if user.is_authenticated %}
-<h1>Permission denied</h1>
+<h1>{{ _('Permission denied') }}</h1>
 <p>
-You are not allowed to access this content.
+{{ _('You are not allowed to access this content.') }}
 </p>
 {% else %}
-<h1>Authentication required</h1>
+<h1>{{ _('Authentication required') }}</h1>
 <p>
-<a href="/login?next={{request.path}}">Go to the login page</a>.
+<a href="/login?next={{request.path}}">{{ _('Go to the login page.') }}</a>
 </p>
 {% endif %}
 

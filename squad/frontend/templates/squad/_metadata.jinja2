@@ -10,6 +10,6 @@
     </div>
     {% endfor %}
     {% if has_extra_metadata %}
-    <a class='extra-metadata-button' href='{{url("build_metadata", args=[project.group.slug, project.slug, build.version])}}'><small><i class='fa fa-plus'></i> Display more</small></a>
+    <a class='extra-metadata-button' href='{{url("build_metadata", args=[project.group.slug, project.slug, build.version])}}'><small><i class='fa fa-plus'></i> {{ _('Display more') }}</small></a>
     {% endif %}
 </div>
