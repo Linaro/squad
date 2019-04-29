@@ -1,6 +1,7 @@
 import time
 from squad.core.models import Group
 from squad.ci.models import Backend
+from squad.ci.tasks import fetch
 from django.core.management.base import BaseCommand
 
 
@@ -8,6 +9,12 @@ class Command(BaseCommand):
     help = """Listens for "live" test results from CI backends"""
 
     def add_arguments(self, parser):
+        parser.add_argument(
+            '--background', '-b',
+            action='store_true',
+            dest="background",
+            help="Fetch in the background (requires a running worker)",
+        )
         parser.add_argument(
             'BACKEND',
             type=str,
@@ -37,4 +44,7 @@ class Command(BaseCommand):
 
         testjob = backend.test_jobs.create(target=project, job_id=job_id, target_build=build)
 
-        backend.fetch(testjob)
+        if options.get("background"):
+            fetch.delay(testjob.id)
+        else:
+            backend.fetch(testjob)
