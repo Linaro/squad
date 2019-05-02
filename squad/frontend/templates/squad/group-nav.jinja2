@@ -9,11 +9,11 @@
 </p>
 <ul class="page-header nav nav-pills">
     {% with url_name=request.resolver_match.url_name %}
+    {% if group.writable_by(user) %}
     <li role="presentation" {% if url_name == "group" %}class="active"{% endif %}>
         <a href="{{group_url(group)}}">{{ _('Projects') }}</a>
     </li>
 
-    {% if group.writable_by(user) %}
     <li role="presentation" {% if "group-settings" in url_name %}class="active"{% endif %}>
         <a href="{{url("group-settings", args=[group.slug])}}">{{ _('Group settings') }}</a>
     </li>
