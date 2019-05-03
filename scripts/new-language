@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -eu
+
+for lang in "$@"; do
+    for app in core frontend; do
+        mkdir -p squad/$app/locale/$lang/LC_MESSAGES
+        cp squad/$app/locale/django.pot squad/$app/locale/$lang/LC_MESSAGES/django.po
+    done
+done
+
+
+for lang in "$@"; do
+    for app in core frontend; do
+        find squad/$app/locale/$lang -type f
+    done
+done
