@@ -16,6 +16,7 @@ class RestApiTest(APITestCase):
     def setUp(self):
         self.group = models.Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
+        self.project2 = self.group.projects.create(slug='myproject2')
         t = timezone.make_aware(datetime.datetime(2018, 10, 1, 1, 0, 0))
         self.build = self.project.builds.create(version='1', datetime=t)
         t2 = timezone.make_aware(datetime.datetime(2018, 10, 2, 1, 0, 0))
@@ -34,6 +35,7 @@ class RestApiTest(APITestCase):
         self.patchsource = models.PatchSource.objects.create(name='baz_source', username='u', url='http://example.com', token='secret')
         self.knownissue = models.KnownIssue.objects.create(title='knownissue_foo', test_name='test/bar', active=True)
         self.knownissue.environments.add(self.environment)
+        self.testuser = models.User.objects.create(username='test_user', email="test@example.com", is_superuser=False)
 
         self.testjob = ci_models.TestJob.objects.create(
             definition="foo: bar",
@@ -123,9 +125,10 @@ class RestApiTest(APITestCase):
             return text
 
     def post(self, url, data):
-        user = models.User.objects.create(username='u', is_superuser=True)
-        self.group.add_admin(user)
-        token = Token.objects.create(user=user)
+        user, _ = models.User.objects.get_or_create(username='u', is_superuser=True)
+        if not self.group.members.filter(pk=user.pk).exists():
+            self.group.add_admin(user)
+        token, _ = Token.objects.get_or_create(user=user)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         response = self.client.post(url, data)
         return response
@@ -135,7 +138,7 @@ class RestApiTest(APITestCase):
 
     def test_projects(self):
         data = self.hit('/api/projects/')
-        self.assertEqual(1, len(data['results']))
+        self.assertEqual(2, len(data['results']))
 
     def test_project_builds(self):
         data = self.hit('/api/projects/%d/builds/' % self.project.id)
@@ -166,6 +169,113 @@ class RestApiTest(APITestCase):
         self.assertEqual(201, response.status_code)
         project = self.hit('/api/projects/?slug=newproject')['results'][0]
         self.assertEqual(['foo', 'bar'], project['enabled_plugins_list'])
+
+    def test_project_subscribe_unsubscribe_email(self):
+        email_addr = "foo@bar.com"
+        response = self.post(
+            '/api/projects/%s/subscribe/' % self.project.pk,
+            {
+                'email': email_addr
+            }
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertTrue(self.project.subscriptions.filter(email=email_addr).exists())
+        response1 = self.post(
+            '/api/projects/%s/unsubscribe/' % self.project.pk,
+            {
+                'email': email_addr
+            }
+        )
+        self.assertEqual(200, response1.status_code)
+        self.assertFalse(self.project.subscriptions.filter(email=email_addr).exists())
+
+    def test_project_unsubscribe_email_different_project(self):
+        email_addr = "foo@bar.com"
+        response = self.post(
+            '/api/projects/%s/subscribe/' % self.project.pk,
+            {
+                'email': email_addr
+            }
+        )
+        self.assertEqual(201, response.status_code)
+        response1 = self.post(
+            '/api/projects/%s/subscribe/' % self.project2.pk,
+            {
+                'email': email_addr
+            }
+        )
+        self.assertEqual(201, response1.status_code)
+
+        self.assertTrue(self.project.subscriptions.filter(email=email_addr).exists())
+        self.assertTrue(self.project2.subscriptions.filter(email=email_addr).exists())
+        response2 = self.post(
+            '/api/projects/%s/unsubscribe/' % self.project2.pk,
+            {
+                'email': email_addr
+            }
+        )
+        self.assertEqual(200, response2.status_code)
+        self.assertTrue(self.project.subscriptions.filter(email=email_addr).exists())
+        self.assertFalse(self.project2.subscriptions.filter(email=email_addr).exists())
+
+    def test_project_subscribe_invalid_email(self):
+        email_addr = "foo@bar@com"
+        response = self.post(
+            '/api/projects/%s/subscribe/' % self.project.pk,
+            {
+                'email': email_addr
+            }
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertFalse(self.project.subscriptions.filter(email=email_addr).exists())
+
+    def test_project_unsubscribe_invalid_email(self):
+        email_addr = "foo@bar@com"
+        response = self.post(
+            '/api/projects/%s/unsubscribe/' % self.project.pk,
+            {
+                'email': email_addr
+            }
+        )
+        self.assertEqual(400, response.status_code)
+
+    def test_project_subscribe_unsubscribe_user(self):
+        response = self.post(
+            '/api/projects/%s/subscribe/' % self.project.pk,
+            {
+                'email': self.testuser.email
+            }
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertTrue(self.project.subscriptions.filter(user=self.testuser).exists())
+        response1 = self.post(
+            '/api/projects/%s/unsubscribe/' % self.project.pk,
+            {
+                'email': self.testuser.email
+            }
+        )
+        self.assertEqual(200, response1.status_code)
+        self.assertFalse(self.project.subscriptions.filter(email=self.testuser.email).exists())
+
+    def test_project_subscribe_missing_email(self):
+        email_addr = "foo@bar.com"
+        response = self.post(
+            '/api/projects/%s/subscribe/' % self.project.pk,
+            {
+                'email_foo': email_addr
+            }
+        )
+        self.assertEqual(400, response.status_code)
+
+    def test_project_unsubscribe_missing_email(self):
+        email_addr = "foo@bar.com"
+        response = self.post(
+            '/api/projects/%s/unsubscribe/' % self.project.pk,
+            {
+                'email_foo': email_addr
+            }
+        )
+        self.assertEqual(400, response.status_code)
 
     def test_builds(self):
         data = self.hit('/api/builds/')
