@@ -174,6 +174,18 @@ following additional routes:
   It is advised to limit the search results to 10 to avoid poor performance.
   This can be achieved using 'limit=10' GET parameter
 
+- subscribe (/api/projects/<id>/subscribe/)
+
+  Provides means to subscribe either email address or user to the project
+  notifications in automated way. This endpoint expects POST request with
+  single field "email"
+
+- unsubscribe (/api/projects/<id>/unsubscribe/)
+
+  Provides means to unsubscribe either email address or user from the project
+  notifications in automated way. This endpoint expects POST request with
+  single field "email"
+
 With enough privileges Projects can also be created, modified and deleted
 using REST API with POST, PUT and DELETE HTTP requests respectively
 
