@@ -100,13 +100,14 @@ class Notification(object):
             'tests_fail': summary.tests_fail,
             'tests_pass': summary.tests_pass,
             'tests_total': summary.tests_total,
+            'tests_skip': summary.tests_skip,
         }
         if custom_email_template is None and self.project.custom_email_template is not None:
             custom_email_template = self.project.custom_email_template
         if custom_email_template and custom_email_template.subject:
             template = custom_email_template.subject
         else:
-            template = '{{project}}: {{tests_total}} tests, {{tests_fail}} failed, {{tests_pass}} passed (build {{build}})'
+            template = '{{project}}: {{tests_total}} tests, {{tests_fail}} failed, {{tests_pass}} passed, {{tests_skip}} skipped (build {{build}})'
 
         return jinja2.from_string(template).render(subject_data)
 
