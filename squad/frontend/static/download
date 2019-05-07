@@ -42,6 +42,17 @@ uncompress() {
   esac
 }
 
+archive=vendor/$(get_sha1 download.conf).tar
+archive_extracted=false
+extract_archive() {
+  if [ "$archive_extracted" = false ] && [ -f "${archive}" ]; then
+    echo "I: extracting cached downloads from ${archive}"
+    tar xaf "${archive}"
+  fi
+  archive_extracted=true
+}
+
+entries=""
 while read destination url sha1; do
 
   # skip empty/commented lines
@@ -56,9 +67,14 @@ while read destination url sha1; do
     echo "W: missing SHA1SUM for $destination, cannot verify the download" >&2
   fi
 
+  entries="${entries} ${destination}"
 
   action="installed"
-  if test -e "$destination"; then
+  if ! test -e "$destination"; then
+    extract_archive
+  fi
+
+  if [ -e "$destination" ]; then
     cache="$(grep "$destination $url" "$status" 2>/dev/null || true)"
     if [ -n "$cache" ]; then
       echo "$cache" >> "$newstatus"
@@ -104,4 +120,11 @@ done < download.conf
 
 if ! cmp --silent "$newstatus" "$status"; then
   mv -f "$newstatus" "$status"
+fi
+
+archivedir=$(dirname "${archive}")
+if ! [ -f "${archive}" ] && [ -w  "$archivedir" ]; then
+  mkdir -p "${archivedir}"
+  tar caf "${archive}" "$status" ${entries}
+  echo "I: cached downloads in ${archive}; consider committing it into git"
 fi
