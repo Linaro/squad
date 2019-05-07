@@ -4,7 +4,7 @@
         {% with page_list=items|get_page_list %}
         {% if page_list.link_first %}
         <li>
-            <a href="?page=1" aria-label="page 1">
+            <a href="{{get_page_url(1)}}" aria-label="page 1">
                 <span aria-hidden="true">1</span>
             </a>
         </li>
@@ -18,7 +18,7 @@
 
         {% for page in page_list.pages %}
         <li {% if items.number == page %}class="active"{% endif %}>
-            <a href="?page={{page}}" aria-label="page {{page}}">{{page}}</a>
+            <a href="{{get_page_url(page)}}" aria-label="page {{page}}">{{page}}</a>
         </li>
         {% endfor %}
 
@@ -30,7 +30,7 @@
 
         {% if page_list.link_last %}
         <li>
-            <a href="?page={{ items.paginator.num_pages }}" aria-label="page {{items.paginator.num_pages}}">
+            <a href="{{get_page_url(items.paginator.num_pages)}}" aria-label="page {{items.paginator.num_pages}}">
                 <span aria-hidden="true">{{items.paginator.num_pages}}</span>
             </a>
         </li>

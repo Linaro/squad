@@ -17,7 +17,7 @@
       {% endfor %}
     {% endfor %}
   </tr>
-  {% for test, results in comparison.results.items() %}
+  {% for test, results in comparison.results %}
     <tr>
       <th>{{test}}</th>
       {% for build, environments in comparison.environments.items() %}

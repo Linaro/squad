@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.core.paginator import Paginator
 
 from squad.core.models import Project
 from squad.core.comparison import TestComparison
@@ -11,6 +12,13 @@ def compare_projects(request):
 
     if len(selected) > 1:
         comparison = TestComparison.compare_projects(*selected)
+
+        try:
+            page = int(request.GET.get('page', '1'))
+        except ValueError:
+            page = 1
+        paginator = Paginator(tuple(comparison.results.items()), 50)
+        comparison.results = paginator.page(page)
     else:
         comparison = None
 
