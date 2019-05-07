@@ -313,3 +313,46 @@ class TestCustomEmailTemplate(TestCase):
         self.assertEqual("subject: Project's name", subject)
         self.assertEqual("foo: Project's name", txt)
         self.assertEqual("bar: Project&#39;s name", html)
+
+    def test_context_custom_template(self):
+        expose_context_vars = """
+            build={{build.version}}
+            important_metadata={{important_metadata}}
+            metadata={{metadata}}
+            notification={{notification}}
+            previous_build={{previous_build}}
+            regressions_grouped_by_suite={{regressions_grouped_by_suite}}
+            fixes_grouped_by_suite={{fixes_grouped_by_suite}}
+            known_issues={{known_issues}}
+            regressions={{regressions}}
+            fixes={{fixes}}
+            thresholds={{thresholds}}
+            settings={{settings}}
+            summary={{summary}}
+            metrics={{metrics}}
+        """
+        template = EmailTemplate.objects.create(plain_text=expose_context_vars, html=expose_context_vars)
+        self.project.use_custom_email_template = True
+        self.project.custom_email_template = template
+        self.project.save()
+
+        status = ProjectStatus.create_or_update(self.build2)
+        send_status_notification(status)
+
+        msg = mail.outbox[0]
+        txt = msg.body
+
+        self.assertIn('build=2', txt)
+        self.assertIn('important_metadata={}', txt)
+        self.assertIn('metadata=OrderedDict()', txt)
+        self.assertIn('notification=<squad.core.notification.Notification', txt)
+        self.assertIn('previous_build=1', txt)
+        self.assertIn('regressions_grouped_by_suite=OrderedDict()', txt)
+        self.assertIn('fixes_grouped_by_suite=OrderedDict()', txt)
+        self.assertIn('known_issues=<QuerySet []>', txt)
+        self.assertIn('regressions=OrderedDict()', txt)
+        self.assertIn('fixes=OrderedDict()', txt)
+        self.assertIn('thresholds=[]', txt)
+        self.assertIn('settings=<Settings "test.settings">', txt)
+        self.assertIn('summary=<squad.core.models.TestSummary', txt)
+        self.assertIn('metrics=<QuerySet []>', txt)
