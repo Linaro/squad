@@ -1,9 +1,12 @@
 import json
 import yaml
 
-from django.core.exceptions import MultipleObjectsReturned
+from django.db.models import Q
+from django.core import exceptions as core_exceptions
+from django.core.validators import validate_email
+from django.contrib.auth.models import User
 from squad.api.filters import ComplexFilterBackend
-from squad.core.models import Annotation, Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, MetricThreshold, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata, DelayedReport
+from squad.core.models import Annotation, Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, MetricThreshold, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata, DelayedReport, Subscription
 from squad.core.tasks import prepare_report, update_delayed_report
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
@@ -401,6 +404,37 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
+    @detail_route(methods=['post'], suffix='subscribe')
+    def subscribe(self, request, pk=None):
+        subscriber_email = request.data.get("email", None)
+        if subscriber_email is None:
+            raise serializers.ValidationError("'email' field is mandatory.")
+        try:
+            validate_email(subscriber_email)
+        except core_exceptions.ValidationError:
+            raise serializers.ValidationError("Invalid 'email' field value.")
+        user = User.objects.filter(email=subscriber_email).first()
+        if user is None:
+            sub, _ = Subscription.objects.get_or_create(email=subscriber_email, project=self.get_object())
+        else:
+            sub, _ = Subscription.objects.get_or_create(user=user, project=self.get_object())
+        data = {"email": subscriber_email}
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    @detail_route(methods=['post'], suffix='unsubscribe')
+    def unsubscribe(self, request, pk=None):
+        subscriber_email = request.data.get("email", None)
+        if subscriber_email is None:
+            raise serializers.ValidationError("'email' field is mandatory.")
+        try:
+            validate_email(subscriber_email)
+        except core_exceptions.ValidationError:
+            raise serializers.ValidationError("Invalid 'email' field value.")
+        subs = self.get_object().subscriptions.filter(Q(email=subscriber_email) | Q(user__email=subscriber_email))
+        subs.delete()
+        data = {"email": subscriber_email}
+        return Response(data, status=status.HTTP_200_OK)
+
 
 class ProjectStatusSerializer(serializers.HyperlinkedModelSerializer):
 
@@ -610,7 +644,7 @@ class BuildViewSet(ModelViewSet):
                 return update_delayed_report(None, data, status.HTTP_400_BAD_REQUEST, **report_kwargs), False
         try:
             delayed_report, created = self.get_object().delayed_reports.get_or_create(**report_kwargs)
-        except MultipleObjectsReturned:
+        except core_exceptions.MultipleObjectsReturned:
             delayed_report = self.get_object().delayed_reports.all()[0]  # return first available object
             created = False
 
