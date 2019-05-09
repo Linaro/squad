@@ -1,0 +1,25 @@
+#!/bin/sh
+
+set -eu
+
+if [ $# -ne 1 ]; then
+    echo "usage: $0 LANGUAGE"
+    exit 1
+fi
+
+lang="$1"
+apps='core frontend'
+
+for app in $apps; do
+    if ! [ -d squad/$app/locale/$lang/LC_MESSAGES ]; then
+        mkdir -p squad/$app/locale/$lang/LC_MESSAGES
+        cp squad/$app/locale/django.pot squad/$app/locale/$lang/LC_MESSAGES/django.po
+    fi
+done
+
+for app in $apps; do
+    for po in $(find squad/$app/locale/$lang -name \*.po); do
+        printf "%s: " "${po}"
+        msgfmt --statistics --output /dev/null "${po}"
+    done
+done
