@@ -159,6 +159,13 @@ def get_page_list(items):
     }
 
 
+@register_global_function(takes_context=True)
+def get_page_url(context, page):
+    query_string = context['request'].GET.copy()
+    query_string.update({'page': page})
+    return '?' + query_string.urlencode()
+
+
 @register_filter
 def add_class(field, class_name):
     return field.as_widget(attrs={"class": class_name})

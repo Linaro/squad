@@ -3,7 +3,17 @@
 {% block content %}
 <h1>{{ _('Compare project') }}s</h1>
 
-{% include "squad/_test_results_table.jinja2" %}
+{% if comparison %}
+  {% with items=comparison.results %}
+    {% include "squad/_pagination.jinja2" %}
+  {% endwith %}
+
+  {% include "squad/_test_results_table.jinja2" %}
+
+  {% with items=comparison.results %}
+    {% include "squad/_pagination.jinja2" %}
+  {% endwith %}
+{% endif %}
 
 <h2>{{ _('Select projects to compare') }}</h2>
 <form>
