@@ -6,7 +6,7 @@ from django.template.loader import render_to_string
 from re import sub
 
 
-from squad.core.models import KnownIssue, NotificationDelivery, Subscription
+from squad.core.models import KnownIssue, NotificationDelivery, Subscription, Metric
 from squad.core.comparison import TestComparison
 
 
@@ -86,6 +86,10 @@ class Notification(object):
         return self.status.get_exceeded_thresholds()
 
     @property
+    def metrics(self):
+        return Metric.objects.filter(test_run__build_id=self.build.id).all()
+
+    @property
     def subject(self):
         return self.create_subject()
 
@@ -129,6 +133,7 @@ class Notification(object):
             'thresholds': self.thresholds,
             'settings': settings,
             'summary': self.summary,
+            'metrics': self.metrics,
         }
 
         html_message = ''
