@@ -1,0 +1,108 @@
+# Translations template for squad.core.
+# Copyright (C) 2019 ORGANIZATION
+# This file is distributed under the same license as the squad.core project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: squad.core VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2019-04-25 19:02-0300\n"
+"PO-Revision-Date: 2019-05-15 13:00+0000\n"
+"Last-Translator: Milosz Wasilewski <milosz.wasilewski@linaro.org>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.6.0\n"
+
+#: squad/core/models.py:69
+msgid "Slug"
+msgstr "Slug"
+
+#: squad/core/models.py:71 squad/core/models.py:206
+msgid "Name"
+msgstr "Nazwa"
+
+#: squad/core/models.py:72 squad/core/models.py:211
+msgid "Description"
+msgstr "Opis"
+
+#: squad/core/models.py:73
+msgid "Members"
+msgstr "Użytkownicy"
+
+#: squad/core/models.py:110
+msgid "Enter a valid value."
+msgstr "Wpisz poprawną wartość"
+
+#: squad/core/models.py:120
+msgid "Member"
+msgstr "Użytkownik"
+
+#: squad/core/models.py:121
+msgid "Result submitter"
+msgstr "Dostarczyciel wyników"
+
+#: squad/core/models.py:122
+msgid "Administrator"
+msgstr "Administrator"
+
+#: squad/core/models.py:131
+msgid "Group member"
+msgstr "Członek grupy"
+
+#: squad/core/models.py:132
+msgid "Group members"
+msgstr "Członkowie grupy"
+
+#: squad/core/models.py:189
+msgid "Jinja2 template for subject (single line)"
+msgstr "Szablon Jinja2 dla tematu wiadomości (pojedyncza linia)"
+
+#: squad/core/models.py:191
+msgid "Jinja2 template for text/plain content"
+msgstr "Szablon Jinja2 dla wiadomości w formacie text/plain"
+
+#: squad/core/models.py:192
+msgid "Jinja2 template for text/html content"
+msgstr "Szablon Jinja2 dla wiadomości w formacie text/html"
+
+#: squad/core/models.py:207
+msgid "Is public"
+msgstr "Dostęp publiczny"
+
+#: squad/core/models.py:223
+msgid "Wait this many seconds before sending notifications"
+msgstr "Odczekaj tyle sekund przed wysłaniem notyfikacji"
+
+#: squad/core/models.py:228
+msgid "Force sending build notifications after this many seconds"
+msgstr "Wymuś wysłanie notyfikacji dla wersji po tylu sekundach"
+
+#: squad/core/models.py:235
+msgid ""
+"Delete builds older than this number of days. Set to 0 or any negative "
+"number to disable."
+msgstr "Usuń wersje starsze niż ta liczba dni. Ustaw na 0 lub liczbę ujemną żeby dezaktywować"
+
+#: squad/core/models.py:246
+msgid "Makes the project hidden from the group page by default"
+msgstr "Domyślnie ukrywa projekt na stronie grupy"
+
+#: squad/core/models.py:247
+msgid "Is archived"
+msgstr "Zarchiwizowany"
+
+#: squad/core/models.py:1122
+msgid "All builds"
+msgstr "Wszystkie wersje"
+
+#: squad/core/models.py:1123
+msgid "Only on change"
+msgstr "Tylko w przypadku zmiany"
+
+#: squad/core/models.py:1124
+msgid "Only on regression"
+msgstr "Tylko w przypadku regresji"
