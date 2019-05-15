@@ -283,7 +283,9 @@ function ChartPanel($http, DATA) {
                                 var build_id = dataset.data[tooltip.index]
                                 return "Build #" + data_point.build_id
                             }
-                        }
+                        },
+                        intersect: false,
+                        mode: 'index'
                     },
                     animation: {
                         duration: 0,
