@@ -1,3 +1,31 @@
+# 0.64
+
+* frontend:
+  * rewrite build settings with Django forms/views
+  * Standardize "settings" tab to be similar to Group and Project settings tab name
+  * extract "test results summary" into a shared template
+  * mark strings for translation
+  * Show "Projects" tab only if user had specific permission
+  * compare_projects.jinja2: add pagination to test results
+  * cache downloaded static assets
+  * frontend/project_settingspy: add more attributes
+  * squad/controllers/charts.js: display tooltip on line hover
+  * frontend: allow empty searches in test comparison page
+* i18n
+  * Document translation process
+  * scripts/update-translation-files: drop empty line at the end of .pot files
+  * add Polish translation for SQUAD UI
+* core: mark strings for translation
+  * core/notification.py: add number of skipped tests to default email template subject
+  * core/notification.py: include metrics in context of email notifications
+* ci: testfetch: add option to fetch in the background
+* api
+  * api: add subscribe/unsubscribe endpoints to Project
+  * api/rest: Add KnonwIssue filtering to Test object
+  * doc: added description for subscribe/unsubscribe endpoints
+* doc/index.rst: add missing dependency on Debain/Ubuntu
+* fix yaml.load default Loader warning
+
 # 0.63
 
 * api:
@@ -11,7 +39,6 @@
 * core:
   * add 'users' management command
   * group membership is now represented explicitly, and there are three access levels:
-    * members (can see private project)
     * result submitters (can submit test results)
     * admins (can change anything in the project)
   * drop obsolete Token model
