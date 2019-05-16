@@ -200,7 +200,7 @@ function CompareController($scope, $http, $location) {
                 };
             },
         },
-        minimumInputLength: 1
+        minimumInputLength: 0
     });
 
     var projectSelect = $(".project-select");
@@ -238,7 +238,7 @@ function CompareController($scope, $http, $location) {
                 };
             },
         },
-        minimumInputLength: 1
+        minimumInputLength: 0
     });
     var suiteSelect = $(".suite-select");
     suiteSelect.on('select2:unselect', function(e){
@@ -277,7 +277,7 @@ function CompareController($scope, $http, $location) {
                 };
             },
         },
-        minimumInputLength: 1
+        minimumInputLength: 0
     });
     var testSelect = $(".test-select");
     testSelect.on('select2:unselect', function(e){
