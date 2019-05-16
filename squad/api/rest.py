@@ -126,14 +126,28 @@ class SuiteMetadataFilter(filters.FilterSet):
                   'kind': ['exact', 'in', 'startswith', 'contains', 'icontains']}
 
 
+class KnownIssueFilter(filters.FilterSet):
+    environment = filters.RelatedFilter(EnvironmentFilter, name="environment", queryset=Environment.objects.all(), widget=forms.TextInput)
+
+    class Meta:
+        model = KnownIssue
+        fields = {'title': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'test_name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'url': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'active': ['exact', 'in'],
+                  'intermittent': ['exact', 'in']}
+
+
 class TestFilter(filters.FilterSet):
     test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
     suite = filters.RelatedFilter(SuiteFilter, name="suite", queryset=Suite.objects.all(), widget=forms.TextInput)
+    known_issues = filters.RelatedFilter(KnownIssueFilter, name='known_issues', queryset=KnownIssue.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = Test
         fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
-                  'result': ['exact', 'in']}
+                  'result': ['exact', 'in'],
+                  'has_known_issues': ['exact', 'in']}
 
 
 class MetricThresholdFilter(filters.FilterSet):
@@ -943,6 +957,7 @@ class KnownIssueViewSet(viewsets.ModelViewSet):
 
     queryset = KnownIssue.objects.all()
     serializer_class = KnownIssueSerializer
+    filter_class = KnownIssueFilter
     filter_fields = ('title', 'test_name', 'active', 'intermittent', 'environments')
     ordering_fields = ('title', 'id')
 
