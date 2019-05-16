@@ -11,7 +11,7 @@ Make sure you have the ``pip`` Python package manager installed on your Python 3
 environment, and the C library for YAML development. On Debian/Ubuntu,
 the easiest way to do that is::
 
-    apt-get install python3-pip libyaml-dev
+    apt-get install python3-pip libyaml-dev libpq-dev
 
 Install squad::
 
