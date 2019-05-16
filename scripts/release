@@ -67,7 +67,7 @@ cleanup() {
         mv "$local_settings".off "$local_settings"
     fi
 }
-git ls-tree -r --name-only HEAD | sort > "$git"
+git ls-tree -r --name-only HEAD | grep -v '\.tar$' | sort > "$git"
 
 downloads=$(awk '{ if ($1 && $1 !~ /^#/) { print($1)} }' squad/frontend/static/download.conf | xargs printf '%s\|')
 tar taf dist/squad-${v}.tar.gz | cut -d / -f 2- | grep -v '\(/$\|^$\|PKG-INFO\|egg-info\|static\/\('$downloads'download.status\)\)' | sort > "$tar"
