@@ -1,3 +1,7 @@
+# 0.64.1
+
+* i18n: ship compiled message catalogs
+
 # 0.64
 
 * frontend:
