@@ -75,6 +75,15 @@ class Command(BaseCommand):
         for envdir in glob(os.path.join(directory, '*')):
             self.import_environment(build_id, envdir)
 
+        if not self.options['dry_run']:
+            build = self.project.builds.get(version=build_id)
+            build.created_at = build.datetime
+            build.save()
+            status = build.status
+            status.created_at = build.datetime
+            status.last_updated = build.datetime
+            status.save()
+
     def import_environment(self, build_id, directory):
         environment_slug = os.path.basename(directory)
 
