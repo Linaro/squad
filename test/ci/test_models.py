@@ -433,7 +433,7 @@ class BackendSubmitTest(BackendTestBase):
     def test_submit(self, get_implementation):
         test_job = self.create_test_job()
         impl = MagicMock()
-        impl.submit = MagicMock(return_value='999')
+        impl.submit = MagicMock(return_value=['999'])
         get_implementation.return_value = impl
 
         self.backend.submit(test_job)

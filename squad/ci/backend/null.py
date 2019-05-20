@@ -27,7 +27,7 @@ class Backend(object):
         """
         Submits a given test job to the backend service.
 
-        The return value must be the job id as provided by the backend.
+        The return value must be list of job ids as provided by the backend.
 
         On errors, implementations can raise two classes of exceptions:
             * squad.ci.exceptions.SubmissionIssue, when there is an

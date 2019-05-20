@@ -273,7 +273,18 @@ class LavaTest(TestCase):
         testjob = TestJob(
             definition=test_definition,
             backend=self.backend)
-        self.assertEqual('1234', lava.submit(testjob))
+        self.assertEqual(['1234'], lava.submit(testjob))
+        self.assertEqual('bar', testjob.name)
+        __submit__.assert_called_with(test_definition)
+
+    @patch("squad.ci.backend.lava.Backend.__submit__", return_value=['1234.0', '1234.1'])
+    def test_submit_multinode(self, __submit__):
+        lava = LAVABackend(None)
+        test_definition = "foo: 1\njob_name: bar"
+        testjob = TestJob(
+            definition=test_definition,
+            backend=self.backend)
+        self.assertEqual(['1234.0', '1234.1'], lava.submit(testjob))
         self.assertEqual('bar', testjob.name)
         __submit__.assert_called_with(test_definition)
 

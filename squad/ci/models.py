@@ -134,10 +134,17 @@ class Backend(models.Model):
                 logger.error("Plugin postprocessing error: " + str(e) + "\n" + traceback.format_exc())
 
     def submit(self, test_job):
-        test_job.job_id = self.get_implementation().submit(test_job)
+        job_id_list = self.get_implementation().submit(test_job)
+        test_job.job_id = job_id_list[0]
         test_job.submitted = True
         test_job.submitted_at = timezone.now()
         test_job.save()
+        if job_id_list is not None and len(job_id_list) > 1:
+            # clone test job in case of multinode
+            for job_id in job_id_list[1:]:
+                test_job.pk = None  # according to django docs this will create new object
+                test_job.job_id = job_id
+                test_job.save()
 
     def get_implementation(self):
         return get_backend_implementation(self)
