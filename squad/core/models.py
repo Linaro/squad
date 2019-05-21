@@ -1054,20 +1054,23 @@ class InvalidTestStatus(Exception):
 
 
 class TestSummary(TestSummaryBase):
-    def __init__(self, build):
+    def __init__(self, build, environment=None):
         self.tests_pass = 0
         self.tests_fail = 0
         self.tests_xfail = 0
         self.tests_skip = 0
         self.failures = OrderedDict()
 
-        tests = OrderedDict()
-        test_runs = build.test_runs.prefetch_related(
+        query_set = build.test_runs
+        if environment:
+            query_set = query_set.filter(environment=environment)
+        test_runs = query_set.prefetch_related(
             'environment',
             'tests',
             'tests__suite'
         ).order_by('id')
 
+        tests = OrderedDict()
         for run in test_runs.all():
             for test in run.tests.all():
                 tests[(run.environment, test.suite, test.name)] = test
@@ -1092,8 +1095,11 @@ class TestSummary(TestSummaryBase):
 
 class MetricsSummary(object):
 
-    def __init__(self, build):
-        metrics = Metric.objects.filter(test_run__build_id=build.id).all()
+    def __init__(self, build, environment=None):
+        queryset = Metric.objects.filter(test_run__build_id=build.id)
+        if environment:
+            queryset = queryset.filter(test_run__environment_id=environment.id)
+        metrics = queryset.all()
         values = [m.result for m in metrics]
         self.value = geomean(values)
         self.has_metrics = len(values) > 0
