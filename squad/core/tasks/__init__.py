@@ -381,6 +381,10 @@ class RecordTestRunStatus(object):
                 metrics[None].append(v)
                 metrics[sid].append(v)
 
+        # One Status has many test suites and each of one of them
+        # has their own summary (i.e. geomean).
+        # The status having no test suite (suite=None) represent
+        # the TestRun's summary
         for sid, values in metrics.items():
             status[sid].metrics_summary = geomean(values)
             status[sid].has_metrics = True
