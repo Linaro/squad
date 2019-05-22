@@ -767,7 +767,7 @@ function ChartsController($scope, $http, $location, $compile, ChartPanel, DATA) 
         var selectedEnvs = $scope.getEnvironmentIds()
         if (selectedEnvs.length == 0 && $scope.selectedMetrics.length == 0) {
             $scope.toggleEnvironments()
-            $scope.addMetric(_.find($scope.metrics, function(m) {return m.name == ":tests:"}))
+            $scope.addMetric(_.find($scope.metrics, function(m) {return m.name == ":summary:"}))
         }
     }
 

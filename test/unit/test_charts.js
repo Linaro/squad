@@ -156,6 +156,7 @@ describe("Charts", function () {
         beforeEach(function() {
             DATA = {
                 metrics: [
+                    {'name': ':summary:', 'label': 'Summary of all metrics per build'},
                     {'min': 0, 'max': 100, 'name':
                      ':tests:', 'label': 'Test pass %'},
                     {'name': 'boot/time-hi6220-hikey'}
@@ -173,6 +174,13 @@ describe("Charts", function () {
                             [1528282625, 100, '3', ''],
                             [1528293161, 99, '4', ''],
                             [1528299832, 99, '5', ''],
+                        ],
+                    },
+                    ':summary:': {
+                        'hi6220-hikey_4.9': [
+                            [1528282625, 32.45, '3', ''],
+                            [1528293161, 84.73, '4', ''],
+                            [1528299832, 99.86, '5', ''],
                         ],
                     }
                 }
