@@ -1105,6 +1105,60 @@ class MetricsSummary(object):
         self.has_metrics = len(values) > 0
 
 
+class BuildSummary(models.Model, TestSummaryBase):
+    build = models.ForeignKey(Build, related_name='metrics_summary')
+    environment = models.ForeignKey(Environment)
+    metrics_summary = models.FloatField(null=True)
+    has_metrics = models.BooleanField(default=False)
+
+    tests_pass = models.IntegerField(default=0)
+    tests_fail = models.IntegerField(default=0)
+    tests_xfail = models.IntegerField(default=0)
+    tests_skip = models.IntegerField(default=0)
+    test_runs_total = models.IntegerField(default=0)
+    test_runs_completed = models.IntegerField(default=0)
+    test_runs_incomplete = models.IntegerField(default=0)
+
+    @classmethod
+    def create_or_update(cls, build, environment):
+        """
+        Creates (or updates) a BuildSummary given build/environment and
+        returns it.
+        """
+
+        metrics_summary = MetricsSummary(build, environment)
+        test_summary = TestSummary(build, environment)
+        test_runs_total = build.test_runs.filter(environment=environment).count()
+        test_runs_completed = build.test_runs.filter(environment=environment, completed=True).count()
+        test_runs_incomplete = build.test_runs.filter(environment=environment, completed=False).count()
+
+        data = {
+            'metrics_summary': metrics_summary.value,
+            'has_metrics': metrics_summary.has_metrics,
+            'tests_pass': test_summary.tests_pass,
+            'tests_fail': test_summary.tests_fail,
+            'tests_xfail': test_summary.tests_xfail,
+            'tests_skip': test_summary.tests_skip,
+            'test_runs_total': test_runs_total,
+            'test_runs_completed': test_runs_completed,
+            'test_runs_incomplete': test_runs_incomplete,
+        }
+
+        summary, created = cls.objects.get_or_create(build=build, environment=environment, defaults=data)
+        if not created:
+            summary.metrics_summary = metrics_summary.value
+            summary.has_metrics = metrics_summary.has_metrics
+            summary.tests_pass = test_summary.tests_pass
+            summary.tests_fail = test_summary.tests_fail
+            summary.tests_xfail = test_summary.tests_xfail
+            summary.tests_skip = test_summary.tests_skip
+            summary.test_runs_total = test_runs_total
+            summary.test_runs_completed = test_runs_completed
+            summary.test_runs_incomplete = test_runs_incomplete
+            summary.save()
+        return summary
+
+
 class Subscription(models.Model):
     project = models.ForeignKey(Project, related_name='subscriptions')
     email = models.CharField(
