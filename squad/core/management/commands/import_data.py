@@ -67,7 +67,12 @@ class Command(BaseCommand):
             print()
 
         builds = sorted(glob(os.path.join(options['DIRECTORY'], '*')), key=build_key)
+        total = len(builds)
+        i = 0
         for directory in builds:
+            i += 1
+            if not self.options['silent']:
+                print("I: importing build %d/%d" % (i, total))
             self.import_build(directory)
 
     def import_build(self, directory):
