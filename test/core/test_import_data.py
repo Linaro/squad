@@ -52,3 +52,13 @@ class TestDryRun(TestCase):
         self.assertEqual(0, Project.objects.count())
         self.assertEqual(0, Build.objects.count())
         self.assertEqual(0, TestRun.objects.count())
+
+
+class TestMissingMetadata(TestCase):
+
+    def test_missing_metadata(self):
+        self.importer = Command()
+        self.importer.silent = True
+        d = os.path.join(os.path.dirname(__file__), 'test_import_data_missing_metadata')
+        call_command('import_data', '--silent', 'foo/bar', d)
+        self.assertEqual(0, Build.objects.count())

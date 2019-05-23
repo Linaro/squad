@@ -4,6 +4,7 @@ import re
 from django.core.management.base import BaseCommand
 
 
+from squad.core.models import Build
 from squad.core.models import Group
 from squad.core.tasks import ReceiveTestRun
 
@@ -66,7 +67,12 @@ class Command(BaseCommand):
             print()
 
         builds = sorted(glob(os.path.join(options['DIRECTORY'], '*')), key=build_key)
+        total = len(builds)
+        i = 0
         for directory in builds:
+            i += 1
+            if not self.options['silent']:
+                print("I: importing build %d/%d" % (i, total))
             self.import_build(directory)
 
     def import_build(self, directory):
@@ -74,6 +80,19 @@ class Command(BaseCommand):
 
         for envdir in glob(os.path.join(directory, '*')):
             self.import_environment(build_id, envdir)
+
+        if not self.options['dry_run']:
+            try:
+                build = self.project.builds.get(version=build_id)
+                build.created_at = build.datetime
+                build.save()
+                status = build.status
+                status.created_at = build.datetime
+                status.last_updated = build.datetime
+                status.save()
+            except Build.DoesNotExist:
+                # build may not exist if all test runs were missing metadata
+                pass
 
     def import_environment(self, build_id, directory):
         environment_slug = os.path.basename(directory)
@@ -83,7 +102,12 @@ class Command(BaseCommand):
 
     def import_testrun(self, build_id, environment_slug, directory):
         # mandatory
-        metadata = open(os.path.join(directory, 'metadata.json')).read()
+        metadata_path = os.path.join(directory, 'metadata.json')
+        if not os.path.exists(metadata_path):
+            if not self.options['silent']:
+                print('W: test run has not metadata, ignoring: %s' % directory)
+            return
+        metadata = open(metadata_path).read()
 
         try:
             metrics = open(os.path.join(directory, 'metrics.json')).read()
