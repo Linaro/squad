@@ -120,7 +120,7 @@ watchjob
 resubmit
 ~~~~~~~~
 
-**GET** /api/resubmit/<job_id>
+**POST** /api/resubmit/<job_id>
 
 This API is only available to superusers at the moment. It allows to resubmit
 CI test jobs using Backend's implementation.
@@ -128,7 +128,7 @@ CI test jobs using Backend's implementation.
 forceresubmit
 ~~~~~~~~~~~~~
 
-**GET** /api/forceresubmit/<job_id>
+**POST** /api/forceresubmit/<job_id>
 
 This API is only available to superusers at the moment. It allows to resubmit
 CI test jobs using Backend's implementation. Works similarly to 'resubmit' but
