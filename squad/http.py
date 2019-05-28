@@ -22,6 +22,20 @@ def auth_submit(func):
     return auth(func, AuthMode.SUBMIT)
 
 
+def auth_user_from_request(request, user):
+    tokenkey = request.META.get('HTTP_AUTH_TOKEN', None)
+    token = None
+    if tokenkey:
+        try:
+            # truncate keys at 40 characters since djangorestframework's
+            # Token keys are limited to 40 characters
+            token = Token.objects.get(key=tokenkey[0:40])
+            user = token.user
+        except Token.DoesNotExist:
+            pass
+    return user
+
+
 def auth(func, mode=AuthMode.READ):
     def auth_wrapper(*args, **kwargs):
         request = args[0]
@@ -42,18 +56,9 @@ def auth(func, mode=AuthMode.READ):
         project = get_object_or_404(group.projects, slug=project_slug)
         request.project = project
 
-        tokenkey = request.META.get('HTTP_AUTH_TOKEN', None)
-        token = None
-        if tokenkey:
-            try:
-                # truncate keys at 40 characters since djangorestframework's
-                # Token keys are limited to 40 characters
-                token = Token.objects.get(key=tokenkey[0:40])
-                user = token.user
-            except Token.DoesNotExist:
-                pass
+        user = auth_user_from_request(request, user)
 
-        if not (project.is_public or user.is_authenticated or token):
+        if not (project.is_public or user.is_authenticated):
             raise PermissionDenied()
 
         if not project.accessible_to(user):
