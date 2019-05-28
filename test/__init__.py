@@ -18,7 +18,7 @@ def write_results(result, filename='tmp/tests.json'):
     if not os.path.exists(d):
         os.makedirs(d)
     with open(filename, 'w') as f:
-        f.write(json.dumps(data))
+        f.write(json.dumps(data, indent=4))
 
 
 class TestResult(TextTestResult):
