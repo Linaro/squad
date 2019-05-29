@@ -19,13 +19,21 @@ class CiApiTest(TestCase):
         self.group = core_models.Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
 
+        self.project_admin_user = User.objects.create(username='project-admin')
+        self.group.add_admin(self.project_admin_user)
         self.project_submission_user = User.objects.create(username='project-user')
-        self.group.add_admin(self.project_submission_user)
+        self.group.add_user(self.project_submission_user, 'submitter')
+        self.project_member_user = User.objects.create(username='project-member-user')
+        self.group.add_user(self.project_member_user, 'member')
         self.build = self.project.builds.create(version='1')
         Token.objects.create(user=self.project_submission_user, key='thekey')
+        Token.objects.create(user=self.project_member_user, key='memberkey')
+        Token.objects.create(user=self.project_admin_user, key='adminkey')
 
         self.backend = models.Backend.objects.create(name='lava')
         self.client = APIClient('thekey')
+        self.memberclient = APIClient('memberkey')
+        self.adminclient = APIClient('adminkey')
 
     def test_auth(self):
         args = {
@@ -127,7 +135,7 @@ class CiApiTest(TestCase):
         self.assertEqual(400, r.status_code)
 
     @patch('squad.ci.models.Backend.get_implementation')
-    def test_resubmit(self, get_implementation):
+    def test_resubmit_submitter(self, get_implementation):
         impl = MagicMock()
         impl.resubmit = MagicMock()
         get_implementation.return_value = impl
@@ -136,16 +144,23 @@ class CiApiTest(TestCase):
             target=self.project,
             can_resubmit=True
         )
-        staff_user_password = "secret"
-        staff_user = User.objects.create_superuser(
-            username="staffuser",
-            email="staff@example.com",
-            password=staff_user_password,
-            is_staff=True)
-        staff_user.save()
-        client = Client()
-        client.login(username=staff_user.username, password=staff_user_password)
-        r = client.post('/api/resubmit/%s' % t.pk)
+        r = self.client.post('/api/resubmit/%s' % t.pk)
+        self.assertEqual(201, r.status_code)
+        impl.resubmit.assert_called()
+        t.refresh_from_db()
+        self.assertEqual(False, t.can_resubmit)
+
+    @patch('squad.ci.models.Backend.get_implementation')
+    def test_resubmit_admin(self, get_implementation):
+        impl = MagicMock()
+        impl.resubmit = MagicMock()
+        get_implementation.return_value = impl
+
+        t = self.backend.test_jobs.create(
+            target=self.project,
+            can_resubmit=True
+        )
+        r = self.adminclient.post('/api/resubmit/%s' % t.pk)
         self.assertEqual(201, r.status_code)
         impl.resubmit.assert_called()
         t.refresh_from_db()
@@ -156,7 +171,7 @@ class CiApiTest(TestCase):
             target=self.project,
             can_resubmit=True
         )
-        r = self.client.post('/api/resubmit/%s' % t.pk)
+        r = self.memberclient.post('/api/resubmit/%s' % t.pk)
         self.assertEqual(401, r.status_code)
 
     def test_resubmit_invalid_id(self):
