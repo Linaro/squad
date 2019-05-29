@@ -460,6 +460,29 @@ class LavaTest(TestCase):
 
     @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
+    def test_parse_results_clone_measurements(self, get_results, get_details, get_logs):
+        self.backend.backend_settings = 'CI_LAVA_CLONE_MEASUREMENTS: true'
+
+        # Project settings has higher priority than backend settings
+        self.project.project_settings = 'CI_LAVA_CLONE_MEASUREMENTS: true'
+
+        lava = LAVABackend(self.backend)
+        testjob = TestJob(
+            job_id='1235',
+            backend=self.backend,
+            target=self.project,
+            target_build=self.build,
+            environment="foo_env")
+        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+
+        self.assertEqual(len(results), 3)
+        self.assertEqual(len(metrics), 2)
+        self.assertEqual(10, metrics['DefinitionFoo/case_foo'])
+        self.assertEqual('job_foo', testjob.name)
+
+    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE)
     def test_completed(self, get_results, get_details, get_logs):
         lava = LAVABackend(None)
