@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from squad.http import auth_submit, read_file_upload
+from squad.http import auth_submit, read_file_upload, auth_user_from_request
 from squad.ci.tasks import submit
 from squad.ci.models import Backend, TestJob
 
@@ -99,9 +99,9 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
 @csrf_exempt
 def resubmit_job(request, test_job_id, method='resubmit'):
     testjob = get_object_or_404(TestJob.objects, pk=test_job_id)
-
+    user = auth_user_from_request(request, request.user)
     project = testjob.target
-    if not project.can_submit(request.user):
+    if not project.can_submit(user):
         return HttpResponse(status=401)
 
     call = getattr(testjob, method)
