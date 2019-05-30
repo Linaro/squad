@@ -139,8 +139,9 @@ class BuildTest(TestCase):
         finished, _ = build.finished
         self.assertFalse(finished)
 
+    @patch('squad.ci.backend.null.Backend.job_url', return_value="http://example.com/123")
     @patch('squad.ci.backend.null.Backend.fetch')
-    def test_not_finished_with_pending_ci_jobs(self, fetch):
+    def test_not_finished_with_pending_ci_jobs(self, fetch, job_url):
         build = self.project.builds.create(version='1')
         env1 = self.project.environments.create(slug='env1', expected_test_runs=1)
         backend = Backend.objects.create(name='foobar', implementation_type='null')
@@ -176,8 +177,9 @@ class BuildTest(TestCase):
         finished, _ = build.finished
         self.assertTrue(finished)
 
+    @patch('squad.ci.backend.null.Backend.job_url', return_value="http://example.com/123")
     @patch('squad.ci.backend.null.Backend.fetch')
-    def test_not_finished_no_pending_testjobs_but_not_enough_of_them(self, fetch):
+    def test_not_finished_no_pending_testjobs_but_not_enough_of_them(self, fetch, job_url):
         build = self.project.builds.create(version='1')
         env1 = self.project.environments.create(slug='env1', expected_test_runs=2)
         backend = Backend.objects.create(name='foobar', implementation_type='null')

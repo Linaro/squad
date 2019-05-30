@@ -37,7 +37,7 @@ class Backend(object):
               that could be gone in the future (e.g. a server-side issue or a
               maintainance window).
         """
-        pass
+        raise NotImplementedError
 
     def resubmit(self, test_job):
         """
@@ -54,7 +54,7 @@ class Backend(object):
               that could be gone in the future (e.g. a server-side issue or a
               maintainance window).
         """
-        pass
+        raise NotImplementedError
 
     def fetch(self, test_job):
         """
@@ -75,20 +75,20 @@ class Backend(object):
               is temporary so the test job can be fetched again in the future
               (e.g. a server-side issue or a maintainance window).
         """
-        pass
+        raise NotImplementedError
 
     def listen(self):
         """
         Listens the backend service for realtime test results. What to do with
         the received data is up to each specific backend implementation.
         """
-        pass
+        raise NotImplementedError
 
     def job_url(selt, test_job):
         """
         Returns the URL of the test job in the backend
         """
-        pass
+        raise NotImplementedError
 
     def format_message(self, msg):
         return self.data.name + ': ' + msg

@@ -17,8 +17,9 @@ logs = "hello world\nfinished\n"
 class BuildNotificationFromCI(TestCase):
 
     @patch('squad.core.tasks.maybe_notify_project_status')
+    @patch('squad.ci.backend.null.Backend.job_url', return_value="http://example.com/123")
     @patch('squad.ci.backend.null.Backend.fetch')
-    def test_fetch_triggers_notification(self, fetch, notify):
+    def test_fetch_triggers_notification(self, fetch, job_url, notify):
         fetch.return_value = (job_status, completed, metadata, tests, metrics, logs)
 
         group = Group.objects.create(slug='mygroup')
