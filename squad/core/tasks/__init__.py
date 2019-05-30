@@ -24,6 +24,7 @@ from squad.core.models import (
     KnownIssue,
     Build,
     BuildPlaceholder,
+    BuildSummary,
     Project,
     DelayedReport
 )
@@ -172,6 +173,7 @@ class ReceiveTestRun(object):
 
         if self.update_project_status:
             UpdateProjectStatus()(testrun)
+            UpdateBuildSummary()(testrun)
 
         return testrun
 
@@ -381,6 +383,10 @@ class RecordTestRunStatus(object):
                 metrics[None].append(v)
                 metrics[sid].append(v)
 
+        # One Status has many test suites and each of one of them
+        # has their own summary (i.e. geomean).
+        # The status having no test suite (suite=None) represent
+        # the TestRun's summary
         for sid, values in metrics.items():
             status[sid].metrics_summary = geomean(values)
             status[sid].has_metrics = True
@@ -411,6 +417,13 @@ class UpdateProjectStatus(object):
             # background job processes because they don't need email
             # notifications or CI integration
             logger.error("Cannot schedule notification: " + str(e) + "\n" + traceback.format_exc())
+
+
+class UpdateBuildSummary(object):
+
+    @staticmethod
+    def __call__(testrun):
+        BuildSummary.create_or_update(testrun.build, testrun.environment)
 
 
 class ProcessTestRun(object):

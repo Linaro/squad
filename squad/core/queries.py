@@ -19,6 +19,9 @@ def get_metric_data(project, metrics, environments, date_start=None,
         if metric == ':tests:':
             results[metric] = get_tests_series(project, environments,
                                                date_start, date_end)
+        elif metric == ':summary:':
+            results[metric] = get_summary_series(project, environments,
+                                                 date_start, date_end)
         else:
             results[metric] = get_metric_series(project, metric, environments,
                                                 date_start, date_end)
@@ -73,6 +76,32 @@ def get_tests_series(project, environments, date_start, date_end):
 
         results[environment] = [
             [int(s['test_run__build__datetime'].timestamp()), s['pass_percentage'], s['test_run__build__version'], s['test_run__build__annotation__description'] or ""]
+            for s in series
+        ]
+    return results
+
+
+def get_summary_series(project, environments, date_start, date_end):
+    results = {}
+    for environment in environments:
+        series = models.BuildSummary.objects.filter(
+            build__project=project,
+            environment__slug=environment,
+            build__created_at__range=(date_start, date_end)
+        ).filter(
+            metrics_summary__gt=0
+        ).order_by(
+            'datetime'
+        ).values(
+            'metrics_summary',
+            'build_id',
+            'build__datetime',
+            'build__version',
+            'build__annotation__description',
+        ).order_by('build__datetime')
+
+        results[environment] = [
+            [int(s['build__datetime'].timestamp()), s['metrics_summary'], s['build__version'], s['build__annotation__description'] or ""]
             for s in series
         ]
     return results
