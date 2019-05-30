@@ -59,7 +59,6 @@ class Backend(BaseBackend):
                     logs = self.__get_job_logs__(test_job.job_id)
                 except Exception:
                     self.log_warn(("Logs for job %s are not available" % test_job.job_id) + "\n" + traceback.format_exc())
-
                 return self.__parse_results__(data, test_job) + (logs,)
         except xmlrpc.client.ProtocolError as error:
             raise TemporaryFetchIssue(self.url_remove_token(str(error)))
@@ -272,11 +271,15 @@ class Backend(BaseBackend):
 
     def __parse_results__(self, data, test_job):
         handle_lava_suite = self.settings.get('CI_LAVA_HANDLE_SUITE', False)
+        clone_measurements_to_tests = self.settings.get('CI_LAVA_CLONE_MEASUREMENTS', False)
         if hasattr(test_job, 'target') and test_job.target.project_settings is not None:
             project_settings = yaml.safe_load(test_job.target.project_settings) or {}
             tmp_handle_lava = project_settings.get('CI_LAVA_HANDLE_SUITE')
             if tmp_handle_lava is not None:
                 handle_lava_suite = tmp_handle_lava
+            tmp_clone_measurements_to_tests = project_settings.get('CI_LAVA_CLONE_MEASUREMENTS')
+            if tmp_clone_measurements_to_tests is not None:
+                clone_measurements_to_tests = tmp_clone_measurements_to_tests
 
         definition = yaml.safe_load(data['definition'])
         if data['multinode_definition']:
@@ -309,6 +312,9 @@ class Backend(BaseBackend):
                     else:
                         res_value = result['measurement']
                         metrics.update({res_name: float(res_value)})
+                        if clone_measurements_to_tests:
+                            res_value = result['result']
+                            results.update({res_name: res_value})
                 else:
                     # add artificial 'boot' test result for each test job
                     if result['name'] == 'auto-login-action':
@@ -336,7 +342,6 @@ class Backend(BaseBackend):
                     # automatically resubmit in some cases
                     if error_type in ['Infrastructure', 'Job', 'Test']:
                         self.__resubmit_job__(test_job, metadata)
-
         return (data['status'], completed, job_metadata, results, metrics)
 
     def __resubmit_job__(self, test_job, metadata):

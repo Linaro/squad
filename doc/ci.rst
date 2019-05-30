@@ -135,6 +135,10 @@ LAVA backend supports the following settings:
    boolean flag that parses results from LAVA test suite when
    set to ``True``. Please note that this option can be overwritten by
    having the same option with different value in Project `project_settings`
+ - CI_LAVA_CLONE_MEASUREMENTS
+   boolean flag that allows to sate LAVA result as both Test and Measurement
+   when set to ``True``. Default is ``False``. Can be overwritten for each
+   project separately (similar to CI_LAVA_HANDLE_SUITE).
 
 Example LAVA backend settings:
 
