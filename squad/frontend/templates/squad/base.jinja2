@@ -40,8 +40,25 @@
 
         <ul class="nav navbar-nav collapse navbar-collapse">
           <li class="{{active('home')}}"><a href="{{url('home')}}">{{ _('Explore') }}</a></li>
-          <li class="{{active('compare_projects')}}"><a href="{{url('compare_projects')}}">{{ _('Compare') }}</a></li>
-          <li class="{{active('compare_test')}}"><a href="{{url('compare_test')}}">{{ _('Compare Test') }}</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" href="#" id="compareDropdown" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              {{ _('Compare') }}
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="compareDropdown">
+              <li>
+                  <a class="dropdown-item" href="{{url('compare_builds')}}">{{ _('Compare Builds') }}</a>
+              </li>
+              <li role="separator" class="divider"></li>
+              <li>
+                  <a class="dropdown-item" href="{{url('compare_projects')}}">{{ _('Compare Projects') }}</a>
+              </li>
+              <li role="separator" class="divider"></li>
+              <li>
+                  <a class="dropdown-item "href="{{url('compare_test')}}">{{ _('Compare Test') }}</a>
+              </li>
+            </ul>
+          </li>
           <li class="{{active('api-root')}}"><a href="{{url('api-root')}}">{{ _('API') }}</a></li>
         </ul>
 

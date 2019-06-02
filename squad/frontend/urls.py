@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^$', views.home, name='home'),
     url(r'^_/compare/$', comparison.compare_projects, name='compare_projects'),
     url(r'^_/comparetest/$', comparison.compare_test, name='compare_test'),
+    url(r'^_/comparebuilds/$', comparison.compare_builds, name='compare_builds'),
     url(r'^_/settings/', include(user_settings.urls)),
     url(r'^_/new-group/', group_settings.NewGroupView.as_view(), name='new-group'),
     url(r'^_/group-settings/(%s)/' % group_slug_pattern, include(group_settings.urls)),
