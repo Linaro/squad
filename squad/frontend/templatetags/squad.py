@@ -162,7 +162,7 @@ def get_page_list(items):
 @register_global_function(takes_context=True)
 def get_page_url(context, page):
     query_string = context['request'].GET.copy()
-    query_string.update({'page': page})
+    query_string['page'] = page
     return '?' + query_string.urlencode()
 
 

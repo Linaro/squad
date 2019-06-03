@@ -17,8 +17,11 @@ class FakeGet():
     def __init__(self, params=None):
         self.params = params or {}
 
-    def update(self, params):
-        self.params.update(**params)
+    def __setitem__(self, key, value):
+        self.params[key] = value
+
+    def __getitem__(self, key):
+        return self.params[key]
 
     def copy(self):
         return self
