@@ -39,8 +39,6 @@ if [ "${TEST:-yes}" != "no" ]; then
     ./manage.py test
 fi
 
-git commit --message "New release: ${v}" CHANGELOG.md squad/version.py || true
-
 if ! ./scripts/check-ci; then
     printf "Are you sure you want to continue? [y/N]"
     read -r confirm
@@ -48,6 +46,8 @@ if ! ./scripts/check-ci; then
         exit 1
     fi
 fi
+
+git commit --message "New release: ${v}" CHANGELOG.md squad/version.py || true
 
 # build
 ./manage.py compilemessages
