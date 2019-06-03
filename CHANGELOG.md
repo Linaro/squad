@@ -1,3 +1,26 @@
+# 0.65
+
+* i18n: add Brazilian portuguese translation for SQUAD UI
+* core
+  * core: `import_data`: adjust dates on imported data
+  * core: `import_data`: ignore test runs with no metadata
+  * core: `import_data`: display some indication of progress
+  * Add environment to MetricsSummary and TestSummary
+  * Add BuildSummary class
+* doc:
+  * doc/api: fix HTTP method for resubmit endpoints
+  * doc: add details about LAVA multinode jobs
+* api:
+  * api: fix authentication in resubmit API
+  * api: fix tests for CI API
+* ci:
+  * ci: allow cloning LAVA results with measurements
+  * ci: add support for LAVA multinode jobs
+  * ci: make sure null backend is never used
+* frontend
+  * Add metrics summary to charts
+  * Make default charts to be overall metrics summary per build
+
 # 0.64.1
 
 * i18n: ship compiled message catalogs
