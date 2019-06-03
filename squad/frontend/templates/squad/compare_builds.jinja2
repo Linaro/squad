@@ -1,7 +1,7 @@
 {% extends "squad/base.jinja2" %}
 
 {% block content %}
-  <h1>{{ _('Compare build') }}</h1>
+  <h1>{{ _('Compare builds') }}</h1>
   {% if comparison %}
     {% with items=comparison.results %}
       {% include "squad/_pagination.jinja2" %}

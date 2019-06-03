@@ -1,8 +1,17 @@
-<div class='highlight-row'>
+<div class='highlight-row' ng-app='BuildList' ng-controller='BuildListCompareController'>
+<form>
+  <input type="hidden" ng-init="compare_button_label='{{_('Compare builds')}}'" />
+  <input type="hidden" ng-init="invalid_number_of_builds_msg='{{_('Two builds need to be selected!')}}'" />
+  <input type="hidden" ng-init="invalid_selected_builds_msg='{{_('Selected builds must be different!')}}'" />
+  <input type="button" ng-value="compare_button_label" class="btn btn-default" ng-click="compareBuilds('{{statuses.0.build.project.full_name}}')" />
 {% for status in statuses %}
 {% with build=status.build %}
-<a href="{{build_url(build)}}">
 <div class="row row-bordered build">
+    <div class="col-md-1 col-sm-1">
+        <input type="radio" name="baseline_build" ng-value="'{{build.version}}'" ng-model="baseline_build" />&nbsp;
+        <input type="radio" name="target_build" ng-value="'{{build.version}}'" ng-model="target_build" ng-show="show_target_radio('{{build.version}}')" />
+    </div>
+    <a href="{{build_url(build)}}">
     <div class="col-md-2 col-sm-2">
         {% include "squad/_unfinished_build.jinja2" %}
         {% include "squad/_regressions_and_fixes.jinja2" %}
@@ -22,7 +31,7 @@
             {% endif %}
         </div>
     </div>
-    <div class="col-md-4 col-sm-4">
+    <div class="col-md-3 col-sm-3">
         {% if status.has_tests %}
         <div title='{{ _('Test results') }}'>
             <i class='fa fa-check-square-o'></i>
@@ -49,8 +58,14 @@
         </div>
         {% endif %}
     </div>
+    </a>
 </div>
-</a>
 {% endwith %}
 {% endfor %}
+<input type="button" ng-value="compare_button_label" class="btn btn-default" ng-click="compareBuilds('{{statuses.0.build.project.full_name}}')" />
+</form>
 </div>
+
+{% block javascript %}
+<script type="module" src='{{static("squad/build_list.js")}}'></script>
+{% endblock %}
