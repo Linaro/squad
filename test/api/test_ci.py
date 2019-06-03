@@ -30,7 +30,7 @@ class CiApiTest(TestCase):
         Token.objects.create(user=self.project_member_user, key='memberkey')
         Token.objects.create(user=self.project_admin_user, key='adminkey')
 
-        self.backend = models.Backend.objects.create(name='lava')
+        self.backend = models.Backend.objects.create(name='lava', implementation_type='fake')
         self.client = APIClient('thekey')
         self.memberclient = APIClient('memberkey')
         self.adminclient = APIClient('adminkey')

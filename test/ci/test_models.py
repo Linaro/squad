@@ -391,9 +391,10 @@ class BackendFetchTest(BackendTestBase):
             completed=False,
         )
 
+    @patch('squad.ci.backend.null.Backend.job_url', return_value="http://example.com/123")
     @patch('squad.ci.backend.null.Backend.fetch')
     @patch('squad.ci.models.ReceiveTestRun.__call__')
-    def test_really_fetch_sets_fetched_at(self, receive, backend_fetch):
+    def test_really_fetch_sets_fetched_at(self, receive, backend_fetch, backend_job_url):
         backend_fetch.return_value = ('Completed', True, {}, {}, {}, None)
 
         env = self.project.environments.create(slug='foo')
@@ -409,9 +410,10 @@ class BackendFetchTest(BackendTestBase):
         self.assertIsNotNone(test_job.fetched_at)
 
     @patch.object(models.Backend, '__postprocess_testjob__')
+    @patch('squad.ci.backend.null.Backend.job_url', return_value="http://example.com/123")
     @patch('squad.ci.backend.null.Backend.fetch')
     @patch('squad.ci.models.ReceiveTestRun.__call__')
-    def test_really_fetch_postprocessing(self, receive, backend_fetch, postprocess):
+    def test_really_fetch_postprocessing(self, receive, backend_fetch, backend_job_url, postprocess):
         backend_fetch.return_value = ('Completed', True, {}, {}, {}, None)
 
         env = self.project.environments.create(slug='foo')
@@ -433,7 +435,7 @@ class BackendSubmitTest(BackendTestBase):
     def test_submit(self, get_implementation):
         test_job = self.create_test_job()
         impl = MagicMock()
-        impl.submit = MagicMock(return_value='999')
+        impl.submit = MagicMock(return_value=['999'])
         get_implementation.return_value = impl
 
         self.backend.submit(test_job)
@@ -466,7 +468,8 @@ class TestJobTest(TestCase):
         )
         self.assertIsNone(testjob.job_id)
 
-    def test_records_resubmitted_count(self):
+    @patch('squad.ci.backend.null.Backend.resubmit', return_value="1")
+    def test_records_resubmitted_count(self, backend_resubmit):
         testjob = models.TestJob.objects.create(
             target=self.project,
             target_build=self.build,

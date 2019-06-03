@@ -27,7 +27,8 @@ class TestJobViewTest(TestCase):
         )
         self.assertIsNone(testjob.job_id)
 
-    def test_testjob_page(self):
+    @patch('squad.ci.backend.null.Backend.job_url', return_value=None)
+    def test_testjob_page(self, backend_job_url):
         job_id = 1234
         testjob = models.TestJob.objects.create(
             target=self.project,

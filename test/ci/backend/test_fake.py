@@ -28,7 +28,7 @@ class FakeBackendTest(TestCase):
         job = TestJob.objects.create(backend=self.backend, target=self.project)
         impl = FakeBackend(self.backend)
         jid = impl.submit(job)
-        self.assertEqual(str(job.id), jid)
+        self.assertEqual([str(job.id)], jid)
 
     def test_resubmit(self):
         job = TestJob.objects.create(backend=self.backend, target=self.project, job_id='22')

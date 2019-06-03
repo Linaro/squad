@@ -16,7 +16,7 @@ class Backend(object):
         self.data = data
 
     def submit(self, test_job):
-        return str(test_job.id)
+        return [str(test_job.id)]
 
     def resubmit(self, test_job):
         count = test_job.resubmitted_count + 1

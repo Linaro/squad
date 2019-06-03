@@ -154,4 +154,24 @@ Example LAVA backend settings:
     CI_LAVA_SEND_ADMIN_EMAIL: False
     CI_LAVA_HANDLE_SUITE: True
 
+Multinode
++++++++++
+
+SQUAD supports fetching results from LAVA multinode jobs. There are however
+a few limitations with this setup:
+ - All results from multinode will share environment name
+   Since test jobs are submitted via SQUAD using the environment from submit
+   URL there is no way for SQUAD to distinguish between different environmens
+   on different parts of multinode job.
+ - Resubmit will repeat the whole set
+   In SQUAD all parts of multinode job will share the multinode definition.
+   For this reason re-submitting any part of the multinode job will result
+   in new multinode job that includes all parts.
+ - Each part of the multinode job will be retrieved separately
+   This means that each part will create a TestRun in SQUAD. This should not
+   be a major issue as all results will still be available. Users need to make
+   sure that the test names don't overlap as SQUAD will not have any means of
+   distinguishing between identically named tests from different parts of
+   multinode job.
+
 .. vim: ts=4 sw=4 et=1
