@@ -8,6 +8,7 @@ import yaml
 import xmlrpc
 import zmq
 
+from io import BytesIO
 from zmq.utils.strtypes import u
 
 from xmlrpc import client as xmlrpclib
@@ -56,12 +57,12 @@ class Backend(BaseBackend):
                 data['results'] = self.__get_testjob_results_yaml__(test_job.job_id)
 
                 # fetch logs
-                logs = ""
+                raw_logs = BytesIO()
                 try:
-                    logs = self.__get_job_logs__(test_job.job_id)
+                    raw_logs = BytesIO(self.__download_full_log__(test_job.job_id))
                 except Exception:
                     self.log_warn(("Logs for job %s are not available" % test_job.job_id) + "\n" + traceback.format_exc())
-                return self.__parse_results__(data, test_job) + (logs,)
+                return self.__parse_results__(data, test_job, raw_logs)
         except xmlrpc.client.ProtocolError as error:
             raise TemporaryFetchIssue(self.url_remove_token(str(error)))
         except xmlrpc.client.Fault as fault:
@@ -205,10 +206,27 @@ class Backend(BaseBackend):
         response = requests.get(url, params=payload)
         return response.content
 
-    def __get_job_logs__(self, job_id):
-        logger.debug("Retrieving logs job: %s" % job_id)
-        log_data = self.__download_full_log__(job_id)
-        return self.__parse_log__(log_data)
+    def __download_test_log__(self, raw_log, log_start, log_end):
+        return_lines = ""
+        if not log_start:
+            return return_lines
+        log_start_line = int(log_start)
+        log_end_line = None
+        if log_end:
+            log_end_line = int(log_end)
+        else:
+            log_end_line = log_start_line + 2  # LAVA sometimes misses the signals
+        raw_log.seek(0)
+        counter = 0
+        for line in raw_log:
+            counter += 1
+            if counter < log_start_line:
+                continue
+            return_lines = return_lines + line.decode("utf-8")
+            if counter >= log_end_line:
+                break
+        raw_log.seek(0)
+        return return_lines
 
     def __parse_log__(self, log_data):
         returned_log = ""
@@ -287,7 +305,7 @@ class Backend(BaseBackend):
             selected_setting = tmp_setting
         return selected_setting
 
-    def __parse_results__(self, data, test_job):
+    def __parse_results__(self, data, test_job, raw_logs):
         if hasattr(test_job, 'target') and test_job.target.project_settings is not None:
             ps = yaml.safe_load(test_job.target.project_settings) or {}
             handle_lava_suite = self.__resolve_setting__(ps, 'CI_LAVA_HANDLE_SUITE', False)
@@ -320,10 +338,16 @@ class Backend(BaseBackend):
                 if handle_lava_suite or result['suite'] != 'lava':
                     suite = result['suite'].split("_", 1)[-1]
                     res_name = "%s/%s" % (suite, result['name'])
+                    res_log = None
+                    if 'log_start_line' in result.keys() and \
+                            'log_end_line' in result.keys() and \
+                            result['log_start_line'] is not None and \
+                            result['log_end_line'] is not None:
+                        res_log = self.__download_test_log__(raw_logs, result['log_start_line'], result['log_end_line'])
                     # YAML from LAVA has all values serialized to strings
                     if result['measurement'] == 'None':
                         res_value = result['result']
-                        results.update({res_name: res_value})
+                        results.update({res_name: {'result': res_value, 'log': res_log}})
                     else:
                         res_value = result['measurement']
                         metrics.update({res_name: float(res_value)})
@@ -356,7 +380,7 @@ class Backend(BaseBackend):
                     # automatically resubmit in some cases
                     if error_type in ['Infrastructure', 'Job', 'Test']:
                         self.__resubmit_job__(test_job, metadata)
-        return (data['status'], completed, job_metadata, results, metrics)
+        return (data['status'], completed, job_metadata, results, metrics, self.__parse_log__(raw_logs))
 
     def __resubmit_job__(self, test_job, metadata):
         infra_messages_re_list = []

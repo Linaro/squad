@@ -17,6 +17,8 @@ TEST_RESULTS = [
      'id': '5089687',
      'job': '22505',
      'level': 'None',
+     'log_end_line': '1418',
+     'log_start_line': '1418',
      'logged': '2017-09-05 07:53:07.040871+00:00',
      'measurement': '29.7200000000',
      'metadata': {'case': 'auto-login-action',
@@ -33,6 +35,8 @@ TEST_RESULTS = [
     {'duration': '',
      'job': '1234',
      'level': 'None',
+     'log_end_line': '148',
+     'log_start_line': '148',
      'logged': '2017-02-15 11:31:21.973616+00:00',
      'measurement': '10',
      'metadata': {'case': 'case_foo',
@@ -49,6 +53,8 @@ TEST_RESULTS = [
     {'duration': '',
      'job': '1234',
      'level': 'None',
+     'log_end_line': '418',
+     'log_start_line': '418',
      'logged': '2017-02-15 11:31:21.973616+00:00',
      'measurement': 'None',
      'metadata': {'case': 'case_bar',
@@ -64,6 +70,8 @@ TEST_RESULTS = [
     {'duration': '',
      'job': '12345',
      'level': 'None',
+     'log_end_line': '141',
+     'log_start_line': '141',
      'logged': '2018-02-15 11:31:21.973616+00:00',
      'measurement': 'None',
      'metadata': {'case': 'validate',
@@ -78,6 +86,8 @@ TEST_RESULTS = [
     {'duration': '',
      'job': '123456',
      'level': 'None',
+     'log_end_line': '14',
+     'log_start_line': '14',
      'logged': '2018-02-15 11:31:21.973616+00:00',
      'measurement': '0E-10',
      'metadata': {'case': 'power-off',
@@ -236,6 +246,7 @@ TEST_RESULTS_WITH_SUITE_VERSIONS = [
     },
 ]
 
+LOG_DATA = open(os.path.join(os.path.dirname(__file__), 'example-lava-log.yaml'), 'rb').read()
 
 HTTP_400 = xmlrpc.client.Fault(400, 'Problem with submitted job data')
 HTTP_503 = xmlrpc.client.Fault(503, 'Service Unavailable')
@@ -288,10 +299,10 @@ class LavaTest(TestCase):
         self.assertEqual('bar', testjob.name)
         __submit__.assert_called_with(test_definition)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
-    def test_fetch_basics(self, get_results, get_details, get_logs):
+    def test_fetch_basics(self, get_results, get_details, test_log):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='9999',
@@ -313,10 +324,10 @@ class LavaTest(TestCase):
 
         get_results.assert_not_called()
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
-    def test_parse_results_metadata(self, get_results, get_details, get_logs):
+    def test_parse_results_metadata(self, get_results, get_details, test_log):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
@@ -325,10 +336,10 @@ class LavaTest(TestCase):
 
         self.assertEqual(JOB_METADATA, metadata)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_NO_METADATA)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
-    def test_parse_results_empty_metadata(self, get_results, get_details, get_logs):
+    def test_parse_results_empty_metadata(self, get_results, get_details, test_log):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
@@ -337,10 +348,10 @@ class LavaTest(TestCase):
 
         self.assertEqual({}, metadata)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_WITH_SUITE_VERSIONS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_WITH_SUITE_VERSIONS)
-    def test_parse_results_metadata_with_suite_versions(self, get_results, get_details, get_logs):
+    def test_parse_results_metadata_with_suite_versions(self, get_results, get_details, test_log):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
@@ -349,10 +360,10 @@ class LavaTest(TestCase):
 
         self.assertEqual({"suite1": "1.0"}, metadata['suite_versions'])
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
-    def test_parse_results_ignore_lava_suite_backend_settings(self, get_results, get_details, get_logs):
+    def test_parse_results_ignore_lava_suite_backend_settings(self, get_results, get_details, test_log):
         self.backend.backend_settings = 'CI_LAVA_HANDLE_SUITE: true'
         lava = self.backend
         testjob = TestJob(
@@ -374,10 +385,10 @@ class LavaTest(TestCase):
         self.assertEqual(0.0, metrics.filter(name='power-off').get().result)
         self.assertEqual(10.0, metrics.filter(name='case_foo').get().result)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
-    def test_parse_results_ignore_lava_suite_project_settings(self, get_results, get_details, get_logs):
+    def test_parse_results_ignore_lava_suite_project_settings(self, get_results, get_details, test_log):
         self.project.project_settings = 'CI_LAVA_HANDLE_SUITE: true'
         lava = self.backend
         testjob = TestJob(
@@ -399,10 +410,10 @@ class LavaTest(TestCase):
         self.assertEqual(0.0, metrics.filter(name='power-off').get().result)
         self.assertEqual(10.0, metrics.filter(name='case_foo').get().result)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
-    def test_parse_results_ignore_lava_suite_empty_project_settings(self, get_results, get_details, get_logs):
+    def test_parse_results_ignore_lava_suite_empty_project_settings(self, get_results, get_details, test_log):
         self.project.project_settings = ''
         lava = self.backend
         testjob = TestJob(
@@ -425,10 +436,10 @@ class LavaTest(TestCase):
         self.assertEqual(29.72, metrics.filter(name='time-device_foo').get().result)
         self.assertEqual(10.0, metrics.filter(name='case_foo').get().result)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
-    def test_parse_results_ignore_lava_suite_project_settings_overwrites_backend(self, get_results, get_details, get_logs):
+    def test_parse_results_ignore_lava_suite_project_settings_overwrites_backend(self, get_results, get_details, test_log):
         self.backend.backend_settings = 'CI_LAVA_HANDLE_SUITE: true'
         lava = self.backend
 
@@ -454,10 +465,10 @@ class LavaTest(TestCase):
         self.assertEqual(29.72, metrics.filter(name='time-device_foo').get().result)
         self.assertEqual(10.0, metrics.filter(name='case_foo').get().result)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
-    def test_parse_results_ignore_lava_boot(self, get_results, get_details, get_logs):
+    def test_parse_results_ignore_lava_boot(self, get_results, get_details, download_test_log):
         self.backend.backend_settings = 'CI_LAVA_IGNORE_BOOT: true'
         lava = self.backend
 
@@ -479,10 +490,10 @@ class LavaTest(TestCase):
         self.assertEqual(1, metrics.filter(name='case_foo').count())
         self.assertEqual(10.0, metrics.filter(name='case_foo').get().result)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
-    def test_parse_results_handle_lava_suite_and_ignore_lava_boot(self, get_results, get_details, get_logs):
+    def test_parse_results_handle_lava_suite_and_ignore_lava_boot(self, get_results, get_details, download_test_log):
         self.backend.backend_settings = '{"CI_LAVA_HANDLE_SUITE": true, "CI_LAVA_IGNORE_BOOT": true}'
         lava = self.backend
         testjob = TestJob(
@@ -505,10 +516,10 @@ class LavaTest(TestCase):
         self.assertEqual(10.0, metrics.filter(name='case_foo').get().result)
         self.assertEqual(0, metrics.filter(name='time-device_foo').count())
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
-    def test_parse_results(self, get_results, get_details, get_logs):
+    def test_parse_results(self, get_results, get_details, download_test_log):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
@@ -520,10 +531,10 @@ class LavaTest(TestCase):
         self.assertEqual(10, metrics['DefinitionFoo/case_foo'])
         self.assertEqual('job_foo', testjob.name)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
-    def test_parse_results_clone_measurements(self, get_results, get_details, get_logs):
+    def test_parse_results_clone_measurements(self, get_results, get_details, test_log):
         self.backend.backend_settings = 'CI_LAVA_CLONE_MEASUREMENTS: true'
 
         # Project settings has higher priority than backend settings
@@ -543,7 +554,7 @@ class LavaTest(TestCase):
         self.assertEqual(10, metrics['DefinitionFoo/case_foo'])
         self.assertEqual('job_foo', testjob.name)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE)
     def test_completed(self, get_results, get_details, get_logs):
@@ -555,7 +566,7 @@ class LavaTest(TestCase):
         status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
         self.assertFalse(completed)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_CANCELED)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_canceled(self, get_results, get_details, get_logs):
@@ -567,7 +578,7 @@ class LavaTest(TestCase):
         status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
         self.assertFalse(completed)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT)
     def test_automated_resubmit_email(self, get_results, get_details, get_logs):
@@ -589,7 +600,7 @@ class LavaTest(TestCase):
         # there should be an admin email sent after resubmission
         self.assertEqual(1, len(mail.outbox))
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT)
     def test_automated_dont_resubmit_email(self, get_results, get_details, get_logs):
@@ -613,7 +624,7 @@ class LavaTest(TestCase):
         # there should not be an admin email sent after resubmission
         self.assertEqual(0, len(mail.outbox))
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT)
     @patch("squad.ci.backend.lava.Backend.__resubmit__", return_value="1235")
@@ -629,7 +640,7 @@ class LavaTest(TestCase):
         self.assertEqual(1, new_test_job.resubmitted_count)
         self.assertFalse(testjob.can_resubmit)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT2)
     @patch("squad.ci.backend.lava.Backend.__resubmit__", return_value="1235")
@@ -645,7 +656,7 @@ class LavaTest(TestCase):
         self.assertEqual(1, new_test_job.resubmitted_count)
         self.assertFalse(testjob.can_resubmit)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT3)
     @patch("squad.ci.backend.lava.Backend.__resubmit__", return_value="1235")
@@ -661,7 +672,7 @@ class LavaTest(TestCase):
         self.assertEqual(1, new_test_job.resubmitted_count)
         self.assertFalse(testjob.can_resubmit)
 
-    @patch("squad.ci.backend.lava.Backend.__get_job_logs__", return_value="abc")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT4)
     @patch("squad.ci.backend.lava.Backend.__resubmit__", return_value="1235")
@@ -772,7 +783,7 @@ class LavaTest(TestCase):
 
     def test_lava_log_parsing(self):
         lava = LAVABackend(self.backend)
-        log_data = open(os.path.join(os.path.dirname(__file__), 'example-lava-log.yaml')).read()
+        log_data = LOG_DATA
         log = lava.__parse_log__(log_data)
         self.assertIn("target message", log)
         self.assertNotIn("info message", log)
