@@ -43,7 +43,7 @@ def export(f):
         rc = diff(f)
     if rc == 0:
         with open(f, 'w') as output:
-            output.write(json.dumps(count))
+            output.write(json.dumps(count, indent=4))
     return rc
 
 
