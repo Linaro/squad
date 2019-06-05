@@ -10,6 +10,7 @@ def get_metrics_list(project):
     ).values('suite__slug', 'name').order_by('suite__slug', 'name').distinct()
 
     metrics = [{"name": ":summary:", "label": _("Summary of all metrics per build")}]
+    metrics += [{"name": ":dynamic_summary:", "label": _("Summary of selected metrics")}]
     metrics += [{"name": ":tests:", "label": _("Test pass %"), "max": 100, "min": 0}]
     metrics += [{"name": join_name(m['suite__slug'], m['name'])} for m in metric_set]
     return metrics

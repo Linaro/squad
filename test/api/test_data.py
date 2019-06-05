@@ -153,3 +153,32 @@ class ApiDataTest(TestCase):
         self.assertEqual([1535846400, 3.0], second[0:2])
 
         self.assertEqual('application/json; charset=utf-8', resp.http['Content-Type'])
+
+    def test_dynamic_summary(self):
+        self.receive("2019-06-04", metrics={
+            "foo": 2,
+            "bar/baz": 2,
+        })  # geomean = 2
+
+        self.receive("2019-06-05", metrics={
+            "foo": 3,
+            "bar/baz": 3,
+            'fox/qux': 3,
+        })  # geomean = 3
+        resp = self.get_json(
+            '/api/data/mygroup/myproject?environment=env1&metric=foo&metric=bar/baz&metric=:dynamic_summary:')
+
+        first = resp.data[':dynamic_summary:']['env1'][0][1]
+        self.assertAlmostEqual(first, 2)
+
+        first = resp.data[':dynamic_summary:']['env1'][1][1]
+        self.assertAlmostEqual(first, 3)
+
+    def test_dynamic_summary_no_selected_metrics(self):
+        self.receive("2019-06-04", metrics={
+            "foo": 2,
+            "bar/baz": 2,
+        })
+        resp = self.get_json(
+            '/api/data/mygroup/myproject?environment=env1&metric=:dynamic_summary:')
+        self.assertEqual(resp.data[':dynamic_summary:']['env1'], [])
