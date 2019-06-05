@@ -13,6 +13,7 @@ from rest_framework.authtoken.models import Token
 
 
 tests_file = os.path.join(os.path.dirname(__file__), 'tests.json')
+tests_log_file = os.path.join(os.path.dirname(__file__), 'tests_log.json')
 metrics_file = os.path.join(os.path.dirname(__file__), 'benchmarks.json')
 log_file = os.path.join(os.path.dirname(__file__), 'test_run.log')
 metadata_file = os.path.join(os.path.dirname(__file__), 'metadata.json')
@@ -60,6 +61,22 @@ class CreateTestRunApiTest(ApiTest):
             )
         self.assertIsNotNone(models.TestRun.objects.last().tests_file)
         self.assertNotEqual(0, models.Test.objects.count())
+        self.assertIsNone(models.Test.objects.last().log)
+
+    def test_receives_tests_file_with_logs(self):
+        with open(tests_log_file) as f:
+            self.client.post(
+                '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+                {'tests': f}
+            )
+        self.assertIsNotNone(models.TestRun.objects.last().tests_file)
+        self.assertNotEqual(0, models.Test.objects.count())
+        test_one = models.Test.objects.filter(name="test_one").first()
+        test_two = models.Test.objects.filter(name="test_two").first()
+        self.assertTrue(test_one.result)
+        self.assertFalse(test_two.result)
+        self.assertEqual("test one log", test_one.log)
+        self.assertEqual("test two log", test_two.log)
 
     def test_receives_tests_file_as_POST_param(self):
         self.client.post(
@@ -68,6 +85,19 @@ class CreateTestRunApiTest(ApiTest):
         )
         self.assertIsNotNone(models.TestRun.objects.last().tests_file)
         self.assertNotEqual(0, models.Test.objects.count())
+        self.assertIsNone(models.Test.objects.last().log)
+
+    def test_receives_tests_file_as_POST_param_with_logs(self):
+        self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {'tests': '{"test1": {"result": "pass", "log": "test log"}}'}
+        )
+        self.assertIsNotNone(models.TestRun.objects.last().tests_file)
+        self.assertNotEqual(0, models.Test.objects.count())
+        self.assertIsNotNone(models.Test.objects.last().log)
+        test1 = models.Test.objects.filter(name="test1").first()
+        self.assertTrue(test1.result)
+        self.assertEqual("test log", test1.log)
 
     def test_receives_metrics_file(self):
         with open(metrics_file) as f:

@@ -141,6 +141,22 @@ Example:
       "testsuite2/subgroup2/testA[variant/two]": "pass"
     }
 
+There is an alternative format for sending results. Since SQUAD supports
+storing test log in the Test object, passed JSON file can look as follows:
+
+.. code:: json
+
+    {
+      "test1": {"result": "pass", "log": "test 1 log"},
+      "test2": {"result": "pass", "log": "test 2 log"},
+      "testsuite1/test1": {"result": "pass", "log": "test 1 log"},
+      "testsuite1/test2": {"result": "fail", "log": "test 2 log"}
+    }
+
+Both forms are supported. In case log entry is missing or simple JSON
+format is used, logs for each Test object are empty. They can be filled
+in using plugins.
+
 Metrics
 ~~~~~~~
 
