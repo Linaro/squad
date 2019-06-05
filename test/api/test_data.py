@@ -4,6 +4,7 @@ import json
 from django.contrib.auth.models import User
 
 from test.api import Client, APIClient
+from test.performance import count_queries
 from squad.core.tasks import ReceiveTestRun
 from squad.core import models
 
@@ -25,6 +26,11 @@ class ApiDataTest(TestCase):
             tests_file=json.dumps(tests),
         )
 
+    def get_json(self, url):
+        with count_queries('url:' + url):
+            response = self.client.get_json(url)
+        return response
+
     def test_basics(self):
         self.receive("2016-09-01", metrics={
             "foo": 1,
@@ -36,7 +42,7 @@ class ApiDataTest(TestCase):
             "bar/baz": 3,
         })
 
-        resp = self.client.get_json('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')
+        resp = self.get_json('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')
         json = resp.data
         self.assertEqual(dict, type(json['foo']))
 
@@ -78,7 +84,7 @@ class ApiDataTest(TestCase):
             "bar": "pass",
         })
 
-        response = self.client.get_json('/api/data/mygroup/myproject?metric=:tests:&environment=env1')
+        response = self.get_json('/api/data/mygroup/myproject?metric=:tests:&environment=env1')
         json = response.data
 
         first = json[':tests:']['env1'][0]
@@ -131,8 +137,7 @@ class ApiDataTest(TestCase):
             "bar/baz": 3,
         })
 
-        resp = self.client.get_json(
-            '/api/data/mygroup/myproject?environment=env1')
+        resp = self.get_json('/api/data/mygroup/myproject?environment=env1')
         json = resp.data
         self.assertEqual(dict, type(json['foo']))
         self.assertEqual(dict, type(json['bar/baz']))
