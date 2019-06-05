@@ -666,7 +666,9 @@ function ChartsController($scope, $http, $location, $compile, ChartPanel, DATA) 
                 chart.draw(target, $scope.environments,
                            $scope.ranges[metric.name])
                 metric.chart = chart
-                metric.drawn = true
+                if (! metric.dynamic) {
+                    metric.drawn = true
+                }
 
                 var slider_container = "<slider-range metrics='selectedMetrics' metric-index='" + index + "' ranges='ranges' format-date='formatDate(x)' filter-data='filterData(data, minLimit, maxLimit)' update-url='updateURL()' get-environment-ids='getEnvironmentIds()' value-min='" + min_value + "' value-max='" + max_value + "'></slider-range>"
                 elem = $compile(slider_container)($scope)
