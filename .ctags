@@ -4,7 +4,7 @@
 --exclude=squad/frontend/static/lodash.js
 --exclude=squad/frontend/static/chartjs
 --exclude=squad/frontend/static/jquery.js
---exclude=squad/frontend/static/floatThread
+--exclude=squad/frontend/static/floatThead
 --exclude=squad/frontend/static/select2.js/
 --exclude=squad/frontend/static/download.status
 --exclude=static

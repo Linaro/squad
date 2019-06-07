@@ -21,12 +21,14 @@
 <div class="row" id="test-results">
     <div class='col-md-12 col-sm-12'>
         <table class='test-results'>
-            <tr>
-                <th style='width: 150px'>{{ _('Suite') }}</th>
-                {% for environment in test_results.environments  %}
-                <th>{{environment}}</th>
-                {% endfor %}
-            </tr>
+            <thead>
+                <tr>
+                    <th style='width: 150px'>{{ _('Suite') }}</th>
+                    {% for environment in test_results.environments  %}
+                    <th>{{environment}}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
             {% for suite, results in test_results.data.items() %}
 	    <tr id='tests-{{suite.id}}' ng-show='match("tests-{{suite.id}}") || match("details-{{suite.id}}")'>
                 <td ng-click='toggle_details("details-{{suite.id}}")'>
@@ -186,4 +188,5 @@
 
 {% block javascript %}
 <script type="module" src='{{static("squad/build.js")}}'></script>
+<script type="module" src='{{static("squad/table.js")}}'></script>
 {% endblock %}

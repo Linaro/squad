@@ -1,22 +1,24 @@
 {% if comparison %}
 <table class='test-results'>
-  <tr>
-    <td rowspan='2'></td>
-    {% for build, environments in comparison.environments.items() %}
-    <th colspan={{environments|length}}>
-      <a href="{{project_url(build)}}">{{ _('%s, build %s') % (build.project, build.version) }}</a>
-    </th>
-    {% endfor %}
-  </tr>
-  <tr>
-    {% for build, environments in comparison.environments.items() %}
-      {% for environment in environments %}
-      <th>
-        {{environment}}
+  <thead>
+    <tr>
+      <td rowspan='2'></td>
+      {% for build, environments in comparison.environments.items() %}
+      <th colspan={{environments|length}}>
+        <a href="{{project_url(build)}}">{{ _('%s, build %s') % (build.project, build.version) }}</a>
       </th>
       {% endfor %}
-    {% endfor %}
-  </tr>
+    </tr>
+    <tr>
+      {% for build, environments in comparison.environments.items() %}
+        {% for environment in environments %}
+        <th>
+          {{environment}}
+        </th>
+        {% endfor %}
+      {% endfor %}
+    </tr>
+  </thead>
   {% for test, results in comparison.results %}
     <tr>
       <th>{{test}}</th>
