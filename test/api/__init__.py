@@ -32,3 +32,13 @@ class APIClient(Client):
             kwargs.update({'HTTP_AUTH_TOKEN': self.token})
         m = getattr(super(APIClient, self), method)
         return m(*args, **kwargs)
+
+
+class RestAPIClient(APIClient):
+
+    def __request__(self, method, *args, **kwargs):
+        if not kwargs.get('HTTP_AUTHORIZATION'):
+            kwargs = kwargs.copy()
+            kwargs.update({'HTTP_AUTHORIZATION': "Token %s" % self.token})
+        m = getattr(super(APIClient, self), method)
+        return m(*args, **kwargs)

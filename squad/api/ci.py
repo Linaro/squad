@@ -105,9 +105,12 @@ def resubmit_job(request, test_job_id, method='resubmit'):
         return HttpResponse(status=401)
 
     call = getattr(testjob, method)
-    call()
+    ret_value = call()
 
-    return HttpResponse(status=201)
+    if ret_value:
+        return HttpResponse(status=201)
+    # return 403 when resubmit call is unsuccessful
+    return HttpResponse(status=403)
 
 
 @require_http_methods(["POST"])

@@ -3,6 +3,8 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from enum import Enum
 from rest_framework.authtoken.models import Token
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 
 
 from squad.core import models
@@ -33,6 +35,14 @@ def auth_user_from_request(request, user):
             user = token.user
         except Token.DoesNotExist:
             pass
+    else:
+        try:
+            user_token = TokenAuthentication().authenticate(request)
+            if user_token is not None:
+                return user_token[0]
+        except AuthenticationFailed:
+            pass
+
     return user
 
 

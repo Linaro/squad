@@ -2,7 +2,7 @@ import os
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
-from test.api import APIClient
+from test.api import APIClient, RestAPIClient
 from test.mock import patch, MagicMock
 
 
@@ -32,6 +32,7 @@ class CiApiTest(TestCase):
 
         self.backend = models.Backend.objects.create(name='lava', implementation_type='fake')
         self.client = APIClient('thekey')
+        self.restclient = RestAPIClient('thekey')
         self.memberclient = APIClient('memberkey')
         self.adminclient = APIClient('adminkey')
 
@@ -145,6 +146,73 @@ class CiApiTest(TestCase):
             can_resubmit=True
         )
         r = self.client.post('/api/resubmit/%s' % t.pk)
+        self.assertEqual(201, r.status_code)
+        impl.resubmit.assert_called()
+        t.refresh_from_db()
+        self.assertEqual(False, t.can_resubmit)
+
+    @patch('squad.ci.models.Backend.get_implementation')
+    def test_resubmit_submitter_cant_resubmit(self, get_implementation):
+        impl = MagicMock()
+        impl.resubmit = MagicMock()
+        get_implementation.return_value = impl
+
+        t = self.backend.test_jobs.create(
+            target=self.project,
+            can_resubmit=False
+        )
+        r = self.client.post('/api/resubmit/%s' % t.pk)
+        self.assertEqual(403, r.status_code)
+        impl.resubmit.assert_not_called()
+        t.refresh_from_db()
+        self.assertEqual(False, t.can_resubmit)
+
+    @patch('squad.ci.models.Backend.get_implementation')
+    def test_resubmit_submitter_token_auth(self, get_implementation):
+        impl = MagicMock()
+        impl.resubmit = MagicMock()
+        get_implementation.return_value = impl
+
+        t = self.backend.test_jobs.create(
+            target=self.project,
+            can_resubmit=True
+        )
+
+        r = self.restclient.post('/api/resubmit/%s' % t.pk)
+        self.assertEqual(201, r.status_code)
+        impl.resubmit.assert_called()
+        t.refresh_from_db()
+        self.assertEqual(False, t.can_resubmit)
+
+    @patch('squad.ci.models.Backend.get_implementation')
+    def test_resubmit_submitter_auth_token_cant_resubmit(self, get_implementation):
+        impl = MagicMock()
+        impl.resubmit = MagicMock()
+        get_implementation.return_value = impl
+
+        t = self.backend.test_jobs.create(
+            target=self.project,
+            can_resubmit=False
+        )
+
+        r = self.restclient.post('/api/resubmit/%s' % t.pk)
+        self.assertEqual(403, r.status_code)
+        impl.resubmit.assert_not_called()
+        t.refresh_from_db()
+        self.assertEqual(False, t.can_resubmit)
+
+    @patch('squad.ci.models.Backend.get_implementation')
+    def test_force_resubmit_submitter_token_auth(self, get_implementation):
+        impl = MagicMock()
+        impl.resubmit = MagicMock()
+        get_implementation.return_value = impl
+
+        t = self.backend.test_jobs.create(
+            target=self.project,
+            can_resubmit=True
+        )
+
+        r = self.restclient.post('/api/resubmit/%s' % t.pk)
         self.assertEqual(201, r.status_code)
         impl.resubmit.assert_called()
         t.refresh_from_db()
