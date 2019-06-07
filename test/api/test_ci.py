@@ -8,7 +8,6 @@ from test.mock import patch, MagicMock
 
 from squad.core import models as core_models
 from squad.ci import models
-from squad.api.ci import resubmit_job, force_resubmit_job
 
 
 job_definition_file = os.path.join(os.path.dirname(__file__), 'definition.yaml')
@@ -153,6 +152,22 @@ class CiApiTest(TestCase):
         self.assertEqual(False, t.can_resubmit)
 
     @patch('squad.ci.models.Backend.get_implementation')
+    def test_resubmit_submitter_cant_resubmit(self, get_implementation):
+        impl = MagicMock()
+        impl.resubmit = MagicMock()
+        get_implementation.return_value = impl
+
+        t = self.backend.test_jobs.create(
+            target=self.project,
+            can_resubmit=False
+        )
+        r = self.client.post('/api/resubmit/%s' % t.pk)
+        self.assertEqual(403, r.status_code)
+        impl.resubmit.assert_not_called()
+        t.refresh_from_db()
+        self.assertEqual(False, t.can_resubmit)
+
+    @patch('squad.ci.models.Backend.get_implementation')
     def test_resubmit_submitter_token_auth(self, get_implementation):
         impl = MagicMock()
         impl.resubmit = MagicMock()
@@ -166,6 +181,23 @@ class CiApiTest(TestCase):
         r = self.restclient.post('/api/resubmit/%s' % t.pk)
         self.assertEqual(201, r.status_code)
         impl.resubmit.assert_called()
+        t.refresh_from_db()
+        self.assertEqual(False, t.can_resubmit)
+
+    @patch('squad.ci.models.Backend.get_implementation')
+    def test_resubmit_submitter_auth_token_cant_resubmit(self, get_implementation):
+        impl = MagicMock()
+        impl.resubmit = MagicMock()
+        get_implementation.return_value = impl
+
+        t = self.backend.test_jobs.create(
+            target=self.project,
+            can_resubmit=False
+        )
+
+        r = self.restclient.post('/api/resubmit/%s' % t.pk)
+        self.assertEqual(403, r.status_code)
+        impl.resubmit.assert_not_called()
         t.refresh_from_db()
         self.assertEqual(False, t.can_resubmit)
 
