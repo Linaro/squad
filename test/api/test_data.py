@@ -4,6 +4,7 @@ import json
 from django.contrib.auth.models import User
 
 from test.api import Client, APIClient
+from test.performance import count_queries
 from squad.core.tasks import ReceiveTestRun
 from squad.core import models
 
@@ -25,6 +26,11 @@ class ApiDataTest(TestCase):
             tests_file=json.dumps(tests),
         )
 
+    def get_json(self, url):
+        with count_queries('url:' + url):
+            response = self.client.get_json(url)
+        return response
+
     def test_basics(self):
         self.receive("2016-09-01", metrics={
             "foo": 1,
@@ -36,7 +42,7 @@ class ApiDataTest(TestCase):
             "bar/baz": 3,
         })
 
-        resp = self.client.get_json('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')
+        resp = self.get_json('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')
         json = resp.data
         self.assertEqual(dict, type(json['foo']))
 
@@ -78,7 +84,7 @@ class ApiDataTest(TestCase):
             "bar": "pass",
         })
 
-        response = self.client.get_json('/api/data/mygroup/myproject?metric=:tests:&environment=env1')
+        response = self.get_json('/api/data/mygroup/myproject?metric=:tests:&environment=env1')
         json = response.data
 
         first = json[':tests:']['env1'][0]
@@ -131,8 +137,7 @@ class ApiDataTest(TestCase):
             "bar/baz": 3,
         })
 
-        resp = self.client.get_json(
-            '/api/data/mygroup/myproject?environment=env1')
+        resp = self.get_json('/api/data/mygroup/myproject?environment=env1')
         json = resp.data
         self.assertEqual(dict, type(json['foo']))
         self.assertEqual(dict, type(json['bar/baz']))
@@ -148,3 +153,32 @@ class ApiDataTest(TestCase):
         self.assertEqual([1535846400, 3.0], second[0:2])
 
         self.assertEqual('application/json; charset=utf-8', resp.http['Content-Type'])
+
+    def test_dynamic_summary(self):
+        self.receive("2019-06-04", metrics={
+            "foo": 2,
+            "bar/baz": 2,
+        })  # geomean = 2
+
+        self.receive("2019-06-05", metrics={
+            "foo": 3,
+            "bar/baz": 3,
+            'fox/qux': 3,
+        })  # geomean = 3
+        resp = self.get_json(
+            '/api/data/mygroup/myproject?environment=env1&metric=foo&metric=bar/baz&metric=:dynamic_summary:')
+
+        first = resp.data[':dynamic_summary:']['env1'][0][1]
+        self.assertAlmostEqual(first, 2)
+
+        first = resp.data[':dynamic_summary:']['env1'][1][1]
+        self.assertAlmostEqual(first, 3)
+
+    def test_dynamic_summary_no_selected_metrics(self):
+        self.receive("2019-06-04", metrics={
+            "foo": 2,
+            "bar/baz": 2,
+        })
+        resp = self.get_json(
+            '/api/data/mygroup/myproject?environment=env1&metric=:dynamic_summary:')
+        self.assertEqual(resp.data[':dynamic_summary:']['env1'], [])

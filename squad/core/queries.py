@@ -1,6 +1,11 @@
 import datetime
+from itertools import groupby
+from functools import reduce
 
 from squad.core import models
+from squad.core.statistics import geomean
+from squad.core.utils import parse_name
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, F, Sum
 from django.utils import timezone
 
@@ -22,6 +27,11 @@ def get_metric_data(project, metrics, environments, date_start=None,
         elif metric == ':summary:':
             results[metric] = get_summary_series(project, environments,
                                                  date_start, date_end)
+        elif metric == ':dynamic_summary:':
+            real_metrics = [m for m in metrics if m not in [':tests:', ':summary:', ':dynamic_summary:']]
+            results[metric] = get_dynamic_summary(project, environments,
+                                                  real_metrics, date_start,
+                                                  date_end)
         else:
             results[metric] = get_metric_series(project, metric, environments,
                                                 date_start, date_end)
@@ -105,3 +115,51 @@ def get_summary_series(project, environments, date_start, date_end):
             for s in series
         ]
     return results
+
+
+def get_dynamic_summary(project, environments, metrics, date_start, date_end):
+    entry = {}
+    filters = []
+    if not metrics:
+        for env in environments:
+            entry[env] = []
+        return entry
+    for m in metrics:
+        suite, metric = parse_name(m)
+        filters.append(Q(suite__slug=suite) & Q(name=metric))
+    metric_filter = reduce(lambda x, y: x | y, filters)
+
+    data = models.Metric.objects.filter(
+        test_run__build__project=project,
+        test_run__environment__slug__in=environments,
+        test_run__created_at__range=(date_start, date_end),
+    ).filter(
+        metric_filter
+    ).prefetch_related(
+        'test_run',
+        'test_run__environment',
+        'test_run__build',
+        'test_run__build__annotation',
+    ).order_by('test_run__environment__id', 'test_run__build__id')
+
+    for environment, metrics_by_environment in groupby(data, lambda m: m.test_run.environment):
+        envdata = []
+        metrics_by_build = groupby(metrics_by_environment, lambda m: m.test_run.build)
+        for build, metric_list in metrics_by_build:
+            values = []
+            for metric in metric_list:
+                if not metric.is_outlier:
+                    values = values + metric.measurement_list
+            try:
+                description = build.annotation.description
+            except ObjectDoesNotExist:
+                description = ""
+            envdata.append([
+                build.datetime.timestamp(),
+                geomean(values),
+                build.version,
+                description,
+            ])
+        entry[environment.slug] = sorted(envdata, key=(lambda e: e[0]))
+
+    return entry
