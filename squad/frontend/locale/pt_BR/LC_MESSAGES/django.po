@@ -4,19 +4,21 @@
 # project.
 # Antonio Terceiro <antonio.terceiro@linaro.org>, 2019.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-06-10 18:17-0300\n"
-"PO-Revision-Date: 2019-05-17 15:23-0300\n"
-"Last-Translator: Charles Oliveira <charles.oliveira@linaro.org>\n"
-"Language-Team: \n"
-"Language: \n"
+"PO-Revision-Date: 2019-06-12 14:47+0000\n"
+"Last-Translator: Antonio Terceiro <terceiro@debian.org>\n"
+"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
+"squad/frontend/pt_BR/>\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 3.7-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/frontend/project_settings.py:59
@@ -37,11 +39,11 @@ msgstr "O valor digitado não corresponde ao slug do grupo"
 
 #: squad/frontend/queries.py:12
 msgid "Summary of all metrics per build"
-msgstr ""
+msgstr "Resumo de todas a métricas por build"
 
 #: squad/frontend/queries.py:13
 msgid "Summary of selected metrics"
-msgstr ""
+msgstr "Resumo das métricas selecionadas"
 
 #: squad/frontend/queries.py:14
 msgid "Test pass %"
@@ -116,7 +118,7 @@ msgstr "Como reproduzir:"
 #: squad/frontend/templates/squad/test_history.jinja2:104
 #: squad/frontend/templates/squad/tests.jinja2:74
 msgid "Test log:"
-msgstr "Logs do teste"
+msgstr "Logs do teste:"
 
 #: squad/frontend/templates/squad/build-nav.jinja2:86
 #: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:92
@@ -136,8 +138,8 @@ msgid ""
 "Once you delete your group, all of its projects, and all of their data, will "
 "be <strong>removed permanently</strong>."
 msgstr ""
-"Uma vez que você remover um grupo, todos os projetos do mesmo, e todos os "
-"dados, vão ser <strong>removidos permanentemente<strong>"
+"Ao remover seu grupo, todos os projetos do mesmo, e todos os dados, vão ser "
+"<strong>removidos permanentemente</strong>."
 
 #: squad/frontend/templates/squad/group-nav.jinja2:18
 #: squad/frontend/templates/squad/group_settings/base.jinja2:5
@@ -240,8 +242,8 @@ msgid ""
 "Once you delete your project, all of its data will be <strong>removed "
 "permanently</strong>."
 msgstr ""
-"Uma vez que você remover o projeto, todos os dados serão <strong>removidos "
-"permanentemente<strong>"
+"A remover o projeto, todos os dados serão <strong>removidos "
+"permanentemente</strong>."
 
 #: squad/frontend/templates/squad/project_settings/delete.jinja2:15
 msgid "Delete projec"
@@ -381,7 +383,7 @@ msgstr "Regressões"
 #: squad/frontend/templates/squad/_regressions_and_fixes.jinja2:7
 #, python-format
 msgid "Regressions found on <strong>%s</strong>:"
-msgstr "Regressões encontradas em <strong>%s<strong>:"
+msgstr "Regressões encontradas em <strong>%s</strong>:"
 
 #: squad/frontend/templates/squad/_regressions_and_fixes.jinja2:21
 msgid "Click to display fixes"
@@ -394,7 +396,7 @@ msgstr "Consertos"
 #: squad/frontend/templates/squad/_regressions_and_fixes.jinja2:25
 #, python-format
 msgid "Fixes found on <strong>%s</strong>:"
-msgstr "Consertos encontrados em <strong>%s<strong>:"
+msgstr "Consertos encontrados em <strong>%s</strong>:"
 
 #: squad/frontend/templates/squad/_builds_table.jinja2:27
 #: squad/frontend/templates/squad/_project_list.jinja2:39
@@ -413,7 +415,7 @@ msgstr "Filtrar resultados..."
 #: squad/frontend/templates/squad/build.jinja2:25
 #: squad/frontend/templates/squad/compare.jinja2:28
 msgid "Suite"
-msgstr "Suite"
+msgstr "Suíte"
 
 #: squad/frontend/templates/squad/build.jinja2:63
 msgid "Test Run"
@@ -534,7 +536,7 @@ msgstr "Anotação da Build"
 
 #: squad/frontend/templates/squad/build-nav.jinja2:78
 msgid "Description:"
-msgstr "Descrição"
+msgstr "Descrição:"
 
 #: squad/frontend/templates/squad/project-nav.jinja2:12
 msgid "Project Summary"
@@ -584,7 +586,7 @@ msgstr "Mostrando somente projetos não arquivados."
 
 #: squad/frontend/templates/squad/_project_list.jinja2:5
 msgid "Display archived and non-archived projects"
-msgstr "Mostrar projetos arquivados e não arquivados."
+msgstr "Mostrar projetos arquivados e não arquivados"
 
 #: squad/frontend/templates/squad/_project_list.jinja2:8
 msgid "Displaying archived and non-archived projects."
@@ -592,7 +594,7 @@ msgstr "Mostrando projetos arquivados e não arquivados."
 
 #: squad/frontend/templates/squad/_project_list.jinja2:9
 msgid "Display only non-archived projects"
-msgstr "Mostrar somente projetos não arquivados."
+msgstr "Mostrar somente projetos não arquivados"
 
 #: squad/frontend/templates/squad/_project_list.jinja2:26
 msgid "(archived)"
@@ -990,7 +992,7 @@ msgstr "Navegação de páginas"
 #: squad/frontend/templates/squad/test_run_suite_tests.jinja2:25
 #, python-format
 msgid "Suite: <strong>%s</strong>"
-msgstr "Suite: <strong>%s</strong>"
+msgstr "Suíte: <strong>%s</strong>"
 
 #: squad/frontend/templates/squad/testjob.jinja2:4
 #, python-format
