@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: squad.core VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-04-25 19:02-0300\n"
+"POT-Creation-Date: 2019-06-10 18:17-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: squad/core/models.py:69
+#: squad/core/models.py:69 squad/core/models.py:205
 msgid "Slug"
 msgstr ""
 
@@ -95,14 +95,14 @@ msgstr ""
 msgid "Is archived"
 msgstr ""
 
-#: squad/core/models.py:1122
+#: squad/core/models.py:1182
 msgid "All builds"
 msgstr ""
 
-#: squad/core/models.py:1123
+#: squad/core/models.py:1183
 msgid "Only on change"
 msgstr ""
 
-#: squad/core/models.py:1124
+#: squad/core/models.py:1184
 msgid "Only on regression"
 msgstr ""

@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: squad.core VERSION\n"
-"Report-Msgid-Bugs-To: squad-dev@lists.linaro.org\n"
-"POT-Creation-Date: 2019-05-10 07:25-0300\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2019-06-10 18:17-0300\n"
 "PO-Revision-Date: 2019-05-16 14:52-0300\n"
 "Last-Translator: Charles Oliveira <charles.oliveira@linaro.org>\n"
 "Language-Team: \n"
@@ -86,7 +86,9 @@ msgstr "Força o envio de notificações de build após esse número de segundos
 msgid ""
 "Delete builds older than this number of days. Set to 0 or any negative "
 "number to disable."
-msgstr "Remove builds mais antigas que esse número de dias. Coloque 0 ou negativo para disabilitar"
+msgstr ""
+"Remove builds mais antigas que esse número de dias. Coloque 0 ou negativo "
+"para disabilitar"
 
 #: squad/core/models.py:246
 msgid "Makes the project hidden from the group page by default"
@@ -96,14 +98,14 @@ msgstr "Marca o projeto como escondido por padrão na página do grupo"
 msgid "Is archived"
 msgstr "Está arquivado"
 
-#: squad/core/models.py:1122
+#: squad/core/models.py:1182
 msgid "All builds"
 msgstr "Todas as builds"
 
-#: squad/core/models.py:1123
+#: squad/core/models.py:1183
 msgid "Only on change"
 msgstr "Apenas quando houver mudança"
 
-#: squad/core/models.py:1124
+#: squad/core/models.py:1184
 msgid "Only on regression"
 msgstr "Apenas quando houver regressão"

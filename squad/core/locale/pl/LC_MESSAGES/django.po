@@ -8,16 +8,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: squad.core VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-04-25 19:02-0300\n"
+"POT-Creation-Date: 2019-06-10 18:17-0300\n"
 "PO-Revision-Date: 2019-05-15 13:00+0000\n"
 "Last-Translator: Milosz Wasilewski <milosz.wasilewski@linaro.org>\n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: squad/core/models.py:69
+#: squad/core/models.py:69 squad/core/models.py:205
 msgid "Slug"
 msgstr "Slug"
 
@@ -85,7 +86,9 @@ msgstr "Wymuś wysłanie notyfikacji dla wersji po tylu sekundach"
 msgid ""
 "Delete builds older than this number of days. Set to 0 or any negative "
 "number to disable."
-msgstr "Usuń wersje starsze niż ta liczba dni. Ustaw na 0 lub liczbę ujemną żeby dezaktywować"
+msgstr ""
+"Usuń wersje starsze niż ta liczba dni. Ustaw na 0 lub liczbę ujemną żeby "
+"dezaktywować"
 
 #: squad/core/models.py:246
 msgid "Makes the project hidden from the group page by default"
@@ -95,14 +98,14 @@ msgstr "Domyślnie ukrywa projekt na stronie grupy"
 msgid "Is archived"
 msgstr "Zarchiwizowany"
 
-#: squad/core/models.py:1122
+#: squad/core/models.py:1182
 msgid "All builds"
 msgstr "Wszystkie wersje"
 
-#: squad/core/models.py:1123
+#: squad/core/models.py:1183
 msgid "Only on change"
 msgstr "Tylko w przypadku zmiany"
 
-#: squad/core/models.py:1124
+#: squad/core/models.py:1184
 msgid "Only on regression"
 msgstr "Tylko w przypadku regresji"

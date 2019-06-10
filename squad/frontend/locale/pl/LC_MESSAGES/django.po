@@ -9,20 +9,21 @@ msgid ""
 msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-04-25 19:02-0300\n"
+"POT-Creation-Date: 2019-06-10 18:17-0300\n"
 "PO-Revision-Date: 2019-05-15 13:00+0000\n"
 "Last-Translator: Milosz Wasilewski <milosz.wasilewski@linaro.org>\n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: squad/frontend/project_settings.py:57
+#: squad/frontend/project_settings.py:59
 msgid "Type the project slug (the name used in URLs) to confirm"
 msgstr "Wpisz slug projektu (nazwa występująca w URLu) żeby potwierdzić"
 
-#: squad/frontend/project_settings.py:58
+#: squad/frontend/project_settings.py:60
 msgid "The confirmation does not match the project slug"
 msgstr "Potwierdznie nie zgadza się ze slugiem projektu"
 
@@ -35,6 +36,14 @@ msgid "The confirmation does not match the group slug"
 msgstr "Potwierdznie nie zgadza się ze slugiem grupy"
 
 #: squad/frontend/queries.py:12
+msgid "Summary of all metrics per build"
+msgstr ""
+
+#: squad/frontend/queries.py:13
+msgid "Summary of selected metrics"
+msgstr ""
+
+#: squad/frontend/queries.py:14
 msgid "Test pass %"
 msgstr "% testów pomyślnych"
 
@@ -124,9 +133,11 @@ msgstr "Usun grupę"
 
 #: squad/frontend/templates/squad/group_settings/delete.jinja2:11
 msgid ""
-"Once you delete your group, all of its projects, and all of their data, "
-"will be <strong>removed permanently</strong>."
-msgstr "Jeżeli usuniesz grupę, wszystkie zawarte w niej projekty i dane zostaną <strong>usunięte bezpowrotnie</strong>"
+"Once you delete your group, all of its projects, and all of their data, will "
+"be <strong>removed permanently</strong>."
+msgstr ""
+"Jeżeli usuniesz grupę, wszystkie zawarte w niej projekty i dane zostaną "
+"<strong>usunięte bezpowrotnie</strong>"
 
 #: squad/frontend/templates/squad/group-nav.jinja2:18
 #: squad/frontend/templates/squad/group_settings/base.jinja2:5
@@ -228,7 +239,9 @@ msgstr "Usuń projekt"
 msgid ""
 "Once you delete your project, all of its data will be <strong>removed "
 "permanently</strong>."
-msgstr "Jeżeli usuniesz projekt, wszystkie zawarte w nim dane zostaną <strong>usunięte bezpowrotnie</strong>"
+msgstr ""
+"Jeżeli usuniesz projekt, wszystkie zawarte w nim dane zostaną "
+"<strong>usunięte bezpowrotnie</strong>"
 
 #: squad/frontend/templates/squad/project_settings/delete.jinja2:15
 msgid "Delete projec"
@@ -449,7 +462,7 @@ msgstr "Strona główna"
 
 #: squad/frontend/templates/squad/base.jinja2:43
 #: squad/frontend/templates/squad/compare.jinja2:5
-#: squad/frontend/templates/squad/compare_projects.jinja2:22
+#: squad/frontend/templates/squad/compare_projects.jinja2:32
 msgid "Compare"
 msgstr "Porównaj"
 
@@ -468,23 +481,23 @@ msgstr "<a href=\"http://squad.readthedocs.io/\">SQUAD</a> wersja %s."
 
 #: squad/frontend/templates/squad/base.jinja2:64
 msgid ""
-"SQUAD is free software, distributed under the terms of <a "
-"href=\"https://www.gnu.org/licenses/agpl-3.0.html\">GNU Affero General "
-"Public License, version 3</a> or (at your option) any later version."
+"SQUAD is free software, distributed under the terms of <a href=\"https://www."
+"gnu.org/licenses/agpl-3.0.html\">GNU Affero General Public License, version "
+"3</a> or (at your option) any later version."
 msgstr ""
-"SQUAD jest worlnym oprogramowaniem, rozpowszechnianym na podstawie licensji <a "
-"href=\"https://www.gnu.org/licenses/agpl-3.0.html\">GNU Affero General "
+"SQUAD jest worlnym oprogramowaniem, rozpowszechnianym na podstawie licensji "
+"<a href=\"https://www.gnu.org/licenses/agpl-3.0.html\">GNU Affero General "
 "Public License, wersja 3</a> lub (według twojego wyboru) późniejszej."
 
 #: squad/frontend/templates/squad/base.jinja2:65
 msgid ""
-"<a href=\"https://github.com/Linaro/squad\">Source code</a> and <a "
-"href=\"https://github.com/Linaro/squad/issues\">Issue tracker</a> are "
-"available on Github."
+"<a href=\"https://github.com/Linaro/squad\">Source code</a> and <a href="
+"\"https://github.com/Linaro/squad/issues\">Issue tracker</a> are available "
+"on Github."
 msgstr ""
-"<a href=\"https://github.com/Linaro/squad\">Kod źródłowy</a> i <a "
-"href=\"https://github.com/Linaro/squad/issues\">zgłaszanie błędów</a> są "
-"dostępne na Github."
+"<a href=\"https://github.com/Linaro/squad\">Kod źródłowy</a> i <a href="
+"\"https://github.com/Linaro/squad/issues\">zgłaszanie błędów</a> są dostępne "
+"na Github."
 
 #: squad/frontend/templates/squad/build-nav.jinja2:13
 msgid "Annotation:"
@@ -531,12 +544,12 @@ msgstr "Podsumowanie projektu"
 msgid "Compare project"
 msgstr "Porównaj projekty"
 
-#: squad/frontend/templates/squad/compare_projects.jinja2:8
+#: squad/frontend/templates/squad/compare_projects.jinja2:18
 msgid "Select projects to compare"
 msgstr "Wybierz projekty do porównania"
 
 #: squad/frontend/templates/squad/compare.jinja2:15
-#: squad/frontend/templates/squad/group-nav.jinja2:13
+#: squad/frontend/templates/squad/group-nav.jinja2:14
 msgid "Projects"
 msgstr "Projekty"
 
@@ -563,7 +576,9 @@ msgstr "Testy tej wersji nie są jeszcze zakończone z nastepujących powodów:"
 
 #: squad/frontend/templates/squad/_unfinished_build.jinja2:14
 msgid "Being unfinished, this build will not trigger email notifications."
-msgstr "Testy tej wersji nie są jeszcze zakończone, więc powiadomienia nie będą wysłane."
+msgstr ""
+"Testy tej wersji nie są jeszcze zakończone, więc powiadomienia nie będą "
+"wysłane."
 
 #: squad/frontend/templates/squad/_project_list.jinja2:4
 msgid "Displaying only non-archived projects."
@@ -866,12 +881,12 @@ msgstr "Uwaga:"
 #: squad/frontend/templates/squad/user_settings/api_token.jinja2:26
 msgid ""
 "Resetting your API token will make the old token invalid, and it will no "
-"longer be accepted to authenticate API requests. Only the new token will "
-"be accepted."
+"longer be accepted to authenticate API requests. Only the new token will be "
+"accepted."
 msgstr ""
 "Zresetowanie tokena API spowoduje, że stary token stanie się nieważny i nie "
-"będzie więcej zakceptowany przy próbach autoryzacji. Tylko nowy token "
-"będzie akceptowany."
+"będzie więcej zakceptowany przy próbach autoryzacji. Tylko nowy token będzie "
+"akceptowany."
 
 #: squad/frontend/templates/squad/user_settings/api_token.jinja2:29
 msgid "Yes, reset my API token"
@@ -891,21 +906,20 @@ msgstr "Twój avatar"
 
 #: squad/frontend/templates/squad/user_settings/profile.jinja2:32
 msgid ""
-"This avatar is derived from your email address, and is provided by <a "
-"href=\"https://www.gravatar.com/\">Gravatar</a>."
+"This avatar is derived from your email address, and is provided by <a href="
+"\"https://www.gravatar.com/\">Gravatar</a>."
 msgstr ""
-"Ten avatar został utworzony przy pomocy Twojego adresu email. "
-"Usługa jest dostarczana przez <a href=\"https://www.gravatar.com/\">Gravatar</a>."
+"Ten avatar został utworzony przy pomocy Twojego adresu email. Usługa jest "
+"dostarczana przez <a href=\"https://www.gravatar.com/\">Gravatar</a>."
 
 #: squad/frontend/templates/squad/user_settings/projects.jinja2:9
 #, python-format
 msgid ""
-"Personal projects are enabled for you. You can go to your personal <a "
-"href=\"%s\"><strong>user namespace</strong></a> to manage your personal "
-"projects."
+"Personal projects are enabled for you. You can go to your personal <a href="
+"\"%s\"><strong>user namespace</strong></a> to manage your personal projects."
 msgstr ""
-"Projekty 'własne' są aktywowane. Możesz nimi zarządzać używając <a "
-"href=\"%s\"><strong>grupy użytkownika</strong></a>."
+"Projekty 'własne' są aktywowane. Możesz nimi zarządzać używając <a href=\"%s"
+"\"><strong>grupy użytkownika</strong></a>."
 
 #: squad/frontend/templates/squad/user_settings/projects.jinja2:12
 #, python-format
@@ -913,15 +927,16 @@ msgid ""
 "To remove your user namespace, and consequentially disable personal "
 "projects, you can access its <a href=\"%s\">Delete group</a> page."
 msgstr ""
-"Aby usunąć swoją grupe i dezaktywować projekty 'własne'"
-"możesz użyć strony <a href=\"%s\">Usuń grupę</a>."
+"Aby usunąć swoją grupe i dezaktywować projekty 'własne'możesz użyć strony <a "
+"href=\"%s\">Usuń grupę</a>."
 
 #: squad/frontend/templates/squad/user_settings/projects.jinja2:19
 msgid ""
-"To be able to create personal projects, you need first to create a "
-"<em>user namespace</em> for projects."
+"To be able to create personal projects, you need first to create a <em>user "
+"namespace</em> for projects."
 msgstr ""
-"Aby tworzyć własne projekty, musisz napierw utworzyć <em>grupę użytkownika</em>."
+"Aby tworzyć własne projekty, musisz napierw utworzyć <em>grupę użytkownika</"
+"em>."
 
 #: squad/frontend/templates/squad/user_settings/projects.jinja2:23
 msgid "Create user namespace"

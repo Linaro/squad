@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-04-25 19:02-0300\n"
+"POT-Creation-Date: 2019-06-10 18:17-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: squad/frontend/project_settings.py:57
+#: squad/frontend/project_settings.py:59
 msgid "Type the project slug (the name used in URLs) to confirm"
 msgstr ""
 
-#: squad/frontend/project_settings.py:58
+#: squad/frontend/project_settings.py:60
 msgid "The confirmation does not match the project slug"
 msgstr ""
 
@@ -35,6 +35,14 @@ msgid "The confirmation does not match the group slug"
 msgstr ""
 
 #: squad/frontend/queries.py:12
+msgid "Summary of all metrics per build"
+msgstr ""
+
+#: squad/frontend/queries.py:13
+msgid "Summary of selected metrics"
+msgstr ""
+
+#: squad/frontend/queries.py:14
 msgid "Test pass %"
 msgstr ""
 
@@ -445,7 +453,7 @@ msgstr ""
 
 #: squad/frontend/templates/squad/base.jinja2:43
 #: squad/frontend/templates/squad/compare.jinja2:5
-#: squad/frontend/templates/squad/compare_projects.jinja2:22
+#: squad/frontend/templates/squad/compare_projects.jinja2:32
 msgid "Compare"
 msgstr ""
 
@@ -521,12 +529,12 @@ msgstr ""
 msgid "Compare project"
 msgstr ""
 
-#: squad/frontend/templates/squad/compare_projects.jinja2:8
+#: squad/frontend/templates/squad/compare_projects.jinja2:18
 msgid "Select projects to compare"
 msgstr ""
 
 #: squad/frontend/templates/squad/compare.jinja2:15
-#: squad/frontend/templates/squad/group-nav.jinja2:13
+#: squad/frontend/templates/squad/group-nav.jinja2:14
 msgid "Projects"
 msgstr ""
 
