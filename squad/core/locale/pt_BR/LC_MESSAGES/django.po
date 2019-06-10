@@ -3,19 +3,21 @@
 # This file is distributed under the same license as the squad.core project.
 # Antonio Terceiro <antonio.terceiro@linaro.org>, 2019.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: squad.core VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-06-10 18:17-0300\n"
-"PO-Revision-Date: 2019-05-16 14:52-0300\n"
-"Last-Translator: Charles Oliveira <charles.oliveira@linaro.org>\n"
-"Language-Team: \n"
-"Language: \n"
+"PO-Revision-Date: 2019-06-12 14:25+0000\n"
+"Last-Translator: Antonio Terceiro <terceiro@debian.org>\n"
+"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
+"squad/core/pt_BR/>\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 3.7-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/core/models.py:69 squad/core/models.py:205
@@ -56,7 +58,7 @@ msgstr "Membro de grupo"
 
 #: squad/core/models.py:132
 msgid "Group members"
-msgstr "Membros de grupo"
+msgstr "Membros do grupo"
 
 #: squad/core/models.py:189
 msgid "Jinja2 template for subject (single line)"
