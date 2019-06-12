@@ -2,16 +2,23 @@
 Translating the SQUAD user interface
 ====================================
 
-Just run `./scripts/translate` with your language code as the only parameter.
-For example, for Brazilian Portuguese::
+The SQUAD translations are kindly hosted by Weblate_.
 
-    $ ./scripts/translate pt_BR
-    squad/core/locale/pt_BR/LC_MESSAGES/django.po: 0 translated messages, 22 untranslated messages.
-    squad/frontend/locale/pt_BR/LC_MESSAGES/django.po: 0 translated messages, 212 untranslated messages.
+.. _Weblate: https://hosted.weblate.org/
 
-The script will output the names of the translation files that need to be
-edited, together with the current translation statistics. Edit the `*.po`
-files, commit, and send a pull request.
+The translations are split into different components, which match the separate
+modules in the squad codebase. As of this writing, we have the components
+`core` and `frontend`. When you are reading this, we could have others.
 
-This procedure is valid both for creating new translations, and for updating
-existing ones.
+In order to work with SQUAD translations, you need to create a weblate account.
+
+To translate SQUAD into your language, just go to the `project page on
+weblate`_, click on the component you want, and then click on your language.
+
+.. _`project page on weblate`: https://hosted.weblate.org/projects/squad/
+
+If your language does not exist yet for that component, just click "Start new
+translation".
+
+Translation updates made on weblate are sent back to the SQUAD source code
+repository once a day.
