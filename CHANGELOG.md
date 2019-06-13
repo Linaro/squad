@@ -1,3 +1,19 @@
+# 0.66
+
+* frontend
+  * frontend/templatetags: fix pagination get_page_url
+  * frontend: fix floatThead
+  * charts: always redraw dynamic metrics
+* api:
+  * api: allow Authorization: Token in resubmit calls
+  * api: return proper value when resubmit is not successful
+* core:
+  * metrics: Add dynamic metric summary
+* i18n
+  * Added a partial Norwegian Bokmål translation
+  * Updated Brazilian Portuguese translation
+  * doc/translating.rst: add instructions to translate on weblate
+
 # 0.65
 
 * i18n: add Brazilian portuguese translation for SQUAD UI
