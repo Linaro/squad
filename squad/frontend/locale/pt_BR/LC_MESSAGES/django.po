@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-06-10 18:17-0300\n"
-"PO-Revision-Date: 2019-06-12 14:47+0000\n"
+"PO-Revision-Date: 2019-06-18 19:06+0000\n"
 "Last-Translator: Antonio Terceiro <terceiro@debian.org>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "squad/frontend/pt_BR/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.7\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/frontend/project_settings.py:59
@@ -479,7 +479,7 @@ msgstr "API"
 #: squad/frontend/templates/squad/base.jinja2:63
 #, python-format
 msgid "<a href=\"http://squad.readthedocs.io/\">SQUAD</a> version %s."
-msgstr "Versão do <a href=\"http://squad.readthedocs.io/\">SQUAD</a> %s."
+msgstr "<a href=\"http://squad.readthedocs.io/\">SQUAD</a> versão %s."
 
 #: squad/frontend/templates/squad/base.jinja2:64
 msgid ""
