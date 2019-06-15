@@ -1,7 +1,8 @@
 import json
 import yaml
 
-from django.db.models import Q
+from django.db.models import Q, F, Value as V, CharField
+from django.db.models.functions import Concat
 from django.core import exceptions as core_exceptions
 from django.core.validators import validate_email
 from django.contrib.auth.models import User
@@ -37,12 +38,19 @@ class GroupFilter(filters.FilterSet):
 
 class ProjectFilter(filters.FilterSet):
     group = filters.RelatedFilter(GroupFilter, name="group", queryset=Group.objects.all())
+    full_name = filters.CharFilter(method='filter_full_name', lookup_expr='icontains')
 
     class Meta:
         model = Project
         fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'slug': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'id': ['exact', 'in']}
+
+    def filter_full_name(self, queryset, field_name, value):
+        if value:
+            queryset = queryset.annotate(fullname=Concat(F('group__slug'), V('/'), F('slug'),
+                                         output_field=CharField())).filter(fullname__startswith=value)
+        return queryset
 
 
 class EnvironmentFilter(filters.FilterSet):

@@ -8,6 +8,22 @@
 <h2>{{ _('Metadata') }}</h2>
 {% include "squad/_metadata.jinja2" %}
 
+<div class="form-group row">
+    <div class="col-md-12 col-sm-12" ng-controller='BuildCompareController' ng-init="init({{ build.project_id }})">
+        <h2>{{ _('Compare builds') }}</h2>
+        <form action="{{ url('compare_builds') }}" class="">
+            <input type="hidden" name="project" value="{{build.project.full_name}}" />
+            <input type="hidden" name="baseline" value="{{build.version}}" />
+            <div class="row">
+                <label for="target_version" class="col-md-3 col-sm-3">{{ _('Build version to compare: ') }}</label>
+                <div class="col-md-4" style="height: 120%;">
+                    <select id="target-select" onchange="this.form.submit()" name="target" placeholder="{{ _('Enter target version') }}" class="form-control"></select>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div ng-controller='FilterController' data-param="filter-tests">
 <h2>{{ _('Test results') }}</h2>
 <div class='row row-bordered'>
@@ -187,6 +203,11 @@
 {% endblock %}
 
 {% block javascript %}
+<script type="text/javascript" src='{{static("select2.js/select2.min.js")}}'></script>
 <script type="module" src='{{static("squad/build.js")}}'></script>
 <script type="module" src='{{static("squad/table.js")}}'></script>
+{% endblock %}
+
+{% block styles %}
+<link href='{{static("select2.js/select2.css")}}' rel="stylesheet" />
 {% endblock %}

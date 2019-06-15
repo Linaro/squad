@@ -102,6 +102,11 @@ footer a:visited, footer a:link {
 .navbar {
   margin-bottom: 10px;
 }
+@media (min-width: 979px) {
+  li.dropdown:hover > ul.dropdown-menu {
+    display: block;
+  }
+}
 h1 {
   margin-top: 0px;
 }

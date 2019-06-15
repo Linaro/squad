@@ -5,7 +5,13 @@
       <td rowspan='2'></td>
       {% for build, environments in comparison.environments.items() %}
       <th colspan={{environments|length}}>
-        <a href="{{project_url(build)}}">{{ _('%s, build %s') % (build.project, build.version) }}</a>
+        <a href="{{project_url(build)}}">
+          {% if project %}
+            {{ _('build %s') % build.version }}
+          {% else %}
+            {{ _('%s, build %s') % (build.project, build.version) }}
+          {% endif %}
+        </a>
       </th>
       {% endfor %}
     </tr>
