@@ -37,7 +37,7 @@ function ChartSlider($document) {
             metricIndex: "@",
             ranges: "=",
             updateUrl: "&",
-            filterData: "&",
+            filterByDate: "&",
             getEnvironmentIds: "&",
             formatDate: "&",
         },
@@ -140,13 +140,11 @@ function ChartSlider($document) {
                         currentMetric.chart.maxDate,
                         xMax)
 
-                    _.each(currentMetric.chart.scatterChart.data.datasets, function(dataset) {
-                        dataset.data = scope.filterData({
-                            data: currentMetric.chart.data[dataset.label],
-                            minLimit: minLimit,
-                            maxLimit: maxLimit
-                        })
-                    });
+                    scope.filterByDate({
+                        chartPanel: currentMetric.chart,
+                        minLimit: minLimit,
+                        maxLimit: maxLimit
+                    })
 
                     currentMetric.chart.updateAnnotations(
                         scope.getEnvironmentIds(),
@@ -231,16 +229,49 @@ function ChartPanel($http, DATA) {
                 })
             })
 
-            var datasets = _.map(selected_environments, function(env) {
-                return {
+            var datasets = []
+            _.each(selected_environments, function(env) {
+                var line = chartPanel.filterData(data[env.name], minLimit, maxLimit)
+                var low = chartPanel.filterData(data[env.name], minLimit, maxLimit, 6)
+                var high = chartPanel.filterData(data[env.name], minLimit, maxLimit, 7)
+
+                // lower end of the range
+                if (! _.isEqual(low, line)) {
+                    datasets.push({
+                        label: ':low:' + env.name,
+                        data: low,
+                        backgroundColor: env.range_color,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                        borderColor: '#ffffff00', // transparent
+                        yidx: 6,
+                        fill: '+1'
+                    })
+                }
+
+                // main line
+                datasets.push({
                     label: env.name,
                     fill: false,
                     borderWidth: 2,
                     pointRadius: 1,
-                    lineTension: 0,
                     backgroundColor: env.fill_color,
                     borderColor: env.line_color,
-                    data: chartPanel.filterData(data[env.name], minLimit, maxLimit)
+                    data: line
+                })
+
+                // higher end of the range
+                if (! _.isEqual(high, line)) {
+                    datasets.push({
+                        label: ':high:' + env.name,
+                        data: high,
+                        backgroundColor: env.range_color,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                        borderColor: '#ffffff00', // transparent
+                        yidx: 7,
+                        fill: '-1'
+                    })
                 }
             })
 
@@ -308,6 +339,13 @@ function ChartPanel($http, DATA) {
                     annotation: {
                         drawTime: "afterDatasetsDraw",
                         annotations: [],
+                    },
+                    legend: {
+                        labels: {
+                            filter: function(item, chart) {
+                                return (! item.text.match(/^:(low|high):/))
+                            }
+                        }
                     }
                 }
             });
@@ -454,13 +492,16 @@ function ChartPanel($http, DATA) {
         this.updateMaxDate(environmentIds)
     }
 
-    chartPanel.filterData = function(data, minLimit, maxLimit) {
+    chartPanel.filterData = function(data, minLimit, maxLimit, yidx) {
+        if (yidx == undefined) {
+            yidx = 1
+        }
         var current_data = _.filter(data, function(point) {
             return point[0] >= minLimit && point[0] <= maxLimit
         }).map(function(point){
             var data_point = {
                 x: point[0],
-                y: point[1],
+                y: point[yidx],
                 build_id: point[2]
             }
             if (point.length > 4) {
@@ -670,7 +711,7 @@ function ChartsController($scope, $http, $location, $compile, ChartPanel, DATA) 
                     metric.drawn = true
                 }
 
-                var slider_container = "<slider-range metrics='selectedMetrics' metric-index='" + index + "' ranges='ranges' format-date='formatDate(x)' filter-data='filterData(data, minLimit, maxLimit)' update-url='updateURL()' get-environment-ids='getEnvironmentIds()' value-min='" + min_value + "' value-max='" + max_value + "'></slider-range>"
+                var slider_container = "<slider-range metrics='selectedMetrics' metric-index='" + index + "' ranges='ranges' format-date='formatDate(x)' filter-by-date='filterByDate(chartPanel, minLimit, maxLimit)' update-url='updateURL()' get-environment-ids='getEnvironmentIds()' value-min='" + min_value + "' value-max='" + max_value + "'></slider-range>"
                 elem = $compile(slider_container)($scope)
                 $(target).append(elem)
 
@@ -680,6 +721,18 @@ function ChartsController($scope, $http, $location, $compile, ChartPanel, DATA) 
 
                 $('[data-toggle="tooltip"]').tooltip()
             }
+        })
+    }
+
+    $scope.filterByDate = function(chartPanel, minLimit, maxLimit) {
+        _.each(chartPanel.scatterChart.data.datasets, function(dataset) {
+            var key = dataset.label.replace(/^:(low|high):/, '')
+            dataset.data = $scope.filterData(
+                chartPanel.data[key],
+                minLimit,
+                maxLimit,
+                dataset.yidx
+            )
         })
     }
 
@@ -711,14 +764,14 @@ function ChartsController($scope, $http, $location, $compile, ChartPanel, DATA) 
         var params = $location.search()
 
         var colors = [
-            ['#4e9a06', '#8ae234'], // Green
-            ['#204a87', '#729fcf'], // Blue
-            ['#563c66', '#ad7fa8'], // Purple
-            ['#a40000', '#ef2929'], // Red
-            ['#c4a000', '#fce94f'], // Yellow
-            ['#ce5c00', '#fcaf3e'], // Orange
-            ['#8f9502', '#e9b9ce'], // Light brown
-            ['#2e3436', '#888a85']  // Dark Gray
+            ['#4e9a06', '#8ae234', '#dcf6c2'], // Green
+            ['#204a87', '#729fcf', '#cbdbed'], // Blue
+            ['#563c66', '#ad7fa8', '#e4d4e2'], // Purple
+            ['#a40000', '#ef2929', '#fabebe'], // Red
+            ['#c4a000', '#fce94f', '#fef6ba'], // Yellow
+            ['#ce5c00', '#fcaf3e', '#fee2ba'], // Orange
+            ['#8f9502', '#e9b9ce', '#f6e2c2'], // Light brown
+            ['#2e3436', '#888a85', '#d3d7cf']  // Dark Gray
         ];
 
         $scope.environments = DATA.environments
@@ -726,6 +779,7 @@ function ChartsController($scope, $http, $location, $compile, ChartPanel, DATA) 
             var i = index % colors.length
             environment.line_color = colors[i][0]
             environment.fill_color = colors[i][1]
+            environment.range_color = colors[i][2]
         })
         _.each(_.castArray(params.environment), function(param) {
             var env = _.find($scope.environments, function(env)  { return env.name == param})
