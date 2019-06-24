@@ -189,6 +189,12 @@ function ChartSlider($document) {
     };
 }
 
+function getYAxis(min, max) {
+    var min = (min > 0) ? 0 : Math.round(1.2 * min)
+    var max = Math.round(1.2 * max)
+    return { min: min, max: max}
+}
+
 function ChartPanel($http, DATA) {
 
     var chartPanel = function(metric, data, environmentIds) {
@@ -230,10 +236,16 @@ function ChartPanel($http, DATA) {
             })
 
             var datasets = []
+            var min = 0
+            var max = 0
             _.each(selected_environments, function(env) {
                 var line = chartPanel.filterData(data[env.name], minLimit, maxLimit)
                 var low = chartPanel.filterData(data[env.name], minLimit, maxLimit, 6)
                 var high = chartPanel.filterData(data[env.name], minLimit, maxLimit, 7)
+
+                var series = _.map(line, function(p) { return p.y })
+                min = Math.min(min, _.min(series))
+                max = Math.max(max, _.max(series))
 
                 // lower end of the range
                 if (! _.isEqual(low, line)) {
@@ -323,10 +335,7 @@ function ChartPanel($http, DATA) {
                     },
                     scales: {
                         yAxes: [{
-                            ticks: {
-                                max: metric.max,
-                                min: metric.min
-                            }
+                            ticks: getYAxis(min, max)
                         }],
                         xAxes: [{
                             type: 'linear',
