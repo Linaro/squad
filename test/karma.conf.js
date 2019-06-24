@@ -10,7 +10,7 @@ module.exports = function(config) {
             'squad/frontend/static/jquery.js',
             'squad/frontend/static/lodash.js',
             'squad/frontend/static/bootstrap/js/bootstrap.js',
-            'squad/frontend/static/floatThread/src/jquery.floatThead.js',
+            'squad/frontend/static/floatThead/src/jquery.floatThead.js',
             'squad/frontend/static/chartjs/Chart.bundle.js',
             'squad/frontend/static/select2.js/select2.min.js',
 
