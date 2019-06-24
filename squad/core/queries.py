@@ -39,6 +39,18 @@ def get_metric_data(project, metrics, environments, date_start=None,
     return results
 
 
+def split_measurements(liststr):
+    return sorted([float(f) for f in liststr.split(',')])
+
+
+def get_min(liststr):
+    return split_measurements(liststr)[0]
+
+
+def get_max(liststr):
+    return split_measurements(liststr)[-1]
+
+
 def get_metric_series(project, metric, environments, date_start, date_end):
     entry = {}
     for environment in environments:
@@ -55,6 +67,7 @@ def get_metric_series(project, metric, environments, date_start, date_end):
             'result',
             'test_run__build__annotation__description',
             'is_outlier',
+            'measurements',
         )
         entry[environment] = [
             [
@@ -64,6 +77,8 @@ def get_metric_series(project, metric, environments, date_start, date_end):
                 p['test_run__build__annotation__description'] or "",
                 p['id'],
                 str(p['is_outlier']),
+                get_min(p['measurements']),
+                get_max(p['measurements']),
             ] for p in series
         ]
     return entry
