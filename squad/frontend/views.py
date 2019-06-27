@@ -13,7 +13,7 @@ from squad.core.models import Group, Metric, ProjectStatus, Status
 from squad.core.models import Build
 from squad.core.queries import get_metric_data
 from squad.frontend.queries import get_metrics_list
-from squad.frontend.utils import file_type
+from squad.frontend.utils import file_type, alphanum_sort
 from squad.http import auth
 from collections import OrderedDict
 
@@ -61,7 +61,7 @@ def home(request):
 
 def group_home(request, group_slug):
     group = get_object_or_404(Group, slug=group_slug)
-    projects = group.projects.accessible_to(request.user)
+    projects = alphanum_sort(group.projects.accessible_to(request.user), 'name')
     archived_projects = [p for p in projects if p.is_archived]
     context = {
         'group': group,
