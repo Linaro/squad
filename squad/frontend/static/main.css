@@ -346,3 +346,7 @@ a[ng-click] {
 .inline {
   display: inline;
 }
+
+ul#compare-menu {
+  z-index: 2000;
+}
