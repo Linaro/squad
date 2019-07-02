@@ -280,17 +280,21 @@ class Backend(BaseBackend):
     def __get_publisher_event_socket__(self):
         return self.proxy.scheduler.get_publisher_event_socket()
 
+    def __resolve_setting__(self, project_settings, setting_name, default=None):
+        selected_setting = self.settings.get(setting_name, default)
+        tmp_setting = project_settings.get(setting_name)
+        if tmp_setting is not None:
+            selected_setting = tmp_setting
+        return selected_setting
+
     def __parse_results__(self, data, test_job):
-        handle_lava_suite = self.settings.get('CI_LAVA_HANDLE_SUITE', False)
-        clone_measurements_to_tests = self.settings.get('CI_LAVA_CLONE_MEASUREMENTS', False)
         if hasattr(test_job, 'target') and test_job.target.project_settings is not None:
-            project_settings = yaml.safe_load(test_job.target.project_settings) or {}
-            tmp_handle_lava = project_settings.get('CI_LAVA_HANDLE_SUITE')
-            if tmp_handle_lava is not None:
-                handle_lava_suite = tmp_handle_lava
-            tmp_clone_measurements_to_tests = project_settings.get('CI_LAVA_CLONE_MEASUREMENTS')
-            if tmp_clone_measurements_to_tests is not None:
-                clone_measurements_to_tests = tmp_clone_measurements_to_tests
+            ps = yaml.safe_load(test_job.target.project_settings) or {}
+            handle_lava_suite = self.__resolve_setting__(ps, 'CI_LAVA_HANDLE_SUITE', False)
+            clone_measurements_to_tests = self.__resolve_setting__(ps, 'CI_LAVA_CLONE_MEASUREMENTS', False)
+        else:
+            handle_lava_suite = self.settings.get('CI_LAVA_HANDLE_SUITE', False)
+            clone_measurements_to_tests = self.settings.get('CI_LAVA_CLONE_MEASUREMENTS', False)
 
         definition = yaml.safe_load(data['definition'])
         test_job.name = definition['job_name'][:255]
