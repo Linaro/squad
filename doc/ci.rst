@@ -136,7 +136,11 @@ LAVA backend supports the following settings:
    set to ``True``. Please note that this option can be overwritten by
    having the same option with different value in Project `project_settings`
  - CI_LAVA_CLONE_MEASUREMENTS
-   boolean flag that allows to sate LAVA result as both Test and Measurement
+   boolean flag that allows to save LAVA result as both Test and Measurement
+   when set to ``True``. Default is ``False``. Can be overwritten for each
+   project separately (similar to CI_LAVA_HANDLE_SUITE).
+ - CI_LAVA_IGNORE_BOOT
+   boolean flag that avoids parsing LAVA `auto-login-action` as a boot test
    when set to ``True``. Default is ``False``. Can be overwritten for each
    project separately (similar to CI_LAVA_HANDLE_SUITE).
 
