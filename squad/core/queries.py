@@ -39,6 +39,18 @@ def get_metric_data(project, metrics, environments, date_start=None,
     return results
 
 
+def split_measurements(liststr):
+    return sorted([float(f) for f in liststr.split(',')])
+
+
+def get_min(liststr):
+    return split_measurements(liststr)[0]
+
+
+def get_max(liststr):
+    return split_measurements(liststr)[-1]
+
+
 def get_metric_series(project, metric, environments, date_start, date_end):
     entry = {}
     for environment in environments:
@@ -54,10 +66,20 @@ def get_metric_series(project, metric, environments, date_start, date_end):
             'test_run__build__version',
             'result',
             'test_run__build__annotation__description',
-            'is_outlier'
+            'is_outlier',
+            'measurements',
         )
         entry[environment] = [
-            [int(p['test_run__build__datetime'].timestamp()), p['result'], p['test_run__build__version'], p['test_run__build__annotation__description'] or "", p['id'], str(p['is_outlier'])] for p in series
+            [
+                int(p['test_run__build__datetime'].timestamp()),
+                p['result'],
+                p['test_run__build__version'],
+                p['test_run__build__annotation__description'] or "",
+                p['id'],
+                str(p['is_outlier']),
+                get_min(p['measurements']),
+                get_max(p['measurements']),
+            ] for p in series
         ]
     return entry
 
@@ -85,7 +107,12 @@ def get_tests_series(project, environments, date_start, date_end):
         ).order_by('test_run__build__datetime')
 
         results[environment] = [
-            [int(s['test_run__build__datetime'].timestamp()), s['pass_percentage'], s['test_run__build__version'], s['test_run__build__annotation__description'] or ""]
+            [
+                int(s['test_run__build__datetime'].timestamp()),
+                s['pass_percentage'],
+                s['test_run__build__version'],
+                s['test_run__build__annotation__description'] or "",
+            ]
             for s in series
         ]
     return results
@@ -111,7 +138,12 @@ def get_summary_series(project, environments, date_start, date_end):
         ).order_by('build__datetime')
 
         results[environment] = [
-            [int(s['build__datetime'].timestamp()), s['metrics_summary'], s['build__version'], s['build__annotation__description'] or ""]
+            [
+                int(s['build__datetime'].timestamp()),
+                s['metrics_summary'],
+                s['build__version'],
+                s['build__annotation__description'] or "",
+            ]
             for s in series
         ]
     return results

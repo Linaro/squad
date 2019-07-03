@@ -23,7 +23,7 @@ fi
 basedir="$(dirname "$0")"
 
 for i in $(seq ${days} -1 0); do
-  build=$((days - i))
-  faketime "$i days ago" $(dirname $0)/submit-$what "$TEAM" "$PROJECT" "$build" "$ENVIRONMENT"
+  export BUILD=$((days - i))
+  faketime "$i days ago" $(dirname $0)/submit-$what "$TEAM" "$PROJECT" "$BUILD" "$ENVIRONMENT"
   echo "submitted data for $i days ago"
 done
