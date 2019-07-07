@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-06-10 18:17-0300\n"
-"PO-Revision-Date: 2019-06-23 01:02+0000\n"
+"PO-Revision-Date: 2019-07-08 09:02+0000\n"
 "Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/squad/"
 "frontend/nb_NO/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.7\n"
+"X-Generator: Weblate 3.8-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/frontend/project_settings.py:59
@@ -51,15 +51,16 @@ msgstr ""
 
 #: squad/frontend/templates/404.jinja2:4
 msgid "Page not found"
-msgstr ""
+msgstr "Fant ikke siden"
 
 #: squad/frontend/templates/squad/test_history.jinja2:14
+#, fuzzy
 msgid "permalink"
-msgstr ""
+msgstr "permanent lenke"
 
 #: squad/frontend/templates/squad/test_history.jinja2:23
 msgid "Test results history"
-msgstr ""
+msgstr "Testresultathistorikk"
 
 #: squad/frontend/templates/squad/test_history.jinja2:28
 msgid "Build"
@@ -138,6 +139,8 @@ msgid ""
 "Once you delete your group, all of its projects, and all of their data, "
 "will be <strong>removed permanently</strong>."
 msgstr ""
+"Når du sletter din gruppe, vil alle dens prosjekter, og all deres data, bli "
+"<strong>slettet permenent</strong>."
 
 #: squad/frontend/templates/squad/group-nav.jinja2:18
 #: squad/frontend/templates/squad/group_settings/base.jinja2:5
@@ -165,11 +168,11 @@ msgstr "Legg til et nytt medlem"
 
 #: squad/frontend/templates/squad/group_settings/members.jinja2:11
 msgid "Help on permissions"
-msgstr ""
+msgstr "Hjelp med tilganger"
 
 #: squad/frontend/templates/squad/group_settings/members.jinja2:21
 msgid "Permissions by access level"
-msgstr ""
+msgstr "Tilganger etter tilgangsnivå"
 
 #: squad/frontend/templates/squad/group_settings/members.jinja2:35
 msgid "Existing members"
@@ -240,6 +243,8 @@ msgid ""
 "Once you delete your project, all of its data will be <strong>removed "
 "permanently</strong>."
 msgstr ""
+"Når du sletter prosjektet ditt, vil all dets data bli <strong>slettet "
+"permanent</strong>."
 
 #: squad/frontend/templates/squad/project_settings/delete.jinja2:15
 msgid "Delete projec"
@@ -306,6 +311,8 @@ msgid_plural ""
 "\n"
 "Please correct the errors below.\n"
 msgstr[0] ""
+"\n"
+"Rett feilen nedenfor.\n"
 msgstr[1] ""
 
 #: squad/frontend/templates/squad/_user_menu.jinja2:22
@@ -660,7 +667,7 @@ msgstr ""
 
 #: squad/frontend/templates/squad/test_run.jinja2:26
 msgid "Related downloads"
-msgstr ""
+msgstr "Relaterte nedlastinger"
 
 #: squad/frontend/templates/squad/test_run.jinja2:31
 msgid "Log file"
@@ -701,7 +708,7 @@ msgstr ""
 
 #: squad/frontend/templates/squad/_builds_table.jinja2:18
 msgid "Completed"
-msgstr ""
+msgstr "Fullført"
 
 #: squad/frontend/templates/squad/_builds_table.jinja2:18
 #, python-format
@@ -919,15 +926,16 @@ msgstr ""
 
 #: squad/frontend/templates/squad/user_settings/projects.jinja2:23
 msgid "Create user namespace"
-msgstr ""
+msgstr "Opprett bruker-navnerom"
 
 #: squad/frontend/templates/squad/metrics.jinja2:19
 msgid "Select environment(s)"
-msgstr ""
+msgstr "Velg miljø(er)"
 
 #: squad/frontend/templates/squad/metrics.jinja2:22
+#, fuzzy
 msgid "toggle all"
-msgstr ""
+msgstr "veksle alle"
 
 #: squad/frontend/templates/squad/metrics.jinja2:51
 msgid "Add metric:"
@@ -975,7 +983,7 @@ msgstr ""
 #: squad/frontend/templates/squad/testjob.jinja2:4
 #, python-format
 msgid "The URL for requested test job (%s) doesn't yet exist."
-msgstr ""
+msgstr "Nettadressen for forespurt testjobb (%s) finnes ikke enda."
 
 #: squad/frontend/templates/squad/testjob.jinja2:6
 msgid "TestJob submission failed"
