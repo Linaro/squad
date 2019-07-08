@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-07-08 13:08-0300\n"
-"PO-Revision-Date: 2019-06-18 19:06+0000\n"
-"Last-Translator: Antonio Terceiro <terceiro@debian.org>\n"
+"PO-Revision-Date: 2019-07-08 17:55+0000\n"
+"Last-Translator: Charles Oliveira <18oliveira.charles@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "squad/frontend/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.7\n"
+"X-Generator: Weblate 3.8-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/frontend/project_settings.py:59
@@ -128,9 +128,9 @@ msgid "Close"
 msgstr "Fechar"
 
 #: squad/frontend/templates/squad/_results_table.jinja2:10
-#, fuzzy, python-format
+#, python-format
 msgid "build %s"
-msgstr "Build %s"
+msgstr "build %s"
 
 #: squad/frontend/templates/squad/_results_table.jinja2:12
 #, python-format
@@ -139,7 +139,7 @@ msgstr "%s, build %s"
 
 #: squad/frontend/templates/squad/_results_table.jinja2:24
 msgid "mean (stdev)"
-msgstr ""
+msgstr "média (desvio padrão)"
 
 #: squad/frontend/templates/squad/group_settings/base.jinja2:21
 #: squad/frontend/templates/squad/group_settings/delete.jinja2:7
@@ -314,15 +314,10 @@ msgid "Profile"
 msgstr "Perfil"
 
 #: squad/frontend/templates/squad/login.jinja2:6
-#, fuzzy
 msgid "Please correct the error below."
 msgid_plural "Please correct the errors below."
-msgstr[0] ""
-"\n"
-"Por favor corrigir o erro abaixo.\n"
-msgstr[1] ""
-"\n"
-"Por favor corrigir os erros abaixo.\n"
+msgstr[0] "Por favor corrigir o erro abaixo."
+msgstr[1] "Por favor corrigir os erros abaixo."
 
 #: squad/frontend/templates/squad/_user_menu.jinja2:22
 #: squad/frontend/templates/squad/login.jinja2:23
@@ -409,18 +404,17 @@ msgstr "Consertos encontrados em <strong>%s</strong>:"
 #: squad/frontend/templates/squad/_builds_table.jinja2:3
 #: squad/frontend/templates/squad/build.jinja2:13
 #: squad/frontend/templates/squad/compare_builds.jinja2:4
-#, fuzzy
 msgid "Compare builds"
-msgstr "Comparar testes"
+msgstr "Comparar builds"
 
 #: squad/frontend/templates/squad/build.jinja2:18
 msgid "Build version to compare: "
-msgstr ""
+msgstr "Versão da build para comparar: "
 
 #: squad/frontend/templates/squad/build.jinja2:20
 #: squad/frontend/templates/squad/compare_builds.jinja2:36
 msgid "Enter target version"
-msgstr ""
+msgstr "Digite a versão a ser comparada"
 
 #: squad/frontend/templates/squad/_builds_table.jinja2:36
 #: squad/frontend/templates/squad/_project_list.jinja2:39
@@ -483,9 +477,8 @@ msgid "Not completed"
 msgstr "Não completada"
 
 #: squad/frontend/templates/squad/base.jinja2:42
-#, fuzzy
 msgid "Groups"
-msgstr "Membros do grupo"
+msgstr "Grupos"
 
 #: squad/frontend/templates/squad/base.jinja2:45
 #: squad/frontend/templates/squad/compare.jinja2:5
@@ -495,12 +488,10 @@ msgid "Compare"
 msgstr "Comparar"
 
 #: squad/frontend/templates/squad/base.jinja2:50
-#, fuzzy
 msgid "Compare Builds"
-msgstr "Comparar testes"
+msgstr "Comparar builds"
 
 #: squad/frontend/templates/squad/base.jinja2:54
-#, fuzzy
 msgid "Compare Projects"
 msgstr "Comparar projetos"
 
@@ -588,21 +579,18 @@ msgstr "Selecione projetos para serem comparados"
 
 #: squad/frontend/templates/squad/compare_builds.jinja2:40
 #: squad/frontend/templates/squad/compare_projects.jinja2:33
-#, fuzzy
 msgid "Comparison type"
-msgstr "Comparar"
+msgstr "Tipo de comparação"
 
 #: squad/frontend/templates/squad/compare_builds.jinja2:43
 #: squad/frontend/templates/squad/compare_projects.jinja2:36
-#, fuzzy
 msgid "compare by tests"
-msgstr "Comparar testes"
+msgstr "comparar testes"
 
 #: squad/frontend/templates/squad/compare_builds.jinja2:46
 #: squad/frontend/templates/squad/compare_projects.jinja2:39
-#, fuzzy
 msgid "compare by metrics"
-msgstr "Comparar testes"
+msgstr "comparar métricas"
 
 #: squad/frontend/templates/squad/compare.jinja2:15
 #: squad/frontend/templates/squad/group-nav.jinja2:14
@@ -761,11 +749,11 @@ msgstr "Essa build ainda não possui resultados."
 
 #: squad/frontend/templates/squad/_builds_table.jinja2:4
 msgid "Two builds need to be selected!"
-msgstr ""
+msgstr "Duas builds devem ser selecionadas!"
 
 #: squad/frontend/templates/squad/_builds_table.jinja2:5
 msgid "Selected builds must be different!"
-msgstr ""
+msgstr "As builds selecionadas devem ser diferentes!"
 
 #: squad/frontend/templates/squad/_builds_table.jinja2:25
 #, python-format
@@ -1045,31 +1033,27 @@ msgstr "Sair"
 #: squad/frontend/templates/squad/compare_builds.jinja2:15
 #: squad/frontend/templates/squad/compare_builds.jinja2:52
 msgid "Start over"
-msgstr ""
+msgstr "Voltar ao início"
 
 #: squad/frontend/templates/squad/compare_builds.jinja2:17
-#, fuzzy
 msgid "Project"
 msgstr "Projetos"
 
 #: squad/frontend/templates/squad/compare_builds.jinja2:22
-#, fuzzy
 msgid "Enter project name"
-msgstr "Remover projeto"
+msgstr "Digite o nome do projeto"
 
 #: squad/frontend/templates/squad/compare_builds.jinja2:28
-#, fuzzy
 msgid "Compare build"
-msgstr "Comparar"
+msgstr "Comparar builds"
 
 #: squad/frontend/templates/squad/compare_builds.jinja2:30
 msgid "Enter baseline version"
-msgstr ""
+msgstr "Digite a versão base"
 
 #: squad/frontend/templates/squad/compare_builds.jinja2:34
-#, fuzzy
 msgid "against build"
-msgstr "Última build"
+msgstr "contra a build"
 
 #: squad/frontend/templates/squad/_pagination.jinja2:2
 msgid "Page navigation"
