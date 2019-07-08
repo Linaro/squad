@@ -95,7 +95,9 @@ class TestComparisonTest(TestCase):
 
     def test_no_data(self):
         new_project = self.group.projects.create(slug='new')
-        TestComparison.compare_projects(new_project)
+        comp = TestComparison.compare_projects(new_project)
+        self.assertFalse(comp.diff)
+        self.assertEqual([], comp.builds)
 
     def test_diff(self):
         comparison = compare(self.build1, self.build2)

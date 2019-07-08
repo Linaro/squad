@@ -8,7 +8,7 @@
     {% include "squad/_pagination.jinja2" %}
   {% endwith %}
 
-  {% include "squad/_test_results_table.jinja2" %}
+  {% include "squad/_results_table.jinja2" %}
 
   {% with items=comparison.results %}
     {% include "squad/_pagination.jinja2" %}
@@ -29,6 +29,16 @@
     </label>
   </div>
   {% endfor %}
+  <div class="form-group">
+    <label>{{ _('Comparison type') }}</label>
+    <div>
+      <input id="test-comparison" name="comparison_type" type="radio" value="test" checked="checked"/>
+      <label for="test-comparison">{{ _('compare by tests') }}</label>
+      <br />
+	  <input id="metric-comparison" name="comparison_type" type="radio" value="metric" />
+      <label for="metric-comparison">{{ _('compare by metrics') }}</label>
+    </div>
+  </div>
   <input type='submit' value='{{ _('Compare') }}' class='btn btn-default'/>
 </form>
 {% endblock %}

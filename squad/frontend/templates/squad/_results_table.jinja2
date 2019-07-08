@@ -20,6 +20,8 @@
         {% for environment in environments %}
         <th>
           {{environment}}
+          <br />
+          {{ _('mean (stdev)') }}
         </th>
         {% endfor %}
       {% endfor %}
@@ -31,15 +33,24 @@
       {% for build, environments in comparison.environments.items() %}
         {% for environment in environments %}
           {% with result=results.get((build, environment)) %}
-            <td class='{{result|slugify}}'>
-              {% if result %}
-              <a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test])}}">
-                <strong>{{result}}</strong>
-              </a>
+            {% if result %}
+              {% if comparison_type == 'test' %}
+                <td class='{{result|slugify}}'>
+                  <a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test])}}">
+                    <strong>{{result}}</strong>
+                  </a>
+                </td>
               {% else %}
-              <i>{{ _('n/a') }}</i>
+                {% set mean = result.0|float %}
+                {% set stddev = result.1|float %}
+                {% set total = result.2|int %}
+                <td title="{{_('Number of measurements: %d' % total)}}">
+                  <strong>{{'%.2f' % mean}} ({{'%.2f' % stddev}})</strong>
+                </td>
               {% endif %}
-            </td>
+            {% else %}
+              <td><i>{{ _('n/a') }}</i></td>
+            {% endif %}
           {% endwith %}
         {% endfor %}
       {% endfor %}

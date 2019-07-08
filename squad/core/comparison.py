@@ -1,33 +1,33 @@
 from collections import OrderedDict
-from django.db.models import F
+from itertools import groupby
+import statistics
 
 
-from squad.core.utils import parse_name
+from squad.core.utils import parse_name, join_name
 from squad.core import models
-from squad.core.utils import join_name
 
 
-class TestComparison(object):
+class BaseComparison(object):
     """
     Data structure:
 
     builds: [Build]
     environments: Build → [EnvironmentName(str)]
-    results: TestName(str) → ((Build,EnvironmentName(str)) → TestResults)
+    results: Name(str) → ((Build,EnvironmentName(str)) → Results)
 
     The best way to think about this is to think of the table you want as
     result:
 
-    +-------+---------------+---------------+
-    |       |    build 1    |    build 2    |
-    +       +-------+-------+-------+-------+
-    |       | env 1 | env 2 | env 1 | env 2 |
-    +-------+-------+-------+-------+-------+
-    | test1 |       |       |       |       |
-    | test2 |       |       |       |       |
-    | test3 |       |       |       |       |
-    | test4 |       |       |       |       |
-    +-------+-------+-------+-------+-------+
+    +---------+---------------+---------------+
+    |         |    build 1    |    build 2    |
+    +         +-------+-------+-------+-------+
+    |         | env 1 | env 2 | env 1 | env 2 |
+    +---------+-------+-------+-------+-------+
+    | result1 |       |       |       |       |
+    | result2 |       |       |       |       |
+    | result3 |       |       |       |       |
+    | result4 |       |       |       |       |
+    +---------+-------+-------+-------+-------+
 
     `builds` is the list of builds (the top header row)
 
@@ -35,10 +35,10 @@ class TestComparison(object):
     (the bottom header row)
 
     `results` contains the body of the table. It is a mapping between a test
-    name string (row) to the results for that row. results[testname] is then a
-    mapping, between Environment (the column) and the test result (the cells in
-    the table). So results[testname][env] gives you the value of the cell at
-    (testname, env)
+    or metric name string (row) to the results for that row. results[name] is
+    then a mapping, between Environment (the column) and the result (the cells
+    in the table). So results[name][env] gives you the value of the cell at
+    (name, env)
     """
 
     def __init__(self, *builds):
@@ -46,7 +46,9 @@ class TestComparison(object):
         self.environments = OrderedDict()
         self.all_environments = set()
         self.results = OrderedDict()
-        self.__intermittent__ = {}
+
+        for build in self.builds:
+            self.environments[build] = set()
 
         self.__extract_results__()
 
@@ -61,39 +63,7 @@ class TestComparison(object):
         return cls.compare_builds(*builds)
 
     def __extract_results__(self):
-        test_runs = models.TestRun.objects.filter(
-            build__in=self.builds,
-        ).prefetch_related(
-            'build',
-            'environment',
-        )
-        for build in self.builds:
-            self.environments[build] = set()
-        for test_run in test_runs:
-            build = test_run.build
-            environment = test_run.environment
-            self.all_environments.add(str(environment))
-            self.environments[build].add(str(environment))
-            self.__extract_test_results__(test_run)
-        self.results = OrderedDict(sorted(self.results.items()))
-        for build in self.builds:
-            self.environments[build] = sorted(self.environments[build])
-
-    def __extract_test_results__(self, test_run):
-        tests = test_run.tests.annotate(
-            suite_slug=F('suite__slug')
-        )
-        for test in tests.iterator():
-            key = (test_run.build, str(test_run.environment))
-            test_full_name = join_name(test.suite_slug, test.name)
-            if test_full_name not in self.results:
-                self.results[test_full_name] = OrderedDict()
-            self.results[test_full_name][key] = test.status
-            if test.has_known_issues:
-                for issue in test.known_issues.all():
-                    if issue.intermittent:
-                        env = str(test_run.environment)
-                        self.__intermittent__[(test_full_name, env)] = True
+        raise NotImplementedError
 
     __diff__ = None
 
@@ -107,17 +77,122 @@ class TestComparison(object):
             return self.__diff__
 
         d = OrderedDict()
-        for test, results in self.results.items():
+        for item, results in self.results.items():
             previous = None
             for build in self.builds:
                 current = [results.get((build, e)) for e in self.environments[build]]
                 if previous and previous != current:
-                    d[test] = results
+                    d[item] = results
                     break
                 previous = current
 
         self.__diff__ = d
         return self.__diff__
+
+
+class MetricComparison(BaseComparison):
+
+    __builds_dict__ = None
+
+    def __get_build__(self, build_id):
+        if self.__builds_dict__ is None:
+            self.__builds_dict__ = {b.id: b for b in self.builds}
+        return self.__builds_dict__[build_id]
+
+    def __extract_stats__(self, query):
+        stats = []
+        for environment_slug, builds in groupby(query, lambda x: x['test_run__environment__slug']):
+            for build_id, suites in groupby(builds, lambda x: x['test_run__build_id']):
+                for suite_slug, metrics in groupby(suites, lambda x: x['suite__slug']):
+                    for metric_name, measurements in groupby(metrics, lambda x: x['name']):
+                        values = []
+                        for m in measurements:
+                            values += [float(v) for v in m['measurements'].split(',')]
+                        stat = {
+                            'environment_slug': environment_slug,
+                            'build_id': build_id,
+                            'full_name': join_name(suite_slug, metric_name),
+                            'mean': statistics.mean(values),
+                            'stddev': statistics.pstdev(values),
+                            'count': len(values)
+                        }
+                        stats.append(stat)
+        return stats
+
+    def __extract_results__(self):
+        metrics = models.Metric.objects.filter(
+            test_run__build__in=self.builds,
+            is_outlier=False
+        ).values(
+            'test_run__environment__slug',
+            'test_run__build_id',
+            'suite__slug',
+            'name',
+            'measurements'
+        ).order_by(
+            'test_run__environment__slug',
+            'test_run__build_id',
+            'suite__slug',
+            'name'
+        )
+
+        results = self.__extract_stats__(metrics)
+        for result in results:
+            environment = result['environment_slug']
+            build = self.__get_build__(result['build_id'])
+            full_name = result['full_name']
+            mean = result['mean']
+            stddev = result['stddev']
+            count = result['count']
+
+            self.all_environments.add(environment)
+            self.environments[build].add(environment)
+            key = (build, environment)
+
+            if full_name not in self.results:
+                self.results[full_name] = OrderedDict()
+            self.results[full_name][key] = (mean, stddev, count)
+
+        self.results = OrderedDict(sorted(self.results.items()))
+        for build in self.builds:
+            self.environments[build] = sorted(self.environments[build])
+
+
+class TestComparison(BaseComparison):
+
+    def __init__(self, *builds):
+        self.__intermittent__ = {}
+        BaseComparison.__init__(self, *builds)
+
+    def __extract_results__(self):
+        test_runs = models.TestRun.objects.filter(
+            build__in=self.builds,
+        ).prefetch_related(
+            'build',
+            'environment',
+        )
+        for test_run in test_runs:
+            build = test_run.build
+            environment = test_run.environment
+            self.all_environments.add(str(environment))
+            self.environments[build].add(str(environment))
+            self.__extract_test_results__(test_run)
+        self.results = OrderedDict(sorted(self.results.items()))
+        for build in self.builds:
+            self.environments[build] = sorted(self.environments[build])
+
+    def __extract_test_results__(self, test_run):
+        for test in test_run.tests.iterator():
+            key = (test_run.build, str(test_run.environment))
+            full_name = test.full_name
+            if full_name not in self.results:
+                self.results[full_name] = OrderedDict()
+            self.results[full_name][key] = test.status
+            if test.has_known_issues:
+                for issue in test.known_issues.all():
+                    if issue.intermittent:
+                        env = str(test_run.environment)
+                        self.__intermittent__[(full_name, env)] = True
 
     __regressions__ = None
     __fixes__ = None
