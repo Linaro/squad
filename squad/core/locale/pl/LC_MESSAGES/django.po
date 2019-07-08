@@ -3,19 +3,21 @@
 # This file is distributed under the same license as the squad.core project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: squad.core VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-07-08 13:08-0300\n"
-"PO-Revision-Date: 2019-05-15 13:00+0000\n"
-"Last-Translator: Milosz Wasilewski <milosz.wasilewski@linaro.org>\n"
-"Language-Team: \n"
-"Language: \n"
+"PO-Revision-Date: 2019-07-08 17:55+0000\n"
+"Last-Translator: Antonio Terceiro <terceiro@debian.org>\n"
+"Language-Team: Polish <https://hosted.weblate.org/projects/squad/core/pl/>\n"
+"Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 3.8-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/core/models.py:69 squad/core/models.py:205
@@ -36,7 +38,7 @@ msgstr "Użytkownicy"
 
 #: squad/core/models.py:110
 msgid "Enter a valid value."
-msgstr "Wpisz poprawną wartość"
+msgstr "Wpisz poprawną wartość."
 
 #: squad/core/models.py:120
 msgid "Member"
@@ -88,7 +90,7 @@ msgid ""
 "number to disable."
 msgstr ""
 "Usuń wersje starsze niż ta liczba dni. Ustaw na 0 lub liczbę ujemną żeby "
-"dezaktywować"
+"dezaktywować."
 
 #: squad/core/models.py:246
 msgid "Makes the project hidden from the group page by default"
