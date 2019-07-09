@@ -1,3 +1,32 @@
+# 0.67
+
+* frontend:
+  * frontend: combine compare menu
+  * frontend: add compare build to build list
+  * frontend: order projects alphanumerically
+  * frontend: rename "Explore" menu to "Groups"
+  * frontend: metrics: display range of values
+  * frontend: metrics: fix Y axis configuration
+  * frontend: add option to compare build and projects by metrics
+  * frontend: bring compare menu to front
+  * frontend: use gettext in login template
+  * javascript: changed floatThread to floatThead
+* ci:
+  * ci: backend: lava: extract settings to separate method
+  * ci: backend: lava: add option to ignore lava boot results
+* doc:
+  * doc: ci: add `CI_LAVA_IGNORE_BOOT` to docs
+* core
+  * core: queries: make data entries more readable
+  * core: queries: expose measurement ranges
+  * core: add MetricComparison class
+* scripts/testdata: generate more interesting metrics
+* i18n:
+  * New translation: Spanish (Mexico)
+  * Updated translation: Norwegian Bokmål
+  * Updated translation: Polish
+  * Updated translation: Portuguese (Brazil)
+
 # 0.66
 
 * frontend
