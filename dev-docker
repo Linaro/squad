@@ -11,7 +11,7 @@ mkdir -p "$datadir"
 dockerfile="$datadir"/../Dockerfile.dev
 (
   sed -e '1,/WORKDIR/!d' "$basedir"/Dockerfile
-  echo 'RUN apt-get install -q2 snakefood flake8 && \'
+  echo 'RUN apt-get install -q2 snakefood flake8 git && \'
   echo "    groupadd -g $(id -g) $(id -gn) && \\"
   echo "    useradd -m -u $(id -u) -g $(id -g) -s /bin/bash ${USER}"
   echo "USER ${USER}"
@@ -20,9 +20,17 @@ dockerfile="$datadir"/../Dockerfile.dev
 
 docker build -t squad/dev -f "$dockerfile" .
 
+extra_volumes=''
+for v in $HOME/.gitconfig $HOME/.config/git; do
+  if [ -e "$v" ]; then
+    extra_volumes="$extra_volumes --volume=$v:$v"
+  fi
+done
+
 exec docker run \
   --env=XDG_DATA_HOME=/app/tmp/data \
   --publish=8000:8000 \
   --volume="$basedir":/app \
+  $extra_volumes \
   --rm \
   -it squad/dev "$@"
