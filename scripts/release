@@ -74,15 +74,10 @@ downloads=$(awk '{ if ($1 && $1 !~ /^#/) { print($1)} }' squad/frontend/static/d
 tar taf dist/squad-${v}.tar.gz | cut -d / -f 2- | grep -v '\(/$\|^$\|PKG-INFO\|egg-info\|static\/\('$downloads'download.status\)\|.mo$\)' | sort > "$tar"
 diff -u "$tar" "$git"
 
-# sign & upload
-for f in dist/*; do
-    gpg --detach-sign --armor "$f"
-done
-twine upload dist/*
+if [ "${UPLOAD:-yes}" = 'no' ]; then
+    echo "I: not uploading packages; they are left in dist/"
+    echo "I: you can run ./scripts/upload to make the upload"
+    return
+fi
 
-git tag -s -m "SQUAD release $v" "$v"
-git push
-git push --tags
-
-rm -rf build/
-rm -rf dist/
+./scripts/upload

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -eu
+
+# sign & upload
+for f in dist/*; do
+    gpg --detach-sign --armor "$f"
+done
+twine upload dist/*
+
+git tag -s -m "SQUAD release $v" "$v"
+git push
+git push --tags
+
+rm -rf build/
+rm -rf dist/
