@@ -34,7 +34,7 @@ def log_queries(k, queries):
             log.write("\n")
 
 
-def export(f):
+def export(f='tmp/queries.json'):
     d = os.path.dirname(f)
     if not os.path.exists(d):
         os.makedirs(d)

@@ -28,7 +28,7 @@ def main():
 
 def performance_tests():
     import test.performance
-    return test.performance.export('tmp/queries.json')
+    return test.performance.export()
 
 
 def javascript_tests():
