@@ -3,7 +3,7 @@
   <input type="hidden" ng-init="compare_button_label='{{_('Compare builds')}}'" />
   <input type="hidden" ng-init="invalid_number_of_builds_msg='{{_('Two builds need to be selected!')}}'" />
   <input type="hidden" ng-init="invalid_selected_builds_msg='{{_('Selected builds must be different!')}}'" />
-  <input type="button" ng-value="compare_button_label" class="btn btn-default" ng-click="compareBuilds('{{statuses.0.build.project.full_name}}')" />
+  <input type="button" ng-value="compare_button_label" class="btn btn-default" ng-click="compareBuilds('{{project.full_name}}')" />
 {% for status in statuses %}
 {% with build=status.build %}
 <div class="row row-bordered build">
@@ -62,7 +62,7 @@
 </div>
 {% endwith %}
 {% endfor %}
-<input type="button" ng-value="compare_button_label" class="btn btn-default" ng-click="compareBuilds('{{statuses.0.build.project.full_name}}')" />
+<input type="button" ng-value="compare_button_label" class="btn btn-default" ng-click="compareBuilds('{{project.full_name}}')" />
 </form>
 </div>
 
