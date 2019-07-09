@@ -76,8 +76,8 @@ diff -u "$tar" "$git"
 
 if [ "${UPLOAD:-yes}" = 'no' ]; then
     echo "I: not uploading packages; they are left in dist/"
-    echo "I: you can run ./scripts/upload to make the upload"
+    echo "I: you can run \`./scripts/upload $v\` to make the upload"
     return
 fi
 
-./scripts/upload
+./scripts/upload "$v"

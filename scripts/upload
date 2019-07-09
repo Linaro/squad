@@ -2,6 +2,8 @@
 
 set -eu
 
+v="$1"
+
 # sign & upload
 for f in dist/*; do
     gpg --detach-sign --armor "$f"
