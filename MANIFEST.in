@@ -1,4 +1,5 @@
 include Dockerfile
+include docker-compose.yaml
 include dev-docker
 include Procfile
 include CHANGELOG.md
@@ -10,6 +11,12 @@ include HACKING.rst
 include CODEOWNERS
 include package.json
 include package-lock.json
+include .ackrc
+include .ctags
+include .dockerignore
+include .gitignore
+include .mailmap
+include .travis.yml
 
 include           squad/core/management/commands/import_data.rst
 recursive-include squad/frontend/static/ *
@@ -17,7 +24,9 @@ recursive-include squad/*/templates/ *
 recursive-include test/ *.py *.json *.csv *.log *.png *.yaml *.js
 recursive-include scripts/ *
 recursive-include doc/ *
-recursive-include squad/ *.mo
+
+include babel.cfg
+recursive-include squad/ *.mo *.po *.pot
 
 exclude           squad/local_settings.py
 exclude           squad/local_settings.py.off
