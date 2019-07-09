@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from django.db.models import F
 from itertools import groupby
 import statistics
 
@@ -182,9 +183,12 @@ class TestComparison(BaseComparison):
             self.environments[build] = sorted(self.environments[build])
 
     def __extract_test_results__(self, test_run):
-        for test in test_run.tests.iterator():
+        tests = test_run.tests.annotate(
+            suite_slug=F('suite__slug'),
+        )
+        for test in tests.iterator():
             key = (test_run.build, str(test_run.environment))
-            full_name = test.full_name
+            full_name = join_name(test.suite_slug, test.name)
             if full_name not in self.results:
                 self.results[full_name] = OrderedDict()
             self.results[full_name][key] = test.status
