@@ -20,7 +20,17 @@ module.exports = function(config) {
 
         autoWatch : false,
         frameworks: ['jasmine'],
-        browsers : ['ChromeHeadless'],
+        browsers: ['ChromeHeadlessNoSandbox'],
+        customLaunchers: {
+            ChromeHeadlessNoSandbox: {
+                base: 'ChromeHeadless',
+                flags: [
+                    '--no-sandbox', // required to run without privileges in docker
+                    '--user-data-dir=/tmp/chrome-test-profile',
+                    '--disable-web-security'
+                ]
+            }
+        },
         reporters: ['progress'],
 
         plugins : [
