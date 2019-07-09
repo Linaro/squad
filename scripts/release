@@ -36,7 +36,7 @@ if [ -n "$changed" ]; then
 fi
 
 if [ "${TEST:-yes}" != "no" ]; then
-    ./manage.py test
+    ./dev-docker ./manage.py test
 fi
 
 if ! ./scripts/check-ci; then
@@ -50,7 +50,7 @@ fi
 git commit --message "New release: ${v}" CHANGELOG.md squad/version.py || true
 
 # build
-./manage.py compilemessages
+./dev-docker ./manage.py compilemessages
 rm -rf build/ dist/ *.egg-info/
 local_settings=$(ls -1 squad/local_settings.py 2>/dev/null || true)
 if [ -n "$local_settings" ]; then
