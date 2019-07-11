@@ -102,5 +102,77 @@ provides one SQUAD plugin. It is made of only two files: ``setup.py`` and
         # do something interesting with the the testrun ...
             pass
 
+Built-in notification plugins
+-----------------------------
+
+SQUAD comes with two bult-in plugins available for immediate use.
+
+Github
+~~~~~~
+
+The Github plugin allows patches (Pull Requests) originated from Github
+to be notified whenever a build has been created or finished.
+
+Here is an example API call that supposedly came from a Jenkins job, triggered
+by a freshly opened Github Pull Request::
+
+    $ curl \
+        -X POST \
+        --header "Auth-Token: xxxxxxxxxxxxxxxxx" \
+        --patch_source=your-github-patch-source \
+        --patch_baseline=build-v1 \
+        --patch_id=the_owner/the_repo/8223a534d7bf \
+        https://squad.example.com/api/createbuild/my-group/my-project/build-v2
+
+Where:
+ - `patch_source` is the name of a "Patch Source" previously added in squad
+   in "Administration > Core > Patch sources > Add patch source", where you should
+   select "github" for "implementation". **NOTE** the Github plugin requires a 
+   `token` for authentication, so please ignore the "password" field.
+ - `patch_baseline` is an optional parameter that indicated that the build being
+   created is a new version of "patch_baseline" build.
+ - `patch_id` is a string in a form like "owner/repository/commit" of the respective
+   Github repository.
+
+If everything was successfully submitted, you should see a notification in the Github
+page for that Pull Request. Subsequent tests on that build are going to be performed
+and as SQUAD detects that all tests are done, another notification should be sent out
+on that Pull Request, informing that the build is finished.
+
+Gerrit
+~~~~~~
+
+The Gerrit plugin allows changes originated from a Gerrit instance
+to be notified whenever a build has been created or finished.
+
+Here is an example API call that supposedly came from a Jenkins job, triggered
+by a freshly created change::
+
+    $ curl \
+        -X POST \
+        --header "Auth-Token: xxxxxxxxxxxxxxxxx" \
+        --patch_source=your-gerrit-patch-source \
+        --patch_baseline=build-v1 \
+        --patch_id=change-id/patchset \
+        https://squad.example.com/api/createbuild/my-group/my-project/build-v2
+
+Where:
+ - `patch_source` is the name of a "Patch Source" previously added in squad
+   in "Administration > Core > Patch sources > Add patch source", where you should
+   select "gerrit" for "implementation". **NOTE 1** the Gerrit plugin requires a 
+   `password` (configured as HTTP Password in Gerrit) for authentication, so please
+   ignore the "token" field. **NOTE 2** the Gerrit plugin also allows SSH based
+   notifications by using "ssh://" instead of "https://" in the "url" field.
+   **NOTE 3** SSH connections are made only through key exchange, so please set it
+   up before attempting to use this feature
+ - `patch_baseline` is an optional parameter that indicated that the build being
+   created is a new version of "patch_baseline" build.
+ - `patch_id` is a string in a form like "change-id/patchset" of the respective Gerrit
+   repository.
+
+If everything was successfully submitted, you should see a notification in the Gerrit
+page for that Change. Subsequent tests on that build are going to be performed
+and as SQUAD detects that all tests are done, another notification should be sent out
+on that Change, informing that the build is finished.
 
 .. vim: ts=4 sw=4 et=1
