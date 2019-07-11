@@ -21,6 +21,7 @@ from django.utils.translation import ugettext_lazy as N_
 from simple_history.models import HistoricalRecords
 
 from squad.core.utils import parse_name, join_name, yaml_validator, jinja2_validator
+from squad.core.utils import encrypt, decrypt
 from squad.core.comparison import TestComparison
 from squad.core.statistics import geomean
 from squad.core.plugins import Plugin
@@ -296,7 +297,8 @@ class PatchSource(models.Model):
     """
     name = models.CharField(max_length=256, unique=True)
     username = models.CharField(max_length=128)
-    url = models.URLField()
+    _password = models.CharField(max_length=128, null=True, blank=True, db_column="password")
+    url = models.URLField(help_text="scheme://host, ex: 'http://github.com', 'ssh://gerrit.host, etc'")
     token = models.CharField(max_length=1024)
     implementation = PluginField(
         default='null',
@@ -305,6 +307,16 @@ class PatchSource(models.Model):
             Plugin.notify_patch_build_finished,
         ],
     )
+
+    def get_password(self):
+        if self._password:
+            return decrypt(self._password)
+        return None
+
+    def set_password(self, new_password):
+        self._password = encrypt(new_password)
+
+    password = property(get_password, set_password)
 
     def get_implementation(self):
         return get_plugin_instance(self.implementation)

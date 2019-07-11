@@ -1,5 +1,5 @@
 from django.test import TestCase
-from squad.core.utils import join_name, parse_name
+from squad.core.utils import join_name, parse_name, xor, encrypt, decrypt, repeat_to_length
 
 
 class TestParseName(TestCase):
@@ -44,3 +44,23 @@ class TestJoinName(TestCase):
 
     def test_join_group(self):
         self.assertEqual('foo/bar', join_name('foo', 'bar'))
+
+
+class TestCrypto(TestCase):
+
+    def test_repeat_to_length(self):
+        self.assertEqual('abca', repeat_to_length('abc', 4))
+
+    def test_xor(self):
+        s = 'a string'
+        t = 'same len'
+        ciphered = '\x12A\x1e\x11R\x05\x0b\t'
+        self.assertEqual(ciphered, xor(s, t))
+        self.assertEqual(s, xor(ciphered, t))
+
+    def test_encryption(self):
+        msg = 'confidential message'
+        encrypted = encrypt(msg)
+        decrypted = decrypt(encrypted)
+        self.assertEqual(msg, decrypted)
+        self.assertEqual(msg, decrypt(encrypted))
