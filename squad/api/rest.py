@@ -14,7 +14,7 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django import forms
 from rest_framework import routers, serializers, viewsets, status
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.reverse import reverse as rest_reverse
@@ -377,7 +377,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return self.queryset.accessible_to(self.request.user)
 
-    @detail_route(methods=['get'], suffix='builds')
+    @action(detail=True, methods=['get'], suffix='builds')
     def builds(self, request, pk=None):
         """
         List of builds for the current project.
@@ -387,7 +387,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer = BuildSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
-    @detail_route(methods=['get'], suffix='suites')
+    @action(detail=True, methods=['get'], suffix='suites')
     def suites(self, request, pk=None):
         """
         List of test suite names available in this project
@@ -398,7 +398,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer = SuiteMetadataSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
-    @detail_route(methods=['get'], suffix='tests')
+    @action(detail=True, methods=['get'], suffix='tests')
     def tests(self, request, pk=None):
         """
         List of test names available in this project
@@ -413,7 +413,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer = SuiteMetadataSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
-    @detail_route(methods=['get'], suffix='test_results')
+    @action(detail=True, methods=['get'], suffix='test_results')
     def test_results(self, request, pk=None):
         test_name = request.query_params.get("test_name", None)
 
@@ -426,7 +426,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
-    @detail_route(methods=['post'], suffix='subscribe')
+    @action(detail=True, methods=['post'], suffix='subscribe')
     def subscribe(self, request, pk=None):
         subscriber_email = request.data.get("email", None)
         if subscriber_email is None:
@@ -443,7 +443,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         data = {"email": subscriber_email}
         return Response(data, status=status.HTTP_201_CREATED)
 
-    @detail_route(methods=['post'], suffix='unsubscribe')
+    @action(detail=True, methods=['post'], suffix='unsubscribe')
     def unsubscribe(self, request, pk=None):
         subscriber_email = request.data.get("email", None)
         if subscriber_email is None:
@@ -579,12 +579,12 @@ class BuildViewSet(ModelViewSet):
     def get_queryset(self):
         return self.queryset.filter(project__in=self.get_project_ids())
 
-    @detail_route(methods=['get'], suffix='metadata')
+    @action(detail=True, methods=['get'], suffix='metadata')
     def metadata(self, request, pk=None):
         build = self.get_object()
         return Response(build.metadata)
 
-    @detail_route(methods=['get'], suffix='status')
+    @action(detail=True, methods=['get'], suffix='status')
     def status(self, request, pk=None):
         try:
             status = self.get_object().status
@@ -593,14 +593,14 @@ class BuildViewSet(ModelViewSet):
         except ProjectStatus.DoesNotExist:
             raise NotFound()
 
-    @detail_route(methods=['get'], suffix='test runs')
+    @action(detail=True, methods=['get'], suffix='test runs')
     def testruns(self, request, pk=None):
         testruns = self.get_object().test_runs.order_by('-id')
         page = self.paginate_queryset(testruns)
         serializer = TestRunSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
-    @detail_route(methods=['get'], suffix='test jobs')
+    @action(detail=True, methods=['get'], suffix='test jobs')
     def testjobs(self, request, pk=None):
         testjobs = self.get_object().test_jobs.order_by('-id')
         page = self.paginate_queryset(testjobs)
@@ -672,7 +672,7 @@ class BuildViewSet(ModelViewSet):
 
         return delayed_report, created
 
-    @detail_route(methods=['get'], suffix='email')
+    @action(detail=True, methods=['get'], suffix='email')
     def email(self, request, pk=None):
         """
         This method produces the body of email notification for the build.
@@ -694,7 +694,7 @@ class BuildViewSet(ModelViewSet):
             return HttpResponse(delayed_report.output_html, content_type=delayed_report.output_format)
         return HttpResponse(delayed_report.output_text, content_type=delayed_report.output_format)
 
-    @detail_route(methods=['get', 'post'], suffix='report', permission_classes=[AllowAny])
+    @action(detail=True, methods=['get', 'post'], suffix='report', permission_classes=[AllowAny])
     def report(self, request, pk=None):
         force = request.query_params.get("force", False)
         delayed_report, created = self.__return_delayed_report(request)
@@ -760,7 +760,7 @@ class SuiteViewSet(viewsets.ModelViewSet):
     serializer_class = SuiteSerializer
     filter_class = SuiteFilter
 
-    @detail_route(methods=['get'], suffix='testnames')
+    @action(detail=True, methods=['get'], suffix='testnames')
     def testnames(self, request, pk=None):
         # In [4]: [t.name for t in SuiteMetadata.objects.filter(kind='test', suite='testsuite1')]
         pass
@@ -824,27 +824,27 @@ class TestRunViewSet(ModelViewSet):
     def get_queryset(self):
         return self.queryset.filter(build__project__in=self.get_project_ids())
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def tests_file(self, request, pk=None):
         testrun = self.get_object()
         return HttpResponse(testrun.tests_file, content_type='application/json')
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def metrics_file(self, request, pk=None):
         testrun = self.get_object()
         return HttpResponse(testrun.metrics_file, content_type='application/json')
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def metadata_file(self, request, pk=None):
         testrun = self.get_object()
         return HttpResponse(testrun.metadata_file, content_type='application/json')
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def log_file(self, request, pk=None):
         testrun = self.get_object()
         return HttpResponse(testrun.log_file, content_type='text/plain')
 
-    @detail_route(methods=['get'], suffix='tests')
+    @action(detail=True, methods=['get'], suffix='tests')
     def tests(self, request, pk=None):
         testrun = self.get_object()
         tests = testrun.tests.prefetch_related('suite').order_by('id')
@@ -853,7 +853,7 @@ class TestRunViewSet(ModelViewSet):
         serializer = TestSerializer(page, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
 
-    @detail_route(methods=['get'], suffix='metrics')
+    @action(detail=True, methods=['get'], suffix='metrics')
     def metrics(self, request, pk=None):
         testrun = self.get_object()
         metrics = testrun.metrics.prefetch_related('suite').order_by('id')
@@ -927,7 +927,7 @@ class TestJobViewSet(ModelViewSet):
     def get_queryset(self):
         return self.queryset.filter(target_build__project__in=self.get_project_ids())
 
-    @detail_route(methods=['get'], suffix='definition')
+    @action(detail=True, methods=['get'], suffix='definition')
     def definition(self, request, pk=None):
         definition = self.get_object().definition
         return HttpResponse(definition, content_type='text/plain')
