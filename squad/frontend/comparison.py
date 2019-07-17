@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 
 from squad.core.models import Project, Group
 from squad.core.comparison import TestComparison, MetricComparison
+from squad.frontend.utils import alphanum_sort
 
 
 def __get_comparison_class(comparison_type):
@@ -24,7 +25,7 @@ def compare_projects(request):
     if group_slug:
         group = get_object_or_404(Group, slug=group_slug)
         user = request.user
-        projects = group.projects.accessible_to(user)
+        projects = alphanum_sort(group.projects.accessible_to(user), 'slug')
         selected = [p for p in projects if p.slug in request.GET.getlist('project')]
 
         if len(selected) > 1:
