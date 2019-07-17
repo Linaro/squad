@@ -14,34 +14,62 @@
     {% include "squad/_pagination.jinja2" %}
   {% endwith %}
 {% endif %}
-
-<h2>{{ _('Select projects to compare') }}</h2>
-<form>
-  {% for project in projects %}
-  <div class="checkbox">
-    <label>
-      <input type='checkbox' name='project' value='{{project}}'
-       {% if project in selected %}
-       checked
-       {% endif %}
-       />
-      {{project}}
-    </label>
+<div class="row">
+  <div class="col-md-6 col-sm-6" ng-app="ProjectCompare" ng-controller="ProjectCompareController" ng-init="init()">
+    <form>
+      <div class="form-group">
+        <h2>{{ _('Group') }}</h2>
+        <select
+          name="group"
+          id="group-select"
+          placeholder="{{ _('Enter group name') }}"
+          onchange="this.form.submit()"
+          class="form-control"
+        >
+          {% if group %}
+            <option id="{{group.slug}}">{{ group.slug }}</option>
+          {% endif %}
+        </select>
+      </div>
+      {% if group %}
+        <h2>{{ _('Select projects to compare') }}</h2>
+        {% for project in projects %}
+        <div class="checkbox form-group">
+          <label>
+            <input
+              type='checkbox'
+              name='project'
+              value='{{project.slug}}'
+              {% if project in selected %}checked{% endif %}
+            />
+            {{project.slug}}
+          </label>
+        </div>
+        {% endfor %}
+        <div class="form-group">
+          <label>{{ _('Comparison type') }}</label>
+          <div>
+            <input id="test-comparison" name="comparison_type" type="radio" value="test" checked="checked"/>
+            <label for="test-comparison">{{ _('compare by tests') }}</label>
+            <br />
+            <input id="metric-comparison" name="comparison_type" type="radio" value="metric" />
+            <label for="metric-comparison">{{ _('compare by metrics') }}</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <input onclick="this.form.submit()" value="{{ _('Compare') }}" type="button" class="btn btn-default" />
+        </div>
+      {% endif %}
+    </form>
   </div>
-  {% endfor %}
-  <div class="form-group">
-    <label>{{ _('Comparison type') }}</label>
-    <div>
-      <input id="test-comparison" name="comparison_type" type="radio" value="test" checked="checked"/>
-      <label for="test-comparison">{{ _('compare by tests') }}</label>
-      <br />
-	  <input id="metric-comparison" name="comparison_type" type="radio" value="metric" />
-      <label for="metric-comparison">{{ _('compare by metrics') }}</label>
-    </div>
-  </div>
-  <input type='submit' value='{{ _('Compare') }}' class='btn btn-default'/>
-</form>
+</div>
 {% endblock %}
 {% block javascript %}
 <script type="text/javascript" src='{{static("squad/table.js")}}'></script>
+<script type="text/javascript" src='{{static("select2.js/select2.min.js")}}'></script>
+<script type="module" src='{{static("squad/project_compare.js")}}'></script>
+{% endblock %}
+
+{% block styles %}
+<link href='{{static("select2.js/select2.css")}}' rel="stylesheet" />
 {% endblock %}

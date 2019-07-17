@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
 
-from squad.core.models import Project
+from squad.core.models import Project, Group
 from squad.core.comparison import TestComparison, MetricComparison
 
 
@@ -13,25 +13,33 @@ def __get_comparison_class(comparison_type):
 
 
 def compare_projects(request):
-    user = request.user
-    projects = Project.objects.accessible_to(user).prefetch_related('group')
-    selected = [p for p in projects if p.full_name in request.GET.getlist('project')]
+    comparison = None
+    group = None
+    projects = None
+    selected = None
+
     comparison_type = request.GET.get('comparison_type', 'test')
+    group_slug = request.GET.get('group')
 
-    if len(selected) > 1:
-        comparison_class = __get_comparison_class(comparison_type)
-        comparison = comparison_class.compare_projects(*selected)
+    if group_slug:
+        group = get_object_or_404(Group, slug=group_slug)
+        user = request.user
+        projects = group.projects.accessible_to(user)
+        selected = [p for p in projects if p.slug in request.GET.getlist('project')]
 
-        try:
-            page = int(request.GET.get('page', '1'))
-        except ValueError:
-            page = 1
-        paginator = Paginator(tuple(comparison.results.items()), 50)
-        comparison.results = paginator.page(page)
-    else:
-        comparison = None
+        if len(selected) > 1:
+            comparison_class = __get_comparison_class(comparison_type)
+            comparison = comparison_class.compare_projects(*selected)
+
+            try:
+                page = int(request.GET.get('page', '1'))
+            except ValueError:
+                page = 1
+            paginator = Paginator(tuple(comparison.results.items()), 50)
+            comparison.results = paginator.page(page)
 
     context = {
+        'group': group,
         'projects': projects,
         'selected': selected,
         'comparison': comparison,

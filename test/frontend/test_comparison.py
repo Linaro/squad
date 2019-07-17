@@ -57,7 +57,7 @@ class ProjectComparisonTest(TestCase):
         self.build2 = self.project2.builds.last()
 
     def test_comparison_project_sanity_check(self):
-        response = self.client.get('/_/compare/?project=mygroup/project1&project=mygroup/project2')
+        response = self.client.get('/_/compare/?group=mygroup&project=project1&project=project2')
         self.assertEqual(200, response.status_code)
         self.assertIn('d/e', str(response.content))
         self.assertIn('myenv', str(response.content))
