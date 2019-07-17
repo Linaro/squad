@@ -251,6 +251,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
     filter_fields = ('slug', 'name')
     filter_class = GroupFilter
+    filter_backends = (ComplexFilterBackend, )
     search_fields = ('slug', 'name')
     ordering_fields = ('slug', 'name')
 
