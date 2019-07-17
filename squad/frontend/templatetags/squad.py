@@ -37,6 +37,11 @@ def url(path, *args, **kwargs):
 
 
 @register_global_function
+def string(value):
+    return str(value)
+
+
+@register_global_function
 def group_url(group):
     return reverse('group', args=[group.slug])
 
