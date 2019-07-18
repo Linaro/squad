@@ -197,7 +197,8 @@ function CompareController($scope, $http, $location) {
                 };
             },
         },
-        minimumInputLength: 0
+        minimumInputLength: 0,
+        dropdownAutoWidth : true
     });
 
     var projectSelect = $(".project-select");
@@ -236,7 +237,8 @@ function CompareController($scope, $http, $location) {
                 };
             },
         },
-        minimumInputLength: 0
+        minimumInputLength: 0,
+        dropdownAutoWidth : true
     });
     var suiteSelect = $(".suite-select");
     suiteSelect.on('select2:unselect', function(e){
@@ -276,7 +278,8 @@ function CompareController($scope, $http, $location) {
                 };
             },
         },
-        minimumInputLength: 0
+        minimumInputLength: 0,
+        dropdownAutoWidth : true
     });
     var testSelect = $(".test-select");
     testSelect.on('select2:unselect', function(e){
