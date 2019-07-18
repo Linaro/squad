@@ -171,14 +171,11 @@ function CompareController($scope, $http, $location) {
             url: "/api/projects",
             dataType: 'json',
             data: function (params) {
-                var filters = "%28group__slug__icontains%253D" +
-                    params.term +
-                    "%29%20%7C%20%28group__name__icontains%253D" +
-                    params.term +
-                    "%29%20%7C%20%28name__icontains%253D" +
-                    params.term +
-                    "%29%20%7C%20%28slug__icontains%253D" +
-                    params.term +
+                var term = params.term == undefined ? '' : params.term
+                var filters = "%28group__slug__icontains%253D" + term +
+                    "%29%20%7C%20%28group__name__icontains%253D" + term +
+                    "%29%20%7C%20%28name__icontains%253D" + term +
+                    "%29%20%7C%20%28slug__icontains%253D" + term +
                     "%29";
                 return {
                     filters: filters, // search term
@@ -216,8 +213,9 @@ function CompareController($scope, $http, $location) {
             url: "/api/suitemetadata/",
             dataType: 'json',
             data: function (params) {
+                var term = params.term == undefined ? '' : params.term
                 return {
-                    suite__startswith: params.term, // search term
+                    suite__startswith: term, // search term
                     project: $scope.getProjectIds().join(),
                     kind: 'suite',
                     offset: params.page * 50 || 0,
@@ -254,8 +252,9 @@ function CompareController($scope, $http, $location) {
             url: "/api/suitemetadata/",
             dataType: 'json',
             data: function (params) {
+                var term = params.term == undefined ? '' : params.term
                 return {
-                    name__startswith: params.term, // search term
+                    name__startswith: term, // search term
                     project: $scope.getProjectIds().join(),
                     kind: 'test',
                     suite: $scope.selectedSuite,
