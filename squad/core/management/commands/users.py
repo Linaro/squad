@@ -23,6 +23,7 @@ import csv
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 
 
 class Command(BaseCommand):
@@ -145,6 +146,10 @@ class Command(BaseCommand):
             "--csv", dest="csv", default=False, action="store_true", help="Print as csv"
         )
 
+        token_parser = sub.add_parser("set-token", help="Set API token")
+        token_parser.add_argument("username", help="Username for setting the token")
+        token_parser.add_argument("token", help="Token string")
+
     def handle(self, *args, **options):
         """ Forward to the right sub-handler """
         if options["sub_command"] == "add":
@@ -155,6 +160,20 @@ class Command(BaseCommand):
             self.handle_details(options["username"])
         elif options["sub_command"] == "list":
             self.handle_list(options["all"], options["csv"])
+        elif options["sub_command"] == "set-token":
+            self.handle_token(options["username"], options['token'])
+
+    def handle_token(self, username, token):
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise CommandError("User %s does not exist" % username)
+
+        if token is None:
+            raise CommandError("Token is required")
+
+        Token.objects.filter(user=user).delete()
+        Token.objects.create(user=user, key=token[0:40])
 
     def handle_add(self, options):
         """ Create a new user """
