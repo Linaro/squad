@@ -17,8 +17,8 @@ TEST_RESULTS = [
      'id': '5089687',
      'job': '22505',
      'level': 'None',
-     'log_end_line': '1418',
-     'log_start_line': '1418',
+     'log_end_line': '4',
+     'log_start_line': '1',
      'logged': '2017-09-05 07:53:07.040871+00:00',
      'measurement': '29.7200000000',
      'metadata': {'case': 'auto-login-action',
@@ -35,8 +35,8 @@ TEST_RESULTS = [
     {'duration': '',
      'job': '1234',
      'level': 'None',
-     'log_end_line': '148',
-     'log_start_line': '148',
+     'log_end_line': '4',
+     'log_start_line': '5',
      'logged': '2017-02-15 11:31:21.973616+00:00',
      'measurement': '10',
      'metadata': {'case': 'case_foo',
@@ -53,8 +53,8 @@ TEST_RESULTS = [
     {'duration': '',
      'job': '1234',
      'level': 'None',
-     'log_end_line': '418',
-     'log_start_line': '418',
+     'log_end_line': '5',
+     'log_start_line': '4',
      'logged': '2017-02-15 11:31:21.973616+00:00',
      'measurement': 'None',
      'metadata': {'case': 'case_bar',
@@ -70,8 +70,8 @@ TEST_RESULTS = [
     {'duration': '',
      'job': '12345',
      'level': 'None',
-     'log_end_line': '141',
-     'log_start_line': '141',
+     'log_end_line': '6',
+     'log_start_line': '5',
      'logged': '2018-02-15 11:31:21.973616+00:00',
      'measurement': 'None',
      'metadata': {'case': 'validate',
@@ -86,8 +86,8 @@ TEST_RESULTS = [
     {'duration': '',
      'job': '123456',
      'level': 'None',
-     'log_end_line': '14',
-     'log_start_line': '14',
+     'log_end_line': '4',
+     'log_start_line': '1',
      'logged': '2018-02-15 11:31:21.973616+00:00',
      'measurement': '0E-10',
      'metadata': {'case': 'power-off',
@@ -527,6 +527,7 @@ class LavaTest(TestCase):
         status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
 
         self.assertEqual(len(results), 2)
+        self.assertIn('log', results['DefinitionFoo/case_bar'].keys())
         self.assertEqual(len(metrics), 2)
         self.assertEqual(10, metrics['DefinitionFoo/case_foo'])
         self.assertEqual('job_foo', testjob.name)
