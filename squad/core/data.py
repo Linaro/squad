@@ -28,10 +28,16 @@ class JSONTestDataParser(object):
         data = []
         for key, value in input_data.items():
             group_name, test_name = parse_name(key)
+            result = value
+            log = None
+            if isinstance(value, dict):
+                result = value.get('result', None)
+                log = value.get('log', None)
             data.append({
                 "group_name": group_name,
                 "test_name": test_name,
-                "pass": parse_test_result(value),
+                "pass": parse_test_result(result),
+                "log": log
             })
         return data
 

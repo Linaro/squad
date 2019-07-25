@@ -1,0 +1,4 @@
+{
+    "test_one": {"result": "pass", "log": "test one log"},
+    "test_two": {"result": "fail", "log": "test two log"}
+}
