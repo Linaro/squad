@@ -182,6 +182,10 @@ table.test-results-details {
   margin-top: 1em;
 }
 
+.metric-selected small, .popover-content li {
+	word-break: break-all;
+}
+
 .settings-nav a {
   display: block;
 }
