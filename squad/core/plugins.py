@@ -2,6 +2,10 @@ from django.db import models
 from django.forms import MultipleChoiceField, ChoiceField, CheckboxSelectMultiple
 from pkg_resources import EntryPoint, iter_entry_points
 from pkgutil import iter_modules
+import os
+
+
+import squad
 
 
 class PluginNotFound(Exception):
@@ -20,7 +24,8 @@ class PluginLoader(object):
         entry_points = []
 
         # builtin plugins
-        for _, m, _ in iter_modules(['squad/plugins']):
+        builtin_plugins_path = os.path.join(squad.__path__[0], 'plugins')
+        for _, m, _ in iter_modules([builtin_plugins_path]):
             e = EntryPoint(m, 'squad.plugins.' + m, attrs=('Plugin',))
             entry_points.append(e)
 

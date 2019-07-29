@@ -2,8 +2,11 @@ import random
 import string
 import yaml
 import jinja2
+
+
 from django.template.defaultfilters import safe, escape
 from django.core.exceptions import ValidationError
+from django.conf import settings
 
 
 def random_key(length, chars=string.printable):
@@ -72,3 +75,25 @@ def jinja2_validator(template):
             raise ValidationError("Jinja2 template object expected")
     except jinja2.exceptions.TemplateSyntaxError as e:
         raise ValidationError(e)
+
+
+def repeat_to_length(s, wanted):
+    return (s * ((wanted // len(s)) + 1))[:wanted]
+
+
+# xor cipher: https://en.wikipedia.org/wiki/XOR_cipher
+def xor(s, t):
+    if isinstance(s, str):
+        return ''.join([chr(ord(a) ^ ord(b)) for a, b in zip(s, t)])
+    else:
+        return bytes([a ^ b for a, b in zip(s, t)])
+
+
+def encrypt(text):
+    key = repeat_to_length(settings.SECRET_KEY, len(text))
+    return xor(text, key)
+
+
+def decrypt(crypted):
+    key = repeat_to_length(settings.SECRET_KEY, len(crypted))
+    return xor(crypted, key)
