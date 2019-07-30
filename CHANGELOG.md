@@ -1,3 +1,23 @@
+# 0.68
+
+* Translated using Weblate (Portuguese (Brazil))
+* test/karma.conf.js: make chromium work on docker
+* api: rest: fix rest-framework `detail_route`
+* frontend
+  * frontend: js: update lodash to 4.17.14
+  * frontend: compare-tests: fix auto complete initialization
+  * frontend: compare-tests: add auto-width to select2
+  * frontend: css: fix word-wrap
+* core:
+  * core: add management sub-command to create/update auth tokens
+  * core: api: support passing test log in the JSON file
+  * core: plugins: fix builtin plugins path
+  * core: plugins: add gerrit builtin plugin
+* ci
+  * ci: lava: fetch test logs if available
+  * ci/backends/lava: modify unit tests to check logs retrieval
+* docs: document notification plugins
+
 # 0.67
 
 * frontend:
