@@ -12,8 +12,9 @@ from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import User
 from django.conf import settings
 from squad.mail import Message
+from django.forms.fields import URLField as FormURLField
 from django.core.exceptions import ValidationError
-from django.core.validators import EmailValidator
+from django.core.validators import EmailValidator, URLValidator
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.utils.translation import ugettext as _
@@ -288,6 +289,24 @@ class Project(models.Model, DisplayName):
         return self.enabled_plugins_list
 
 
+# URLField uses URLValidator which supports only http(s) and ftp(s)
+# ref: https://github.com/django/django/pull/1717#issuecomment-25830269
+__default_url_validator__ = [URLValidator(schemes=URLValidator().schemes + ['ssh'])]
+
+
+class CustomURLFormField(FormURLField):
+    default_validators = __default_url_validator__
+
+
+class CustomURLField(models.URLField):
+    default_validators = __default_url_validator__
+
+    def formfield(self, **kwargs):
+        return super(CustomURLField, self).formfield(**{
+            'form_class': CustomURLFormField,
+        })
+
+
 class PatchSource(models.Model):
     """
     A patch is source is a platform from where a patch comes from, e.g. github,
@@ -298,8 +317,8 @@ class PatchSource(models.Model):
     name = models.CharField(max_length=256, unique=True)
     username = models.CharField(max_length=128)
     _password = models.CharField(max_length=128, null=True, blank=True, db_column="password")
-    url = models.URLField(help_text="scheme://host, ex: 'http://github.com', 'ssh://gerrit.host, etc'")
-    token = models.CharField(max_length=1024)
+    url = CustomURLField(help_text="scheme://host, ex: 'http://github.com', 'ssh://gerrit.host, etc'")
+    token = models.CharField(max_length=1024, blank=True)
     implementation = PluginField(
         default='null',
         features=[
@@ -320,6 +339,9 @@ class PatchSource(models.Model):
 
     def get_implementation(self):
         return get_plugin_instance(self.implementation)
+
+    def __str__(self):
+        return 'PatchSource %s (%s)' % (self.name, self.implementation)
 
 
 class Build(models.Model):

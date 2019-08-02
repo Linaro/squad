@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 from django.forms import ModelForm, ModelMultipleChoiceField, CheckboxSelectMultiple
 from simple_history.admin import SimpleHistoryAdmin
 
@@ -143,9 +144,25 @@ class TestRunAdmin(admin.ModelAdmin):
         return False
 
 
+class PatchSourceForm(ModelForm):
+    password = forms.CharField(max_length=128)
+
+    def __init__(self, *args, **kwargs):
+        super(PatchSourceForm, self).__init__(*args, **kwargs)
+        self.initial['password'] = self.instance.password
+
+    class Meta:
+        model = models.PatchSource
+        fields = ['name', 'url', 'username', 'password', 'token', 'implementation']
+
+
 class PatchSourceAdmin(admin.ModelAdmin):
-    models = models.PatchSource
-    list_display = ['name', 'url', 'implementation']
+    form = PatchSourceForm
+
+    def save_model(self, request, obj, form, change):
+        if 'password' in form.changed_data:
+            obj.password = form.cleaned_data['password']
+        super(PatchSourceAdmin, self).save_model(request, obj, form, change)
 
 
 class SelectEnvironment(ModelMultipleChoiceField):
