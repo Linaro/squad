@@ -1,3 +1,8 @@
+# 0.68.1
+
+* frontend: fix page title in project settings
+* ci: catch YAML ScannerError in LAVA backend
+
 # 0.68
 
 * Translated using Weblate (Portuguese (Brazil))
