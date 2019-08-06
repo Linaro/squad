@@ -20,8 +20,10 @@
         {% for environment in environments %}
         <th>
           {{environment}}
-          <br />
-          {{ _('mean (stdev)') }}
+          {% if comparison_type == 'metric' %}
+            <br />
+            {{ _('mean (stdev)') }}
+          {% endif %}
         </th>
         {% endfor %}
       {% endfor %}
