@@ -1,3 +1,7 @@
+# 0.68.2
+
+* ci: improve parsing of LAVA logs
+
 # 0.68.1
 
 * frontend: fix page title in project settings
