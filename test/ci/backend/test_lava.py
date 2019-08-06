@@ -1,5 +1,6 @@
 from django.core import mail
 from django.test import TestCase
+from io import BytesIO
 from test.mock import patch, MagicMock
 import os
 import yaml
@@ -247,6 +248,7 @@ TEST_RESULTS_WITH_SUITE_VERSIONS = [
 ]
 
 LOG_DATA = open(os.path.join(os.path.dirname(__file__), 'example-lava-log.yaml'), 'rb').read()
+BROKEN_LOG_DATA = open(os.path.join(os.path.dirname(__file__), 'example-broken-log.yaml'), 'rb').read()
 
 HTTP_400 = xmlrpc.client.Fault(400, 'Problem with submitted job data')
 HTTP_503 = xmlrpc.client.Fault(503, 'Service Unavailable')
@@ -784,7 +786,19 @@ class LavaTest(TestCase):
 
     def test_lava_log_parsing(self):
         lava = LAVABackend(self.backend)
-        log_data = LOG_DATA
+        log_data = BytesIO(LOG_DATA)
         log = lava.__parse_log__(log_data)
         self.assertIn("target message", log)
         self.assertNotIn("info message", log)
+
+    def test_broken_lava_log_parsing(self):
+        lava = LAVABackend(self.backend)
+        log_data = BytesIO(BROKEN_LOG_DATA)
+        log = lava.__parse_log__(log_data)
+        self.assertEqual(0, len(log))
+
+    def test_empty_lava_log_parsing(self):
+        lava = LAVABackend(self.backend)
+        log_data = BytesIO()
+        log = lava.__parse_log__(log_data)
+        self.assertEqual(0, len(log))
