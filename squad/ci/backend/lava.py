@@ -8,7 +8,7 @@ import yaml
 import xmlrpc
 import zmq
 
-from io import BytesIO
+from io import BytesIO, TextIOWrapper
 from zmq.utils.strtypes import u
 
 from xmlrpc import client as xmlrpclib
@@ -204,7 +204,9 @@ class Backend(BaseBackend):
         url = self.data.url.replace('/RPC2', '/scheduler/job/%s/log_file/plain' % job_id)
         payload = {"user": self.data.username, "token": self.data.token}
         response = requests.get(url, params=payload)
-        return response.content
+        if response.status_code == 200:
+            return response.content
+        return b''
 
     def __download_test_log__(self, raw_log, log_start, log_end):
         return_lines = ""
@@ -234,40 +236,44 @@ class Backend(BaseBackend):
         tmp_dict = None
         tmp_key = None
         is_value = False
-        try:
-            for event in yaml.parse(log_data, Loader=yaml.CLoader):
-                if isinstance(event, yaml.MappingStartEvent):
-                    start_dict = True
-                    tmp_dict = {}
-                if isinstance(event, yaml.MappingEndEvent):
-                    start_dict = False
-                    if tmp_dict:
-                        if 'lvl' in tmp_dict.keys() and tmp_dict['lvl'] == 'target':
-                            if 'msg' in tmp_dict.keys():
-                                if isinstance(tmp_dict['msg'], bytes):
-                                    try:
-                                        # seems like latin-1 is the encoding used by serial
-                                        # this might not be true in all cases
-                                        returned_log = returned_log + "\n" + tmp_dict["msg"].decode('latin-1', 'ignore')
-                                    except ValueError:
-                                        # despite ignoring errors, they are still raised sometimes
-                                        pass
-                                else:
-                                    returned_log = returned_log + "\n" + tmp_dict['msg']
-                    del tmp_dict
-                    tmp_dict = None
-                    is_value = False
-                if start_dict is True and isinstance(event, yaml.ScalarEvent):
-                    if is_value is False:
-                        # the event.value is a dict key
-                        tmp_key = event.value
-                        is_value = True
-                    else:
-                        # the event.value is a dict value
-                        tmp_dict.update({tmp_key: event.value})
+        logger.debug("Length of log buffer: %s" % log_data.getbuffer().nbytes)
+        if log_data.getbuffer().nbytes > 0:
+            try:
+                for event in yaml.parse(log_data, Loader=yaml.CLoader):
+                    if isinstance(event, yaml.MappingStartEvent):
+                        start_dict = True
+                        tmp_dict = {}
+                    if isinstance(event, yaml.MappingEndEvent):
+                        start_dict = False
+                        if tmp_dict:
+                            if 'lvl' in tmp_dict.keys() and tmp_dict['lvl'] == 'target':
+                                if 'msg' in tmp_dict.keys():
+                                    if isinstance(tmp_dict['msg'], bytes):
+                                        try:
+                                            # seems like latin-1 is the encoding used by serial
+                                            # this might not be true in all cases
+                                            returned_log = returned_log + "\n" + tmp_dict["msg"].decode('latin-1', 'ignore')
+                                        except ValueError:
+                                            # despite ignoring errors, they are still raised sometimes
+                                            pass
+                                    else:
+                                        returned_log = returned_log + "\n" + tmp_dict['msg']
+                        del tmp_dict
+                        tmp_dict = None
                         is_value = False
-        except yaml.scanner.ScannerError:
-            logger.error("Problem parsing LAVA log\n" + log_data + "\n" + traceback.format_exc())
+                    if start_dict is True and isinstance(event, yaml.ScalarEvent):
+                        if is_value is False:
+                            # the event.value is a dict key
+                            tmp_key = event.value
+                            is_value = True
+                        else:
+                            # the event.value is a dict value
+                            tmp_dict.update({tmp_key: event.value})
+                            is_value = False
+            except yaml.scanner.ScannerError:
+                log_data.seek(0)
+                wrapper = TextIOWrapper(log_data, encoding='utf-8')
+                logger.error("Problem parsing LAVA log\n" + wrapper.read() + "\n" + traceback.format_exc())
 
         return returned_log
 
