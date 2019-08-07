@@ -11,7 +11,7 @@ mkdir -p "$datadir"
 dockerfile="$datadir"/../Dockerfile.dev
 (
   sed -e '1,/WORKDIR/!d' "$basedir"/Dockerfile
-  echo 'RUN apt-get install -q2 snakefood flake8 git python3-wheel chromium nodejs && \'
+  echo 'RUN apt-get install -q2 snakefood flake8 git python3-wheel python3-django-extensions rabbitmq-server chromium nodejs ruby-foreman procps && \'
   echo "    groupadd -g $(id -g) $(id -gn) && \\"
   echo "    useradd -m -u $(id -u) -g $(id -g) -s /bin/bash ${USER}"
   echo "USER ${USER}"
