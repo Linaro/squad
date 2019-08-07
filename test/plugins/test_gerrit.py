@@ -1,8 +1,10 @@
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 from unittest.mock import patch
 
 
 from squad.core.models import Group, PatchSource
+from squad.plugins import gerrit
 
 
 class FakeObject():
@@ -20,7 +22,10 @@ class FakeSubprocess():
     def run(cmd, capture_output=False):
         FakeSubprocess.__last_cmd__ = ' '.join(cmd)
         gerrit_cmd = 'gerrit review'
-        if 'ssh -p 29418 theuser@the.host' != ' '.join(cmd[0:4]) or not cmd[4].startswith(gerrit_cmd):
+        options = ' '.join(gerrit.DEFAULT_SSH_OPTIONS)
+        port = gerrit.DEFAULT_SSH_PORT
+        if 'ssh %s -p %s theuser@the.host' % (options, port) != ' '.join(cmd[0:10]) \
+                or not cmd[10].startswith(gerrit_cmd):
             raise FakeSubprocess.CalledProcessError()
 
         obj = FakeObject()
@@ -79,6 +84,15 @@ class GerritPluginTest(TestCase):
 
         self.build1 = self.project.builds.create(version='1', patch_source=self.http_patch_source, patch_id='1,1')
         self.build2 = self.project.builds.create(version='2', patch_source=self.ssh_patch_source, patch_id='1,1')
+
+    def test_basic_validation(self):
+        validation_error = False
+        try:
+            self.http_patch_source.full_clean()
+            self.ssh_patch_source.full_clean()
+        except ValidationError:
+            validation_error = True
+        self.assertFalse(validation_error)
 
     @patch('squad.plugins.gerrit.requests', FakeRequests)
     def test_http(self):

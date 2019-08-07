@@ -15,6 +15,7 @@ from squad.frontend.templatetags.squad import build_url as __build_url__
 
 logger = logging.getLogger()
 DEFAULT_SSH_PORT = '29418'
+DEFAULT_SSH_OPTIONS = ['-o', 'UserKnownHostsFile=/dev/null', '-o', 'StrictHostKeyChecking=no', '-o', 'LogLevel=ERROR']
 
 
 def build_url(build):
@@ -74,14 +75,17 @@ class Plugin(BasePlugin):
             patchset=patchset,
         )
 
-        ssh = ['ssh', '-p', DEFAULT_SSH_PORT, '%s@%s' % (patch_source.username, parsed_url.netloc), cmd]
+        ssh = ['ssh']
+        ssh += DEFAULT_SSH_OPTIONS
+        ssh += ['-p', DEFAULT_SSH_PORT, '%s@%s' % (patch_source.username, parsed_url.netloc)]
+        ssh += [cmd]
         try:
             result = subprocess.run(ssh, capture_output=True)
         except subprocess.CalledProcessError as e:
             logger.error('Failed do login to %s: %s' % (parsed_url.netloc, str(e)))
             return False
 
-        if result.stdout != "" or result.stderr != "":
+        if len(result.stdout) > 0 or len(result.stderr) > 0:
             logger.error('Failed to submit review through ssh: %s' % (result.stdout + result.stderr))
             return False
         return True
