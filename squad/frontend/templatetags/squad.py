@@ -2,8 +2,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.utils import render_crispy_form
 from django import template
 from django.conf import settings
-from django.core.urlresolvers import reverse
-from django.urls import NoReverseMatch
+from django.urls import reverse, NoReverseMatch
 from django.template.defaultfilters import safe
 from hashlib import md5
 from markdown import markdown as to_markdown

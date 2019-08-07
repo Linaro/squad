@@ -203,13 +203,13 @@ class EmailTemplate(models.Model):
 class Project(models.Model, DisplayName):
     objects = ProjectManager()
 
-    group = models.ForeignKey(Group, related_name='projects')
+    group = models.ForeignKey(Group, related_name='projects', on_delete=models.CASCADE)
     slug = models.CharField(max_length=100, validators=[slug_validator], db_index=True, verbose_name=N_('Slug'))
     name = models.CharField(max_length=100, null=True, blank=True, verbose_name=N_('Name'))
     is_public = models.BooleanField(default=True, verbose_name=N_('Is public'))
     html_mail = models.BooleanField(default=True)
     moderate_notifications = models.BooleanField(default=False)
-    custom_email_template = models.ForeignKey(EmailTemplate, null=True, blank=True)
+    custom_email_template = models.ForeignKey(EmailTemplate, null=True, blank=True, on_delete=models.CASCADE)
     description = models.TextField(null=True, blank=True, verbose_name=N_('Description'))
     important_metadata_keys = models.TextField(null=True, blank=True)
     enabled_plugins_list = PluginListField(
@@ -345,13 +345,13 @@ class PatchSource(models.Model):
 
 
 class Build(models.Model):
-    project = models.ForeignKey(Project, related_name='builds')
+    project = models.ForeignKey(Project, related_name='builds', on_delete=models.CASCADE)
     version = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     datetime = models.DateTimeField()
 
-    patch_source = models.ForeignKey(PatchSource, null=True, blank=True)
-    patch_baseline = models.ForeignKey('Build', null=True, blank=True)
+    patch_source = models.ForeignKey(PatchSource, null=True, blank=True, on_delete=models.CASCADE)
+    patch_baseline = models.ForeignKey('Build', null=True, blank=True, on_delete=models.CASCADE)
     patch_id = models.CharField(max_length=1024, null=True, blank=True)
 
     keep_data = models.BooleanField(
@@ -518,7 +518,7 @@ class Build(models.Model):
 
 
 class BuildPlaceholder(models.Model):
-    project = models.ForeignKey(Project, related_name='build_placeholders')
+    project = models.ForeignKey(Project, related_name='build_placeholders', on_delete=models.CASCADE)
     version = models.CharField(max_length=100)
     build_deleted_at = models.DateTimeField(auto_now_add=True)
 
@@ -527,11 +527,11 @@ class BuildPlaceholder(models.Model):
 
 
 class DelayedReport(models.Model):
-    build = models.ForeignKey(Build, related_name="delayed_reports")
-    baseline = models.ForeignKey('ProjectStatus', related_name="delayed_report_baselines", null=True, blank=True)
+    build = models.ForeignKey(Build, related_name="delayed_reports", on_delete=models.CASCADE)
+    baseline = models.ForeignKey('ProjectStatus', related_name="delayed_report_baselines", null=True, blank=True, on_delete=models.CASCADE)
     output_format_choices = (('text/plain', 'text/plain'), ('text/html', 'text/html'))
     output_format = models.CharField(max_length=32, choices=output_format_choices)
-    template = models.ForeignKey(EmailTemplate, null=True, blank=True)
+    template = models.ForeignKey(EmailTemplate, null=True, blank=True, on_delete=models.CASCADE)
     email_recipient = models.EmailField(null=True, blank=True)
     email_recipient_notified = models.BooleanField(default=False)
     callback = models.URLField(null=True, blank=True)
@@ -562,7 +562,7 @@ class DelayedReport(models.Model):
 
 
 class Environment(models.Model):
-    project = models.ForeignKey(Project, related_name='environments')
+    project = models.ForeignKey(Project, related_name='environments', on_delete=models.CASCADE)
     slug = models.CharField(max_length=100, validators=[slug_validator], db_index=True)
     name = models.CharField(max_length=100, null=True, blank=True)
     expected_test_runs = models.IntegerField(default=None, null=True, blank=True)
@@ -577,8 +577,6 @@ class Environment(models.Model):
 
 class TestRunManager(models.Manager):
 
-    use_for_related_fields = True
-
     def get_queryset(self, *args, **kwargs):
         return super(TestRunManager, self).get_queryset(*args, **kwargs).defer(
             "tests_file",
@@ -589,8 +587,8 @@ class TestRunManager(models.Manager):
 
 
 class TestRun(models.Model):
-    build = models.ForeignKey(Build, related_name='test_runs')
-    environment = models.ForeignKey(Environment, related_name='test_runs')
+    build = models.ForeignKey(Build, related_name='test_runs', on_delete=models.CASCADE)
+    environment = models.ForeignKey(Environment, related_name='test_runs', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     # these fields are potentially very large
@@ -645,7 +643,7 @@ class TestRun(models.Model):
 
 
 class Attachment(models.Model):
-    test_run = models.ForeignKey(TestRun, related_name='attachments')
+    test_run = models.ForeignKey(TestRun, related_name='attachments', on_delete=models.CASCADE)
     filename = models.CharField(null=False, max_length=1024)
     data = models.BinaryField(default=None)
     length = models.IntegerField(default=None)
@@ -678,7 +676,7 @@ class SuiteMetadata(models.Model):
 
 
 class Suite(models.Model):
-    project = models.ForeignKey(Project, related_name='suites')
+    project = models.ForeignKey(Project, related_name='suites', on_delete=models.CASCADE)
     slug = models.CharField(max_length=256, validators=[slug_validator], db_index=True)
     name = models.CharField(max_length=256, null=True, blank=True)
     metadata = models.ForeignKey(
@@ -686,6 +684,7 @@ class Suite(models.Model):
         null=True,
         related_name='+',
         limit_choices_to={'kind': 'suite'},
+        on_delete=models.CASCADE,
     )
 
     class Meta:
@@ -696,7 +695,7 @@ class Suite(models.Model):
 
 
 class SuiteVersion(models.Model):
-    suite = models.ForeignKey(Suite, related_name='versions')
+    suite = models.ForeignKey(Suite, related_name='versions', on_delete=models.CASCADE)
     version = models.CharField(max_length=40, null=True)
     first_seen = models.DateTimeField(auto_now_add=True)
 
@@ -708,13 +707,14 @@ class SuiteVersion(models.Model):
 
 
 class Test(models.Model):
-    test_run = models.ForeignKey(TestRun, related_name='tests')
-    suite = models.ForeignKey(Suite)
+    test_run = models.ForeignKey(TestRun, related_name='tests', on_delete=models.CASCADE)
+    suite = models.ForeignKey(Suite, on_delete=models.CASCADE)
     metadata = models.ForeignKey(
         SuiteMetadata,
         null=True,
         related_name='+',
         limit_choices_to={'kind': 'test'},
+        on_delete=models.CASCADE,
     )
     name = models.CharField(max_length=256, db_index=True)
     result = models.NullBooleanField()
@@ -798,13 +798,14 @@ class MetricManager(models.Manager):
 
 
 class Metric(models.Model):
-    test_run = models.ForeignKey(TestRun, related_name='metrics')
-    suite = models.ForeignKey(Suite)
+    test_run = models.ForeignKey(TestRun, related_name='metrics', on_delete=models.CASCADE)
+    suite = models.ForeignKey(Suite, on_delete=models.CASCADE)
     metadata = models.ForeignKey(
         SuiteMetadata,
         null=True,
         related_name='+',
         limit_choices_to={'kind': 'metric'},
+        on_delete=models.CASCADE,
     )
     name = models.CharField(max_length=100)
     result = models.FloatField()
@@ -867,9 +868,9 @@ class TestSummaryBase(object):
 
 
 class Status(models.Model, TestSummaryBase):
-    test_run = models.ForeignKey(TestRun, related_name='status')
-    suite = models.ForeignKey(Suite, null=True)
-    suite_version = models.ForeignKey(SuiteVersion, null=True)
+    test_run = models.ForeignKey(TestRun, related_name='status', on_delete=models.CASCADE)
+    suite = models.ForeignKey(Suite, null=True, on_delete=models.CASCADE)
+    suite_version = models.ForeignKey(SuiteVersion, null=True, on_delete=models.CASCADE)
 
     tests_pass = models.IntegerField(default=0)
     tests_fail = models.IntegerField(default=0)
@@ -908,7 +909,7 @@ class MetricThreshold(models.Model):
     class Meta:
         unique_together = ('project', 'name',)
 
-    project = models.ForeignKey(Project)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     name = models.CharField(max_length=1024)
     value = models.FloatField()
     is_higher_better = models.BooleanField(default=False)
@@ -920,7 +921,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
     notification system to know what was the project status at the time of the
     last notification.
     """
-    build = models.OneToOneField('Build', related_name='status')
+    build = models.OneToOneField('Build', related_name='status', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(null=True)
     finished = models.BooleanField(default=False)
@@ -1066,7 +1067,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
 
 class NotificationDelivery(models.Model):
 
-    status = models.ForeignKey('ProjectStatus', related_name='deliveries')
+    status = models.ForeignKey('ProjectStatus', related_name='deliveries', on_delete=models.CASCADE)
     subject = models.CharField(max_length=40, null=True, blank=True)
     txt = models.CharField(max_length=40, null=True, blank=True)
     html = models.CharField(max_length=40, null=True, blank=True)
@@ -1147,8 +1148,8 @@ class MetricsSummary(object):
 
 
 class BuildSummary(models.Model, TestSummaryBase):
-    build = models.ForeignKey(Build, related_name='metrics_summary')
-    environment = models.ForeignKey(Environment)
+    build = models.ForeignKey(Build, related_name='metrics_summary', on_delete=models.CASCADE)
+    environment = models.ForeignKey(Environment, on_delete=models.CASCADE)
     metrics_summary = models.FloatField(null=True)
     has_metrics = models.BooleanField(default=False)
 
@@ -1201,7 +1202,7 @@ class BuildSummary(models.Model, TestSummaryBase):
 
 
 class Subscription(models.Model):
-    project = models.ForeignKey(Project, related_name='subscriptions')
+    project = models.ForeignKey(Project, related_name='subscriptions', on_delete=models.CASCADE)
     email = models.CharField(
         max_length=1024,
         null=True,
@@ -1212,7 +1213,8 @@ class Subscription(models.Model):
         User,
         null=True,
         blank=True,
-        default=None
+        default=None,
+        on_delete=models.CASCADE,
     )
 
     NOTIFY_ALL_BUILDS = 'all'
@@ -1255,7 +1257,7 @@ class Subscription(models.Model):
 
 
 class AdminSubscription(models.Model):
-    project = models.ForeignKey(Project, related_name='admin_subscriptions')
+    project = models.ForeignKey(Project, related_name='admin_subscriptions', on_delete=models.CASCADE)
     email = models.CharField(max_length=1024, validators=[EmailValidator()])
 
     def __str__(self):
@@ -1287,7 +1289,7 @@ class KnownIssue(models.Model):
 
 class Annotation(models.Model):
     description = models.CharField(max_length=1024, null=True, blank=True)
-    build = models.OneToOneField(Build)
+    build = models.OneToOneField(Build, on_delete=models.CASCADE)
 
     def __str__(self):
         return '%s' % self.description

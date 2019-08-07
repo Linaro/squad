@@ -6,7 +6,6 @@ from django.db.models.functions import Concat
 from django.core import exceptions as core_exceptions
 from django.core.validators import validate_email
 from django.contrib.auth.models import User
-from squad.api.filters import ComplexFilterBackend
 from squad.core.models import Annotation, Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, MetricThreshold, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata, DelayedReport, Subscription
 from squad.core.tasks import prepare_report, update_delayed_report
 from squad.ci.models import Backend, TestJob
@@ -20,6 +19,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse as rest_reverse
 from rest_framework.pagination import CursorPagination, PageNumberPagination
 from rest_framework.permissions import AllowAny
+from rest_framework_filters.backends import ComplexFilterBackend
 
 import rest_framework_filters as filters
 
@@ -37,7 +37,7 @@ class GroupFilter(filters.FilterSet):
 
 
 class ProjectFilter(filters.FilterSet):
-    group = filters.RelatedFilter(GroupFilter, name="group", queryset=Group.objects.all())
+    group = filters.RelatedFilter(GroupFilter, field_name="group", queryset=Group.objects.all())
     full_name = filters.CharFilter(method='filter_full_name', lookup_expr='icontains')
 
     class Meta:
@@ -54,7 +54,7 @@ class ProjectFilter(filters.FilterSet):
 
 
 class EnvironmentFilter(filters.FilterSet):
-    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all(), widget=forms.TextInput)
+    project = filters.RelatedFilter(ProjectFilter, field_name="project", queryset=Project.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = Environment
@@ -75,8 +75,8 @@ class ProjectStatusFilter(filters.FilterSet):
 
 
 class BuildFilter(filters.FilterSet):
-    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all(), widget=forms.TextInput)
-    status = filters.RelatedFilter(ProjectStatusFilter, name="status", queryset=ProjectStatus.objects.all(), widget=forms.TextInput)
+    project = filters.RelatedFilter(ProjectFilter, field_name="project", queryset=Project.objects.all(), widget=forms.TextInput)
+    status = filters.RelatedFilter(ProjectStatusFilter, field_name="status", queryset=ProjectStatus.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = Build
@@ -85,8 +85,8 @@ class BuildFilter(filters.FilterSet):
 
 
 class TestRunFilter(filters.FilterSet):
-    build = filters.RelatedFilter(BuildFilter, name="build", queryset=Build.objects.all(), widget=forms.TextInput)
-    environment = filters.RelatedFilter(EnvironmentFilter, name="environment", queryset=Environment.objects.all(), widget=forms.TextInput)
+    build = filters.RelatedFilter(BuildFilter, field_name="build", queryset=Build.objects.all(), widget=forms.TextInput)
+    environment = filters.RelatedFilter(EnvironmentFilter, field_name="environment", queryset=Environment.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = TestRun
@@ -97,9 +97,9 @@ class TestRunFilter(filters.FilterSet):
 
 
 class TestJobFilter(filters.FilterSet):
-    testrun = filters.RelatedFilter(TestRunFilter, name="testrun", queryset=TestRun.objects.all(), widget=forms.TextInput)
-    target_build = filters.RelatedFilter(BuildFilter, name="target_build", queryset=Build.objects.all(), widget=forms.TextInput)
-    target = filters.RelatedFilter(ProjectFilter, name="target", queryset=Project.objects.all(), widget=forms.TextInput)
+    testrun = filters.RelatedFilter(TestRunFilter, field_name="testrun", queryset=TestRun.objects.all(), widget=forms.TextInput)
+    target_build = filters.RelatedFilter(BuildFilter, field_name="target_build", queryset=Build.objects.all(), widget=forms.TextInput)
+    target = filters.RelatedFilter(ProjectFilter, field_name="target", queryset=Project.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = TestJob
@@ -117,7 +117,7 @@ class TestJobFilter(filters.FilterSet):
 
 
 class SuiteFilter(filters.FilterSet):
-    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all(), widget=forms.TextInput)
+    project = filters.RelatedFilter(ProjectFilter, field_name="project", queryset=Project.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = Suite
@@ -135,7 +135,7 @@ class SuiteMetadataFilter(filters.FilterSet):
 
 
 class KnownIssueFilter(filters.FilterSet):
-    environment = filters.RelatedFilter(EnvironmentFilter, name="environment", queryset=Environment.objects.all(), widget=forms.TextInput)
+    environment = filters.RelatedFilter(EnvironmentFilter, field_name="environment", queryset=Environment.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = KnownIssue
@@ -147,9 +147,9 @@ class KnownIssueFilter(filters.FilterSet):
 
 
 class TestFilter(filters.FilterSet):
-    test_run = filters.RelatedFilter(TestRunFilter, name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
-    suite = filters.RelatedFilter(SuiteFilter, name="suite", queryset=Suite.objects.all(), widget=forms.TextInput)
-    known_issues = filters.RelatedFilter(KnownIssueFilter, name='known_issues', queryset=KnownIssue.objects.all(), widget=forms.TextInput)
+    test_run = filters.RelatedFilter(TestRunFilter, field_name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
+    suite = filters.RelatedFilter(SuiteFilter, field_name="suite", queryset=Suite.objects.all(), widget=forms.TextInput)
+    known_issues = filters.RelatedFilter(KnownIssueFilter, field_name='known_issues', queryset=KnownIssue.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = Test
@@ -159,7 +159,7 @@ class TestFilter(filters.FilterSet):
 
 
 class MetricThresholdFilter(filters.FilterSet):
-    project = filters.RelatedFilter(ProjectFilter, name="project", queryset=Project.objects.all(), widget=forms.TextInput)
+    project = filters.RelatedFilter(ProjectFilter, field_name="project", queryset=Project.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = MetricThreshold
@@ -167,8 +167,8 @@ class MetricThresholdFilter(filters.FilterSet):
 
 
 class DelayedReportFilter(filters.FilterSet):
-    build = filters.RelatedFilter(BuildFilter, name="build", queryset=Build.objects.all(), widget=forms.TextInput)
-    baseline = filters.RelatedFilter(BuildFilter, name="baseline", queryset=Build.objects.all(), widget=forms.TextInput)
+    build = filters.RelatedFilter(BuildFilter, field_name="build", queryset=Build.objects.all(), widget=forms.TextInput)
+    baseline = filters.RelatedFilter(BuildFilter, field_name="baseline", queryset=Build.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = DelayedReport

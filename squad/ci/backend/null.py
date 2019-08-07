@@ -100,7 +100,7 @@ class Backend(object):
         logger.debug(self.format_message(msg))
 
     def log_warn(self, msg):
-        logger.warn(self.format_message(msg))
+        logger.warning(self.format_message(msg))
 
     def log_error(self, msg):
         logger.error(self.format_message(msg))
