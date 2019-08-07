@@ -1,3 +1,9 @@
+# 0.68.3
+
+* frontend: `results_table`: show "mean (stddev)" details only for metric
+  comparison
+* core: plugins: fix gerrit plugin
+
 # 0.68.2
 
 * ci: improve parsing of LAVA logs
