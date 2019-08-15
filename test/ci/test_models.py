@@ -325,7 +325,7 @@ class BackendFetchTest(BackendTestBase):
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
-    def test_really_fetch_sets_testjob_can_resubmit_and_testrun_completed(self, get_implementation, __now__):
+    def test_really_fetch_ignores_results_from_incomplete_job(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {"foo": "pass"}
         metrics = {"bar": 1}
@@ -348,14 +348,18 @@ class BackendFetchTest(BackendTestBase):
         self.assertTrue(test_job.can_resubmit)
 
         # should not crash
-        core_models.TestRun.objects.get(
+        testrun = core_models.TestRun.objects.get(
             build__project=self.project,
             environment__slug='myenv',
             build__version='1',
             job_id='999',
             job_status='Incomplete',
-            completed=True,  # results are not empty -> completed = True
+            completed=False,  # even if results are not empty
         )
+
+        # no results get recorded
+        self.assertEqual(0, testrun.tests.count())
+        self.assertEqual(0, testrun.metrics.count())
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
