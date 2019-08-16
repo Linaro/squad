@@ -1,0 +1,53 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: squad
+Upstream-Contact: SQUAD development mailing list <squad-dev@lists.linaro.org>
+Source: https://github.com/Linaro/squad
+
+Files: *
+Copyright: 2016-2019 Linaro Limited
+License: AGPL-3.0-or-later
+
+Files: squad/frontend/static/vendor/*
+Copyright: multiple authors (see below)
+License: MIT AND OFL-1.1
+Comment:
+ This directory contains cache tarballs from external dependencies. When
+ extracted, it will create the contents listed below with their specific
+ copyright owners and licenses.
+
+Files: squad/frontend/static/angularjs/*
+Copyright: 2010-2017 Google, Inc. http://angularjs.org
+License: MIT
+
+Files: squad/frontend/static/bootstrap/*
+Copyright: 2011-2016 Twitter, Inc.
+License: MIT
+
+Files: squad/frontend/static/chartjs/*
+Copyright: 2017 Nick Downie
+License: MIT
+
+Files: squad/frontend/static/floatThead/*
+Copyright: 2012-2017 Misha Koryak
+License: MIT
+
+Files: squad/frontend/static/font-awesome/*
+Copyright: 2016 Dave Gandy
+License: MIT
+
+Files: squad/frontend/static/font-awesome/fonts/*
+Copyright: 2016 Dave Gandy
+License: OFL-1.1
+
+Files: squad/frontend/static/jquery.js
+Copyright: JS Foundation and other contributors
+License: MIT
+
+Files: squad/frontend/static/lodash.js
+Copyright: OpenJS Foundation and other contributors <https://openjsf.org/>
+ Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+License: MIT
+
+Files: squad/frontend/static/select2.js
+Copyright: 2012-2017 Kevin Brown, Igor Vaynberg, and Select2 contributors
+License: MIT
