@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -eu
+
+# Starts a local rabbitmq server if there is none running already
+
+if pgrep -fa rabbitmq_server >/dev/null; then
+    echo "rabbitmq-server already running, no need for a new one"
+    exec sleep infinity
+fi
+
+basedir=$(dirname $0)/../tmp/rabbitmq
+mkdir -p "${basedir}"/log
+
+export RABBITMQ_NODENAME=squad-rabbitmq
+export RABBITMQ_MNESIA_BASE=${basedir}/mnesia
+export RABBITMQ_LOG_BASE=${basedir}/log
+export RABBITMQ_NODE_IP_ADDRESS=127.0.0.1
+export HOME="${basedir}"
+exec /usr/lib/rabbitmq/bin/rabbitmq-server
