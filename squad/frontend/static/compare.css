@@ -1,0 +1,16 @@
+form#compare-projects-form div.checkbox {
+    height: 2.2em;
+}
+
+form#compare-projects-form div.checkbox select{
+    width: 20em;
+    padding-top: 0px;
+}
+
+form#compare-projects-form div.checkbox label{
+    padding-top: 5px;
+}
+
+form#compare-projects-form div.checkbox .select-build{
+    display: inline;
+}
