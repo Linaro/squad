@@ -68,7 +68,8 @@ class ProjectComparisonTest(TestCase):
 
     def test_comparison_project_with_default_transition(self):
         # default transitions: pass to fail and fail to pass
-        response = self.client.get('/_/compare/?project=mygroup/project1&project=mygroup/project2')
+        url = '/_/compare/?group=mygroup&project_%d=1&project_%d=1' % (self.project1.id, self.project2.id)
+        response = self.client.get(url)
         self.assertEqual(200, response.status_code)
         self.assertNotIn('d/e', str(response.content))
         self.assertIn('<th>a</th>', str(response.content))
