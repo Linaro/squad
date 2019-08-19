@@ -1,4 +1,9 @@
 {% if comparison %}
+
+{% if comparison_type == 'test' %}
+  {% include "squad/_results_transitions_filter.jinja2" %}
+{% endif %}
+
 <table class='test-results'>
   <thead>
     <tr>
@@ -29,34 +34,40 @@
       {% endfor %}
     </tr>
   </thead>
-  {% for test, results in comparison.results %}
+  {% if not comparison.results %}
     <tr>
-      <th>{{test}}</th>
-      {% for build, environments in comparison.environments.items() %}
-        {% for environment in environments %}
-          {% with result=results.get((build, environment)) %}
-            {% if result %}
-              {% if comparison_type == 'test' %}
-                <td class='{{result|slugify}}'>
-                  <a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test])}}">
-                    <strong>{{result}}</strong>
-                  </a>
-                </td>
-              {% else %}
-                {% set mean = result.0|float %}
-                {% set stddev = result.1|float %}
-                {% set total = result.2|int %}
-                <td title="{{_('Number of measurements: %d' % total)}}">
-                  <strong>{{'%.2f' % mean}} ({{'%.2f' % stddev}})</strong>
-                </td>
-              {% endif %}
-            {% else %}
-              <td><i>{{ _('n/a') }}</i></td>
-            {% endif %}
-          {% endwith %}
-        {% endfor %}
-      {% endfor %}
+      <th>No tests to display</th>
     </tr>
-  {% endfor %}
+  {% else %}
+    {% for test, results in comparison.results %}
+      <tr>
+        <th>{{test}}</th>
+        {% for build, environments in comparison.environments.items() %}
+          {% for environment in environments %}
+            {% with result=results.get((build, environment)) %}
+              {% if result %}
+                {% if comparison_type == 'test' %}
+                  <td class='{{result|slugify}}'>
+                    <a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test])}}">
+                      <strong>{{result}}</strong>
+                    </a>
+                  </td>
+                {% else %}
+                  {% set mean = result.0|float %}
+                  {% set stddev = result.1|float %}
+                  {% set total = result.2|int %}
+                  <td title="{{_('Number of measurements: %d' % total)}}">
+                    <strong>{{'%.2f' % mean}} ({{'%.2f' % stddev}})</strong>
+                  </td>
+                {% endif %}
+              {% else %}
+                <td><i>{{ _('n/a') }}</i></td>
+              {% endif %}
+            {% endwith %}
+          {% endfor %}
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  {% endif %}
 </table>
 {% endif %}

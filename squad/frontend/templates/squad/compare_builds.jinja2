@@ -1,7 +1,9 @@
 {% extends "squad/base.jinja2" %}
+{% set compare_build_action = request.path + strip_get_parameters(['project', 'comparison_type']) %}
 
 {% block content %}
   <h1>{{ _('Compare builds') }}</h1>
+
   {% if comparison %}
     {% with items=comparison.results %}
       {% include "squad/_pagination.jinja2" %}
@@ -19,7 +21,14 @@
       <div class="col-md-6 col-sm-6" ng-app="BuildCompare" ng-controller="BuildCompareController" ng-init="init({{ project.id if project else 0 }})">
         <form>
           <div class="form-group">
-            <select name="project" id="project-select" placeholder="{{ _('Enter project name') }}" onchange="this.form.submit()" class="form-control" {%if project %}disabled{% endif %}>
+            <select
+              name="project"
+              id="project-select"
+              placeholder="{{ _('Enter project name') }}"
+              onchange="window.location='{{ compare_build_action }}&' + $(this.form).serialize()"
+              class="form-control"
+              {%if project %}disabled{% endif %}
+            >
             {% if project %}<option>{{ project.full_name }}</option>{% endif %}
             </select>
           </div>
@@ -48,7 +57,12 @@
           </div>
           <div class="form-group">
             <input type="hidden" name="project" value="{{ project.full_name }}" />
-            <input onclick="this.form.submit()" value="{{ _('Compare') }}" type="button" class="btn btn-default" />
+            <input
+              onclick="window.location='{{ compare_build_action }}&' + $(this.form).serialize()"
+              value="{{ _('Compare') }}"
+              type="button"
+              class="btn btn-default"
+            />
             <input onclick='window.location="{{ request.path }}"' value="{{ _('Start over') }}" type="button" class="btn btn-default" />
           </div>
           {% endif %}

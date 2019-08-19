@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from django.db.models import F
 from itertools import groupby
+from functools import reduce
 import statistics
 
 
@@ -217,6 +218,27 @@ class TestComparison(BaseComparison):
             )
         return self.__fixes__
 
+    def apply_transitions(self, transitions):
+        if transitions is None or len(transitions) == 0:
+            return
+
+        filtered = self.__status_changes__(*transitions)
+
+        self.all_environments = set(filtered.keys())
+        self.environments = OrderedDict({build: self.all_environments for build in self.builds})
+        self.__regressions__ = None
+        self.__fixes__ = None
+        self.__diff__ = None
+
+        if len(filtered) == 0:
+            self.results = OrderedDict()
+            return
+
+        # filter results
+        all_tests = set(reduce(lambda a, b: a + b, filtered.values()))
+        self.results = OrderedDict({full_name: self.results[full_name] for full_name in all_tests})
+        self.results = OrderedDict(sorted(self.results.items()))
+
     def __status_changes__(self, *transitions, predicate=lambda test, env: True):
         if len(self.builds) < 2:
             return {}
@@ -224,11 +246,11 @@ class TestComparison(BaseComparison):
         comparisons = OrderedDict()
         after = self.builds[-1]  # last
         before = self.builds[-2]  # second to last
-        for env in self.environments[after]:
+        for env in self.all_environments:
             comparison_list = []
             for test, results in self.diff.items():
-                results_after = results.get((after, env))
-                results_before = results.get((before, env))
+                results_after = results.get((after, env), 'n/a')
+                results_before = results.get((before, env), 'n/a')
                 if (results_before, results_after) in transitions:
                     if predicate(test, env):
                         comparison_list.append(test)
