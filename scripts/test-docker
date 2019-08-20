@@ -4,12 +4,3 @@ set -exu
 
 docker build -t squad .
 docker run squad python3 manage.py test -v 3
-
-rc=0
-for lib in $(docker run squad sh -c 'find /usr/local/lib/python3.* -name "*.egg"'); do
-    set +x
-    echo "E: library installed from outside of Debian: $lib"
-    rc=1
-    set -x
-done
-exit "$rc"
