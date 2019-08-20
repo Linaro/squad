@@ -21,7 +21,13 @@ class FakeGet():
         self.params[key] = value
 
     def __getitem__(self, key):
-        return self.params[key]
+        return self.params.get(key)
+
+    def __delitem__(self, key):
+        del self.params[key]
+
+    def get(self, key):
+        return self.__getitem__(key)
 
     def copy(self):
         return self

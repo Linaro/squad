@@ -164,10 +164,17 @@ def get_page_list(items):
 
 
 @register_global_function(takes_context=True)
-def get_page_url(context, page):
+def strip_get_parameters(context, parameters):
     query_string = context['request'].GET.copy()
-    query_string['page'] = page
+    for parameter in parameters:
+        if query_string.get(parameter):
+            del query_string[parameter]
     return '?' + query_string.urlencode()
+
+
+@register_global_function(takes_context=True)
+def get_page_url(context, page):
+    return '%s&page=%d' % (strip_get_parameters(context, ['page']), page)
 
 
 @register_filter

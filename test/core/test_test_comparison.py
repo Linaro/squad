@@ -180,3 +180,58 @@ class TestComparisonTest(TestCase):
         comparison = TestComparison.compare_builds(self.build1, self.build2)
         fixes = comparison.fixes
         self.assertEqual({}, fixes)
+
+    def test_apply_transitions(self):
+        """
+        Test results scenario
+                +---------------------+---------------------+
+                |        buildA       |        buildB       |
+                +------+------+-------+------+------+-------+
+                | envA | envB | envC  | envA | envB | envC  |
+        +-------+------+------+-------+------+------+-------+
+        | testA | pass | fail | xfail | fail | pass | xfail |
+        +-------+------+------+-------+------+------+-------+
+        | testB | pass | skip | xfail | skip |      | xfail |
+        +-------+------+------+-------+------+------+-------+
+        | testC | pass | pass | pass  | pass | pass | pass  |
+        +-------+------+------+-------+------+------+-------+
+        """
+        project = self.group.projects.create(slug='project3')
+        self.receive_test_run(project, 'buildA', 'envA', {'testA': 'pass', 'testB': 'pass', 'testC': 'pass'})
+        self.receive_test_run(project, 'buildA', 'envB', {'testA': 'fail', 'testB': 'skip', 'testC': 'pass'})
+        self.receive_test_run(project, 'buildA', 'envC', {'testA': 'xfail', 'testB': 'xfail', 'testC': 'pass'})
+
+        self.receive_test_run(project, 'buildB', 'envA', {'testA': 'fail', 'testB': 'skip', 'testC': 'pass'})
+        self.receive_test_run(project, 'buildB', 'envB', {'testA': 'pass', 'testC': 'pass'})
+        self.receive_test_run(project, 'buildB', 'envC', {'testA': 'xfail', 'testB': 'xfail', 'testC': 'pass'})
+
+        buildA = project.builds.filter(version='buildA').get()
+        buildB = project.builds.filter(version='buildB').get()
+
+        comparison = TestComparison.compare_builds(buildA, buildB)
+        self.assertEqual({'envB': ['testA']}, comparison.fixes)
+        self.assertEqual({'envA': ['testA']}, comparison.regressions)
+        self.assertEqual({'envA', 'envB', 'envC'}, comparison.all_environments)
+        self.assertEqual(3, len(comparison.results))
+
+        transitions = [('pass', 'fail'), ('skip', 'n/a')]
+        comparison.apply_transitions(transitions)
+
+        """
+        Test results after transitions are applied
+                +-------------+-------------+
+                |    buildA   |   buildB    |
+                +------+------+------+------+
+                | envA | envB | envA | envB |
+        +-------+------+------+------+------+
+        | testA | pass | fail | fail | pass |
+        +-------+------+------+------+------+
+        | testB | pass | skip | skip |      |
+        +-------+------+------+------+------+
+        """
+
+        self.assertEqual({'envB': ['testA']}, comparison.fixes)
+        self.assertEqual({'envA': ['testA']}, comparison.regressions)
+        self.assertEqual({'envA', 'envB'}, comparison.all_environments)
+        self.assertEqual(2, len(comparison.results))
+        self.assertEqual(None, comparison.results['testB'].get((buildB, 'envB')))

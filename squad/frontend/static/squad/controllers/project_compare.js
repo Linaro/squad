@@ -27,6 +27,6 @@ export function ProjectCompareController($scope, attach_select2) {
                 selected_builds[key] = $('select[name=' + key + ']').val()
             }
         }
-        console.log($.param(selected_builds))
+        window.location = window.location.search + '&' + $.param(selected_builds)
     }
 }

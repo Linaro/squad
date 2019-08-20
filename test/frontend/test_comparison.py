@@ -57,10 +57,23 @@ class ProjectComparisonTest(TestCase):
         self.build2 = self.project2.builds.last()
 
     def test_comparison_project_sanity_check(self):
-        url = '/_/compare/?group=mygroup&project_%d=1&project_%d=1' % (self.project1.id, self.project2.id)
+        url = '/_/compare/?group=mygroup&project_%d=1&project_%d=1&transitions=ignore' % (self.project1.id, self.project2.id)
         response = self.client.get(url)
         self.assertEqual(200, response.status_code)
         self.assertIn('d/e', str(response.content))
+        self.assertIn('myenv', str(response.content))
+        self.assertIn('otherenv', str(response.content))
+        self.assertIn('pass', str(response.content))
+        self.assertIn('fail', str(response.content))
+
+    def test_comparison_project_with_default_transition(self):
+        # default transitions: pass to fail and fail to pass
+        url = '/_/compare/?group=mygroup&project_%d=1&project_%d=1' % (self.project1.id, self.project2.id)
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertNotIn('d/e', str(response.content))
+        self.assertIn('<th>a</th>', str(response.content))
+        self.assertIn('<th>c</th>', str(response.content))
         self.assertIn('myenv', str(response.content))
         self.assertIn('otherenv', str(response.content))
         self.assertIn('pass', str(response.content))

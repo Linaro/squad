@@ -9,6 +9,11 @@ from squad.core.comparison import TestComparison, MetricComparison
 from squad.frontend.utils import alphanum_sort
 
 
+RESULT_STATES = ['pass', 'fail', 'xfail', 'skip', 'n/a']
+TRANSITIONS = {(_from, _to): False for _from in RESULT_STATES for _to in RESULT_STATES}
+DEFAULT_CHECKED_TRANSITIONS = [('pass', 'fail'), ('fail', 'pass')]
+
+
 def __get_comparison_class(comparison_type):
     if 'metric' == comparison_type:
         return MetricComparison
@@ -16,12 +21,40 @@ def __get_comparison_class(comparison_type):
         return TestComparison
 
 
+def __paginate(results, request):
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    paginator = Paginator(tuple(results.items()), 50)
+    return paginator.page(page)
+
+
+def __get_transitions(request):
+    transitions = TRANSITIONS.copy()
+    marked_transitions = request.GET.getlist('transitions', [])
+
+    if 'ignore' in marked_transitions:
+        return {}
+
+    if len(marked_transitions) > 0:
+        for t in marked_transitions:
+            _from, _to = t.split(':')
+            if _from in RESULT_STATES and _to in RESULT_STATES:
+                transitions[(_from, _to)] = True
+    else:
+        for default in DEFAULT_CHECKED_TRANSITIONS:
+            transitions[(default[0], default[1])] = True
+
+    return transitions
+
+
 def compare_projects(request):
     comparison = None
     group = None
     projects = None
-
     comparison_type = request.GET.get('comparison_type', 'test')
+    transitions = __get_transitions(request)
     group_slug = request.GET.get('group')
 
     if group_slug:
@@ -43,18 +76,17 @@ def compare_projects(request):
             comparison_class = __get_comparison_class(comparison_type)
             comparison = comparison_class.compare_builds(*builds)
 
-            try:
-                page = int(request.GET.get('page', '1'))
-            except ValueError:
-                page = 1
-            paginator = Paginator(tuple(comparison.results.items()), 50)
-            comparison.results = paginator.page(page)
+            if comparison_type == 'test' and len(transitions):
+                comparison.apply_transitions([t for t, checked in transitions.items() if checked])
+
+            comparison.results = __paginate(comparison.results, request)
 
     context = {
         'group': group,
         'projects': projects,
         'comparison': comparison,
         'comparison_type': comparison_type,
+        'transitions': transitions,
     }
 
     return render(request, 'squad/compare_projects.jinja2', context)
@@ -69,6 +101,7 @@ def compare_test(request):
 def compare_builds(request):
     project_slug = request.GET.get('project')
     comparison_type = request.GET.get('comparison_type', 'test')
+    transitions = __get_transitions(request)
     comparison = None
     project = None
     if project_slug:
@@ -84,17 +117,16 @@ def compare_builds(request):
             comparison_class = __get_comparison_class(comparison_type)
             comparison = comparison_class.compare_builds(baseline, target)
 
-            try:
-                page = int(request.GET.get('page', '1'))
-            except ValueError:
-                page = 1
-            paginator = Paginator(tuple(comparison.results.items()), 50)
-            comparison.results = paginator.page(page)
+            if comparison_type == 'test' and len(transitions):
+                comparison.apply_transitions([t for t, checked in transitions.items() if checked])
+
+            comparison.results = __paginate(comparison.results, request)
 
     context = {
         'project': project,
         'comparison': comparison,
         'comparison_type': comparison_type,
+        'transitions': transitions,
     }
 
     return render(request, 'squad/compare_builds.jinja2', context)

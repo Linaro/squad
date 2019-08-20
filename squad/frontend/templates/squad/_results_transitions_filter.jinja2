@@ -1,0 +1,52 @@
+{% set states = ['pass', 'fail', 'xfail', 'skip', 'n/a'] %}
+{% set transition_filter_action = request.path + strip_get_parameters(['transitions', 'page']) %}
+{% set ignore = 'ignore' in request.GET.getlist('transitions', []) %}
+<div id="test-results-transition-filters" class="col-md-6 row">
+  <h3>Select transitions to display</h3>
+  <form id="transitions-form">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>{{ _('From/To') }}</th>
+          {% for state in states %}
+            <th>{{ state }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for _from in states %}
+          <tr>
+            <th>{{ _from }}</th>
+            {% for _to in states %}
+              <td>
+              {% if _from ==_to %}
+                -
+              {% else %}
+                <input
+                  name="transitions"
+                  value="{{ _from }}:{{ _to  }}"
+                  type="checkbox"
+                  onchange="window.location='{{ transition_filter_action }}&' + $(this.form).serialize()"
+                  {{ 'checked' if transitions.get((_from, _to)) else ''}}
+                  {{ 'disabled' if ignore else '' }}
+                />
+              {% endif %}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div>
+     {{ _('show all tests') }}&nbsp;
+     <input
+       name="transitions"
+       value="ignore"
+       type="checkbox"
+       onchange="window.location='{{ transition_filter_action }}&' + $(this.form).serialize()"
+       {{ 'checked' if ignore else ''}}
+     />
+    </div>
+  </form>
+</div>
+<div class="clearfix"></div>
