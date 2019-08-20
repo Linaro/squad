@@ -14,3 +14,13 @@ form#compare-projects-form div.checkbox label{
 form#compare-projects-form div.checkbox .select-build{
     display: inline;
 }
+
+div#test-results-transition-filters table {
+   width: 60%;
+}
+div#test-results-transition-filters table th,
+div#test-results-transition-filters table td {
+    width: 10%;
+    text-align: center;
+    padding: 3px;
+}
