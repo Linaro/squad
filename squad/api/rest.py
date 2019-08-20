@@ -19,7 +19,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse as rest_reverse
 from rest_framework.pagination import CursorPagination, PageNumberPagination
 from rest_framework.permissions import AllowAny
-from rest_framework_filters.backends import ComplexFilterBackend
+from squad.compat import ComplexFilterBackend
 
 import rest_framework_filters as filters
 
