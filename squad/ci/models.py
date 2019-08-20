@@ -153,9 +153,9 @@ class Backend(models.Model):
 
 class TestJob(models.Model):
     # input - internal
-    backend = models.ForeignKey(Backend, related_name='test_jobs')
+    backend = models.ForeignKey(Backend, related_name='test_jobs', on_delete=models.CASCADE)
     # TestRun object once it's created
-    testrun = models.ForeignKey(TestRun, related_name='test_jobs', null=True, blank=True)
+    testrun = models.ForeignKey(TestRun, related_name='test_jobs', null=True, blank=True, on_delete=models.CASCADE)
     # definition can only be empty if the job already exists
     # in the executor.
     definition = models.TextField(null=True, blank=True)
@@ -164,8 +164,8 @@ class TestJob(models.Model):
     name = models.CharField(max_length=256, null=True, blank=True)
 
     # input - for TestRun later
-    target = models.ForeignKey(Project)
-    target_build = models.ForeignKey(Build, related_name='test_jobs', null=True, blank=True)
+    target = models.ForeignKey(Project, on_delete=models.CASCADE)
+    target_build = models.ForeignKey(Build, related_name='test_jobs', null=True, blank=True, on_delete=models.CASCADE)
     environment = models.CharField(max_length=100, validators=[slug_validator])
 
     # dates
@@ -185,7 +185,7 @@ class TestJob(models.Model):
     # resubmitting
     resubmitted_count = models.IntegerField(default=0)
     # reference to the job that was used as base for resubmission
-    parent_job = models.ForeignKey('self', default=None, blank=True, null=True, related_name="resubmitted_jobs")
+    parent_job = models.ForeignKey('self', default=None, blank=True, null=True, related_name="resubmitted_jobs", on_delete=models.CASCADE)
 
     @property
     def show_definition(self):

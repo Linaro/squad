@@ -1,12 +1,12 @@
 celery
 coreapi
 django_crispy_forms
-Django>=1.11,<1.12
+Django>=2.2
 django-cors-headers
 django-simple-history
-django_filter>=1.1,<2.0
-djangorestframework
-djangorestframework-filters
+django_filter>=2.0
+djangorestframework>=3.9.2
+djangorestframework-filters>=1.0.0.dev0
 gunicorn
 Jinja2
 Markdown

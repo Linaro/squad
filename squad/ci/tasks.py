@@ -30,7 +30,7 @@ def fetch(job_id):
     try:
         test_job.backend.fetch(test_job)
     except FetchIssue as issue:
-        logger.warn("error fetching job %s: %s" % (test_job.id, str(issue)))
+        logger.warning("error fetching job %s: %s" % (test_job.id, str(issue)))
         test_job.failure = str(issue)
         test_job.fetched = not issue.retry
         test_job.fetch_attempts += 1
