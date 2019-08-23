@@ -318,12 +318,12 @@ class Backend(BaseBackend):
         if hasattr(test_job, 'target') and test_job.target.project_settings is not None:
             ps = yaml.safe_load(test_job.target.project_settings) or {}
             handle_lava_suite = self.__resolve_setting__(ps, 'CI_LAVA_HANDLE_SUITE', False)
+            handle_lava_boot = self.__resolve_setting__(ps, 'CI_LAVA_HANDLE_BOOT', False)
             clone_measurements_to_tests = self.__resolve_setting__(ps, 'CI_LAVA_CLONE_MEASUREMENTS', False)
-            ignore_lava_boot = self.__resolve_setting__(ps, 'CI_LAVA_IGNORE_BOOT', False)
         else:
             handle_lava_suite = self.settings.get('CI_LAVA_HANDLE_SUITE', False)
+            handle_lava_boot = self.settings.get('CI_LAVA_HANDLE_BOOT', False)
             clone_measurements_to_tests = self.settings.get('CI_LAVA_CLONE_MEASUREMENTS', False)
-            ignore_lava_boot = self.settings.get('CI_LAVA_IGNORE_BOOT', False)
 
         definition = yaml.safe_load(data['definition'])
         test_job.name = definition['job_name'][:255]
@@ -363,7 +363,7 @@ class Backend(BaseBackend):
                         if clone_measurements_to_tests:
                             res_value = result['result']
                             results.update({res_name: res_value})
-                elif not ignore_lava_boot and result['name'] == 'auto-login-action':
+                elif result['name'] == 'auto-login-action' and handle_lava_boot:
                     # add artificial 'boot' test result for each test job
                     # by default the boot test is named after the device_type
                     boot = "boot-%s" % test_job.name
