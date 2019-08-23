@@ -75,6 +75,9 @@ class Plugin(BasePlugin):
             patchset=patchset,
         )
 
+        if payload.get('labels') and payload['labels'].get('Code-Review'):
+            cmd += ' --code-review %s' % (payload['labels']['Code-Review'])
+
         ssh = ['ssh']
         ssh += DEFAULT_SSH_OPTIONS
         ssh += ['-p', DEFAULT_SSH_PORT, '%s@%s' % (patch_source.username, parsed_url.netloc)]
@@ -103,11 +106,13 @@ class Plugin(BasePlugin):
         return self.__gerrit_request__(build, data)
 
     def notify_patch_build_finished(self, build):
+        down_vote = False
         try:
             if build.status.tests_fail == 0:
                 message = "All tests passed"
             else:
                 message = "Some tests failed (%d)" % build.status.tests_fail
+                down_vote = True
         except ProjectStatus.DoesNotExist:
             logger.error('ProjectStatus for build %s/%s does not exist' % (build.project.slug, build.version))
             message = "An error occurred"
@@ -115,4 +120,8 @@ class Plugin(BasePlugin):
         data = {
             'message': Plugin.__message__(build, finished=True, extra_message=message),
         }
+
+        if down_vote:
+            data['labels'] = {'Code-Review': ' -1'}
+
         return self.__gerrit_request__(build, data)
