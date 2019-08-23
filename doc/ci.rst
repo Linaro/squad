@@ -139,10 +139,13 @@ LAVA backend supports the following settings:
    boolean flag that allows to save LAVA result as both Test and Measurement
    when set to ``True``. Default is ``False``. Can be overwritten for each
    project separately (similar to CI_LAVA_HANDLE_SUITE).
- - CI_LAVA_IGNORE_BOOT
-   boolean flag that avoids parsing LAVA `auto-login-action` as a boot test
-   when set to ``True``. Default is ``False``. Can be overwritten for each
-   project separately (similar to CI_LAVA_HANDLE_SUITE).
+ - CI_LAVA_HANDLE_BOOT
+   boolean flag that parses LAVA `auto-login-action` as a boot
+   test when set to ``True``. Default is ``False``. Can be overwritten for
+   each project separately (similar to CI_LAVA_HANDLE_SUITE). **NOTE**:
+   Before SQUAD 1.x series, the default behavior was to always process
+   `auto-login-action` as boot. After 1.x, the default behavior has changed
+   to do the opposite.
 
 Example LAVA backend settings:
 
