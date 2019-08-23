@@ -44,11 +44,11 @@ class GithubPluginTest(TestCase):
         self.build.status.tests_pass = 1
         self.build.status.save()
         state, _ = self.github.__get_finished_state__(self.build)
-        self.assertEquals("success", state)
+        self.assertEqual("success", state)
 
     @patch('squad.plugins.github.Plugin.__github_post__')
     def test_notify_patch_build_finished_with_failures(self, __github_post__):
         self.build.status.tests_fail = 1
         self.build.status.save()
         state, _ = self.github.__get_finished_state__(self.build)
-        self.assertEquals("failure", state)
+        self.assertEqual("failure", state)
