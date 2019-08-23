@@ -80,7 +80,7 @@ class Plugin(BasePlugin):
         ssh += ['-p', DEFAULT_SSH_PORT, '%s@%s' % (patch_source.username, parsed_url.netloc)]
         ssh += [cmd]
         try:
-            result = subprocess.run(ssh, capture_output=True)
+            result = subprocess.run(ssh, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except subprocess.CalledProcessError as e:
             logger.error('Failed do login to %s: %s' % (parsed_url.netloc, str(e)))
             return False
