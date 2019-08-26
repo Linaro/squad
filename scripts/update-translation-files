@@ -17,7 +17,7 @@ for app in $MODULES; do
     --mapping-file babel.cfg \
     --project squad.$app \
     --output $pot \
-    $(find squad/$app -name '*.py' -or -name '*.jinja2' | grep -v squad/frontend/static)
+    $(find squad/$app -name '*.py' -or -name '*.jinja2' -or -name '*.html' | grep -vE 'squad/frontend/static|/migrations/')
 
   if [ "$(msgattrib "${pot}" | wc -l)" -eq 0 ]; then
     rm -f "${pot}"
