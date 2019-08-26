@@ -264,7 +264,7 @@ class LavaTest(TestCase):
             username='myuser',
             token='mypassword',
             implementation_type='lava',
-            backend_settings='{"CI_LAVA_INFRA_ERROR_MESSAGES": %s}' % ci_infra_error_messages,
+            backend_settings='{"CI_LAVA_INFRA_ERROR_MESSAGES": %s, "CI_LAVA_HANDLE_BOOT": true}' % ci_infra_error_messages,
         )
         self.group = Group.objects.create(
             name="group_foo"
@@ -457,21 +457,21 @@ class LavaTest(TestCase):
         metrics = testjob.testrun.metrics
 
         self.assertEqual(True, lava.get_implementation().settings.get('CI_LAVA_HANDLE_SUITE'))
-        self.assertEqual(2, results.count())
-        self.assertEqual(2, metrics.count())
-        self.assertEqual(1, results.filter(name='device_foo').count())
+        self.assertEqual(1, results.count())
+        self.assertEqual(1, metrics.count())
+        self.assertEqual(0, results.filter(name='device_foo').count())
         self.assertEqual(0, results.filter(name='validate').count())
-        self.assertEqual(2, testjob.testrun.metrics.count())
+        self.assertEqual(1, testjob.testrun.metrics.count())
         self.assertEqual(0, metrics.filter(name='power-off').count())
         self.assertEqual(0, metrics.filter(name='auto-login-action').count())
-        self.assertEqual(29.72, metrics.filter(name='time-device_foo').get().result)
+        self.assertEqual(0, metrics.filter(name='time-device_foo').count())
         self.assertEqual(10.0, metrics.filter(name='case_foo').get().result)
 
     @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results_ignore_lava_boot(self, get_results, get_details, download_test_log):
-        self.backend.backend_settings = 'CI_LAVA_IGNORE_BOOT: true'
+        self.backend.backend_settings = ''
         lava = self.backend
 
         testjob = TestJob(
@@ -483,7 +483,6 @@ class LavaTest(TestCase):
         results = testjob.testrun.tests
         metrics = testjob.testrun.metrics
 
-        self.assertEqual(True, lava.get_implementation().settings.get('CI_LAVA_IGNORE_BOOT'))
         self.assertEqual(1, results.count())
         self.assertEqual(1, metrics.count())
         self.assertEqual(0, results.filter(name='device_foo').count())
@@ -496,7 +495,7 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results_handle_lava_suite_and_ignore_lava_boot(self, get_results, get_details, download_test_log):
-        self.backend.backend_settings = '{"CI_LAVA_HANDLE_SUITE": true, "CI_LAVA_IGNORE_BOOT": true}'
+        self.backend.backend_settings = '{"CI_LAVA_HANDLE_SUITE": true, "CI_LAVA_HANDLE_BOOT": false}'
         lava = self.backend
         testjob = TestJob(
             job_id='1234',
@@ -508,7 +507,7 @@ class LavaTest(TestCase):
         metrics = testjob.testrun.metrics
 
         self.assertEqual(True, lava.get_implementation().settings.get('CI_LAVA_HANDLE_SUITE'))
-        self.assertEqual(True, lava.get_implementation().settings.get('CI_LAVA_IGNORE_BOOT'))
+        self.assertEqual(False, lava.get_implementation().settings.get('CI_LAVA_HANDLE_BOOT'))
         self.assertEqual(2, results.count())
         self.assertEqual(3, metrics.count())
         self.assertEqual(0, results.filter(name='device_foo').count())
@@ -522,7 +521,7 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results(self, get_results, get_details, download_test_log):
-        lava = LAVABackend(None)
+        lava = LAVABackend(self.backend)
         testjob = TestJob(
             job_id='1234',
             backend=self.backend)
@@ -538,7 +537,7 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results_clone_measurements(self, get_results, get_details, test_log):
-        self.backend.backend_settings = 'CI_LAVA_CLONE_MEASUREMENTS: true'
+        self.backend.backend_settings = '{"CI_LAVA_CLONE_MEASUREMENTS": true, "CI_LAVA_HANDLE_BOOT": true}'
 
         # Project settings has higher priority than backend settings
         self.project.project_settings = 'CI_LAVA_CLONE_MEASUREMENTS: true'
