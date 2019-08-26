@@ -1,8 +1,9 @@
 {% extends "rest_framework/base.html" %}
 {% load static %}
 {% load squad %}
+{% load i18n %}
 
-{% block title %}{% squad_site_name %} API{% endblock %}
+{% block title %}{% squad_site_name %} {{ _('API') }}{% endblock %}
 
 {% block bootstrap_theme %}
     <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.css" %}">
@@ -18,27 +19,27 @@
     {% squad_site_name %}
 </a>
 <ul class="nav navbar-nav">
-    <li class="{% active 'home'%}"><a href="{% url 'home' %}">Groups</a></li>
+    <li class="{% active 'home'%}"><a href="{% url 'home' %}">{{ _('Groups') }}</a></li>
     <li class="dropdown">
       <a class="dropdown-toggle" href="#" id="compareDropdown" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        Compare
+        {{ _('Compare') }}
         <span class="caret"></span>
       </a>
       <ul class="dropdown-menu" aria-labelledby="compareDropdown">
         <li>
-            <a class="dropdown-item" href="{% url 'compare_builds' %}">Compare Builds</a>
+            <a class="dropdown-item" href="{% url 'compare_builds' %}">{{ _('Compare Builds') }}</a>
         </li>
         <li role="separator" class="divider"></li>
         <li>
-            <a class="dropdown-item" href="{% url 'compare_projects' %}">Compare Projects</a>
+            <a class="dropdown-item" href="{% url 'compare_projects' %}">{{ _('Compare Projects') }}</a>
         </li>
         <li role="separator" class="divider"></li>
         <li>
-            <a class="dropdown-item "href="{% url 'compare_test' %}">Compare Test</a>
+            <a class="dropdown-item "href="{% url 'compare_test' %}">{{ _('Compare Test') }}</a>
         </li>
       </ul>
     </li>
-    <li class="{% active 'api-root' %}"><a href="{% url 'api-root' %}">API</a></li>
+    <li class="{% active 'api-root' %}"><a href="{% url 'api-root' %}">{{ _('API') }}</a></li>
 </ul>
 {% endblock %}
 
@@ -51,10 +52,11 @@
     {{block.super}}
     <footer id='footer'>
       <div class="container">
-        <a href="https://github.com/Linaro/squad">SQUAD</a> ({% squad_version %}) is free software,
-        developed by <a href="https://www.linaro.org/">Linaro</a>.
-        It is distributed under the terms of the
-        <a href="https://www.gnu.org/licenses/agpl-3.0.html">GNU Affero General Public License, version 3</a> or (at your option) any later version</a>.
+        {# long lines needed so that translated strings do not have line breaks #}
+        {% squad_version as squadversion %}
+        {% blocktrans %}<a href="http://squad.readthedocs.io/">SQUAD</a> version {{ squadversion }}.{% endblocktrans %}
+        {% blocktrans %}SQUAD is free software, distributed under the terms of <a href="https://www.gnu.org/licenses/agpl-3.0.html">GNU Affero General Public License, version 3</a> or (at your option) any later version.{% endblocktrans %}
+        {% blocktrans %}<a href="https://github.com/Linaro/squad">Source code</a> and <a href="https://github.com/Linaro/squad/issues">Issue tracker</a> are available on Github.{% endblocktrans %}
       </div>
     </footer>
     </div><!-- id="wrapper" -->
