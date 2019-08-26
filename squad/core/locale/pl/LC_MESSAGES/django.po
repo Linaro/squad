@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: squad.core VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-07-08 13:08-0300\n"
+"POT-Creation-Date: 2019-08-26 15:45-0300\n"
 "PO-Revision-Date: 2019-07-08 17:55+0000\n"
 "Last-Translator: Antonio Terceiro <terceiro@debian.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/squad/core/pl/>\n"
@@ -20,71 +20,71 @@ msgstr ""
 "X-Generator: Weblate 3.8-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: squad/core/models.py:69 squad/core/models.py:205
+#: squad/core/models.py:71 squad/core/models.py:207
 msgid "Slug"
 msgstr "Slug"
 
-#: squad/core/models.py:71 squad/core/models.py:206
+#: squad/core/models.py:73 squad/core/models.py:208
 msgid "Name"
 msgstr "Nazwa"
 
-#: squad/core/models.py:72 squad/core/models.py:211
+#: squad/core/models.py:74 squad/core/models.py:213
 msgid "Description"
 msgstr "Opis"
 
-#: squad/core/models.py:73
+#: squad/core/models.py:75
 msgid "Members"
 msgstr "Użytkownicy"
 
-#: squad/core/models.py:110
+#: squad/core/models.py:112
 msgid "Enter a valid value."
 msgstr "Wpisz poprawną wartość."
 
-#: squad/core/models.py:120
+#: squad/core/models.py:122
 msgid "Member"
 msgstr "Użytkownik"
 
-#: squad/core/models.py:121
+#: squad/core/models.py:123
 msgid "Result submitter"
 msgstr "Dostarczyciel wyników"
 
-#: squad/core/models.py:122
+#: squad/core/models.py:124
 msgid "Administrator"
 msgstr "Administrator"
 
-#: squad/core/models.py:131
+#: squad/core/models.py:133
 msgid "Group member"
 msgstr "Członek grupy"
 
-#: squad/core/models.py:132
+#: squad/core/models.py:134
 msgid "Group members"
 msgstr "Członkowie grupy"
 
-#: squad/core/models.py:189
+#: squad/core/models.py:191
 msgid "Jinja2 template for subject (single line)"
 msgstr "Szablon Jinja2 dla tematu wiadomości (pojedyncza linia)"
 
-#: squad/core/models.py:191
+#: squad/core/models.py:193
 msgid "Jinja2 template for text/plain content"
 msgstr "Szablon Jinja2 dla wiadomości w formacie text/plain"
 
-#: squad/core/models.py:192
+#: squad/core/models.py:194
 msgid "Jinja2 template for text/html content"
 msgstr "Szablon Jinja2 dla wiadomości w formacie text/html"
 
-#: squad/core/models.py:207
+#: squad/core/models.py:209
 msgid "Is public"
 msgstr "Dostęp publiczny"
 
-#: squad/core/models.py:223
+#: squad/core/models.py:225
 msgid "Wait this many seconds before sending notifications"
 msgstr "Odczekaj tyle sekund przed wysłaniem notyfikacji"
 
-#: squad/core/models.py:228
+#: squad/core/models.py:230
 msgid "Force sending build notifications after this many seconds"
 msgstr "Wymuś wysłanie notyfikacji dla wersji po tylu sekundach"
 
-#: squad/core/models.py:235
+#: squad/core/models.py:237
 msgid ""
 "Delete builds older than this number of days. Set to 0 or any negative "
 "number to disable."
@@ -92,22 +92,22 @@ msgstr ""
 "Usuń wersje starsze niż ta liczba dni. Ustaw na 0 lub liczbę ujemną żeby "
 "dezaktywować."
 
-#: squad/core/models.py:246
+#: squad/core/models.py:248
 msgid "Makes the project hidden from the group page by default"
 msgstr "Domyślnie ukrywa projekt na stronie grupy"
 
-#: squad/core/models.py:247
+#: squad/core/models.py:249
 msgid "Is archived"
 msgstr "Zarchiwizowany"
 
-#: squad/core/models.py:1182
+#: squad/core/models.py:1225
 msgid "All builds"
 msgstr "Wszystkie wersje"
 
-#: squad/core/models.py:1183
+#: squad/core/models.py:1226
 msgid "Only on change"
 msgstr "Tylko w przypadku zmiany"
 
-#: squad/core/models.py:1184
+#: squad/core/models.py:1227
 msgid "Only on regression"
 msgstr "Tylko w przypadku regresji"
