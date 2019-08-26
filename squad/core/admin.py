@@ -145,7 +145,7 @@ class TestRunAdmin(admin.ModelAdmin):
 
 
 class PatchSourceForm(ModelForm):
-    password = forms.CharField(max_length=128)
+    password = forms.CharField(max_length=128, required=False)
 
     def __init__(self, *args, **kwargs):
         super(PatchSourceForm, self).__init__(*args, **kwargs)

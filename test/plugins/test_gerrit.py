@@ -13,13 +13,14 @@ class FakeObject():
 
 class FakeSubprocess():
     __last_cmd__ = None
+    PIPE = 0
 
     class CalledProcessError(BaseException):
         def __str__(self):
             return 'Could not establish connection to host'
 
     @staticmethod
-    def run(cmd, capture_output=False):
+    def run(cmd, stdout=0, stderr=0):
         FakeSubprocess.__last_cmd__ = ' '.join(cmd)
         gerrit_cmd = 'gerrit review'
         options = ' '.join(gerrit.DEFAULT_SSH_OPTIONS)

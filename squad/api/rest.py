@@ -512,7 +512,8 @@ class PatchSourceSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
         extra_kwargs = {
             'token': {'write_only': True},
-            'username': {'write_only': True}
+            'username': {'write_only': True},
+            '_password': {'write_only': True},
         }
 
 
