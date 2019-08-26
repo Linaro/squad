@@ -7,7 +7,11 @@
         <span class="caret"></span>
       </a>
       <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-        <li><div>{{ (_('Signed in as %s') % '<strong>' + user.username + '</strong>') | safe }}</div></li> <!-- FIXME -->
+        <li>
+          <div>
+            {{ (_('Signed in as %(username)s') % {'username': '<strong>' + user.username + '</strong>'}) | safe }}
+          </div>
+        </li>
         {% if user.is_staff %}
           <li role="separator" class="divider"></li>
           <li><a href="/admin/">{{ _('Administration') }}</a></li>
