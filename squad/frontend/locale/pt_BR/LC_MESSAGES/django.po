@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-08-26 15:45-0300\n"
-"PO-Revision-Date: 2019-07-08 17:55+0000\n"
+"PO-Revision-Date: 2019-08-28 21:24+0000\n"
 "Last-Translator: Charles Oliveira <18oliveira.charles@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "squad/frontend/pt_BR/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/frontend/project_settings.py:59
@@ -513,10 +513,11 @@ msgstr "API"
 
 #: squad/frontend/templates/django/rest_framework/api.html:57
 #: squad/frontend/templates/squad/base.jinja2:80
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "<a href=\"http://squad.readthedocs.io/\">SQUAD</a> version %(squadversion)s."
-msgstr "<a href=\"http://squad.readthedocs.io/\">SQUAD</a> versão %s."
+msgstr ""
+"<a href=\"http://squad.readthedocs.io/\">SQUAD</a> versão %(squadversion)s."
 
 #: squad/frontend/templates/django/rest_framework/api.html:58
 #: squad/frontend/templates/squad/base.jinja2:81
@@ -586,21 +587,18 @@ msgid "Compare project"
 msgstr "Comparar projetos"
 
 #: squad/frontend/templates/squad/compare_projects.jinja2:21
-#, fuzzy
 msgid "Group"
-msgstr "Grupos"
+msgstr "Grupo"
 
 #: squad/frontend/templates/squad/compare_projects.jinja2:25
-#, fuzzy
 msgid "Enter group name"
-msgstr "Digite o nome do projeto"
+msgstr "Digite o nome do grupo"
 
 #: squad/frontend/templates/squad/compare_projects.jinja2:35
 msgid "Select projects to compare"
 msgstr "Selecione projetos para serem comparados"
 
 #: squad/frontend/templates/squad/compare_projects.jinja2:52
-#, fuzzy
 msgid "Enter build version"
 msgstr "Digite a versão base"
 
@@ -877,11 +875,11 @@ msgstr "Atualizar as configurações de build"
 
 #: squad/frontend/templates/squad/_results_transitions_filter.jinja2:10
 msgid "From/To"
-msgstr ""
+msgstr "De/Para"
 
 #: squad/frontend/templates/squad/_results_transitions_filter.jinja2:41
 msgid "show all tests"
-msgstr ""
+msgstr "mostrar todos os testes"
 
 #: squad/frontend/templates/squad/_test_results_summary.jinja2:1
 #, python-format
@@ -1050,9 +1048,9 @@ msgstr "Alternar o outlier"
 
 #: squad/frontend/templates/django/squad/_user_menu.html:15
 #: squad/frontend/templates/squad/_user_menu.jinja2:12
-#, fuzzy, python-format
+#, python-format
 msgid "Signed in as %(username)s"
-msgstr "Logado como %s"
+msgstr "Logado como %(username)s"
 
 #: squad/frontend/templates/django/squad/_user_menu.html:20
 #: squad/frontend/templates/squad/_user_menu.jinja2:17
