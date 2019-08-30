@@ -1,3 +1,5 @@
+import json
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.utils import render_crispy_form
 from django import template
@@ -196,3 +198,12 @@ def crispy(context, form, **options):
     for option, value in options.items():
         setattr(helper, option, value)
     return render_crispy_form(form, helper=helper, context=context)
+
+
+@register_global_function()
+def to_json(d):
+    try:
+        json_string = json.dumps(d)
+    except TypeError:
+        json_string = ''
+    return json_string

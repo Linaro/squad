@@ -5,7 +5,7 @@ from jinja2 import Template
 from django.test import TestCase
 
 
-from squad.frontend.templatetags.squad import get_page_url
+from squad.frontend.templatetags.squad import get_page_url, to_json
 
 
 class FakeRequest():
@@ -48,3 +48,10 @@ class TemplateTagsTest(TestCase):
         self.assertNotIn('page=2', rendered_template)
         self.assertIn('page=42', rendered_template)
         self.assertIn('existing_arg=val', rendered_template)
+
+    def test_to_json(self):
+        self.assertEqual('1', to_json(1))
+        self.assertEqual('"a string"', to_json('a string'))
+        self.assertEqual('[1, 2, 3]', to_json([1, 2, 3]))
+        self.assertEqual('{"key": 42}', to_json({'key': 42}))
+        self.assertEqual('', to_json(FakeGet()))  # non-parsable types return empty string
