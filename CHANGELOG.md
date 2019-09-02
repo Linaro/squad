@@ -1,3 +1,58 @@
+# 1.0
+
+This 1.0 release marks the availability of a feature set that we envisioned
+back when squad was started. We still have a lot to improve, though, so we will
+continue to work on new features and improvements.
+
+This release also brings compatibility with Django 2, which we now use by
+default. However, using with Django 1 is still supported. We recommend Python
+3.6 or newer.
+
+Since we are bumping the major version number, we are also making two
+backwards-incompatible changes that you need to be aware of:
+
+* Test results from incomplete jobs are now completely ignored.
+* The LAVA CI backend used to map the success of the "auto-login-action" from a
+  lava job to a test called "boot". This is now ignored by default. If you rely
+  on this, you can re-enable this behavior by setting `CI_LAVA_HANDLE_BOOT` in
+  your project settings (only available in the Django admin interface for the
+  moment). See the documentation for details.
+
+Below, you will find a summary of the changes in this release.
+
+* frontend:
+  * frontend: templatetags: add str to global functions for templating
+  * frontend: compare-project: refactor project comparison UI
+  * frontend: compare-project: order projects alphanumerically
+  * frontend: compare-project: compare different builds
+  * frontend: filter comparison by transitions
+  * frontend: fix compare projects submit
+  * frontend: shrink transitions filter table
+  * frontend: translation: translate django templates
+  * frontend: `test_history`: fix broken javascript
+* api:
+  * api: rest: add ComplexFilterBackend to GroupViewSet
+  * api: rest: give write only access to _password field
+* ci:
+  * ci: ignore all results from incomplete test jobs
+  * ci: backend: lava: change option to handle lava boot results
+* core:
+  * core: `Build.test_suites_by_environment`: make ordering of test results consistent
+  * core: admin: mark password field as not required
+* misc
+  * Add license information for consumption by reuse
+  * Added reuse (SPDX compliance tool) to travis.
+  * migrate to django2
+* doc:
+  * doc: ci: add CI_LAVA_HANDLE_BOOT to docs
+* plugins:
+  * plugins: gerrit: remove `capture_output`
+  * plugins: gerrit: set code-review to -1 when tests fail
+* Updated translations:
+  * Portuguese (Brazil)
+  * Polish
+  * Norwegian Bokmål
+
 # 0.68.3
 
 * frontend: `results_table`: show "mean (stddev)" details only for metric
