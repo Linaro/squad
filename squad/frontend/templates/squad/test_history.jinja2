@@ -43,7 +43,7 @@
               <td class='{{result.status|slugify}}'>
                 <a href="{{project_url(result.test_run)}}">{{result.status}}</a>
                 {% if result.info['test_description'] or result.info['suite_instructions'] or result.info['test_instructions'] or result.info['test_log'] %}
-                  <a href='#' data-toggle="modal" data-target="#info_modal" data-info="{{ result.info }}"><span data-toggle="tooltip" data-placement="right" title="{{ _('Show info') }}" class='fa fa-info-circle'></span></a>
+                  <a href='#' data-toggle="modal" data-target="#info_modal" data-info="{{ to_json(result.info) }}"><span data-toggle="tooltip" data-placement="right" title="{{ _('Show info') }}" class='fa fa-info-circle'></span></a>
                 {% endif %}
                 {% if known_issues %}
                   <button type='button' class='known-issue btn btn-xs btn-info pull-right' data-toggle='popover'>
@@ -129,7 +129,7 @@
     $('[data-toggle="tooltip"]').tooltip();
     $('#info_modal').on('show.bs.modal', function (event) {
       var button = $(event.relatedTarget);
-      var info = JSON.parse(button.data('info').replace(/'/g, '"').replace(/None/g, null));
+      var info = button.data('info');
       if(info['test_description']) {
         $('#test_description').show();
         $('#test_description_inner').html(info['test_description']);
