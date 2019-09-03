@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-08-26 15:45-0300\n"
-"PO-Revision-Date: 2019-08-28 21:24+0000\n"
-"Last-Translator: Charles Oliveira <18oliveira.charles@gmail.com>\n"
+"PO-Revision-Date: 2019-09-04 13:25+0000\n"
+"Last-Translator: mwasilew <milosz.wasilewski@linaro.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/squad/frontend/pl/"
 ">\n"
 "Language: pl\n"
@@ -589,21 +589,18 @@ msgid "Compare project"
 msgstr "Porównaj projekty"
 
 #: squad/frontend/templates/squad/compare_projects.jinja2:21
-#, fuzzy
 msgid "Group"
-msgstr "Grupy"
+msgstr "Grupa"
 
 #: squad/frontend/templates/squad/compare_projects.jinja2:25
-#, fuzzy
 msgid "Enter group name"
-msgstr "Wprowadź nazwę projektu"
+msgstr "Wprowadź nazwę grupy"
 
 #: squad/frontend/templates/squad/compare_projects.jinja2:35
 msgid "Select projects to compare"
 msgstr "Wybierz projekty do porównania"
 
 #: squad/frontend/templates/squad/compare_projects.jinja2:52
-#, fuzzy
 msgid "Enter build version"
 msgstr "Wprowadź porównywaną wersję"
 
@@ -882,11 +879,11 @@ msgstr "Aktualizuj ustawienia dla wersji"
 
 #: squad/frontend/templates/squad/_results_transitions_filter.jinja2:10
 msgid "From/To"
-msgstr ""
+msgstr "Od/Do"
 
 #: squad/frontend/templates/squad/_results_transitions_filter.jinja2:41
 msgid "show all tests"
-msgstr ""
+msgstr "Pokaż wszystkie wyniki"
 
 #: squad/frontend/templates/squad/_test_results_summary.jinja2:1
 #, python-format
