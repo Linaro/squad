@@ -11,6 +11,7 @@ from squad.ci import models
 
 
 job_definition_file = os.path.join(os.path.dirname(__file__), 'definition.yaml')
+twoline_job_definition_file = os.path.join(os.path.dirname(__file__), 'twoline_definition.yaml')
 
 
 class CiApiTest(TestCase):
@@ -81,9 +82,19 @@ class CiApiTest(TestCase):
     def test_accepts_definition_as_file_upload(self):
         args = {
             'backend': 'lava',
-            'definition': open(job_definition_file)
+            'definition': open(twoline_job_definition_file)
         }
-        self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
+        r = self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
+        self.assertEqual(201, r.status_code)
+        testjob = models.TestJob.objects.filter(
+            target=self.project,
+            environment='myenv',
+            target_build=self.build,
+            backend=self.backend,
+            definition='bar: something\nfoo: 1',
+        ).get()
+        # when parsing back to yaml, it weirdly adds an extra linebreak at the end
+        self.assertEqual('bar: something\nfoo: 1\n', testjob.show_definition)
 
     @patch("squad.ci.tasks.submit.delay")
     def test_schedules_submission(self, submit):
