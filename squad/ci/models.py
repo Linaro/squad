@@ -192,7 +192,7 @@ class TestJob(models.Model):
         try:
             # we'll loose comments in web UI
             yaml_def = yaml.safe_load(self.definition)
-        except yaml.parser.ParserError:
+        except (yaml.parser.ParserError, yaml.scanner.ScannerError):
             # in case yaml is not valid, return original string
             return self.definition
         if not isinstance(yaml_def, dict):

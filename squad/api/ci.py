@@ -32,7 +32,7 @@ def submit_job(request, group_slug, project_slug, version, environment_slug):
     # definition can be received as a file upload or as a POST parameter
     definition = None
     if 'definition' in request.FILES:
-        definition = read_file_upload(request.FILES['definition'])
+        definition = read_file_upload(request.FILES['definition']).decode('utf-8')
     else:
         definition = request.POST.get('definition')
 
