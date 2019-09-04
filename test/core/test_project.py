@@ -75,3 +75,10 @@ class ProjectTest(TestCase):
             p.full_clean()
         p.slug = 'foo-bar'
         p.full_clean()  # it this raises no exception, then we are fine
+
+    def test_validate_project_settings(self):
+        p = Project(group=self.group, slug='foobar', project_settings='1')
+        with self.assertRaises(ValidationError):
+            p.full_clean()
+        p.project_settings = 'foo: bar\n'
+        p.full_clean()
