@@ -60,7 +60,7 @@ def yaml_validator(value):
     if len(value) == 0:
         return
     try:
-        if not isinstance(yaml.load(value), dict):
+        if not isinstance(yaml.safe_load(value), dict):
             raise ValidationError("Dictionary object expected")
     except yaml.YAMLError as e:
         raise ValidationError(e)
