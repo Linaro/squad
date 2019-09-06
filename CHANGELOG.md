@@ -1,3 +1,11 @@
+# 1.0.1
+
+* `yaml_validator`: drop usage of simple yaml.load
+* api: ci: fix definition file encoding
+* Updated translations:
+  * Polish (completed)
+  * French (added)
+
 # 1.0
 
 This 1.0 release marks the availability of a feature set that we envisioned
