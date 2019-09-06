@@ -8,38 +8,40 @@ msgstr ""
 "Project-Id-Version: squad.core VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-08-26 15:45-0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2019-09-07 12:25+0000\n"
+"Last-Translator: Rémi Duraffort <remi.duraffort@linaro.org>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/squad/core/fr/>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 3.9-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/core/models.py:71 squad/core/models.py:207
 msgid "Slug"
-msgstr ""
+msgstr "Slug"
 
 #: squad/core/models.py:73 squad/core/models.py:208
 msgid "Name"
-msgstr ""
+msgstr "Nom"
 
 #: squad/core/models.py:74 squad/core/models.py:213
 msgid "Description"
-msgstr ""
+msgstr "Description"
 
 #: squad/core/models.py:75
 msgid "Members"
-msgstr ""
+msgstr "Membres"
 
 #: squad/core/models.py:112
 msgid "Enter a valid value."
-msgstr ""
+msgstr "Entrer une valeur valide."
 
 #: squad/core/models.py:122
 msgid "Member"
-msgstr ""
+msgstr "Membre"
 
 #: squad/core/models.py:123
 msgid "Result submitter"
@@ -47,7 +49,7 @@ msgstr ""
 
 #: squad/core/models.py:124
 msgid "Administrator"
-msgstr ""
+msgstr "Administrateur"
 
 #: squad/core/models.py:133
 msgid "Group member"
@@ -55,7 +57,7 @@ msgstr ""
 
 #: squad/core/models.py:134
 msgid "Group members"
-msgstr ""
+msgstr "Membres du group"
 
 #: squad/core/models.py:191
 msgid "Jinja2 template for subject (single line)"
@@ -71,7 +73,7 @@ msgstr ""
 
 #: squad/core/models.py:209
 msgid "Is public"
-msgstr ""
+msgstr "Publique"
 
 #: squad/core/models.py:225
 msgid "Wait this many seconds before sending notifications"
@@ -93,7 +95,7 @@ msgstr ""
 
 #: squad/core/models.py:249
 msgid "Is archived"
-msgstr ""
+msgstr "Archivé"
 
 #: squad/core/models.py:1225
 msgid "All builds"
