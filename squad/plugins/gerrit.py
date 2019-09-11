@@ -94,6 +94,11 @@ class Plugin(BasePlugin):
         return True
 
     def __gerrit_request__(self, build, payload):
+        regex = r'.+[:,].+'
+        if re.match(regex, build.patch_id) is None:
+            logger.warning('patch_id "%s" for build "%s" failed to match "%s"' % (build.patch_id, build.id, regex))
+            return False
+
         if build.patch_source.url.startswith('ssh'):
             return Plugin.__gerrit_ssh__(build, payload)
         else:
