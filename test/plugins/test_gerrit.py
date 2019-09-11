@@ -85,6 +85,7 @@ class GerritPluginTest(TestCase):
 
         self.build1 = self.project.builds.create(version='1', patch_source=self.http_patch_source, patch_id='1,1')
         self.build2 = self.project.builds.create(version='2', patch_source=self.ssh_patch_source, patch_id='1,1')
+        self.build3 = self.project.builds.create(version='3', patch_source=self.ssh_patch_source, patch_id=':')
 
     def test_basic_validation(self):
         validation_error = False
@@ -152,3 +153,7 @@ class GerritPluginTest(TestCase):
         self.assertTrue(plugin.notify_patch_build_finished(self.build2))
         self.assertIn('Build finished', FakeSubprocess.given_cmd())
         self.assertIn('Some tests failed (1)', FakeSubprocess.given_cmd())
+
+    def test_malformed_patch_id(self):
+        plugin = self.build3.patch_source.get_implementation()
+        self.assertFalse(plugin.notify_patch_build_created(self.build3))
