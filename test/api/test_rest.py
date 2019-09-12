@@ -450,6 +450,15 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/testjobs/%d/' % self.testjob.id)
         self.assertEqual('myenv', data['environment'])
 
+    def test_tests(self):
+        data = self.hit('/api/tests/')
+        self.assertEqual(list, type(data['results']))
+
+    def test_tests_with_page_size(self):
+        data = self.hit('/api/tests/?limit=2')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(2, len(data['results']))
+
     def test_testruns(self):
         data = self.hit('/api/testruns/%d/' % self.testrun.id)
         self.assertEqual(self.testrun.id, data['id'])
