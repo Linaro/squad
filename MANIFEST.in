@@ -4,6 +4,7 @@ include dev-docker
 include Procfile
 include CHANGELOG.md
 include COPYING
+include COPYRIGHTS
 include requirements*.txt
 include manage.py
 include INSTALL.rst
@@ -24,6 +25,8 @@ recursive-include squad/*/templates/ *
 recursive-include test/ *.py *.json *.csv *.log *.png *.yaml *.js
 recursive-include scripts/ *
 recursive-include doc/ *
+recursive-include LICENSES/ *
+recursive-include .reuse/ *
 
 include babel.cfg
 recursive-include squad/ *.mo *.po *.pot

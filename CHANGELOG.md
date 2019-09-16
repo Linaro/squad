@@ -1,3 +1,15 @@
+# 1.0.2
+
+This release fixes a small issue with the gerrit plugin that
+attempts to send notification with malformed patch_id
+
+Complete changelog below:
+
+* plugins:
+  * plugins: gerrit: check patch_id before sending notification
+* Updated transations:
+  * French (updated)
+
 # 1.0.1
 
 * `yaml_validator`: drop usage of simple yaml.load
