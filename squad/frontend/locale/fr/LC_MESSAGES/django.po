@@ -1,0 +1,1115 @@
+# Translations template for squad.frontend.
+# Copyright (C) 2019 ORGANIZATION
+# This file is distributed under the same license as the squad.frontend
+# project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: squad.frontend VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2019-08-26 15:45-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.6.0\n"
+
+#: squad/frontend/project_settings.py:59
+msgid "Type the project slug (the name used in URLs) to confirm"
+msgstr ""
+
+#: squad/frontend/project_settings.py:60
+msgid "The confirmation does not match the project slug"
+msgstr ""
+
+#: squad/frontend/group_settings.py:64
+msgid "Type the group slug (the name used in URLs) to confirm"
+msgstr ""
+
+#: squad/frontend/group_settings.py:65
+msgid "The confirmation does not match the group slug"
+msgstr ""
+
+#: squad/frontend/queries.py:12
+msgid "Summary of all metrics per build"
+msgstr ""
+
+#: squad/frontend/queries.py:13
+msgid "Summary of selected metrics"
+msgstr ""
+
+#: squad/frontend/queries.py:14
+msgid "Test pass %"
+msgstr ""
+
+#: squad/frontend/templates/404.jinja2:4
+msgid "Page not found"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_history.jinja2:14
+msgid "permalink"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_history.jinja2:23
+msgid "Test results history"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_history.jinja2:28
+msgid "Build"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare.jinja2:61
+#: squad/frontend/templates/squad/test_history.jinja2:29
+msgid "Date"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_run_metric.jinja2:16
+#: squad/frontend/templates/squad/_test_run_test.jinja2:26
+#: squad/frontend/templates/squad/test_history.jinja2:46
+#: squad/frontend/templates/squad/tests.jinja2:37
+msgid "Show info"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_history.jinja2:50
+msgid "Known issue"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_run_test.jinja2:9
+#: squad/frontend/templates/squad/test_history.jinja2:54
+msgid "Known issue:"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_history.jinja2:61
+msgid "(intermittent)"
+msgstr ""
+
+#: squad/frontend/templates/squad/_results_table.jinja2:64
+#: squad/frontend/templates/squad/compare.jinja2:69
+#: squad/frontend/templates/squad/test_history.jinja2:70
+msgid "n/a"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_history.jinja2:90
+#: squad/frontend/templates/squad/tests.jinja2:60
+msgid "Test Info"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_run_test.jinja2:37
+#: squad/frontend/templates/squad/test_history.jinja2:94
+#: squad/frontend/templates/squad/tests.jinja2:64
+msgid "Test description:"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_run_metric.jinja2:35
+#: squad/frontend/templates/squad/_test_run_test.jinja2:44
+#: squad/frontend/templates/squad/test_history.jinja2:99
+#: squad/frontend/templates/squad/tests.jinja2:69
+msgid "How to reproduce:"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_run_test.jinja2:52
+#: squad/frontend/templates/squad/test_history.jinja2:104
+#: squad/frontend/templates/squad/tests.jinja2:74
+msgid "Test log:"
+msgstr ""
+
+#: squad/frontend/templates/squad/build-nav.jinja2:86
+#: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:92
+#: squad/frontend/templates/squad/test_history.jinja2:111
+#: squad/frontend/templates/squad/tests.jinja2:81
+msgid "Close"
+msgstr ""
+
+#: squad/frontend/templates/squad/_results_table.jinja2:15
+#, python-format
+msgid "build %s"
+msgstr ""
+
+#: squad/frontend/templates/squad/_results_table.jinja2:17
+#, python-format
+msgid "%s, build %s"
+msgstr ""
+
+#: squad/frontend/templates/squad/_results_table.jinja2:30
+msgid "mean (stdev)"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/base.jinja2:21
+#: squad/frontend/templates/squad/group_settings/delete.jinja2:7
+#: squad/frontend/templates/squad/group_settings/delete.jinja2:15
+msgid "Delete group"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/delete.jinja2:11
+msgid ""
+"Once you delete your group, all of its projects, and all of their data, "
+"will be <strong>removed permanently</strong>."
+msgstr ""
+
+#: squad/frontend/templates/squad/group-nav.jinja2:18
+#: squad/frontend/templates/squad/group_settings/base.jinja2:5
+#: squad/frontend/templates/squad/group_settings/base.jinja2:15
+msgid "Group settings"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/base.jinja2:19
+#: squad/frontend/templates/squad/group_settings/index.jinja2:4
+#: squad/frontend/templates/squad/project_settings/base.jinja2:19
+msgid "Basics"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/base.jinja2:20
+msgid "Members"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/members.jinja2:4
+msgid "Group members"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/members.jinja2:6
+msgid "Add a new member"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/members.jinja2:11
+msgid "Help on permissions"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/members.jinja2:21
+msgid "Permissions by access level"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/members.jinja2:35
+msgid "Existing members"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/members.jinja2:54
+msgid "Change"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/members.jinja2:64
+msgid "Remove"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/members.jinja2:73
+#, python-format
+msgid "Member since %s"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/new_group.jinja2:6
+#: squad/frontend/templates/squad/index.jinja2:8
+msgid "New group"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/new_group.jinja2:11
+msgid "Add group"
+msgstr ""
+
+#: squad/frontend/templates/squad/group-nav.jinja2:22
+#: squad/frontend/templates/squad/group.jinja2:13
+#: squad/frontend/templates/squad/group_settings/new_project.jinja2:5
+msgid "New project"
+msgstr ""
+
+#: squad/frontend/templates/squad/group_settings/new_project.jinja2:12
+msgid "Add project"
+msgstr ""
+
+#: squad/frontend/templates/squad/builds.jinja2:5
+#: squad/frontend/templates/squad/project-nav.jinja2:17
+msgid "Builds"
+msgstr ""
+
+#: squad/frontend/templates/squad/build-nav.jinja2:42
+#: squad/frontend/templates/squad/build.jinja2:8
+#: squad/frontend/templates/squad/build_metadata.jinja2:8
+msgid "Metadata"
+msgstr ""
+
+#: squad/frontend/templates/squad/build_settings.jinja2:6
+msgid "Build settings"
+msgstr ""
+
+#: squad/frontend/templates/squad/build-nav.jinja2:87
+#: squad/frontend/templates/squad/build_settings.jinja2:10
+#: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:93
+#: squad/frontend/templates/squad/project_settings/index.jinja2:8
+#: squad/frontend/templates/squad/user_settings/profile.jinja2:21
+msgid "Save"
+msgstr ""
+
+#: squad/frontend/templates/squad/project_settings/base.jinja2:21
+#: squad/frontend/templates/squad/project_settings/delete.jinja2:7
+#: squad/frontend/templates/squad/project_settings/delete.jinja2:15
+msgid "Delete project"
+msgstr ""
+
+#: squad/frontend/templates/squad/project_settings/delete.jinja2:11
+msgid ""
+"Once you delete your project, all of its data will be <strong>removed "
+"permanently</strong>."
+msgstr ""
+
+#: squad/frontend/templates/squad/project-nav.jinja2:30
+#: squad/frontend/templates/squad/project_settings/base.jinja2:15
+msgid "Project settings"
+msgstr ""
+
+#: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:1
+#: squad/frontend/templates/squad/project_settings/base.jinja2:20
+msgid "Metric thresholds"
+msgstr ""
+
+#: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:6
+msgid "Add threshold"
+msgstr ""
+
+#: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:15
+msgid "Name"
+msgstr ""
+
+#: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:18
+msgid "Higher is better"
+msgstr ""
+
+#: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:21
+msgid "Value"
+msgstr ""
+
+#: squad/frontend/templates/squad/_permissions.jinja2:5
+#: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:25
+msgid "Action"
+msgstr ""
+
+#: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:60
+msgid "Metric threshold"
+msgstr ""
+
+#: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:69
+msgid "Metric name:"
+msgstr ""
+
+#: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:79
+msgid "Value:"
+msgstr ""
+
+#: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:85
+msgid "Higher is better:"
+msgstr ""
+
+#: squad/frontend/templates/squad/project_settings/index.jinja2:4
+#: squad/frontend/templates/squad/user_settings/base.jinja2:12
+#: squad/frontend/templates/squad/user_settings/profile.jinja2:3
+msgid "Profile"
+msgstr ""
+
+#: squad/frontend/templates/squad/login.jinja2:6
+msgid "Please correct the error below."
+msgid_plural "Please correct the errors below."
+msgstr[0] ""
+msgstr[1] ""
+
+#: squad/frontend/templates/django/squad/_user_menu.html:29
+#: squad/frontend/templates/squad/_user_menu.jinja2:26
+#: squad/frontend/templates/squad/login.jinja2:23
+#: squad/frontend/templates/squad/login.jinja2:51
+msgid "Log in"
+msgstr ""
+
+#: squad/frontend/templates/squad/login.jinja2:33
+msgid "Username"
+msgstr ""
+
+#: squad/frontend/templates/squad/login.jinja2:38
+msgid "Password"
+msgstr ""
+
+#: squad/frontend/templates/squad/login.jinja2:47
+msgid "Forgotten your password or username?"
+msgstr ""
+
+#: squad/frontend/templates/squad/build-nav.jinja2:4
+#: squad/frontend/templates/squad/test_run_suite_metrics.jinja2:7
+#, python-format
+msgid "Build %s"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run_suite_metrics.jinja2:8
+#, python-format
+msgid "Test run %s"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run_suite_metrics.jinja2:9
+#, python-format
+msgid "Test results for %s"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run_suite_metrics.jinja2:13
+#, python-format
+msgid "Test environment: %s"
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:124
+#: squad/frontend/templates/squad/metrics.jinja2:4
+#: squad/frontend/templates/squad/metrics.jinja2:43
+#: squad/frontend/templates/squad/project-nav.jinja2:23
+#: squad/frontend/templates/squad/test_run.jinja2:99
+#: squad/frontend/templates/squad/test_run_suite_metrics.jinja2:42
+msgid "Metrics"
+msgstr ""
+
+#: squad/frontend/templates/squad/project.jinja2:13
+msgid "Last build"
+msgstr ""
+
+#: squad/frontend/templates/squad/project.jinja2:21
+msgid "Latest builds"
+msgstr ""
+
+#: squad/frontend/templates/squad/_regressions_and_fixes.jinja2:3
+msgid "Click to display regressions"
+msgstr ""
+
+#: squad/frontend/templates/squad/_regressions_and_fixes.jinja2:5
+msgid "Regressions"
+msgstr ""
+
+#: squad/frontend/templates/squad/_regressions_and_fixes.jinja2:7
+#, python-format
+msgid "Regressions found on <strong>%s</strong>:"
+msgstr ""
+
+#: squad/frontend/templates/squad/_regressions_and_fixes.jinja2:21
+msgid "Click to display fixes"
+msgstr ""
+
+#: squad/frontend/templates/squad/_regressions_and_fixes.jinja2:23
+msgid "Fixes"
+msgstr ""
+
+#: squad/frontend/templates/squad/_regressions_and_fixes.jinja2:25
+#, python-format
+msgid "Fixes found on <strong>%s</strong>:"
+msgstr ""
+
+#: squad/frontend/templates/squad/_builds_table.jinja2:3
+#: squad/frontend/templates/squad/build.jinja2:13
+#: squad/frontend/templates/squad/compare_builds.jinja2:5
+msgid "Compare builds"
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:18
+msgid "Build version to compare: "
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:20
+#: squad/frontend/templates/squad/compare_builds.jinja2:45
+msgid "Enter target version"
+msgstr ""
+
+#: squad/frontend/templates/squad/_builds_table.jinja2:36
+#: squad/frontend/templates/squad/_project_list.jinja2:39
+#: squad/frontend/templates/squad/build.jinja2:28
+#: squad/frontend/templates/squad/test_run.jinja2:70
+#: squad/frontend/templates/squad/test_run.jinja2:85
+#: squad/frontend/templates/squad/test_run_suite_tests.jinja2:43
+msgid "Test results"
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:33
+#: squad/frontend/templates/squad/tests.jinja2:19
+msgid "Filter results ..."
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:42
+#: squad/frontend/templates/squad/compare.jinja2:28
+msgid "Suite"
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:81
+msgid "Test Run"
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:85
+#: squad/frontend/templates/squad/build.jinja2:179
+#: squad/frontend/templates/squad/metrics.jinja2:16
+#: squad/frontend/templates/squad/test_run.jinja2:80
+#: squad/frontend/templates/squad/test_run.jinja2:109
+msgid "Environment"
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:89
+msgid "Test Results"
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:129
+msgid "Filter metrics ..."
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:171
+#: squad/frontend/templates/squad/test_run.jinja2:119
+msgid "Test runs"
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:175
+msgid "Job ID"
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:184
+msgid "Date and time"
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:189
+msgid "Complete"
+msgstr ""
+
+#: squad/frontend/templates/squad/build.jinja2:189
+msgid "Not completed"
+msgstr ""
+
+#: squad/frontend/templates/django/rest_framework/api.html:22
+#: squad/frontend/templates/squad/base.jinja2:42
+msgid "Groups"
+msgstr ""
+
+#: squad/frontend/templates/django/rest_framework/api.html:25
+#: squad/frontend/templates/squad/base.jinja2:45
+#: squad/frontend/templates/squad/compare.jinja2:5
+#: squad/frontend/templates/squad/compare_builds.jinja2:62
+#: squad/frontend/templates/squad/compare_projects.jinja2:73
+msgid "Compare"
+msgstr ""
+
+#: squad/frontend/templates/django/rest_framework/api.html:30
+#: squad/frontend/templates/squad/base.jinja2:50
+msgid "Compare Builds"
+msgstr ""
+
+#: squad/frontend/templates/django/rest_framework/api.html:34
+#: squad/frontend/templates/squad/base.jinja2:54
+msgid "Compare Projects"
+msgstr ""
+
+#: squad/frontend/templates/django/rest_framework/api.html:38
+#: squad/frontend/templates/squad/base.jinja2:58
+msgid "Compare Test"
+msgstr ""
+
+#: squad/frontend/templates/django/rest_framework/api.html:6
+#: squad/frontend/templates/django/rest_framework/api.html:42
+#: squad/frontend/templates/squad/base.jinja2:62
+msgid "API"
+msgstr ""
+
+#: squad/frontend/templates/django/rest_framework/api.html:57
+#: squad/frontend/templates/squad/base.jinja2:80
+#, python-format
+msgid ""
+"<a href=\"http://squad.readthedocs.io/\">SQUAD</a> version "
+"%(squadversion)s."
+msgstr ""
+
+#: squad/frontend/templates/django/rest_framework/api.html:58
+#: squad/frontend/templates/squad/base.jinja2:81
+msgid ""
+"SQUAD is free software, distributed under the terms of <a "
+"href=\"https://www.gnu.org/licenses/agpl-3.0.html\">GNU Affero General "
+"Public License, version 3</a> or (at your option) any later version."
+msgstr ""
+
+#: squad/frontend/templates/django/rest_framework/api.html:59
+#: squad/frontend/templates/squad/base.jinja2:82
+msgid ""
+"<a href=\"https://github.com/Linaro/squad\">Source code</a> and <a "
+"href=\"https://github.com/Linaro/squad/issues\">Issue tracker</a> are "
+"available on Github."
+msgstr ""
+
+#: squad/frontend/templates/squad/build-nav.jinja2:13
+msgid "Annotation:"
+msgstr ""
+
+#: squad/frontend/templates/squad/build-nav.jinja2:19
+msgid "Update"
+msgstr ""
+
+#: squad/frontend/templates/squad/build-nav.jinja2:19
+msgid "Add annotation"
+msgstr ""
+
+#: squad/frontend/templates/squad/build-nav.jinja2:32
+msgid "Build summary"
+msgstr ""
+
+#: squad/frontend/templates/squad/build-nav.jinja2:37
+#: squad/frontend/templates/squad/tests.jinja2:9
+msgid "All test results"
+msgstr ""
+
+#: squad/frontend/templates/squad/build-nav.jinja2:48
+msgid "Test jobs"
+msgstr ""
+
+#: squad/frontend/templates/squad/build-nav.jinja2:58
+msgid "Build Settings"
+msgstr ""
+
+#: squad/frontend/templates/squad/build-nav.jinja2:72
+msgid "Build annotation"
+msgstr ""
+
+#: squad/frontend/templates/squad/build-nav.jinja2:78
+msgid "Description:"
+msgstr ""
+
+#: squad/frontend/templates/squad/project-nav.jinja2:12
+msgid "Project Summary"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_projects.jinja2:4
+msgid "Compare project"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_projects.jinja2:21
+msgid "Group"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_projects.jinja2:25
+msgid "Enter group name"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_projects.jinja2:35
+msgid "Select projects to compare"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_projects.jinja2:52
+msgid "Enter build version"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_builds.jinja2:49
+#: squad/frontend/templates/squad/compare_projects.jinja2:63
+msgid "Comparison type"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_builds.jinja2:52
+#: squad/frontend/templates/squad/compare_projects.jinja2:66
+msgid "compare by tests"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_builds.jinja2:55
+#: squad/frontend/templates/squad/compare_projects.jinja2:69
+msgid "compare by metrics"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare.jinja2:15
+#: squad/frontend/templates/squad/group-nav.jinja2:14
+msgid "Projects"
+msgstr ""
+
+#: squad/frontend/templates/squad/_metadata.jinja2:13
+msgid "Display more"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare.jinja2:42
+#: squad/frontend/templates/squad/tests.jinja2:25
+msgid "Test"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare.jinja2:60
+msgid "Version"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare.jinja2:73
+msgid "Load more"
+msgstr ""
+
+#: squad/frontend/templates/squad/_unfinished_build.jinja2:6
+msgid "This build is not considered finished yet for the following reasons:"
+msgstr ""
+
+#: squad/frontend/templates/squad/_unfinished_build.jinja2:14
+msgid "Being unfinished, this build will not trigger email notifications."
+msgstr ""
+
+#: squad/frontend/templates/squad/_project_list.jinja2:4
+msgid "Displaying only non-archived projects."
+msgstr ""
+
+#: squad/frontend/templates/squad/_project_list.jinja2:5
+msgid "Display archived and non-archived projects"
+msgstr ""
+
+#: squad/frontend/templates/squad/_project_list.jinja2:8
+msgid "Displaying archived and non-archived projects."
+msgstr ""
+
+#: squad/frontend/templates/squad/_project_list.jinja2:9
+msgid "Display only non-archived projects"
+msgstr ""
+
+#: squad/frontend/templates/squad/_project_list.jinja2:26
+msgid "(archived)"
+msgstr ""
+
+#: squad/frontend/templates/squad/_builds_table.jinja2:43
+#: squad/frontend/templates/squad/_project_list.jinja2:46
+#: squad/frontend/templates/squad/test_run.jinja2:114
+msgid "Metrics summary"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjobs.jinja2:8
+msgid "Test Jobs"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjobs.jinja2:21
+msgid "Submitted"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjobs.jinja2:23
+msgid "Not submitted"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjobs.jinja2:26
+msgid "Fetched"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjobs.jinja2:28
+msgid "Not fetched"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjobs.jinja2:29
+#, python-format
+msgid "Last fetch attempt: %s"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjobs.jinja2:33
+#, python-format
+msgid "Test run #%s"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjobs.jinja2:36
+#, python-format
+msgid "Resubmitted from #%s"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjobs.jinja2:46
+#, python-format
+msgid "%s - force resubmit"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjobs.jinja2:48
+#, python-format
+msgid "%s - resubmit"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjobs.jinja2:56
+msgid "Error message"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjobs.jinja2:62
+msgid "Definition"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run.jinja2:12
+#: squad/frontend/templates/squad/test_run_suite_tests.jinja2:14
+#, python-format
+msgid "Test environment: <strong>%s</strong>"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run.jinja2:23
+msgid "Test run metadata"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run.jinja2:26
+msgid "Related downloads"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run.jinja2:31
+msgid "Log file"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run.jinja2:38
+msgid "Tests file"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run.jinja2:45
+msgid "Metrics file"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run.jinja2:52
+msgid "Metadata file"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run.jinja2:75
+msgid "Test suite"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run.jinja2:90
+msgid "Test run"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run.jinja2:104
+msgid "Metrics suite"
+msgstr ""
+
+#: squad/frontend/templates/squad/tests.jinja2:46
+msgid "This build has no test results yet."
+msgstr ""
+
+#: squad/frontend/templates/squad/_builds_table.jinja2:4
+msgid "Two builds need to be selected!"
+msgstr ""
+
+#: squad/frontend/templates/squad/_builds_table.jinja2:5
+msgid "Selected builds must be different!"
+msgstr ""
+
+#: squad/frontend/templates/squad/_builds_table.jinja2:25
+#, python-format
+msgid "%d test runs"
+msgstr ""
+
+#: squad/frontend/templates/squad/_builds_table.jinja2:27
+msgid "Completed"
+msgstr ""
+
+#: squad/frontend/templates/squad/_builds_table.jinja2:27
+#, python-format
+msgid "%d completed"
+msgstr ""
+
+#: squad/frontend/templates/squad/_builds_table.jinja2:30
+msgid "Incomplete"
+msgstr ""
+
+#: squad/frontend/templates/squad/_builds_table.jinja2:30
+#, python-format
+msgid "%d incomplete"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_run_metric.jinja2:21
+#: squad/frontend/templates/squad/_test_run_test.jinja2:31
+msgid "Hide info"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_run_metric.jinja2:28
+msgid "Metric description:"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_run_test.jinja2:11
+msgid "(intermittent)."
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_run_test.jinja2:13
+msgid "(intermittent.)"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_run_test.jinja2:19
+msgid "compare"
+msgstr ""
+
+#: squad/frontend/templates/squad/index.jinja2:4
+msgid "All groups"
+msgstr ""
+
+#: squad/frontend/templates/squad/index.jinja2:27
+#, python-format
+msgid "%s projects"
+msgstr ""
+
+#: squad/frontend/templates/squad/_permissions.jinja2:6
+msgid "Member"
+msgstr ""
+
+#: squad/frontend/templates/squad/_permissions.jinja2:7
+msgid "Result submitter"
+msgstr ""
+
+#: squad/frontend/templates/squad/_permissions.jinja2:8
+msgid "Administrator"
+msgstr ""
+
+#: squad/frontend/templates/squad/_permissions.jinja2:11
+msgid "View non-public projects"
+msgstr ""
+
+#: squad/frontend/templates/squad/_permissions.jinja2:12
+msgid "Annonate builds"
+msgstr ""
+
+#: squad/frontend/templates/squad/_permissions.jinja2:13
+msgid "Submit new test results"
+msgstr ""
+
+#: squad/frontend/templates/squad/_permissions.jinja2:14
+msgid "Resubmit test jobs"
+msgstr ""
+
+#: squad/frontend/templates/squad/_permissions.jinja2:15
+msgid "Update group settings"
+msgstr ""
+
+#: squad/frontend/templates/squad/_permissions.jinja2:16
+msgid "Update project settings"
+msgstr ""
+
+#: squad/frontend/templates/squad/_permissions.jinja2:17
+msgid "Update build settings"
+msgstr ""
+
+#: squad/frontend/templates/squad/_results_transitions_filter.jinja2:10
+msgid "From/To"
+msgstr ""
+
+#: squad/frontend/templates/squad/_results_transitions_filter.jinja2:41
+msgid "show all tests"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_results_summary.jinja2:1
+#, python-format
+msgid "%d tests"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_results_summary.jinja2:3
+#, python-format
+msgid "%d pass"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_results_summary.jinja2:6
+#, python-format
+msgid "%d skip"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_results_summary.jinja2:9
+#, python-format
+msgid "%d fail"
+msgstr ""
+
+#: squad/frontend/templates/squad/_test_results_summary.jinja2:12
+#, python-format
+msgid "%d xfail"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/base.jinja2:15
+#: squad/frontend/templates/squad/user_settings/subscriptions.jinja2:8
+msgid "Subscriptions"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/subscriptions.jinja2:10
+msgid "Add subscription:"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/subscriptions.jinja2:36
+msgid "Submit"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/subscriptions.jinja2:40
+msgid "Your current subscriptions:"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/subscriptions.jinja2:44
+msgid "Remove subscription"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/subscriptions.jinja2:52
+msgid "You do not have any subscriptions yet."
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/base.jinja2:9
+msgid "User settings"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/base.jinja2:13
+#: squad/frontend/templates/squad/user_settings/projects.jinja2:3
+msgid "Personal projects"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/api_token.jinja2:3
+#: squad/frontend/templates/squad/user_settings/base.jinja2:14
+msgid "API token"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/api_token.jinja2:6
+msgid "Your API token:"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/api_token.jinja2:11
+msgid "You do not have an API token yet."
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/api_token.jinja2:21
+msgid "Reset API token"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/api_token.jinja2:25
+msgid "Attention:"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/api_token.jinja2:26
+msgid ""
+"Resetting your API token will make the old token invalid, and it will no "
+"longer be accepted to authenticate API requests. Only the new token will "
+"be accepted."
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/api_token.jinja2:29
+msgid "Yes, reset my API token"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/api_token.jinja2:34
+msgid "Create API token"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/profile.jinja2:26
+msgid "Profile picture"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/profile.jinja2:28
+msgid "Your avatar"
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/profile.jinja2:32
+msgid ""
+"This avatar is derived from your email address, and is provided by <a "
+"href=\"https://www.gravatar.com/\">Gravatar</a>."
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/projects.jinja2:9
+#, python-format
+msgid ""
+"Personal projects are enabled for you. You can go to your personal <a "
+"href=\"%s\"><strong>user namespace</strong></a> to manage your personal "
+"projects."
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/projects.jinja2:12
+#, python-format
+msgid ""
+"To remove your user namespace, and consequentially disable personal "
+"projects, you can access its <a href=\"%s\">Delete group</a> page."
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/projects.jinja2:19
+msgid ""
+"To be able to create personal projects, you need first to create a "
+"<em>user namespace</em> for projects."
+msgstr ""
+
+#: squad/frontend/templates/squad/user_settings/projects.jinja2:23
+msgid "Create user namespace"
+msgstr ""
+
+#: squad/frontend/templates/squad/metrics.jinja2:19
+msgid "Select environment(s)"
+msgstr ""
+
+#: squad/frontend/templates/squad/metrics.jinja2:22
+msgid "toggle all"
+msgstr ""
+
+#: squad/frontend/templates/squad/metrics.jinja2:51
+msgid "Add metric:"
+msgstr ""
+
+#: squad/frontend/templates/squad/metrics.jinja2:66
+msgid "View result"
+msgstr ""
+
+#: squad/frontend/templates/squad/metrics.jinja2:67
+msgid "Toggle outlier"
+msgstr ""
+
+#: squad/frontend/templates/django/squad/_user_menu.html:15
+#: squad/frontend/templates/squad/_user_menu.jinja2:12
+#, python-format
+msgid "Signed in as %(username)s"
+msgstr ""
+
+#: squad/frontend/templates/django/squad/_user_menu.html:20
+#: squad/frontend/templates/squad/_user_menu.jinja2:17
+msgid "Administration"
+msgstr ""
+
+#: squad/frontend/templates/django/squad/_user_menu.html:23
+#: squad/frontend/templates/squad/_user_menu.jinja2:20
+msgid "Settings"
+msgstr ""
+
+#: squad/frontend/templates/django/squad/_user_menu.html:24
+#: squad/frontend/templates/squad/_user_menu.jinja2:21
+msgid "Sign out"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_builds.jinja2:17
+#: squad/frontend/templates/squad/compare_builds.jinja2:66
+msgid "Start over"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_builds.jinja2:19
+msgid "Project"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_builds.jinja2:27
+msgid "Enter project name"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_builds.jinja2:37
+msgid "Compare build"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_builds.jinja2:39
+msgid "Enter baseline version"
+msgstr ""
+
+#: squad/frontend/templates/squad/compare_builds.jinja2:43
+msgid "against build"
+msgstr ""
+
+#: squad/frontend/templates/squad/_pagination.jinja2:2
+msgid "Page navigation"
+msgstr ""
+
+#: squad/frontend/templates/squad/test_run_suite_tests.jinja2:25
+#, python-format
+msgid "Suite: <strong>%s</strong>"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjob.jinja2:4
+#, python-format
+msgid "The URL for requested test job (%s) doesn't yet exist."
+msgstr ""
+
+#: squad/frontend/templates/squad/testjob.jinja2:6
+msgid "TestJob submission failed"
+msgstr ""
+
+#: squad/frontend/templates/squad/testjob.jinja2:9
+msgid "Please try again later"
+msgstr ""
+
+#: squad/frontend/templates/401.jinja2:5
+msgid "Permission denied"
+msgstr ""
+
+#: squad/frontend/templates/401.jinja2:7
+msgid "You are not allowed to access this content."
+msgstr ""
+
+#: squad/frontend/templates/401.jinja2:10
+msgid "Authentication required"
+msgstr ""
+
+#: squad/frontend/templates/401.jinja2:12
+msgid "Go to the login page."
+msgstr ""
+
+#: squad/frontend/forms.py:7
+msgid "Type the slug (the name used in URLs) to confirm"
+msgstr ""
+
+#: squad/frontend/forms.py:9
+msgid "The confirmation does not match the slug"
+msgstr ""
