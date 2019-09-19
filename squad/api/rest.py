@@ -17,9 +17,10 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.reverse import reverse as rest_reverse
-from rest_framework.pagination import CursorPagination, PageNumberPagination
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from squad.compat import ComplexFilterBackend
+from squad.api.utils import CursorPaginationWithPageSize
 
 import rest_framework_filters as filters
 
@@ -783,7 +784,7 @@ class TestViewSet(ModelViewSet):
     queryset = Test.objects.all()
     serializer_class = TestSerializer
     filter_class = TestFilter
-    pagination_class = CursorPagination
+    pagination_class = CursorPaginationWithPageSize
     ordering = ('id',)
 
     def get_queryset(self):
@@ -820,7 +821,7 @@ class TestRunViewSet(ModelViewSet):
     filter_class = TestRunFilter
     search_fields = ('environment',)
     ordering_fields = ('id', 'created_at', 'environment', 'datetime')
-    pagination_class = CursorPagination
+    pagination_class = CursorPaginationWithPageSize
     ordering = ('created_at',)
 
     def get_queryset(self):
@@ -923,7 +924,7 @@ class TestJobViewSet(ModelViewSet):
     filter_class = TestJobFilter
     search_fields = ("name", "environment", "last_fetch_attempt")
     ordering_fields = ("id", "name", "environment", "last_fetch_attempt")
-    pagination_class = CursorPagination
+    pagination_class = CursorPaginationWithPageSize
     ordering = ('id',)
 
     def get_queryset(self):
