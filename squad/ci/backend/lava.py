@@ -270,7 +270,7 @@ class Backend(BaseBackend):
                             # the event.value is a dict value
                             tmp_dict.update({tmp_key: event.value})
                             is_value = False
-            except yaml.scanner.ScannerError:
+            except (yaml.scanner.ScannerError, yaml.parser.ParserError):
                 log_data.seek(0)
                 wrapper = TextIOWrapper(log_data, encoding='utf-8')
                 logger.error("Problem parsing LAVA log\n" + wrapper.read() + "\n" + traceback.format_exc())
