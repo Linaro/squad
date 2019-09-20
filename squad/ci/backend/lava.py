@@ -8,6 +8,7 @@ import yaml
 import xmlrpc
 import zmq
 
+from contextlib import contextmanager
 from io import BytesIO, TextIOWrapper
 from zmq.utils.strtypes import u
 
@@ -32,22 +33,12 @@ class Backend(BaseBackend):
     # API implementation
     # ------------------------------------------------------------------------
     def submit(self, test_job):
-        try:
+        with self.handle_job_submission():
             job_id = self.__submit__(test_job.definition)
             test_job.name = self.__lava_job_name(test_job.definition)
             if isinstance(job_id, list):
                 return job_id
             return [job_id]
-        except xmlrpc.client.ProtocolError as error:
-            raise TemporarySubmissionIssue(self.url_remove_token(str(error)))
-        except xmlrpc.client.Fault as fault:
-            if fault.faultCode // 100 == 5:
-                # assume HTTP errors 5xx are temporary issues
-                raise TemporarySubmissionIssue(self.url_remove_token(str(fault)))
-            else:
-                raise SubmissionIssue(self.url_remove_token(str(fault)))
-        except ssl.SSLError as fault:
-            raise SubmissionIssue(self.url_remove_token(str(fault)))
 
     def fetch(self, test_job):
         try:
@@ -119,6 +110,21 @@ class Backend(BaseBackend):
         super(Backend, self).__init__(data)
         self.complete_statuses = ['Complete', 'Incomplete', 'Canceled']
         self.__proxy__ = None
+
+    @contextmanager
+    def handle_job_submission(self):
+        try:
+            yield
+        except xmlrpc.client.ProtocolError as error:
+            raise TemporarySubmissionIssue(self.url_remove_token(str(error)))
+        except xmlrpc.client.Fault as fault:
+            if fault.faultCode // 100 == 5:
+                # assume HTTP errors 5xx are temporary issues
+                raise TemporarySubmissionIssue(self.url_remove_token(str(fault)))
+            else:
+                raise SubmissionIssue(self.url_remove_token(str(fault)))
+        except ssl.SSLError as fault:
+            raise SubmissionIssue(self.url_remove_token(str(fault)))
 
     def url_remove_token(self, text):
         if self.data is not None and self.data.token is not None:
