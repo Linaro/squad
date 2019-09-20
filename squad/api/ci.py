@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from squad.http import auth_submit, read_file_upload, auth_user_from_request
+from squad.ci.exceptions import SubmissionIssue
 from squad.ci.tasks import submit
 from squad.ci.models import Backend, TestJob
 
@@ -105,7 +106,10 @@ def resubmit_job(request, test_job_id, method='resubmit'):
         return HttpResponse(status=401)
 
     call = getattr(testjob, method)
-    ret_value = call()
+    try:
+        ret_value = call()
+    except SubmissionIssue as e:
+        return HttpResponse(str(e), status=500)
 
     if ret_value:
         return HttpResponse(status=201)
