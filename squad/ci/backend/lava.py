@@ -161,7 +161,9 @@ class Backend(BaseBackend):
         if test_job.job_id is None:
             return None
 
-        new_job_id_list = self.__resubmit__(test_job.job_id)
+        with self.handle_job_submission():
+            new_job_id_list = self.__resubmit__(test_job.job_id)
+
         if isinstance(new_job_id_list, list):
             new_job_id = new_job_id_list[0]
         else:
