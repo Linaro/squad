@@ -152,37 +152,38 @@ class Backend(BaseBackend):
         return '%s://%s:%s' % (scheme, hostname, port)
 
     def resubmit(self, test_job):
-        if test_job.job_id is not None:
-            new_job_id_list = self.__resubmit__(test_job.job_id)
-            if isinstance(new_job_id_list, list):
-                new_job_id = new_job_id_list[0]
-            else:
-                new_job_id = new_job_id_list
-            new_test_job_name = None
-            if test_job.definition is not None:
-                new_test_job_name = self.__lava_job_name(test_job.definition)
-            new_test_job = TestJob(
-                backend=self.data,
-                definition=test_job.definition,
-                target=test_job.target,
-                target_build=test_job.target_build,
-                environment=test_job.environment,
-                submitted=True,
-                job_id=new_job_id,
-                resubmitted_count=test_job.resubmitted_count + 1,
-                name=new_test_job_name,
-                parent_job=test_job,
-            )
-            test_job.can_resubmit = False
-            test_job.save()
-            new_test_job.save()
-            if isinstance(new_job_id_list, list) and len(new_job_id_list) > 1:
-                for job_id in new_job_id_list[1:]:
-                    new_test_job.pk = None
-                    new_test_job.job_id = job_id
-                    new_test_job.save()
-            return new_test_job
-        return None
+        if test_job.job_id is None:
+            return None
+
+        new_job_id_list = self.__resubmit__(test_job.job_id)
+        if isinstance(new_job_id_list, list):
+            new_job_id = new_job_id_list[0]
+        else:
+            new_job_id = new_job_id_list
+        new_test_job_name = None
+        if test_job.definition is not None:
+            new_test_job_name = self.__lava_job_name(test_job.definition)
+        new_test_job = TestJob(
+            backend=self.data,
+            definition=test_job.definition,
+            target=test_job.target,
+            target_build=test_job.target_build,
+            environment=test_job.environment,
+            submitted=True,
+            job_id=new_job_id,
+            resubmitted_count=test_job.resubmitted_count + 1,
+            name=new_test_job_name,
+            parent_job=test_job,
+        )
+        test_job.can_resubmit = False
+        test_job.save()
+        new_test_job.save()
+        if isinstance(new_job_id_list, list) and len(new_job_id_list) > 1:
+            for job_id in new_job_id_list[1:]:
+                new_test_job.pk = None
+                new_test_job.job_id = job_id
+                new_test_job.save()
+        return new_test_job
 
     def __lava_job_name(self, definition):
         yaml_definition = yaml.safe_load(definition)
