@@ -7,6 +7,7 @@ from test.mock import patch, MagicMock
 
 
 from squad.core import models as core_models
+from squad.ci.exceptions import SubmissionIssue
 from squad.ci import models
 
 
@@ -266,3 +267,13 @@ class CiApiTest(TestCase):
 
         r = client.post('/api/resubmit/999')
         self.assertEqual(404, r.status_code)
+
+    @patch('squad.ci.models.TestJob.resubmit', side_effect=SubmissionIssue('BOOM'))
+    def test_resubmit_error(self, resubmit):
+        t = self.backend.test_jobs.create(
+            target=self.project,
+            can_resubmit=True
+        )
+        r = self.adminclient.post('/api/resubmit/%s' % t.pk)
+        self.assertEqual(500, r.status_code)
+        self.assertEqual('BOOM', r.content.decode())

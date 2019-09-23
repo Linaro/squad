@@ -8,6 +8,7 @@ import yaml
 import xmlrpc
 import zmq
 
+from contextlib import contextmanager
 from io import BytesIO, TextIOWrapper
 from zmq.utils.strtypes import u
 
@@ -32,22 +33,12 @@ class Backend(BaseBackend):
     # API implementation
     # ------------------------------------------------------------------------
     def submit(self, test_job):
-        try:
+        with self.handle_job_submission():
             job_id = self.__submit__(test_job.definition)
             test_job.name = self.__lava_job_name(test_job.definition)
             if isinstance(job_id, list):
                 return job_id
             return [job_id]
-        except xmlrpc.client.ProtocolError as error:
-            raise TemporarySubmissionIssue(self.url_remove_token(str(error)))
-        except xmlrpc.client.Fault as fault:
-            if fault.faultCode // 100 == 5:
-                # assume HTTP errors 5xx are temporary issues
-                raise TemporarySubmissionIssue(self.url_remove_token(str(fault)))
-            else:
-                raise SubmissionIssue(self.url_remove_token(str(fault)))
-        except ssl.SSLError as fault:
-            raise SubmissionIssue(self.url_remove_token(str(fault)))
 
     def fetch(self, test_job):
         try:
@@ -120,6 +111,21 @@ class Backend(BaseBackend):
         self.complete_statuses = ['Complete', 'Incomplete', 'Canceled']
         self.__proxy__ = None
 
+    @contextmanager
+    def handle_job_submission(self):
+        try:
+            yield
+        except xmlrpc.client.ProtocolError as error:
+            raise TemporarySubmissionIssue(self.url_remove_token(str(error)))
+        except xmlrpc.client.Fault as fault:
+            if fault.faultCode // 100 == 5:
+                # assume HTTP errors 5xx are temporary issues
+                raise TemporarySubmissionIssue(self.url_remove_token(str(fault)))
+            else:
+                raise SubmissionIssue(self.url_remove_token(str(fault)))
+        except ssl.SSLError as fault:
+            raise SubmissionIssue(self.url_remove_token(str(fault)))
+
     def url_remove_token(self, text):
         if self.data is not None and self.data.token is not None:
             return text.replace(self.data.token, "*****")
@@ -152,37 +158,40 @@ class Backend(BaseBackend):
         return '%s://%s:%s' % (scheme, hostname, port)
 
     def resubmit(self, test_job):
-        if test_job.job_id is not None:
+        if test_job.job_id is None:
+            return None
+
+        with self.handle_job_submission():
             new_job_id_list = self.__resubmit__(test_job.job_id)
-            if isinstance(new_job_id_list, list):
-                new_job_id = new_job_id_list[0]
-            else:
-                new_job_id = new_job_id_list
-            new_test_job_name = None
-            if test_job.definition is not None:
-                new_test_job_name = self.__lava_job_name(test_job.definition)
-            new_test_job = TestJob(
-                backend=self.data,
-                definition=test_job.definition,
-                target=test_job.target,
-                target_build=test_job.target_build,
-                environment=test_job.environment,
-                submitted=True,
-                job_id=new_job_id,
-                resubmitted_count=test_job.resubmitted_count + 1,
-                name=new_test_job_name,
-                parent_job=test_job,
-            )
-            test_job.can_resubmit = False
-            test_job.save()
-            new_test_job.save()
-            if isinstance(new_job_id_list, list) and len(new_job_id_list) > 1:
-                for job_id in new_job_id_list[1:]:
-                    new_test_job.pk = None
-                    new_test_job.job_id = job_id
-                    new_test_job.save()
-            return new_test_job
-        return None
+
+        if isinstance(new_job_id_list, list):
+            new_job_id = new_job_id_list[0]
+        else:
+            new_job_id = new_job_id_list
+        new_test_job_name = None
+        if test_job.definition is not None:
+            new_test_job_name = self.__lava_job_name(test_job.definition)
+        new_test_job = TestJob(
+            backend=self.data,
+            definition=test_job.definition,
+            target=test_job.target,
+            target_build=test_job.target_build,
+            environment=test_job.environment,
+            submitted=True,
+            job_id=new_job_id,
+            resubmitted_count=test_job.resubmitted_count + 1,
+            name=new_test_job_name,
+            parent_job=test_job,
+        )
+        test_job.can_resubmit = False
+        test_job.save()
+        new_test_job.save()
+        if isinstance(new_job_id_list, list) and len(new_job_id_list) > 1:
+            for job_id in new_job_id_list[1:]:
+                new_test_job.pk = None
+                new_test_job.job_id = job_id
+                new_test_job.save()
+        return new_test_job
 
     def __lava_job_name(self, definition):
         yaml_definition = yaml.safe_load(definition)
@@ -270,7 +279,7 @@ class Backend(BaseBackend):
                             # the event.value is a dict value
                             tmp_dict.update({tmp_key: event.value})
                             is_value = False
-            except yaml.scanner.ScannerError:
+            except (yaml.scanner.ScannerError, yaml.parser.ParserError):
                 log_data.seek(0)
                 wrapper = TextIOWrapper(log_data, encoding='utf-8')
                 logger.error("Problem parsing LAVA log\n" + wrapper.read() + "\n" + traceback.format_exc())

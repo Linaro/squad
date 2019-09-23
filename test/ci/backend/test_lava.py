@@ -251,6 +251,7 @@ LOG_DATA = open(os.path.join(os.path.dirname(__file__), 'example-lava-log.yaml')
 BROKEN_LOG_DATA = open(os.path.join(os.path.dirname(__file__), 'example-broken-log.yaml'), 'rb').read()
 
 HTTP_400 = xmlrpc.client.Fault(400, 'Problem with submitted job data')
+HTTP_500 = xmlrpc.client.Fault(500, 'Internal Server Error')
 HTTP_503 = xmlrpc.client.Fault(503, 'Service Unavailable')
 HTTP_401 = xmlrpc.client.ProtocolError('http://example.com', 401, 'Unauthorized', {})
 
@@ -801,3 +802,15 @@ class LavaTest(TestCase):
         log_data = BytesIO()
         log = lava.__parse_log__(log_data)
         self.assertEqual(0, len(log))
+
+    @patch("squad.ci.backend.lava.Backend.__resubmit__", side_effect=HTTP_500)
+    def test_resubmit_deleted_job(self, __resubmit__):
+        lava = LAVABackend(None)
+        test_definition = "foo: 1\njob_name: bar"
+        testjob = TestJob(
+            definition=test_definition,
+            backend=self.backend,
+            job_id='9999',
+        )
+        with self.assertRaises(SubmissionIssue):
+            lava.resubmit(testjob)
