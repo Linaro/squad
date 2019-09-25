@@ -1,3 +1,14 @@
+# 1.0.3
+
+* api: utils: add CursorPaginationWithPageSize
+* Added translation using Weblate (French)
+* ci/lava: adjust hangling of malformed logs yaml for newer PyYAML
+* ci/lava: resubmit: exit early
+* ci/lava: extract handling of failed submissions
+* ci/lava: resubmit: handle errors on the LAVA side
+* api: resubmit: handle submission errors gracefully
+* ci: lava: speed up conversion of YAML of logs to pain text
+
 # 1.0.2
 
 This release fixes a small issue with the gerrit plugin that
