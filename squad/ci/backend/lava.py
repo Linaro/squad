@@ -9,7 +9,7 @@ import xmlrpc
 import zmq
 
 from contextlib import contextmanager
-from io import BytesIO, TextIOWrapper
+from io import BytesIO, TextIOWrapper, StringIO
 from zmq.utils.strtypes import u
 
 from xmlrpc import client as xmlrpclib
@@ -240,7 +240,7 @@ class Backend(BaseBackend):
         return return_lines
 
     def __parse_log__(self, log_data):
-        returned_log = ""
+        returned_log = StringIO()
         start_dict = False
         tmp_dict = None
         tmp_key = None
@@ -261,12 +261,12 @@ class Backend(BaseBackend):
                                         try:
                                             # seems like latin-1 is the encoding used by serial
                                             # this might not be true in all cases
-                                            returned_log = returned_log + "\n" + tmp_dict["msg"].decode('latin-1', 'ignore')
+                                            returned_log.write(tmp_dict["msg"].decode('latin-1', 'ignore') + "\n")
                                         except ValueError:
                                             # despite ignoring errors, they are still raised sometimes
                                             pass
                                     else:
-                                        returned_log = returned_log + "\n" + tmp_dict['msg']
+                                        returned_log.write(tmp_dict['msg'] + "\n")
                         del tmp_dict
                         tmp_dict = None
                         is_value = False
@@ -284,7 +284,7 @@ class Backend(BaseBackend):
                 wrapper = TextIOWrapper(log_data, encoding='utf-8')
                 logger.error("Problem parsing LAVA log\n" + wrapper.read() + "\n" + traceback.format_exc())
 
-        return returned_log
+        return returned_log.getvalue()
 
     def __get_testjob_results_yaml__(self, job_id):
         logger.debug("Retrieving result summary for job: %s" % job_id)
