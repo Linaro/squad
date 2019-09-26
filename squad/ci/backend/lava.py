@@ -218,9 +218,9 @@ class Backend(BaseBackend):
         return b''
 
     def __download_test_log__(self, raw_log, log_start, log_end):
-        return_lines = ""
         if not log_start:
-            return return_lines
+            return ""
+        return_lines = StringIO()
         log_start_line = int(log_start)
         log_end_line = None
         if log_end:
@@ -233,11 +233,12 @@ class Backend(BaseBackend):
             counter += 1
             if counter < log_start_line:
                 continue
-            return_lines = return_lines + line.decode("utf-8")
+            return_lines.write(line.decode("utf-8"))
+            return_lines.write("\n")
             if counter >= log_end_line:
                 break
         raw_log.seek(0)
-        return return_lines
+        return return_lines.getvalue()
 
     def __parse_log__(self, log_data):
         returned_log = StringIO()
