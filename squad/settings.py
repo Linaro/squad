@@ -289,7 +289,22 @@ CELERY_BEAT_SCHEDULE = {
     }
 }
 CELERY_TASK_ROUTES = {
-    'squad.core.tasks.prepare_report': {'queue': 'reporting_queue'},
+    'squad.core.tasks.prepare_report': {'queue': 'core_reporting'},
+    'squad.core.tasks.postprocess_test_run': {'queue': 'core_postprocess'},
+    'squad.core.tasks.cleanup_old_builds': {'queue': 'core_quick'},
+    'squad.core.tasks.remove_delayed_reports': {'queue': 'core_quick'},
+    'squad.core.tasks.cleanup_build': {'queue': 'core_quick'},
+    'squad.core.tasks.maybe_notify_project_status': {'queue': 'core_notification'},
+    'squad.core.tasks.notify_project_status': {'queue': 'core_notification'},
+    'squad.core.tasks.notification_timeout': {'queue': 'core_notification'},
+    'squad.core.tasks.notify_patch_build_created': {'queue': 'core_notification'},
+    'squad.core.tasks.notify_patch_build_finished': {'queue': 'core_notification'},
+    'squad.core.tasks.notify_delayed_report_callback': {'queue': 'core_notification'},
+    'squad.core.tasks.notify_delayed_report_email': {'queue': 'core_notification'},
+    'squad.ci.tasks.poll': {'queue': 'ci_poll'},
+    'squad.ci.tasks.fetch': {'queue': 'ci_fetch'},
+    'squad.ci.tasks.submit': {'queue': 'ci_quick'},
+    'squad.ci.tasks.send_testjob_resubmit_admin_email': {'queue': 'ci_quick'},
 }
 
 REST_FRAMEWORK = {
