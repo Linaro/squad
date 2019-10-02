@@ -11,7 +11,7 @@ from dateutil.relativedelta import relativedelta
 from squad.core.tasks import ReceiveTestRun, UpdateProjectStatus
 from squad.core.models import Project, Build, TestRun, slug_validator
 from squad.core.plugins import apply_plugins
-from squad.core.tasks.exceptions import InvalidMetadata
+from squad.core.tasks.exceptions import InvalidMetadata, DuplicatedTestJob
 from squad.core.utils import yaml_validator
 
 
@@ -111,6 +111,8 @@ class Backend(models.Model):
             test_job.testrun = testrun
         except InvalidMetadata as exception:
             test_job.failure = str(exception)
+        except DuplicatedTestJob as exception:
+            logger.error('Failed to fetch test_job(%d): "%s"' % (test_job.id, str(exception)))
 
         # mark test job as fetched to prevent resubmission
         # on next fetch attempt

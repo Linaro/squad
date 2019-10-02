@@ -188,7 +188,7 @@ class BackendFetchTest(BackendTestBase):
         self.backend.really_fetch(test_job)
 
         self.assertTrue(test_job.fetched)
-        self.assertIsNotNone(test_job.failure)
+        self.assertIsNone(test_job.failure)
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')

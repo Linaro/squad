@@ -138,7 +138,7 @@ class ReceiveTestRun(object):
 
             job_id = metadata_fields['job_id']
             if build.test_runs.filter(job_id=job_id).exists():
-                raise exceptions.InvalidMetadata("There is already a test run with job_id %s" % job_id)
+                raise exceptions.DuplicatedTestJob("There is already a test run with job_id %s" % job_id)
 
         else:
             metadata_fields = {}
