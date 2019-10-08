@@ -6,7 +6,7 @@ from unittest.mock import patch
 from squad.core.models import Group, Test, Suite
 
 
-def test(**kwargs):
+def create_test(**kwargs):
     group = Group.objects.create(slug='mygroup')
     project = group.projects.create(slug='myproject')
     build = project.builds.create(version='1')
@@ -22,23 +22,23 @@ class TestTest(TestCase):
 
     @patch("squad.core.models.join_name", lambda x, y: 'woooops')
     def test_full_name(self):
-        t = test()
+        t = create_test()
         self.assertEqual('woooops', t.full_name)
 
     def test_status_na(self):
-        t = test(result=None)
+        t = create_test(result=None)
         self.assertEqual('skip', t.status)
 
     def test_status_pass(self):
-        t = test(result=True)
+        t = create_test(result=True)
         self.assertEqual('pass', t.status)
 
     def test_status_fail(self):
-        t = test(result=False)
+        t = create_test(result=False)
         self.assertEqual('fail', t.status)
 
     def test_status_xfail(self):
-        t = test(result=False, has_known_issues=True)
+        t = create_test(result=False, has_known_issues=True)
         self.assertEqual('xfail', t.status)
 
 
