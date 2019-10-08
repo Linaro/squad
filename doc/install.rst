@@ -68,15 +68,15 @@ an admin user for yourself, use::
 
 These are the command lines to run the other processes:
 
-+-----------+-------------------------------------------------------------------------------------------------------------------------+
-| Process   | Command                                                                                                                 |
-+===========+=========================================================================================================================+
-| worker    | celery -A squad worker -Q core_reporting,core_postprocess,core_quick,core_notification,ci_quick,ci_poll,ci_fetch,celery |
-+-----------+-------------------------------------------------------------------------------------------------------------------------+
-| scheduler | celery -A squad beat                                                                                                    |
-+-----------+-------------------------------------------------------------------------------------------------------------------------+
-| listener  | squad-admin listen                                                                                                      |
-+-----------+-------------------------------------------------------------------------------------------------------------------------+
++-----------+---------------------------+
+| Process   | Command                   |
++===========+===========================+
+| worker    | celery -A squad worker    |
++-----------+---------------------------+
+| scheduler | celery -A squad beat      |
++-----------+---------------------------+
+| listener  | squad-admin listen        |
++-----------+---------------------------+
 
 You most probably want all the processes (including the web interface) being
 managed by a system manager such as systemd__, or a process manager such as
