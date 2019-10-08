@@ -97,6 +97,42 @@ needed:
   administration web UI, and under "CI", choose "Backends".
 * For each project, create authentication tokens and subscriptions
 
+Worker configuration
+--------------------
+
+The `worker` process handles background tasks, such as submitting CI jobs,
+fetching the results fo CI jobs, preparing reports that require intensive
+processing, etc. Some tasks take a lot longer than the others, e.g. submitting
+a CI job is pretty quick, while fetching CI job results takes some time to
+fetch all the data, parse it, and store in the database.
+
+To allow for better load balancing, these tasks are split into multiple queues:
+
+* `ci_fetch`
+* `ci_poll`
+* `ci_quick`
+* `core_notification`
+* `core_postprocess`
+* `core_quick`
+* `core_reporting`
+
+`ci_fetch` and `ci_poll` can be potentially slow, and if there is a large
+influx of those types of tasks, your system may display some congestion because
+all available worker threads are occupied running slow tasks, while several of
+the quick ones are waiting their turn.
+
+To avoid this, you might want to start a small part of your workers so that
+they will not pick up any of those slow tasks::
+
+    squad worker --exclude-queues ci_fetch,ci_poll
+
+Or you can also give an explicit task list, which is less flexible but might be
+useful::
+
+    squad worker --queues core_quick,ci_quick
+
+By default, workers listen to all queues.
+
 Further configuration
 ---------------------
 
