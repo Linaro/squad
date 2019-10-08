@@ -152,6 +152,9 @@ class Backend(models.Model):
 
 
 class TestJob(models.Model):
+
+    __test__ = False
+
     # input - internal
     backend = models.ForeignKey(Backend, related_name='test_jobs', on_delete=models.CASCADE)
     # TestRun object once it's created

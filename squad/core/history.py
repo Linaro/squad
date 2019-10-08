@@ -8,6 +8,8 @@ from squad.core.models import Test
 
 class TestResult(object):
 
+    __test__ = False
+
     def __init__(self, test):
         self.known_issues = test.known_issues.all()
         self.status = test.status
@@ -21,6 +23,8 @@ class TestResult(object):
 
 
 class TestHistory(object):
+
+    __test__ = False
 
     def __init__(self, project, full_test_name, top=None, page=1, per_page=20):
         suite, test_name = parse_name(full_test_name)

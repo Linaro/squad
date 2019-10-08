@@ -162,6 +162,8 @@ class MetricComparison(BaseComparison):
 
 class TestComparison(BaseComparison):
 
+    __test__ = False
+
     def __init__(self, *builds):
         self.__intermittent__ = {}
         BaseComparison.__init__(self, *builds)
