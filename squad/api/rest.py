@@ -250,8 +250,10 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects
     serializer_class = GroupSerializer
-    filter_fields = ('slug', 'name')
-    filter_class = GroupFilter
+    filterset_fields = ('slug', 'name')
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
+    filterset_class = GroupFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     filter_backends = (ComplexFilterBackend, )
     search_fields = ('slug', 'name')
     ordering_fields = ('slug', 'name')
@@ -334,8 +336,10 @@ class SuiteMetadataSerializer(serializers.ModelSerializer):
 class SuiteMetadataViewset(viewsets.ModelViewSet):
     queryset = SuiteMetadata.objects
     serializer_class = SuiteMetadataSerializer
-    filter_fields = ('suite', 'kind', 'name')
-    filter_class = SuiteMetadataFilter
+    filterset_fields = ('suite', 'kind', 'name')
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
+    filterset_class = SuiteMetadataFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     ordering_fields = ('name', 'suite')
 
     def get_queryset(self):
@@ -362,15 +366,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     queryset = Project.objects
     serializer_class = ProjectSerializer
-    filter_fields = ('group',
-                     'slug',
-                     'name',
-                     'is_public',
-                     'html_mail',
-                     'custom_email_template',
-                     'moderate_notifications')
+    filterset_fields = (
+        'group',
+        'slug',
+        'name',
+        'is_public',
+        'html_mail',
+        'custom_email_template',
+        'moderate_notifications',
+    )
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
     filter_backends = (ComplexFilterBackend, )
-    filter_class = ProjectFilter
+    filterset_class = ProjectFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     search_fields = ('slug',
                      'name',)
     ordering_fields = ('slug',
@@ -500,8 +508,10 @@ class ProjectStatusSerializer(serializers.HyperlinkedModelSerializer):
 class ProjectStatusViewSet(viewsets.ModelViewSet):
     queryset = ProjectStatus.objects
     serializer_class = ProjectStatusSerializer
-    filter_fields = ('build',)
-    filter_class = ProjectStatusFilter
+    filterset_fields = ('build',)
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
+    filterset_class = ProjectStatusFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
 
     ordering_fields = ('created_at', 'last_updated')
 
@@ -521,7 +531,8 @@ class PatchSourceSerializer(serializers.HyperlinkedModelSerializer):
 class PatchSourceViewSet(viewsets.ModelViewSet):
     queryset = PatchSource.objects
     serializer_class = PatchSourceSerializer
-    filter_fields = ('implementation', 'url', 'name')
+    filterset_fields = ('implementation', 'url', 'name')
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
 
 
 class HyperlinkedProjectStatusField(serializers.HyperlinkedRelatedField):
@@ -549,8 +560,10 @@ class DelayedReportViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = DelayedReport.objects
     serializer_class = DelayedReportSerializer
-    filter_fields = ('build', 'baseline', 'callback', 'callback_notified', 'email_recipient', 'status_code', 'error_message', 'created_at')
-    filter_class = DelayedReportFilter
+    filterset_fields = ('build', 'baseline', 'callback', 'callback_notified', 'email_recipient', 'status_code', 'error_message', 'created_at')
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
+    filterset_class = DelayedReportFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     ordering_fields = ('id', 'created_at')
 
 
@@ -574,8 +587,10 @@ class BuildViewSet(ModelViewSet):
     """
     queryset = Build.objects.prefetch_related('status', 'test_runs').order_by('-datetime').all()
     serializer_class = BuildSerializer
-    filter_fields = ('version', 'project')
-    filter_class = BuildFilter
+    filterset_fields = ('version', 'project')
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
+    filterset_class = BuildFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     search_fields = ('version',)
     ordering_fields = ('id', 'version', 'created_at', 'datetime')
 
@@ -722,8 +737,10 @@ class EnvironmentViewSet(ModelViewSet):
     """
     queryset = Environment.objects
     serializer_class = EnvironmentSerializer
-    filter_fields = ('project', 'slug', 'name')
-    filter_class = EnvironmentFilter
+    filterset_fields = ('project', 'slug', 'name')
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
+    filterset_class = EnvironmentFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     search_fields = ('slug', 'name')
     ordering_fields = ('id', 'slug', 'name')
 
@@ -761,7 +778,8 @@ class SuiteViewSet(viewsets.ModelViewSet):
 
     queryset = Suite.objects.all()
     serializer_class = SuiteSerializer
-    filter_class = SuiteFilter
+    filterset_class = SuiteFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
 
     @action(detail=True, methods=['get'], suffix='testnames')
     def testnames(self, request, pk=None):
@@ -783,7 +801,8 @@ class TestViewSet(ModelViewSet):
 
     queryset = Test.objects.all()
     serializer_class = TestSerializer
-    filter_class = TestFilter
+    filterset_class = TestFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     pagination_class = CursorPaginationWithPageSize
     ordering = ('id',)
 
@@ -810,7 +829,7 @@ class TestRunViewSet(ModelViewSet):
     """
     queryset = TestRun.objects.order_by('-id')
     serializer_class = TestRunSerializer
-    filter_fields = (
+    filterset_fields = (
         "build",
         "completed",
         "job_status",
@@ -818,7 +837,9 @@ class TestRunViewSet(ModelViewSet):
         "status_recorded",
         "environment",
     )
-    filter_class = TestRunFilter
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
+    filterset_class = TestRunFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     search_fields = ('environment',)
     ordering_fields = ('id', 'created_at', 'environment', 'datetime')
     pagination_class = CursorPaginationWithPageSize
@@ -883,7 +904,8 @@ class BackendViewSet(viewsets.ModelViewSet):
     """
     queryset = Backend.objects.all()
     serializer_class = BackendSerializer
-    filter_fields = ('implementation_type', 'name', 'url')
+    filterset_fields = ('implementation_type', 'name', 'url')
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
     search_fields = ('implementation_type', 'name', 'url')
     ordering_fields = ('id', 'implementation_type', 'name', 'url')
 
@@ -905,7 +927,7 @@ class TestJobViewSet(ModelViewSet):
     """
     queryset = TestJob.objects.prefetch_related('backend').order_by('-id')
     serializer_class = TestJobSerializer
-    filter_fields = (
+    filterset_fields = (
         "name",
         "environment",
         "submitted",
@@ -921,7 +943,9 @@ class TestJobViewSet(ModelViewSet):
         "target",
         "testrun",
     )
-    filter_class = TestJobFilter
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
+    filterset_class = TestJobFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     search_fields = ("name", "environment", "last_fetch_attempt")
     ordering_fields = ("id", "name", "environment", "last_fetch_attempt")
     pagination_class = CursorPaginationWithPageSize
@@ -951,7 +975,8 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
     """
     queryset = EmailTemplate.objects.all()
     serializer_class = EmailTemplateSerializer
-    filter_fields = ('name',)
+    filterset_fields = ('name',)
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
     ordering_fields = ('name', 'id')
 
 
@@ -968,8 +993,10 @@ class KnownIssueViewSet(viewsets.ModelViewSet):
 
     queryset = KnownIssue.objects.all()
     serializer_class = KnownIssueSerializer
-    filter_class = KnownIssueFilter
-    filter_fields = ('title', 'test_name', 'active', 'intermittent', 'environments')
+    filterset_class = KnownIssueFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
+    filterset_fields = ('title', 'test_name', 'active', 'intermittent', 'environments')
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
     ordering_fields = ('title', 'id')
 
 
@@ -986,7 +1013,8 @@ class AnnotationViewSet(viewsets.ModelViewSet):
 
     queryset = Annotation.objects.all()
     serializer_class = AnnotationSerializer
-    filter_fields = ('description', 'build')
+    filterset_fields = ('description', 'build')
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
     ordering_fields = ('id', 'build')
 
 
@@ -1003,9 +1031,11 @@ class MetricThresholdViewSet(viewsets.ModelViewSet):
 
     queryset = MetricThreshold.objects.all()
     serializer_class = MetricThresholdSerializer
-    filter_fields = ('name', 'value', 'is_higher_better', 'project')
+    filterset_fields = ('name', 'value', 'is_higher_better', 'project')
+    filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
     ordering_fields = ('id', 'project', 'name')
-    filter_class = MetricThresholdFilter
+    filterset_class = MetricThresholdFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
 
 
 router = APIRouter()
