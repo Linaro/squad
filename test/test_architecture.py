@@ -1,4 +1,4 @@
-from django.test import TestCase
+from unittest import TestCase
 from fnmatch import fnmatch
 import re
 import shutil

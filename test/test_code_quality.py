@@ -2,7 +2,7 @@ import subprocess
 import shutil
 
 
-from django.test import TestCase
+from unittest import TestCase
 
 if shutil.which('flake8'):
     class TestCodeQuality(TestCase):
