@@ -41,13 +41,13 @@ class GroupManager(models.Manager):
 
     def accessible_to(self, user):
         if user.is_superuser:
-            return self.all().annotate(project_count=Count('projects'))
+            return self.all().order_by('slug').annotate(project_count=Count('projects'))
         projects = Project.objects.accessible_to(user)
         project_ids = [p.id for p in projects]
         group_ids = set([p.group_id for p in projects])
         return self.filter(
             Q(id__in=group_ids) | Q(members__id=user.id)
-        ).annotate(
+        ).order_by('slug').annotate(
             project_count=Sum(
                 Case(
                     When(projects__id__in=project_ids, then=1),
