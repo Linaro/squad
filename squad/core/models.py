@@ -1023,7 +1023,6 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.metrics_summary = metrics_summary.value
             status.has_metrics = metrics_summary.has_metrics
             status.last_updated = now
-            finished, _ = build.finished
             status.finished = finished
             status.build = build
             status.test_runs_total = test_runs_total
