@@ -1,3 +1,11 @@
+# 1.1
+
+* ci/lava: replace concatenation with StringIO
+* settings: split tasks to separate queues
+* requirements.txt: fix minimal version for pyyaml
+* squad.run.worker: listen on all configured queues by default
+* doc: document how to manage different queues
+
 # 1.0.3
 
 * api: utils: add CursorPaginationWithPageSize
