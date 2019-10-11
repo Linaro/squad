@@ -164,11 +164,16 @@ class TestComparison(BaseComparison):
 
     __test__ = False
 
-    def __init__(self, *builds):
+    def __init__(self, *builds, regressions_and_fixes_only=False):
         self.__intermittent__ = {}
+        self.regressions_and_fixes_only = regressions_and_fixes_only
         BaseComparison.__init__(self, *builds)
 
     def __extract_results__(self):
+        if self.regressions_and_fixes_only:
+            self.__regressions_and_fixes__(self.builds[0], self.builds[1])
+            return
+
         test_runs = models.TestRun.objects.filter(
             build__in=self.builds,
         ).prefetch_related(
@@ -283,3 +288,69 @@ class TestComparison(BaseComparison):
                 this_env[suite].append(testname)
             result[env] = this_env
         return result
+
+    def __regressions_and_fixes__(self, baseline_build, target_build):
+        # Calculate regressions and fixes directly in the database
+        # awfully ugly but lightning fast
+        # FIXME if Django comes up with a better solution using ORM
+        select_baseline_tests = '' \
+            ' SELECT DISTINCT ' \
+            '     baseline_test.id AS id,' \
+            '     baseline_test.suite_id,' \
+            '     baseline_test.name,' \
+            '     baseline_test.result,' \
+            '     baseline_test.has_known_issues,' \
+            '     baseline_test.test_run_id '
+
+        select_target_tests = '' \
+            ' SELECT DISTINCT' \
+            '     target_test.id AS id,' \
+            '     target_test.suite_id,' \
+            '     target_test.name,' \
+            '     target_test.result,' \
+            '     target_test.has_known_issues,' \
+            '     target_test.test_run_id '
+
+        from_where = '' \
+            ' FROM ' \
+            '     core_test    baseline_test,' \
+            '     core_testrun baseline_testrun,' \
+            '     core_test    target_test,' \
+            '     core_testrun target_testrun' \
+            ' WHERE ' \
+            '     baseline_test.test_run_id = baseline_testrun.id AND' \
+            '     target_test.test_run_id   = target_testrun.id AND' \
+            '     baseline_testrun.environment_id = target_testrun.environment_id AND' \
+            '     baseline_test.name              = target_test.name AND' \
+            '     baseline_test.suite_id          = target_test.suite_id AND' \
+            '     baseline_test.result <> target_test.result AND' \
+            '     baseline_testrun.build_id = %s AND target_testrun.build_id = %s '
+
+        order_by = ' ORDER BY id '
+        sql = select_baseline_tests + from_where + ' UNION ' + select_target_tests + from_where + order_by
+        differing_tests = models.Test.objects.raw(sql, [baseline_build.id, target_build.id, baseline_build.id, target_build.id])
+
+        # Django 1.11 compatibility (only 2.0+ allow prefetch_related on raw queries)
+        ids = [t.id for t in differing_tests]
+        tests = models.Test.objects.filter(id__in=ids)
+
+        self.environments = OrderedDict()
+        self.environments[baseline_build] = set()
+        self.environments[target_build] = set()
+        self.all_environments = set()
+        self.results = OrderedDict()
+        for t in tests.prefetch_related('test_run', 'suite', 'test_run__environment', 'test_run__build'):
+            env = str(t.test_run.environment)
+            self.all_environments.add(env)
+            self.environments[t.test_run.build].add(env)
+            key = (t.test_run.build, env)
+            full_name = join_name(t.suite.slug, t .name)
+            if full_name not in self.results:
+                self.results[full_name] = OrderedDict()
+            self.results[full_name][key] = t.status
+            if t.has_known_issues and t.known_issues.filter(intermittent=True):
+                self.__intermittent__[(full_name, env)] = True
+
+        self.results = OrderedDict(sorted(self.results.items()))
+        self.environments[baseline_build] = sorted(self.environments[baseline_build])
+        self.environments[target_build] = sorted(self.environments[target_build])
