@@ -71,13 +71,17 @@ class ListenerManager(object):
         for backend in Backend.objects.all():
             process = self.__processes__.get(backend.id)
             if process:
+                # listen disabled; stop
+                if not backend.listen_enabled:
+                    self.stop(backend.id)
                 # already running: restart if needed
-                if fields(backend) != self.__fields__[backend.id]:
+                elif fields(backend) != self.__fields__[backend.id]:
                     self.stop(backend.id)
                     self.start(backend)
             else:
                 # not running, just start
-                self.start(backend)
+                if backend.listen_enabled:
+                    self.start(backend)
             if backend.id in ids:
                 ids.remove(backend.id)
 
