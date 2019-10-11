@@ -11,7 +11,6 @@ def main():
         '-A', 'squad',
         'worker',
         '--queues=celery,' + ','.join(queues),
-        '--concurrency=1',
         '--max-tasks-per-child=5000',
         '--max-memory-per-child=1500000',
         '--loglevel=INFO'
