@@ -172,7 +172,7 @@ class PluginListField(models.TextField):
         self.features = args.pop('features', None)
         return super(PluginListField, self).__init__(**args)
 
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, *args):
         if value is None:
             return None
         return [item.strip() for item in value.split(',')]

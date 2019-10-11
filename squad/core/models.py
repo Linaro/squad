@@ -41,13 +41,13 @@ class GroupManager(models.Manager):
 
     def accessible_to(self, user):
         if user.is_superuser:
-            return self.all().annotate(project_count=Count('projects'))
+            return self.all().order_by('slug').annotate(project_count=Count('projects'))
         projects = Project.objects.accessible_to(user)
         project_ids = [p.id for p in projects]
         group_ids = set([p.group_id for p in projects])
         return self.filter(
             Q(id__in=group_ids) | Q(members__id=user.id)
-        ).annotate(
+        ).order_by('slug').annotate(
             project_count=Sum(
                 Case(
                     When(projects__id__in=project_ids, then=1),
@@ -577,6 +577,8 @@ class Environment(models.Model):
 
 class TestRunManager(models.Manager):
 
+    __test__ = False
+
     def get_queryset(self, *args, **kwargs):
         return super(TestRunManager, self).get_queryset(*args, **kwargs).defer(
             "tests_file",
@@ -587,6 +589,9 @@ class TestRunManager(models.Manager):
 
 
 class TestRun(models.Model):
+
+    __test__ = False
+
     build = models.ForeignKey(Build, related_name='test_runs', on_delete=models.CASCADE)
     environment = models.ForeignKey(Environment, related_name='test_runs', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -707,6 +712,9 @@ class SuiteVersion(models.Model):
 
 
 class Test(models.Model):
+
+    __test__ = False
+
     test_run = models.ForeignKey(TestRun, related_name='tests', on_delete=models.CASCADE)
     suite = models.ForeignKey(Suite, on_delete=models.CASCADE)
     metadata = models.ForeignKey(
@@ -839,6 +847,8 @@ class StatusManager(models.Manager):
 
 
 class TestSummaryBase(object):
+
+    __test__ = False
 
     @property
     def tests_total(self):
@@ -1096,6 +1106,9 @@ class InvalidTestStatus(Exception):
 
 
 class TestSummary(TestSummaryBase):
+
+    __test__ = False
+
     def __init__(self, build, environment=None):
         self.tests_pass = 0
         self.tests_fail = 0

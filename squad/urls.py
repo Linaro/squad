@@ -14,14 +14,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import include, url
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.contrib import admin
 
 import django.contrib.auth.views as auth
 
 
 def permission_denied(request, exception, template_name='401.jinja2'):
-    return render_to_response(
+    return render(
+        request,
         template_name,
         {
             'request': request,
@@ -32,7 +33,8 @@ def permission_denied(request, exception, template_name='401.jinja2'):
 
 
 def page_not_found(request, exception, template_name='404.jinja2'):
-    return render_to_response(
+    return render(
+        request,
         template_name,
         {
             'request': request,
