@@ -44,6 +44,7 @@ class Backend(models.Model):
     poll_interval = models.IntegerField(default=60)  # minutes
     max_fetch_attempts = models.IntegerField(default=3)
     poll_enabled = models.BooleanField(default=True)
+    listen_enabled = models.BooleanField(default=True)
 
     def poll(self):
         if not self.poll_enabled:
