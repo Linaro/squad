@@ -567,7 +567,7 @@ class Environment(models.Model):
     project = models.ForeignKey(Project, related_name='environments', on_delete=models.CASCADE)
     slug = models.CharField(max_length=100, validators=[slug_validator], db_index=True)
     name = models.CharField(max_length=100, null=True, blank=True)
-    expected_test_runs = models.IntegerField(default=None, null=True, blank=True)
+    expected_test_runs = models.IntegerField(default=0, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
     class Meta:
