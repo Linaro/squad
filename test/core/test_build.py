@@ -202,6 +202,11 @@ class BuildTest(TestCase):
         finished, _ = build.finished
         self.assertFalse(finished)
 
+    def test_not_finished_when_no_jobs_or_testruns(self):
+        build = self.project.builds.create(version='1')
+        finished, _ = build.finished
+        self.assertFalse(finished)
+
     def test_get_or_create_with_version_twice(self):
         self.project.builds.get_or_create(version='1.0-rc1')
         self.project.builds.get_or_create(version='1.0-rc1')

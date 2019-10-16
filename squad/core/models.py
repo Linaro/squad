@@ -450,6 +450,8 @@ class Build(models.Model):
                 # carry on, and check whether the number of expected test runs
                 # per environment is satisfied.
                 pass
+        elif self.test_runs.count() == 0:
+            reasons.append("There are no testjobs or testruns for the build")
 
         # builds with no CI jobs are finished when each environment has
         # received the expected amount of test runs

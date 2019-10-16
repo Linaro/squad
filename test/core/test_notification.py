@@ -82,6 +82,7 @@ class TestSendNotification(TestCase):
         self.project = self.group.projects.create(slug='myproject')
         self.build1 = self.project.builds.create(version='1', datetime=t0)
         status = ProjectStatus.create_or_update(self.build1)
+        status.finished = True
         status.notified = True
         status.save()
         self.build2 = self.project.builds.create(version='2', datetime=t)
@@ -258,6 +259,7 @@ class TestCustomEmailTemplate(TestCase):
         self.project = self.group.projects.create(slug='myproject')
         self.build1 = self.project.builds.create(version='1', datetime=t0)
         status = ProjectStatus.create_or_update(self.build1)
+        status.finished = True
         status.notified = True
         status.save()
         self.build2 = self.project.builds.create(version='2', datetime=t)
