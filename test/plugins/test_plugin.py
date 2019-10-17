@@ -6,9 +6,11 @@ from squad.core.plugins import Plugin, PluginNotFound
 class TestGetPluginsByFeature(TestCase):
 
     def test_basics(self):
-        plugins = get_plugins_by_feature([Plugin.postprocess_testrun])
-        self.assertNotIn('example', plugins)
-        self.assertIn('linux_log_parser', plugins)
+        testrun_plugins = get_plugins_by_feature([Plugin.postprocess_testrun])
+        testjob_plugins = get_plugins_by_feature([Plugin.postprocess_testjob])
+        self.assertNotIn('example', testrun_plugins)
+        self.assertNotIn('linux_log_parser', testrun_plugins)
+        self.assertIn('linux_log_parser', testjob_plugins)
 
     def test_feature_list_is_none(self):
         plugins = get_plugins_by_feature(None)
