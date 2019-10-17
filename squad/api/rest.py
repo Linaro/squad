@@ -223,15 +223,14 @@ class APIRouter(routers.DefaultRouter):
 
 class ModelViewSet(viewsets.ModelViewSet):
 
-    def get_project_ids(self):
+    def get_projects(self):
         """
         Determines which projects the current user is allowed to visualize.
         Returns a list of project ids to be used in get_queryset() for
         filtering.
         """
         user = self.request.user
-        projects = Project.objects.accessible_to(user).values('id')
-        return [p['id'] for p in projects]
+        return Project.objects.accessible_to(user).only('id')
 
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
@@ -595,7 +594,7 @@ class BuildViewSet(ModelViewSet):
     ordering_fields = ('id', 'version', 'created_at', 'datetime')
 
     def get_queryset(self):
-        return self.queryset.filter(project__in=self.get_project_ids())
+        return self.queryset.filter(project__in=self.get_projects())
 
     @action(detail=True, methods=['get'], suffix='metadata')
     def metadata(self, request, pk=None):
@@ -745,7 +744,7 @@ class EnvironmentViewSet(ModelViewSet):
     ordering_fields = ('id', 'slug', 'name')
 
     def get_queryset(self):
-        return self.queryset.filter(project__in=self.get_project_ids())
+        return self.queryset.filter(project__in=self.get_projects())
 
 
 class TestRunSerializer(serializers.HyperlinkedModelSerializer):
@@ -807,7 +806,7 @@ class TestViewSet(ModelViewSet):
     ordering = ('id',)
 
     def get_queryset(self):
-        return self.queryset.filter(test_run__build__project__in=self.get_project_ids()) \
+        return self.queryset.filter(test_run__build__project__in=self.get_projects()) \
                    .prefetch_related('suite', 'known_issues')
 
 
@@ -847,7 +846,7 @@ class TestRunViewSet(ModelViewSet):
     ordering = ('created_at',)
 
     def get_queryset(self):
-        return self.queryset.filter(build__project__in=self.get_project_ids())
+        return self.queryset.filter(build__project__in=self.get_projects())
 
     @action(detail=True, methods=['get'])
     def tests_file(self, request, pk=None):
@@ -953,7 +952,7 @@ class TestJobViewSet(ModelViewSet):
     ordering = ('id',)
 
     def get_queryset(self):
-        return self.queryset.filter(target_build__project__in=self.get_project_ids())
+        return self.queryset.filter(target_build__project__in=self.get_projects())
 
     @action(detail=True, methods=['get'], suffix='definition')
     def definition(self, request, pk=None):
