@@ -807,7 +807,8 @@ class TestViewSet(ModelViewSet):
     ordering = ('id',)
 
     def get_queryset(self):
-        return self.queryset.filter(test_run__build__project__in=self.get_project_ids())
+        return self.queryset.filter(test_run__build__project__in=self.get_project_ids()) \
+                   .prefetch_related('suite', 'known_issues')
 
 
 class MetricSerializer(serializers.ModelSerializer):
