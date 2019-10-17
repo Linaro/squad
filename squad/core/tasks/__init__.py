@@ -206,6 +206,9 @@ class ParseTestRunData(object):
             issues[issue.test_name].append(issue)
 
         for test in test_parser()(test_run.tests_file):
+            # TODO: remove check below when test_name size changes in the schema
+            if len(test['test_name']) > 256:
+                continue
             suite = get_suite(
                 test_run,
                 test['group_name']
@@ -226,6 +229,9 @@ class ParseTestRunData(object):
                 test_obj.known_issues.add(issue)
 
         for metric in metric_parser()(test_run.metrics_file):
+            # TODO: remove check below when test_name size changes in the schema
+            if len(metric['name']) > 256:
+                continue
             suite = get_suite(
                 test_run,
                 metric['group_name']
