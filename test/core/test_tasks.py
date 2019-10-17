@@ -263,10 +263,10 @@ class CommonTestCase(TestCase):
     def setUp(self):
         group = Group.objects.create(slug='mygroup')
         project = group.projects.create(slug='mygroup')
-        build = project.builds.create(version='1.0.0')
+        self.build = project.builds.create(version='1.0.0')
         self.environment = project.environments.create(slug='myenv')
         self.testrun = TestRun.objects.create(
-            build=build,
+            build=self.build,
             environment=self.environment,
             tests_file='{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
             metrics_file='{"metric0": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}',
@@ -316,6 +316,18 @@ class ParseTestRunDataTest(CommonTestCase):
         self.assertEqual(metric.name, metadata.name)
         self.assertEqual(metric.suite.slug, metadata.suite)
         self.assertEqual('metric', metadata.kind)
+
+    def test_name_too_long(self):
+        really_long_name = 'longname' * 100
+        testrun = TestRun.objects.create(
+            build=self.build,
+            environment=self.environment,
+            tests_file='{"' + really_long_name + '": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
+            metrics_file='{"' + really_long_name + '": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}',
+        )
+        ParseTestRunData()(testrun)
+        self.assertEqual(4, testrun.tests.count())
+        self.assertEqual(2, testrun.metrics.count())
 
 
 class ProcessAllTestRunsTest(CommonTestCase):
