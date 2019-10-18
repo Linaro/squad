@@ -222,6 +222,7 @@ class APIRouter(routers.DefaultRouter):
 
 
 class ModelViewSet(viewsets.ModelViewSet):
+    project_lookup_key = None
 
     def get_projects(self):
         """
@@ -231,6 +232,15 @@ class ModelViewSet(viewsets.ModelViewSet):
         """
         user = self.request.user
         return Project.objects.accessible_to(user).only('id')
+
+    def get_queryset(self):
+        queryset = self.queryset
+        user = self.request.user
+        if not (user.is_superuser or user.is_staff) and self.project_lookup_key is not None:
+            project_lookup = {self.project_lookup_key: self.get_projects()}
+            queryset = queryset.filter(**project_lookup)
+
+        return queryset
 
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
@@ -585,6 +595,7 @@ class BuildViewSet(ModelViewSet):
     and to projects you have access to are available.
     """
     queryset = Build.objects.prefetch_related('status', 'test_runs').order_by('-datetime').all()
+    project_lookup_key = 'project__in'
     serializer_class = BuildSerializer
     filterset_fields = ('version', 'project')
     filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
@@ -592,9 +603,6 @@ class BuildViewSet(ModelViewSet):
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     search_fields = ('version',)
     ordering_fields = ('id', 'version', 'created_at', 'datetime')
-
-    def get_queryset(self):
-        return self.queryset.filter(project__in=self.get_projects())
 
     @action(detail=True, methods=['get'], suffix='metadata')
     def metadata(self, request, pk=None):
@@ -735,6 +743,7 @@ class EnvironmentViewSet(ModelViewSet):
     projects you have access to are available.
     """
     queryset = Environment.objects
+    project_lookup_key = 'project__in'
     serializer_class = EnvironmentSerializer
     filterset_fields = ('project', 'slug', 'name')
     filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
@@ -742,9 +751,6 @@ class EnvironmentViewSet(ModelViewSet):
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     search_fields = ('slug', 'name')
     ordering_fields = ('id', 'slug', 'name')
-
-    def get_queryset(self):
-        return self.queryset.filter(project__in=self.get_projects())
 
 
 class TestRunSerializer(serializers.HyperlinkedModelSerializer):
@@ -798,16 +804,13 @@ class TestSerializer(serializers.ModelSerializer):
 
 class TestViewSet(ModelViewSet):
 
-    queryset = Test.objects.all()
+    queryset = Test.objects.prefetch_related('suite', 'known_issues').all()
+    project_lookup_key = 'test_run__build__project__in'
     serializer_class = TestSerializer
     filterset_class = TestFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     pagination_class = CursorPaginationWithPageSize
     ordering = ('id',)
-
-    def get_queryset(self):
-        return self.queryset.filter(test_run__build__project__in=self.get_projects()) \
-                   .prefetch_related('suite', 'known_issues')
 
 
 class MetricSerializer(serializers.ModelSerializer):
@@ -828,6 +831,7 @@ class TestRunViewSet(ModelViewSet):
     available.
     """
     queryset = TestRun.objects.order_by('-id')
+    project_lookup_key = 'build__project__in'
     serializer_class = TestRunSerializer
     filterset_fields = (
         "build",
@@ -844,9 +848,6 @@ class TestRunViewSet(ModelViewSet):
     ordering_fields = ('id', 'created_at', 'environment', 'datetime')
     pagination_class = CursorPaginationWithPageSize
     ordering = ('created_at',)
-
-    def get_queryset(self):
-        return self.queryset.filter(build__project__in=self.get_projects())
 
     @action(detail=True, methods=['get'])
     def tests_file(self, request, pk=None):
@@ -926,6 +927,7 @@ class TestJobViewSet(ModelViewSet):
     you have access to, are available.
     """
     queryset = TestJob.objects.prefetch_related('backend').order_by('-id')
+    project_lookup_key = 'target_build__project__in'
     serializer_class = TestJobSerializer
     filterset_fields = (
         "name",
@@ -950,9 +952,6 @@ class TestJobViewSet(ModelViewSet):
     ordering_fields = ("id", "name", "environment", "last_fetch_attempt")
     pagination_class = CursorPaginationWithPageSize
     ordering = ('id',)
-
-    def get_queryset(self):
-        return self.queryset.filter(target_build__project__in=self.get_projects())
 
     @action(detail=True, methods=['get'], suffix='definition')
     def definition(self, request, pk=None):
