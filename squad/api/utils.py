@@ -1,8 +1,8 @@
-from django_filters.rest_framework import DjangoFilterBackend
+from squad.compat import RestFrameworkFilterBackend
 from rest_framework.pagination import CursorPagination
 
 
-class DisabledHTMLFilterBackend(DjangoFilterBackend):
+class DisabledHTMLFilterBackend(RestFrameworkFilterBackend):
 
     def to_html(self, request, queryset, view):
         return ""

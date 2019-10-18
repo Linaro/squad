@@ -313,7 +313,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'DEFAULT_FILTER_BACKENDS': (
-        'squad.compat.RestFrameworkFilterBackend',
         'rest_framework.filters.OrderingFilter',
         'rest_framework.filters.SearchFilter',
         'squad.api.utils.DisabledHTMLFilterBackend',
