@@ -85,8 +85,14 @@ class BuildFilter(filters.FilterSet):
                   'id': ['exact']}
 
 
+def unordered_build_queryset(request):
+    queryset = Build.objects.all()
+    queryset.query.clear_ordering(True)
+    return queryset
+
+
 class TestRunFilter(filters.FilterSet):
-    build = filters.RelatedFilter(BuildFilter, field_name="build", queryset=Build.objects.all(), widget=forms.TextInput)
+    build = filters.RelatedFilter(BuildFilter, field_name="build", queryset=unordered_build_queryset, widget=forms.TextInput)
     environment = filters.RelatedFilter(EnvironmentFilter, field_name="environment", queryset=Environment.objects.all(), widget=forms.TextInput)
 
     class Meta:
@@ -799,7 +805,7 @@ class TestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Test
-        exclude = ('test_run',)
+        exclude = ('test_run', 'metadata')
 
 
 class TestViewSet(ModelViewSet):
@@ -847,7 +853,7 @@ class TestRunViewSet(ModelViewSet):
     search_fields = ('environment',)
     ordering_fields = ('id', 'created_at', 'environment', 'datetime')
     pagination_class = CursorPaginationWithPageSize
-    ordering = ('created_at',)
+    ordering = ('id',)
 
     @action(detail=True, methods=['get'])
     def tests_file(self, request, pk=None):
@@ -990,7 +996,7 @@ class KnownIssueSerializer(serializers.HyperlinkedModelSerializer):
 
 class KnownIssueViewSet(viewsets.ModelViewSet):
 
-    queryset = KnownIssue.objects.all()
+    queryset = KnownIssue.objects.prefetch_related('environments').all()
     serializer_class = KnownIssueSerializer
     filterset_class = KnownIssueFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
