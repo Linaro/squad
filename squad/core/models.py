@@ -449,6 +449,8 @@ class Build(models.Model):
                 # carry on, and check whether the number of expected test runs
                 # per environment is satisfied.
                 pass
+        elif self.test_runs.count() == 0:
+            reasons.append("There are no testjobs or testruns for the build")
 
         # builds with no CI jobs are finished when each environment has
         # received the expected amount of test runs
@@ -564,7 +566,7 @@ class Environment(models.Model):
     project = models.ForeignKey(Project, related_name='environments', on_delete=models.CASCADE)
     slug = models.CharField(max_length=100, validators=[slug_validator], db_index=True)
     name = models.CharField(max_length=100, null=True, blank=True)
-    expected_test_runs = models.IntegerField(default=None, null=True, blank=True)
+    expected_test_runs = models.IntegerField(default=0, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
     class Meta:

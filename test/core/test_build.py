@@ -90,9 +90,9 @@ class BuildTest(TestCase):
 
         self.assertEqual(metadata1, metadata2)
 
-    def test_not_finished(self):
-        env1 = self.project.environments.create(slug='env1')
-        self.project.environments.create(slug='env2')
+    def test_not_finished_empty_expected_test_runs(self):
+        env1 = self.project.environments.create(slug='env1', expected_test_runs=None)
+        self.project.environments.create(slug='env2', expected_test_runs=None)
         build = self.project.builds.create(version='1')
         build.test_runs.create(environment=env1)
         finished, _ = build.finished
@@ -199,6 +199,11 @@ class BuildTest(TestCase):
         t1.backend.fetch(t1)
 
         # expect 2, only 1 received
+        finished, _ = build.finished
+        self.assertFalse(finished)
+
+    def test_not_finished_when_no_jobs_or_testruns(self):
+        build = self.project.builds.create(version='1')
         finished, _ = build.finished
         self.assertFalse(finished)
 
