@@ -7,7 +7,7 @@ import re
 
 from django.db import models
 from django.db import transaction
-from django.db.models import Q, Count, Sum, Case, When
+from django.db.models import Q, Count, Sum, Case, When, Max
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -986,7 +986,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             project=build.project,
         ).order_by('datetime').last()
         if previous_build is not None:
-            comparison = TestComparison(previous_build, build)
+            comparison = TestComparison(previous_build, build, regressions_and_fixes_only=True)
             if comparison.regressions:
                 regressions = yaml.dump(comparison.regressions)
             if comparison.fixes:
@@ -1022,7 +1022,6 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.metrics_summary = metrics_summary.value
             status.has_metrics = metrics_summary.has_metrics
             status.last_updated = now
-            finished, _ = build.finished
             status.finished = finished
             status.build = build
             status.test_runs_total = test_runs_total
@@ -1115,36 +1114,38 @@ class TestSummary(TestSummaryBase):
         self.tests_skip = 0
         self.failures = OrderedDict()
 
-        query_set = build.test_runs
+        query = Test.objects.filter(test_run__build=build)
         if environment:
-            query_set = query_set.filter(environment=environment)
-        test_runs = query_set.prefetch_related(
-            'environment',
-            'tests',
-            'tests__suite'
-        ).order_by('id')
+            query = query.filter(test_run__environment=environment)
+        distinct_tests = query.values('test_run__environment_id', 'suite_id', 'name') \
+                              .order_by('test_run__environment_id', 'suite_id', 'name') \
+                              .annotate(test_id=Max('id'))
 
-        tests = OrderedDict()
-        for run in test_runs.all():
-            for test in run.tests.all():
-                tests[(run.environment, test.suite, test.name)] = test
+        tests_env = {}
+        all_envs = set()
+        for t in distinct_tests:
+            tests_env[t['test_id']] = t['test_run__environment_id']
+            all_envs.add(t['test_run__environment_id'])
 
-        for context, test in tests.items():
+        tests = Test.objects.filter(id__in=tests_env.keys()).only('result', 'has_known_issues')
+        failed = []
+        for test in tests:
             if test.status == 'pass':
                 self.tests_pass += 1
             elif test.status == 'fail':
                 self.tests_fail += 1
+                failed.append(test)
             elif test.status == 'xfail':
                 self.tests_xfail += 1
             elif test.status == 'skip':
                 self.tests_skip += 1
-            else:
-                raise InvalidTestStatus(test.status)
-            if test.status == 'fail':
-                env = test.test_run.environment.slug
-                if env not in self.failures:
-                    self.failures[env] = []
-                self.failures[env].append(test)
+
+        environments = {e.id: e for e in Environment.objects.filter(id__in=list(all_envs))}
+        for test in failed:
+            environment = environments.get(tests_env[test.id])
+            if environment.slug not in self.failures:
+                self.failures[environment.slug] = []
+            self.failures[environment.slug].append(test)
 
 
 class MetricsSummary(object):
