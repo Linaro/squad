@@ -177,9 +177,8 @@ class ProjectManager(models.Manager):
         if user.is_superuser or user.is_staff:
             return self.all()
         else:
-            groups = Group.objects.filter(members__id=user.id)
-            group_ids = [g['id'] for g in groups.values('id')]
-            return self.filter(Q(group_id__in=group_ids) | Q(is_public=True))
+            groups = Group.objects.filter(members__id=user.id).only('id')
+            return self.filter(Q(group__in=groups) | Q(is_public=True))
 
 
 class EmailTemplate(models.Model):
