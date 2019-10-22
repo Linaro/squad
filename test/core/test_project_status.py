@@ -3,6 +3,7 @@ from django.test import TestCase
 from dateutil.relativedelta import relativedelta
 
 from squad.core.models import Group, ProjectStatus, MetricThreshold
+from squad.ci import models
 
 
 def h(n):
@@ -25,6 +26,10 @@ class ProjectStatusTest(TestCase):
         if create_test_run:
             build.test_runs.create(environment=self.environment)
         return build
+
+    def create_test_job(self, build):
+        backend = models.Backend.objects.create()
+        return build.test_jobs.create(target=build.project, target_build=build, backend=backend)
 
     def test_status_of_first_build(self):
         build = self.create_build('1')
@@ -226,6 +231,43 @@ class ProjectStatusTest(TestCase):
         self.assertIsNotNone(status2.regressions)
         self.assertIsNone(status2.fixes)
 
+    def test_no_regressions_when_build_not_finished(self):
+        build1 = self.create_build('1', datetime=h(10))
+        test_run1 = build1.test_runs.first()
+        test_run1.tests.create(name='foo', suite=self.suite, result=True)
+        ProjectStatus.create_or_update(build1)
+
+        build2 = self.create_build('2', datetime=h(9))
+        self.create_test_job(build2)
+        test_run2 = build2.test_runs.first()
+        test_run2.tests.create(name='foo', suite=self.suite, result=False)
+        status1 = ProjectStatus.create_or_update(build2)
+
+        self.assertIsNone(status1.regressions)
+        self.assertIsNone(status1.fixes)
+
+    def test_regressions_after_build_finished(self):
+        build1 = self.create_build('1', datetime=h(10))
+        test_run1 = build1.test_runs.first()
+        test_run1.tests.create(name='foo', suite=self.suite, result=True)
+        ProjectStatus.create_or_update(build1)
+
+        build2 = self.create_build('2', datetime=h(9))
+        testjob = self.create_test_job(build2)
+        test_run2 = build2.test_runs.first()
+        test_run2.tests.create(name='foo', suite=self.suite, result=False)
+        status1 = ProjectStatus.create_or_update(build2)
+
+        self.assertIsNone(status1.regressions)
+        self.assertIsNone(status1.fixes)
+
+        testjob.fetched = True
+        testjob.save()
+        status1 = ProjectStatus.create_or_update(build2)
+
+        self.assertIsNotNone(status1.regressions)
+        self.assertIsNone(status1.fixes)
+
     def test_cache_fixes(self):
         build1 = self.create_build('1', datetime=h(10))
         test_run1 = build1.test_runs.first()
@@ -261,6 +303,42 @@ class ProjectStatusTest(TestCase):
 
         self.assertIsNotNone(status2.fixes)
         self.assertIsNone(status2.regressions)
+
+    def test_no_fixes_when_build_not_finished(self):
+        build1 = self.create_build('1', datetime=h(10))
+        test_run1 = build1.test_runs.first()
+        test_run1.tests.create(name='foo', suite=self.suite, result=False)
+        ProjectStatus.create_or_update(build1)
+
+        build2 = self.create_build('2', datetime=h(9))
+        self.create_test_job(build2)
+        test_run2 = build2.test_runs.first()
+        test_run2.tests.create(name='foo', suite=self.suite, result=True)
+        status1 = ProjectStatus.create_or_update(build2)
+
+        self.assertIsNone(status1.regressions)
+        self.assertIsNone(status1.fixes)
+
+    def test_fixes_after_build_finished(self):
+        build1 = self.create_build('1', datetime=h(10))
+        test_run1 = build1.test_runs.first()
+        test_run1.tests.create(name='foo', suite=self.suite, result=False)
+        ProjectStatus.create_or_update(build1)
+
+        build2 = self.create_build('2', datetime=h(9))
+        testjob = self.create_test_job(build2)
+        test_run2 = build2.test_runs.first()
+        test_run2.tests.create(name='foo', suite=self.suite, result=True)
+        status1 = ProjectStatus.create_or_update(build2)
+
+        self.assertIsNone(status1.regressions)
+        self.assertIsNone(status1.fixes)
+
+        testjob.fetched = True
+        testjob.save()
+        status1 = ProjectStatus.create_or_update(build2)
+        self.assertIsNone(status1.regressions)
+        self.assertIsNotNone(status1.fixes)
 
     def test_get_exceeded_thresholds(self):
         build = self.create_build('1')

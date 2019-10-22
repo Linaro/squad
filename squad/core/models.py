@@ -973,6 +973,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
         returns it.
         """
 
+        build_finished, _ = build.finished
         test_summary = build.test_summary
         metrics_summary = MetricsSummary(build)
         now = timezone.now()
@@ -982,19 +983,19 @@ class ProjectStatus(models.Model, TestSummaryBase):
         regressions = None
         fixes = None
 
-        previous_build = Build.objects.filter(
-            status__finished=True,
-            datetime__lt=build.datetime,
-            project=build.project,
-        ).order_by('datetime').last()
-        if previous_build is not None:
-            comparison = TestComparison(previous_build, build, regressions_and_fixes_only=True)
-            if comparison.regressions:
-                regressions = yaml.dump(comparison.regressions)
-            if comparison.fixes:
-                fixes = yaml.dump(comparison.fixes)
+        if build_finished:
+            previous_build = Build.objects.filter(
+                status__finished=True,
+                datetime__lt=build.datetime,
+                project=build.project,
+            ).order_by('datetime').last()
+            if previous_build is not None:
+                comparison = TestComparison(previous_build, build, regressions_and_fixes_only=True)
+                if comparison.regressions:
+                    regressions = yaml.dump(comparison.regressions)
+                if comparison.fixes:
+                    fixes = yaml.dump(comparison.fixes)
 
-        finished, _ = build.finished
         data = {
             'tests_pass': test_summary.tests_pass,
             'tests_fail': test_summary.tests_fail,
@@ -1003,7 +1004,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             'metrics_summary': metrics_summary.value,
             'has_metrics': metrics_summary.has_metrics,
             'last_updated': now,
-            'finished': finished,
+            'finished': build_finished,
             'test_runs_total': test_runs_total,
             'test_runs_completed': test_runs_completed,
             'test_runs_incomplete': test_runs_incomplete,
@@ -1024,7 +1025,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.metrics_summary = metrics_summary.value
             status.has_metrics = metrics_summary.has_metrics
             status.last_updated = now
-            status.finished = finished
+            status.finished = build_finished
             status.build = build
             status.test_runs_total = test_runs_total
             status.test_runs_completed = test_runs_completed
