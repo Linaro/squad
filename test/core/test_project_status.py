@@ -3,6 +3,7 @@ from django.test import TestCase
 from dateutil.relativedelta import relativedelta
 
 from squad.core.models import Group, ProjectStatus, MetricThreshold
+from squad.core.tasks import ReceiveTestRun
 from squad.ci import models
 
 
@@ -71,10 +72,9 @@ class ProjectStatusTest(TestCase):
 
     def test_test_summary(self):
         build = self.create_build('1', datetime=h(10))
-        test_run = build.test_runs.first()
-        test_run.tests.create(name='foo', suite=self.suite, result=True)
-        test_run.tests.create(name='bar', suite=self.suite, result=False)
-        test_run.tests.create(name='baz', suite=self.suite, result=None)
+        tests = '{"s/foo": "pass", "s/bar": "fail", "s/baz": "none"}'
+        receive = ReceiveTestRun(self.project, update_project_status=False)
+        receive('1', 'env', tests_file=tests)
 
         status = ProjectStatus.create_or_update(build)
         self.assertEqual(1, status.tests_pass)
@@ -93,15 +93,15 @@ class ProjectStatusTest(TestCase):
 
     def test_updates_data_as_new_testruns_arrive(self):
         build = self.create_build('1', datetime=h(10))
-        test_run1 = build.test_runs.first()
-        test_run1.tests.create(name='foo', suite=self.suite, result=True)
+        tests = '{"s/foo": "pass"}'
+        receive = ReceiveTestRun(self.project, update_project_status=False)
+        receive('1', 'env', tests_file=tests)
         ProjectStatus.create_or_update(build)
 
-        test_run2 = build.test_runs.create(environment=self.environment)
-        test_run2.tests.create(name='bar', suite=self.suite, result=True)
-        test_run2.tests.create(name='baz', suite=self.suite, result=False)
-        test_run2.tests.create(name='qux', suite=self.suite, result=None)
-        test_run2.metrics.create(name='v1', suite=self.suite, result=5.0)
+        tests = '{"s/bar": "pass", "s/baz": "fail", "s/qux": "none"}'
+        receive = ReceiveTestRun(self.project, update_project_status=False)
+        testrun = receive('1', 'env', tests_file=tests)
+        testrun.metrics.create(name='v1', suite=self.suite, result=5.0)
         status = ProjectStatus.create_or_update(build)
 
         self.assertEqual(2, status.tests_pass)

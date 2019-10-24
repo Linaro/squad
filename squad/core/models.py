@@ -974,7 +974,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
         """
 
         build_finished, _ = build.finished
-        test_summary = build.test_summary
+        test_summary = TestSummary(build, with_failures=False)
         metrics_summary = MetricsSummary(build)
         now = timezone.now()
         test_runs_total = build.test_runs.count()
@@ -1104,7 +1104,7 @@ class TestSummary(TestSummaryBase):
 
     __test__ = False
 
-    def __init__(self, build, environment=None):
+    def __init__(self, build, environment=None, with_failures=True):
         self.tests_pass = 0
         self.tests_fail = 0
         self.tests_xfail = 0
@@ -1114,32 +1114,41 @@ class TestSummary(TestSummaryBase):
         query_set = build.test_runs
         if environment:
             query_set = query_set.filter(environment=environment)
-        test_runs = query_set.prefetch_related(
-            'environment',
-            'tests',
-            'tests__suite'
-        ).order_by('id')
 
-        tests = OrderedDict()
-        for run in test_runs.all():
-            for test in run.tests.all():
-                tests[(run.environment, test.suite, test.name)] = test
+        if with_failures:
+            test_runs = query_set.prefetch_related(
+                'environment',
+                'tests',
+                'tests__suite'
+            ).order_by('id')
 
-        for context, test in tests.items():
-            if test.status == 'pass':
-                self.tests_pass += 1
-            elif test.status == 'fail':
-                self.tests_fail += 1
-            elif test.status == 'xfail':
-                self.tests_xfail += 1
-            elif test.status == 'skip':
-                self.tests_skip += 1
+            tests = OrderedDict()
+            for run in test_runs.all():
+                for test in run.tests.all():
+                    tests[(run.environment, test.suite, test.name)] = test
 
-            if test.status == 'fail':
-                env = test.test_run.environment.slug
-                if env not in self.failures:
-                    self.failures[env] = []
-                self.failures[env].append(test)
+            for context, test in tests.items():
+                if test.status == 'pass':
+                    self.tests_pass += 1
+                elif test.status == 'fail':
+                    self.tests_fail += 1
+                elif test.status == 'xfail':
+                    self.tests_xfail += 1
+                elif test.status == 'skip':
+                    self.tests_skip += 1
+
+                if test.status == 'fail':
+                    env = test.test_run.environment.slug
+                    if env not in self.failures:
+                        self.failures[env] = []
+                    self.failures[env].append(test)
+        else:
+            statuses = Status.objects.overall().filter(test_run__in=query_set.all()).all()
+            for s in statuses:
+                self.tests_pass += s.tests_pass
+                self.tests_fail += s.tests_fail
+                self.tests_xfail += s.tests_xfail
+                self.tests_skip += s.tests_skip
 
 
 class MetricsSummary(object):

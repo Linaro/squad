@@ -1,6 +1,7 @@
 from django.test import TestCase
 
-from squad.core.models import Group, Build, TestSummary
+from squad.core.models import Group, Build, TestSummary, KnownIssue
+from squad.core.tasks import ReceiveTestRun
 
 
 class TestSummaryTest(TestCase):
@@ -88,3 +89,34 @@ class TestSummaryTest(TestCase):
         self.assertEqual(1, summary.tests_total)
         self.assertEqual(1, summary.tests_pass)
         self.assertEqual(0, summary.tests_fail)
+
+    def test_fast_count(self):
+        build = Build.objects.create(project=self.project, version='1')
+        env = self.project.environments.create(slug='env')
+        known_issue = KnownIssue.objects.create(title='dummy_issue', test_name='s/pla')
+        known_issue.environments.add(env)
+        known_issue.save()
+
+        tests = '{"s/foo": "pass", "s/bar": "fail", "s/baz": "none", "s/qux": "fail", "s/pla": "fail"}'
+        receive = ReceiveTestRun(self.project, update_project_status=False)
+        receive('1', 'env', tests_file=tests)
+
+        summary = TestSummary(build, with_failures=False)
+        self.assertEqual(5, summary.tests_total)
+        self.assertEqual(1, summary.tests_pass)
+        self.assertEqual(2, summary.tests_fail)
+        self.assertEqual(1, summary.tests_skip)
+        self.assertEqual(1, summary.tests_xfail)
+        self.assertEqual({}, summary.failures)
+
+        # fast count also doesn't distinct between test names
+        tests = '{"s/foo": "pass"}'
+        receive = ReceiveTestRun(self.project, update_project_status=False)
+        receive('1', 'env', tests_file=tests)
+        summary = TestSummary(build, with_failures=False)
+        self.assertEqual(6, summary.tests_total)
+        self.assertEqual(2, summary.tests_pass)
+        self.assertEqual(2, summary.tests_fail)
+        self.assertEqual(1, summary.tests_skip)
+        self.assertEqual(1, summary.tests_xfail)
+        self.assertEqual({}, summary.failures)
