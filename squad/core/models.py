@@ -1100,12 +1100,6 @@ class NotificationDelivery(models.Model):
         return (not created)
 
 
-class InvalidTestStatus(Exception):
-
-    def __init__(self, status):
-        super(InvalidTestStatus, self).__init__('Invalid status: %s' % status)
-
-
 class TestSummary(TestSummaryBase):
 
     __test__ = False
@@ -1140,8 +1134,7 @@ class TestSummary(TestSummaryBase):
                 self.tests_xfail += 1
             elif test.status == 'skip':
                 self.tests_skip += 1
-            else:
-                raise InvalidTestStatus(test.status)
+
             if test.status == 'fail':
                 env = test.test_run.environment.slug
                 if env not in self.failures:
