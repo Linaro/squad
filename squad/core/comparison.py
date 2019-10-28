@@ -175,22 +175,29 @@ class TestComparison(BaseComparison):
             'build',
             'environment',
         )
+
+        test_runs_ids = {}
         for test_run in test_runs:
             build = test_run.build
-            environment = test_run.environment
-            self.all_environments.add(str(environment))
-            self.environments[build].add(str(environment))
-            self.__extract_test_results__(test_run)
+            env = str(test_run.environment)
+
+            self.all_environments.add(env)
+            self.environments[build].add(env)
+
+            if test_runs_ids.get(test_run.id, None) is None:
+                test_runs_ids[test_run.id] = (build, env)
+
+        self.__extract_test_results__(test_runs_ids)
         self.results = OrderedDict(sorted(self.results.items()))
         for build in self.builds:
             self.environments[build] = sorted(self.environments[build])
 
-    def __extract_test_results__(self, test_run):
-        tests = test_run.tests.annotate(
+    def __extract_test_results__(self, test_runs_ids):
+        tests = models.Test.objects.filter(test_run_id__in=test_runs_ids.keys()).annotate(
             suite_slug=F('suite__slug'),
         )
         for test in tests.iterator():
-            key = (test_run.build, str(test_run.environment))
+            key = test_runs_ids.get(test.test_run_id)
             full_name = join_name(test.suite_slug, test.name)
             if full_name not in self.results:
                 self.results[full_name] = OrderedDict()
@@ -198,8 +205,7 @@ class TestComparison(BaseComparison):
             if test.has_known_issues:
                 for issue in test.known_issues.all():
                     if issue.intermittent:
-                        env = str(test_run.environment)
-                        self.__intermittent__[(full_name, env)] = True
+                        self.__intermittent__[(full_name, key[1])] = True
 
     __regressions__ = None
     __fixes__ = None
