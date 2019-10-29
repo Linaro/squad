@@ -1,5 +1,5 @@
 from django.test import TestCase
-from squad.core.utils import join_name, parse_name, xor, encrypt, decrypt, repeat_to_length
+from squad.core.utils import join_name, parse_name, xor, encrypt, decrypt, repeat_to_length, split_dict
 
 
 class TestParseName(TestCase):
@@ -64,3 +64,22 @@ class TestCrypto(TestCase):
         decrypted = decrypt(encrypted)
         self.assertEqual(msg, decrypted)
         self.assertEqual(msg, decrypt(encrypted))
+
+
+class TestSplitDict(TestCase):
+
+    def test_split_dict(self):
+        _dict = {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}
+
+        chunks = split_dict(_dict)
+
+        self.assertEqual(5, len(chunks))
+        self.assertEqual({'a': 1}, chunks[0])
+        self.assertEqual({'e': 5}, chunks[4])
+
+        chunks = split_dict(_dict, chunk_size=2)
+
+        self.assertEqual(3, len(chunks))
+        self.assertEqual({'a': 1, 'b': 2}, chunks[0])
+        self.assertEqual({'c': 3, 'd': 4}, chunks[1])
+        self.assertEqual({'e': 5}, chunks[2])
