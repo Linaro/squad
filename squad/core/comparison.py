@@ -5,7 +5,7 @@ from functools import reduce
 import statistics
 
 
-from squad.core.utils import parse_name, join_name
+from squad.core.utils import parse_name, join_name, split_dict
 from squad.core import models
 
 
@@ -174,7 +174,7 @@ class TestComparison(BaseComparison):
         ).prefetch_related(
             'build',
             'environment',
-        )
+        ).only('id')
 
         test_runs_ids = {}
         for test_run in test_runs:
@@ -187,7 +187,9 @@ class TestComparison(BaseComparison):
             if test_runs_ids.get(test_run.id, None) is None:
                 test_runs_ids[test_run.id] = (build, env)
 
-        self.__extract_test_results__(test_runs_ids)
+        for ids in split_dict(test_runs_ids, chunk_size=400):
+            self.__extract_test_results__(ids)
+
         self.results = OrderedDict(sorted(self.results.items()))
         for build in self.builds:
             self.environments[build] = sorted(self.environments[build])
@@ -195,7 +197,7 @@ class TestComparison(BaseComparison):
     def __extract_test_results__(self, test_runs_ids):
         tests = models.Test.objects.filter(test_run_id__in=test_runs_ids.keys()).annotate(
             suite_slug=F('suite__slug'),
-        )
+        ).defer('log', 'metadata')
         for test in tests.iterator():
             key = test_runs_ids.get(test.test_run_id)
             full_name = join_name(test.suite_slug, test.name)

@@ -97,3 +97,27 @@ def encrypt(text):
 def decrypt(crypted):
     key = repeat_to_length(settings.SECRET_KEY, len(crypted))
     return xor(crypted, key)
+
+
+def split_dict(_dict, chunk_size=1):
+    dict_size = len(_dict)
+
+    if dict_size <= chunk_size:
+        return [_dict]
+
+    chunks = []
+    chunk = {}
+    counter = 0
+
+    for key in _dict.keys():
+        chunk[key] = _dict[key]
+        counter += 1
+        if counter == chunk_size:
+            chunks.append(chunk)
+            counter = 0
+            chunk = {}
+
+    if len(chunk):
+        chunks.append(chunk)
+
+    return chunks
