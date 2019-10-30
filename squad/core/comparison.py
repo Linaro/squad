@@ -198,7 +198,7 @@ class TestComparison(BaseComparison):
         tests = models.Test.objects.filter(test_run_id__in=test_runs_ids.keys()).annotate(
             suite_slug=F('suite__slug'),
         ).defer('log', 'metadata')
-        for test in tests.iterator():
+        for test in tests:
             key = test_runs_ids.get(test.test_run_id)
             full_name = join_name(test.suite_slug, test.name)
             if full_name not in self.results:
