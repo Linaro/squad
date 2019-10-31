@@ -220,6 +220,7 @@ class Backend(BaseBackend):
     def __download_test_log__(self, raw_log, log_start, log_end):
         if not log_start:
             return ""
+
         return_lines = StringIO()
         log_start_line = int(log_start)
         log_end_line = None
@@ -233,7 +234,10 @@ class Backend(BaseBackend):
             counter += 1
             if counter < log_start_line:
                 continue
-            return_lines.write(line.decode("utf-8"))
+            try:
+                return_lines.write(line.decode("utf-8"))
+            except UnicodeDecodeError:
+                return_lines.write(line.decode("iso-8859-1"))
             return_lines.write("\n")
             if counter >= log_end_line:
                 break
