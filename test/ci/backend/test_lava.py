@@ -799,6 +799,12 @@ class LavaTest(TestCase):
         log = lava.__parse_log__(log_data)
         self.assertEqual(0, len(log))
 
+    def test_test_log_unicode_error(self):
+        lava = LAVABackend(self.backend)
+        log_data = BytesIO(b'a non-decodable unicode char: \xb1\n')
+        test_log = lava.__download_test_log__(log_data, 1, 3)
+        self.assertIn("a non-decodable unicode char:", test_log)
+
     @patch("squad.ci.backend.lava.Backend.__resubmit__", side_effect=HTTP_500)
     def test_resubmit_deleted_job(self, __resubmit__):
         lava = LAVABackend(None)
