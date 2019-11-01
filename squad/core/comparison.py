@@ -174,7 +174,7 @@ class TestComparison(BaseComparison):
         ).prefetch_related(
             'build',
             'environment',
-        ).only('id')
+        ).only('build', 'environment')
 
         test_runs_ids = {}
         for test_run in test_runs:
