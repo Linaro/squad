@@ -187,7 +187,7 @@ class TestComparison(BaseComparison):
             if test_runs_ids.get(test_run.id, None) is None:
                 test_runs_ids[test_run.id] = (build, env)
 
-        for ids in split_dict(test_runs_ids, chunk_size=400):
+        for ids in split_dict(test_runs_ids, chunk_size=100):
             self.__extract_test_results__(ids)
 
         self.results = OrderedDict(sorted(self.results.items()))
