@@ -166,6 +166,7 @@ class TestComparison(BaseComparison):
 
     def __init__(self, *builds):
         self.__intermittent__ = {}
+        self.tests_with_issues = {}
         BaseComparison.__init__(self, *builds)
 
     def __extract_results__(self):
@@ -190,6 +191,8 @@ class TestComparison(BaseComparison):
         for ids in split_dict(test_runs_ids, chunk_size=100):
             self.__extract_test_results__(ids)
 
+        self.__resolve_intermittent_tests__()
+
         self.results = OrderedDict(sorted(self.results.items()))
         for build in self.builds:
             self.environments[build] = sorted(self.environments[build])
@@ -198,6 +201,7 @@ class TestComparison(BaseComparison):
         tests = models.Test.objects.filter(test_run_id__in=test_runs_ids.keys()).annotate(
             suite_slug=F('suite__slug'),
         ).defer('log', 'metadata')
+
         for test in tests:
             key = test_runs_ids.get(test.test_run_id)
             full_name = join_name(test.suite_slug, test.name)
@@ -205,9 +209,21 @@ class TestComparison(BaseComparison):
                 self.results[full_name] = OrderedDict()
             self.results[full_name][key] = test.status
             if test.has_known_issues:
+                self.tests_with_issues[test.id] = (full_name, key[1])
+
+    def __resolve_intermittent_tests__(self):
+        if len(self.tests_with_issues) == 0:
+            return
+
+        for chunk in split_dict(self.tests_with_issues, chunk_size=100):
+            tests = models.Test.objects.filter(id__in=chunk.keys()).prefetch_related(
+                'known_issues'
+            ).only('known_issues')
+            for test in tests.all():
                 for issue in test.known_issues.all():
                     if issue.intermittent:
-                        self.__intermittent__[(full_name, key[1])] = True
+                        self.__intermittent__[chunk[test.id]] = True
+                        break
 
     __regressions__ = None
     __fixes__ = None
