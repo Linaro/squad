@@ -22,7 +22,7 @@ from django.utils.translation import ugettext_lazy as N_
 from simple_history.models import HistoricalRecords
 
 from squad.core.utils import parse_name, join_name, yaml_validator, jinja2_validator
-from squad.core.utils import encrypt, decrypt
+from squad.core.utils import encrypt, decrypt, split_list
 from squad.core.comparison import TestComparison
 from squad.core.statistics import geomean
 from squad.core.plugins import Plugin
@@ -1099,12 +1099,6 @@ class NotificationDelivery(models.Model):
         return (not created)
 
 
-class InvalidTestStatus(Exception):
-
-    def __init__(self, status):
-        super(InvalidTestStatus, self).__init__('Invalid status: %s' % status)
-
-
 class TestSummary(TestSummaryBase):
 
     __test__ = False
@@ -1114,38 +1108,21 @@ class TestSummary(TestSummaryBase):
         self.tests_fail = 0
         self.tests_xfail = 0
         self.tests_skip = 0
-        self.failures = OrderedDict()
 
         query_set = build.test_runs
         if environment:
             query_set = query_set.filter(environment=environment)
-        test_runs = query_set.prefetch_related(
-            'environment',
-            'tests',
-            'tests__suite'
-        ).order_by('id')
 
-        tests = OrderedDict()
-        for run in test_runs.all():
-            for test in run.tests.all():
-                tests[(run.environment, test.suite, test.name)] = test
+        query_set = query_set.values('id').order_by('id')
 
-        for context, test in tests.items():
-            if test.status == 'pass':
-                self.tests_pass += 1
-            elif test.status == 'fail':
-                self.tests_fail += 1
-            elif test.status == 'xfail':
-                self.tests_xfail += 1
-            elif test.status == 'skip':
-                self.tests_skip += 1
-            else:
-                raise InvalidTestStatus(test.status)
-            if test.status == 'fail':
-                env = test.test_run.environment.slug
-                if env not in self.failures:
-                    self.failures[env] = []
-                self.failures[env].append(test)
+        test_runs_ids = [test_run['id'] for test_run in query_set]
+        for chunk in split_list(test_runs_ids, chunk_size=100):
+            status = Status.objects.filter(suite=None, test_run_id__in=chunk)
+            for s in status:
+                self.tests_pass += s.tests_pass
+                self.tests_fail += s.tests_fail
+                self.tests_xfail += s.tests_xfail
+                self.tests_skip += s.tests_skip
 
 
 class MetricsSummary(object):

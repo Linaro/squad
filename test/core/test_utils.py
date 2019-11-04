@@ -1,5 +1,5 @@
 from django.test import TestCase
-from squad.core.utils import join_name, parse_name, xor, encrypt, decrypt, repeat_to_length, split_dict
+from squad.core.utils import join_name, parse_name, xor, encrypt, decrypt, repeat_to_length, split_dict, split_list
 
 
 class TestParseName(TestCase):
@@ -77,9 +77,31 @@ class TestSplitDict(TestCase):
         self.assertEqual({'a': 1}, chunks[0])
         self.assertEqual({'e': 5}, chunks[4])
 
+        _dict = {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}
         chunks = split_dict(_dict, chunk_size=2)
 
         self.assertEqual(3, len(chunks))
         self.assertEqual({'a': 1, 'b': 2}, chunks[0])
         self.assertEqual({'c': 3, 'd': 4}, chunks[1])
         self.assertEqual({'e': 5}, chunks[2])
+
+
+class TestSplitList(TestCase):
+
+    def test_split_list(self):
+        _list = [1, 2, 3, 4, 5, 6, 7]
+
+        chunks = split_list(_list)
+
+        self.assertEqual(7, len(chunks))
+        self.assertEqual([1], chunks[0])
+        self.assertEqual([7], chunks[6])
+
+        _list = [1, 2, 3, 4, 5, 6, 7]
+        chunks = split_list(_list, chunk_size=2)
+
+        self.assertEqual(4, len(chunks))
+        self.assertEqual([1, 2], chunks[0])
+        self.assertEqual([3, 4], chunks[1])
+        self.assertEqual([5, 6], chunks[2])
+        self.assertEqual([7], chunks[3])

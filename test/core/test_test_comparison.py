@@ -134,6 +134,15 @@ class TestComparisonTest(TestCase):
         fixes = comparison.fixes
         self.assertEqual(['c'], fixes['myenv'])
 
+    def test_failures(self):
+        # Check if failures are ok
+        comparison = TestComparison(self.build1)
+        self.assertEqual(['c'], sorted([t.full_name for t in comparison.failures['myenv']]))
+
+        self.receive_test_run(self.project1, '1', 'myenv', {'tests/another': 'fail'})
+        comparison = TestComparison(self.build1)
+        self.assertEqual(['c', 'tests/another'], sorted([t.full_name for t in comparison.failures['myenv']]))
+
     def test_regressions_no_previous_build(self):
         comparison = TestComparison.compare_builds(self.build1, None)
         regressions = comparison.regressions
