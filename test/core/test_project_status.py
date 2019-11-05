@@ -3,6 +3,7 @@ from django.test import TestCase
 from dateutil.relativedelta import relativedelta
 
 from squad.core.models import Group, ProjectStatus, MetricThreshold
+from squad.core.tasks import ReceiveTestRun
 
 
 def h(n):
@@ -19,6 +20,7 @@ class ProjectStatusTest(TestCase):
         self.project = self.group.projects.create(slug='myproject')
         self.environment = self.project.environments.create(slug='theenvironment')
         self.suite = self.project.suites.create(slug='/')
+        self.receive_testrun = ReceiveTestRun(self.project, update_project_status=False)
 
     def create_build(self, v, datetime=None, create_test_run=True):
         build = self.project.builds.create(version=v, datetime=datetime)
@@ -65,11 +67,15 @@ class ProjectStatusTest(TestCase):
         self.assertFalse(status.finished)
 
     def test_test_summary(self):
-        build = self.create_build('1', datetime=h(10))
-        test_run = build.test_runs.first()
-        test_run.tests.create(name='foo', suite=self.suite, result=True)
-        test_run.tests.create(name='bar', suite=self.suite, result=False)
-        test_run.tests.create(name='baz', suite=self.suite, result=None)
+        build = self.create_build('1', datetime=h(10), create_test_run=False)
+        tests_json = """
+            {
+                "tests/foo": "pass",
+                "tests/bar": "fail",
+                "tests/baz": "none"
+            }
+        """
+        self.receive_testrun(build.version, self.environment.slug, tests_file=tests_json)
 
         status = ProjectStatus.create_or_update(build)
         self.assertEqual(1, status.tests_pass)
@@ -87,15 +93,26 @@ class ProjectStatusTest(TestCase):
         self.assertEqual(2.0, status.metrics_summary)
 
     def test_updates_data_as_new_testruns_arrive(self):
-        build = self.create_build('1', datetime=h(10))
-        test_run1 = build.test_runs.first()
-        test_run1.tests.create(name='foo', suite=self.suite, result=True)
+        build = self.create_build('1', datetime=h(10), create_test_run=False)
+
+        tests_json = """
+            {
+                "tests/foo": "pass"
+            }
+        """
+        self.receive_testrun(build.version, self.environment.slug, tests_file=tests_json)
         ProjectStatus.create_or_update(build)
 
+        tests_json = """
+            {
+                "tests/bar": "pass",
+                "tests/baz": "fail",
+                "tests/qux": "none"
+            }
+        """
+        self.receive_testrun(build.version, self.environment.slug, tests_file=tests_json)
         test_run2 = build.test_runs.create(environment=self.environment)
-        test_run2.tests.create(name='bar', suite=self.suite, result=True)
-        test_run2.tests.create(name='baz', suite=self.suite, result=False)
-        test_run2.tests.create(name='qux', suite=self.suite, result=None)
+
         test_run2.metrics.create(name='v1', suite=self.suite, result=5.0)
         status = ProjectStatus.create_or_update(build)
 

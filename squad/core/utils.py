@@ -108,9 +108,10 @@ def split_dict(_dict, chunk_size=1):
     chunks = []
     chunk = {}
     counter = 0
+    keys = list(_dict.keys())
 
-    for key in _dict.keys():
-        chunk[key] = _dict[key]
+    for key in keys:
+        chunk[key] = _dict.pop(key)
         counter += 1
         if counter == chunk_size:
             chunks.append(chunk)
@@ -120,4 +121,12 @@ def split_dict(_dict, chunk_size=1):
     if len(chunk):
         chunks.append(chunk)
 
+    return chunks
+
+
+def split_list(_list, chunk_size=1):
+    chunks = []
+    while _list:
+        chunks.append(_list[:chunk_size])
+        _list = _list[chunk_size:]
     return chunks

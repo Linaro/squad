@@ -166,6 +166,8 @@ class TestComparison(BaseComparison):
 
     def __init__(self, *builds):
         self.__intermittent__ = {}
+        self.tests_with_issues = {}
+        self.__failures__ = OrderedDict()
         BaseComparison.__init__(self, *builds)
 
     def __extract_results__(self):
@@ -174,12 +176,12 @@ class TestComparison(BaseComparison):
         ).prefetch_related(
             'build',
             'environment',
-        ).only('id')
+        ).only('build', 'environment')
 
         test_runs_ids = {}
         for test_run in test_runs:
             build = test_run.build
-            env = str(test_run.environment)
+            env = test_run.environment.slug
 
             self.all_environments.add(env)
             self.environments[build].add(env)
@@ -187,8 +189,10 @@ class TestComparison(BaseComparison):
             if test_runs_ids.get(test_run.id, None) is None:
                 test_runs_ids[test_run.id] = (build, env)
 
-        for ids in split_dict(test_runs_ids, chunk_size=400):
+        for ids in split_dict(test_runs_ids, chunk_size=100):
             self.__extract_test_results__(ids)
+
+        self.__resolve_intermittent_tests__()
 
         self.results = OrderedDict(sorted(self.results.items()))
         for build in self.builds:
@@ -198,16 +202,38 @@ class TestComparison(BaseComparison):
         tests = models.Test.objects.filter(test_run_id__in=test_runs_ids.keys()).annotate(
             suite_slug=F('suite__slug'),
         ).defer('log', 'metadata')
+
         for test in tests:
-            key = test_runs_ids.get(test.test_run_id)
+            build, env = test_runs_ids.get(test.test_run_id)
+
             full_name = join_name(test.suite_slug, test.name)
             if full_name not in self.results:
                 self.results[full_name] = OrderedDict()
+
+            key = (build, env)
             self.results[full_name][key] = test.status
+
             if test.has_known_issues:
+                self.tests_with_issues[test.id] = (full_name, env)
+
+            if test.status == 'fail' and build.id == self.builds[-1].id:
+                if env not in self.__failures__:
+                    self.__failures__[env] = []
+                self.__failures__[env].append(test)
+
+    def __resolve_intermittent_tests__(self):
+        if len(self.tests_with_issues) == 0:
+            return
+
+        for chunk in split_dict(self.tests_with_issues, chunk_size=100):
+            tests = models.Test.objects.filter(id__in=chunk.keys()).prefetch_related(
+                'known_issues'
+            ).only('known_issues')
+            for test in tests.all():
                 for issue in test.known_issues.all():
                     if issue.intermittent:
-                        self.__intermittent__[(full_name, key[1])] = True
+                        self.__intermittent__[chunk[test.id]] = True
+                        break
 
     __regressions__ = None
     __fixes__ = None
@@ -227,6 +253,10 @@ class TestComparison(BaseComparison):
                 predicate=lambda test, env: (test, env) not in self.__intermittent__
             )
         return self.__fixes__
+
+    @property
+    def failures(self):
+        return self.__failures__
 
     def apply_transitions(self, transitions):
         if transitions is None or len(transitions) == 0:

@@ -1,8 +1,9 @@
 from django.test import TestCase
 
 
-from squad.core.models import Group, BuildSummary
+from squad.core.models import Group, BuildSummary, KnownIssue
 from squad.core.statistics import geomean
+from squad.core.tasks import ReceiveTestRun
 
 
 PRECISION_ERROR = 10e-9
@@ -29,19 +30,36 @@ class BuildSummaryTest(TestCase):
         test_run1.metrics.create(name='bar', suite=self.suite1, result=2)
         test_run1.metrics.create(name='baz', suite=self.suite2, result=3)
         test_run1.metrics.create(name='qux', suite=self.suite2, result=4)
-        test_run1.tests.create(name='foo', suite=self.suite1, result=True)
-        test_run1.tests.create(name='bar', suite=self.suite1, result=False)
-        test_run1.tests.create(name='baz', suite=self.suite2, result=None)
-        test_run1.tests.create(name='qux', suite=self.suite2, result=False, has_known_issues=True)
 
         test_run2 = self.build1.test_runs.create(environment=self.env2)
         test_run2.metrics.create(name='foo', suite=self.suite1, result=2)
         test_run2.metrics.create(name='bar', suite=self.suite1, result=4)
         test_run2.metrics.create(name='baz', suite=self.suite2, result=6)
         test_run2.metrics.create(name='qux', suite=self.suite2, result=8)
-        test_run2.tests.create(name='foo', suite=self.suite1, result=True)
-        test_run2.tests.create(name='bar', suite=self.suite1, result=False)
-        test_run2.tests.create(name='baz', suite=self.suite2, result=None)
+
+        known_issue = KnownIssue.objects.create(title='dummy_issue', test_name='suite2/qux')
+        known_issue.environments.add(self.env1)
+        known_issue.save()
+
+        tests_json = """
+            {
+                "suite1/foo": "pass",
+                "suite1/bar": "fail",
+                "suite2/baz": "none",
+                "suite2/qux": "fail"
+            }
+        """
+        self.receive_testrun = ReceiveTestRun(self.project, update_project_status=False)
+        self.receive_testrun(self.build1.version, self.env1.slug, tests_file=tests_json)
+
+        tests_json = """
+            {
+                "suite1/foo": "pass",
+                "suite1/bar": "fail",
+                "suite2/baz": "none"
+            }
+        """
+        self.receive_testrun(self.build1.version, self.env2.slug, tests_file=tests_json)
 
     def test_build_with_empty_metrics(self):
         summary = BuildSummary.create_or_update(self.build2, self.env1)
@@ -75,7 +93,8 @@ class BuildSummaryTest(TestCase):
         values2 = [2, 4, 6, 8]
         new_test_run = self.build1.test_runs.create(environment=self.env1)
         new_test_run.metrics.create(name='new_foo', suite=self.suite1, result=5)
-        new_test_run.tests.create(name='new_foo', suite=self.suite1, result=True)
+
+        self.receive_testrun(self.build1.version, self.env1.slug, tests_file='{"suite1/new_foo": "pass"}')
 
         summary1 = BuildSummary.create_or_update(self.build1, self.env1)
         summary2 = BuildSummary.create_or_update(self.build1, self.env2)

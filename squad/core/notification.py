@@ -58,7 +58,9 @@ class Notification(object):
 
     @property
     def summary(self):
-        return self.build.test_summary
+        summary = self.build.test_summary
+        summary.failures = self.comparison.failures
+        return summary
 
     @property
     def recipients(self):
