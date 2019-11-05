@@ -454,6 +454,4 @@ class Backend(BaseBackend):
         job.save()
         if job.job_status in self.complete_statuses:
             self.log_info("scheduling fetch for job %s" % job.job_id)
-            # introduce 2 min delay to allow LAVA for storing all results
-            # this workaround should be removed once LAVA issue is fixed
-            fetch.apply_async(args=[job.id], countdown=120)
+            fetch.apply_async(args=[job.id])
