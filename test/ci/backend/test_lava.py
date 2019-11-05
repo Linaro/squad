@@ -744,11 +744,7 @@ class LavaTest(TestCase):
         )
 
         lava.receive_event('foo.com.testjob', {"job": '123', 'state': 'Finished', 'health': 'Complete'})
-        # this is workaround to LAVA issues
-        # it should be removed when LAVA bug is fixed
-        fetch.apply_async.assert_called_with(args=[testjob.id], countdown=120)
-        # proper solution below
-        # fetch.fetch.assert_called_with(testjob.id)
+        fetch.apply_async.assert_called_with(args=[testjob.id])
         self.assertEqual('Complete', TestJob.objects.get(pk=testjob.id).job_status)
 
     def test_receive_event_no_testjob(self):
