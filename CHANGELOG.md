@@ -1,3 +1,63 @@
+# 1.2
+
+This 1.2 release fixes a couple of performance issues when fetching testjobs
+from backends and when using the REST api, among other small fixes.
+
+It stops ignoring duplicated tests for same environments and test suites
+when calculating build summary (e.g. number of passing and failing tests).
+Instead, use partial summaries already calculated for test runs.
+
+We tweaked the backend code that fetches tests before calculating
+regressions and fixes. If a build had a significant high number of test runs
+it would make comparison much slower. So we avoid querying all test runs at
+once when running `TestComparison`.
+
+There were changes in the backend code of the REST api that reduced the number
+of trips to db, making some endpoints load faster.
+
+Complete changelog below:
+
+* core:
+  * comparison: remove the use of iterator over tests
+  * comparison: filter tests by chunks of testruns
+  * comparison: fetch only id from testruns
+  * comparison: filter tests by testrun ids
+  * comparison: prefetch known issues
+  * comparison: lowered number of testruns chunk
+  * tasks: ReceiveTestRunData: ignore tests and metrics with long names
+  * models: remove duplicate call to build.finished
+  * test_summary: simplify summary calculation
+  * project: reduce amount of trips to database
+  * environment: set default expected_test_runs to zero
+  * build: make finished false when no jobs or testruns
+  * migrations: add missing migration for Django upgrade
+  * Group: sort aggregate query explicitly
+  * plugins: ignore most parameters
+* ci:
+  * lava: handle unicode errors gracefully
+  * lava: fetch jobs right away
+  * listener: respect Backend listen_enabled
+  * Backend: add listen_enabled attribute
+* doc:
+  * fix typo in .readthedocs.yml
+  * add configuration for readthedocs build
+* api:
+  * disable post forms
+  * rest: reduce amount of queries and speed up some queries
+  * utils: remove duplicate DRF backend
+  * rest: avoid queries containing all projects
+  * rest: test: reduce number of queries in the database
+  * rest: remove deprecation warnings against django-filters 2.x
+* Added translations:
+  * French
+* misc:
+  * worker: don't constrain concurrency by default
+  * squad.urls: replace deprecated shortcut function
+  * tests: remove unecessary usage of Django's TestCase class
+  * core, ci: stop pytest from confusing our Test* classes with tests
+  * test_test: avoid pytest confusing helper method with a test
+  * pytest.ini: add pytest configuration
+
 # 1.1
 
 * ci/lava: replace concatenation with StringIO
