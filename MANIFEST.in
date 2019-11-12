@@ -12,12 +12,14 @@ include HACKING.rst
 include CODEOWNERS
 include package.json
 include package-lock.json
+include pytest.ini 
 include .ackrc
 include .ctags
 include .dockerignore
 include .gitignore
 include .mailmap
 include .travis.yml
+include .readthedocs.yml
 
 include           squad/core/management/commands/import_data.rst
 recursive-include squad/frontend/static/ *
