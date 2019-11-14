@@ -6,6 +6,14 @@ LOGGING['loggers']['']['level'] = 999  # noqa
 
 # see  https://github.com/evansd/whitenoise/issues/94
 MIDDLEWARE.remove('whitenoise.middleware.WhiteNoiseMiddleware')  # noqa
+
+# disable django_toolbar if present
+try:
+    MIDDLEWARE.remove('debug_toolbar.middleware.DebugToolbarMiddleware')  # noqa
+    INSTALLED_APPS.remove('debug_toolbar')  # noqa
+except ValueError:
+    pass
+
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 CELERY_TASK_ALWAYS_EAGER = True

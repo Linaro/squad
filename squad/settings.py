@@ -59,6 +59,18 @@ try:
 except ImportError:
     django_extensions = None
 
+django_toolbar = None
+django_toolbar_middleware = None
+if DEBUG:
+    try:
+        import imp
+        imp.find_module('debug_toolbar')
+        django_toolbar = 'debug_toolbar'
+        django_toolbar_middleware = 'debug_toolbar.middleware.DebugToolbarMiddleware'
+        INTERNAL_IPS = ['127.0.0.1']
+    except ImportError:
+        pass
+
 
 __apps__ = [
     'django.contrib.admin',
@@ -71,6 +83,7 @@ __apps__ = [
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     django_extensions,  # OPTIONAL
+    django_toolbar,  # OPTIONAL
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_filters',
@@ -85,7 +98,7 @@ __apps__ = [
 
 INSTALLED_APPS = [app for app in __apps__ if app]
 
-MIDDLEWARE = [
+__middlewares__ = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -96,7 +109,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    django_toolbar_middleware,  # OPTIONAL
 ]
+
+MIDDLEWARE = [middleware for middleware in __middlewares__ if middleware]
 
 ROOT_URLCONF = 'squad.urls'
 
