@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import include, url
+from django.conf import settings
 from django.shortcuts import render
 from django.contrib import admin
 
@@ -48,7 +49,16 @@ handler403 = 'squad.urls.permission_denied'
 handler404 = 'squad.urls.page_not_found'
 
 
-urlpatterns = [
+extra_urls = []
+if settings.DEBUG:
+    try:
+        import debug_toolbar
+        extra_urls.append(url(r'^__debug__/', include(debug_toolbar.urls)))
+    except ImportError:
+        pass
+
+
+urlpatterns = extra_urls + [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include('squad.api.urls')),
     url(r'^login/', auth.LoginView.as_view(template_name='squad/login.jinja2')),
