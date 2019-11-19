@@ -36,7 +36,7 @@ RUN ln -sfT container_settings.py /app/squad/local_settings.py && \
     python3 -m squad.frontend && \
     ./manage.py collectstatic --noinput --verbosity 0 && \
     ./manage.py compilemessages && \
-    python3 setup.py develop --no-deps && \
+    REQ_IGNORE_VERSIONS=1 python3 setup.py develop --no-deps && \
     useradd --create-home squad && \
     mkdir -m 0755 /app/tmp && chown squad:squad /app/tmp
 
