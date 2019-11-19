@@ -14,6 +14,8 @@ def valid_requirement(req):
 
 requirements_txt = open('requirements.txt').read().splitlines()
 requirements = [req for req in requirements_txt if valid_requirement(req)]
+if os.getenv('REQ_IGNORE_VERSIONS'):
+    requirements = [req.split('>=')[0] for req in requirements]
 
 
 if len(sys.argv) > 1 and sys.argv[1] in ['sdist', 'bdist', 'bdist_wheel'] and not os.getenv('SQUAD_RELEASE'):
