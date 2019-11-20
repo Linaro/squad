@@ -13,6 +13,9 @@ To open a shell in the development environment::
 
     ./dev-docker bash
 
+**NOTE** if you're running a firewall on your system, like ufw, make sure to
+allow the docker interface to interact with your system's. If you're running
+ufw, do so with `sudo ufw allow in on docker0`.
 
 Checklist for loading a copy of a production database
 -----------------------------------------------------
