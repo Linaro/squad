@@ -7,6 +7,7 @@ RUN apt-get update -q=2 && \
         python3 \
         python3-celery \
         python3-coreapi  \
+        python3-pycurl \
         python3-django \
         python3-django-cors-headers \
         python3-django-crispy-forms \

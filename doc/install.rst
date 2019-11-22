@@ -11,7 +11,7 @@ Make sure you have the ``pip`` Python package manager installed on your Python 3
 environment, and the C library for YAML development. On Debian/Ubuntu,
 the easiest way to do that is::
 
-    apt-get install python3-pip libyaml-dev libpq-dev
+    apt-get install python3-pip libyaml-dev libpq-dev libcurl4-openssl-dev
 
 Install squad::
 
@@ -32,6 +32,11 @@ anything else.
 If you have a multi-server setup, then each server needs to be configured with
 the location of a central AMQP server. See the `SQUAD_CELERY_BROKER_URL` in the
 "Further configuration" section below.
+
+**NOTE:** SQUAD also supports Amazon SQS. To do so, follow steps from the official
+`celery documentation`__:
+
+__ https://docs.celeryproject.org/en/latest/getting-started/brokers/sqs.html
 
 Processes
 ---------
