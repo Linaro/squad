@@ -103,3 +103,11 @@ class TestHistoryTest(TestCase):
         self.assertNotIn(build2, history.results.keys())
 
         self.assertEqual(build1, history.top)
+
+    def test_no_metadata(self):
+        testrun = self.project1.builds.last().test_runs.last()
+        suite = testrun.tests.last().suite
+        testrun.tests.create(name='no_metadata_test', result=False, suite=suite)
+        history = TestHistory(self.project1, 'no_metadata_test')
+
+        self.assertIsNotNone(history.results)
