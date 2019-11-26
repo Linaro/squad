@@ -133,6 +133,10 @@ useful::
 
 By default, workers listen to all queues.
 
+For message brokers that support prefixed-queue names, SQUAD has the optional
+environment variable `SQUAD_CELERY_QUEUE_NAME_PREFIX`, that, if set, will
+prepend it before all queues.
+
 Further configuration
 ---------------------
 
@@ -198,6 +202,9 @@ __ https://docs.djangoproject.com/en/1.11/topics/email/
 * ``SQUAD_CELERY_BROKER_URL``: URL to the broker to be used by Celery for
   background jobs. Defaults to ``amqp://localhost:5672``.
 
+* ``SQUAD_CELERY_QUEUE_NAME_PREFIX``: Name to prefix all queues in Celery.
+  Useful when multiple environments share the same broker.
+  Defaults to ``''``.
 
 User management
 ---------------
