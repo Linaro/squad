@@ -1,67 +1,88 @@
-from squad.core.plugins import Plugin as BasePlugin
+import logging
+import re
+from squad.plugins import Plugin as BasePlugin
 
 
-class Issue(object):
-    name = None
-    found = False
-    done = False
-    max_lines = None
+logger = logging.getLogger()
 
-    def __init__(self):
-        self.__log__ = []
+REGEX_NAME = 0
+REGEX_BODY = 1
 
-    @classmethod
-    def find(cls, log):
-        issues = [issue_type() for issue_type in cls.__subclasses__()]
-        for line in log.splitlines():
-            for issue in issues:
-                issue.feed(line)
-        return issues
+MULTILINERS = [
+    ('check-kernel-panic', r'Kernel panic - not syncing.*?end Kernel panic - not syncing'),
+    ('check-kernel-exception', r'------------\[ cut here \]------------.*?------------\[ cut here \]------------'),
+    ('check-kernel-trace', r'Stack:.*?---\[ end trace \w* \]---'),
+]
 
-    def feed(self, line):
-        if self.done:
-            return
-        self.__feed__(line)
-        if self.found:
-            self.__log__.append(line)
-            if self.max_lines and len(self.__log__) >= self.max_lines:
-                self.done = True
+ONELINERS = [
+    ('check-kernel-oops', r'^[^\n]+Oops(?: -|:).*?$'),
+    ('check-kernel-fault', r'^[^\n]+Unhandled fault.*?$'),
+    ('check-kernel-warning', r'^[^\n]+WARNING:.*?$'),
+]
 
-    @property
-    def log(self):
-        return "\n".join(self.__log__)
-
-
-class Oops(Issue):
-    name = 'oops'
-    max_lines = 50
-
-    def __feed__(self, line):
-        if "------------[ cut here ]------------" in line:
-            self.found = True
-
-
-class KernelPanic(Issue):
-    name = 'kernel-panic'
-
-    def __feed__(self, line):
-        if 'Kernel panic - not syncing:' in line:
-            self.found = True
-        if '---[ end Kernel panic - not syncing' in line:
-            self.done = True
+# Tip: broader regexes should come first
+REGEXES = MULTILINERS + ONELINERS
 
 
 class Plugin(BasePlugin):
+    def __compile_regexes(self, regexes):
+        combined = [r'(%s)' % r[REGEX_BODY] for r in regexes]
+        return re.compile(r'|'.join(combined), re.S | re.M)
 
-    def postprocess_testrun(self, testrun):
-        if testrun.log_file is not None:
-            project = testrun.build.project
+    def __kernel_msgs_only(self, log):
+        kernel_msgs = re.findall(r'^\[[ \d]+\.[ \d]+\] .*?$', log, re.S | re.M)
+        return '\n'.join(kernel_msgs)
 
-            suite, _ = project.suites.get_or_create(slug='linux-log-parser')
-            for issue in Issue.find(testrun.log_file):
-                testrun.tests.create(
-                    suite=suite,
-                    name='check-' + issue.name,
-                    result=(not issue.found),
-                    log=issue.log
-                )
+    def __join_matches(self, matches, regexes):
+        """
+            group regex in python are returned as a list of tuples which each
+            group match in one of the positions in the tuple. Example:
+            regex = r'(a)|(b)|(c)'
+            matches = [
+                ('match a', '', ''),
+                ('', 'match b', ''),
+                ('match a', '', ''),
+                ('', '', 'match c')
+            ]
+        """
+        snippets = {regex_id: [] for regex_id in range(len(regexes))}
+        for match in matches:
+            for regex_id in range(len(regexes)):
+                if len(match[regex_id]) > 0:
+                    snippets[regex_id].append(match[regex_id])
+        return snippets
+
+    def __create_test(self, testrun, suite, test_name, lines):
+        testrun.tests.create(
+            suite=suite,
+            name=test_name,
+            result=(len(lines) == 0),
+            log='\n'.join(lines),
+        )
+
+    def postprocess_testjob(self, testjob):
+        testrun = testjob.testrun
+        log = self.__kernel_msgs_only(testrun.log_file)
+        suite, _ = testrun.build.project.suites.get_or_create(slug='linux-log-parser')
+        test_name_suffix = ('-%s' % testjob.name) if testjob.name else ''
+
+        regex = self.__compile_regexes(REGEXES)
+        matches = regex.findall(log)
+        snippets = self.__join_matches(matches, REGEXES)
+
+        # search onliners within multiliners
+        multiline_matches = []
+        for regex_id in range(len(MULTILINERS)):
+            multiline_matches += snippets[regex_id]
+
+        regex = self.__compile_regexes(ONELINERS)
+        matches = regex.findall('\n'.join(multiline_matches))
+        onliner_snippets = self.__join_matches(matches, ONELINERS)
+
+        regex_id_offset = len(MULTILINERS)
+        for regex_id in range(len(ONELINERS)):
+            snippets[regex_id + regex_id_offset] += onliner_snippets[regex_id]
+
+        for regex_id in range(len(REGEXES)):
+            test_name = REGEXES[regex_id][REGEX_NAME] + test_name_suffix
+            self.__create_test(testrun, suite, test_name, snippets[regex_id])
