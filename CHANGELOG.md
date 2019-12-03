@@ -1,3 +1,20 @@
+# 1.3
+
+This 1.3 release fixes a 500 http error code when accessing linux-log-parser
+tests, also improving its log detection, including `WARNINGS`.
+
+The release also fixes some minor issues related to docker setup, among
+other new features and fixes that you can see in the full log below:
+
+* core:
+  * test_history: handle tests with no metadata
+  * plugins: linux_log_parser: improve kernel log parsing
+* frontend: reduce query time fetching metric names
+* misc:
+  * debug: add django debug toolbar
+  * doc: add firewall note when running on docker
+  * Dockerfile: ignore version constraints from requirements.txt
+
 # 1.2
 
 This 1.2 release fixes a couple of performance issues when fetching testjobs
