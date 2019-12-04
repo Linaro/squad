@@ -45,7 +45,7 @@ if not os.path.exists(secret_key_file):
 
 SECRET_KEY = open(secret_key_file).read()
 
-DEBUG = os.getenv('ENV') != 'production'
+DEBUG = os.getenv('ENV') not in ['production', 'staging']
 
 ALLOWED_HOSTS = ['*']
 
