@@ -29,8 +29,11 @@ class ApiTest(TestCase):
 
         self.group = models.Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
+        self.usergroup = models.UserNamespace.objects.create(slug='~project-user')
+        self.userproject = self.usergroup.projects.create(slug='userproject')
         self.project_submission_user = User.objects.create(username='project-user')
         self.group.add_admin(self.project_submission_user)
+        self.usergroup.add_admin(self.project_submission_user)
         Token.objects.create(user=self.project_submission_user, key='thekey')
 
         self.global_submission_user = User.objects.create(username='global-user', is_staff=True)
@@ -47,6 +50,13 @@ class CreateTestRunApiTest(ApiTest):
 
         self.project.builds.get(version='1.0.0')
         self.project.environments.get(slug='myenvironment')
+
+    def test_create_object_hierarchy_private(self):
+        response = self.client.post('/api/submit/~project-user/userproject/1.0.0/myenvironment')
+        self.assertEqual(response.status_code, 201)
+
+        self.userproject.builds.get(version='1.0.0')
+        self.userproject.environments.get(slug='myenvironment')
 
     def test_create_test_run(self):
         test_runs = models.TestRun.objects.count()
@@ -360,6 +370,20 @@ class CreateBuildApiTest(ApiTest):
         self.assertEqual(response.status_code, 201)
 
         build = self.project.builds.get(version='1.0.0')
+        self.assertEqual(self.github, build.patch_source)
+        self.assertEqual(build.patch_id, "999")
+
+    def test_patch_source_private(self):
+        response = self.client.post(
+            '/api/createbuild/~project-user/userproject/1.0.0',
+            {
+                'patch_source': 'github',
+                'patch_id': '999',
+            }
+        )
+        self.assertEqual(response.status_code, 201)
+
+        build = self.userproject.builds.get(version='1.0.0')
         self.assertEqual(self.github, build.patch_source)
         self.assertEqual(build.patch_id, "999")
 

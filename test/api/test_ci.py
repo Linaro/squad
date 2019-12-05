@@ -19,7 +19,9 @@ class CiApiTest(TestCase):
 
     def setUp(self):
         self.group = core_models.Group.objects.create(slug='mygroup')
+        self.usergroup = core_models.UserNamespace.objects.create(slug='~project-member-user')
         self.project = self.group.projects.create(slug='myproject')
+        self.userproject = self.usergroup.projects.create(slug='userproject')
 
         self.project_admin_user = User.objects.create(username='project-admin')
         self.group.add_admin(self.project_admin_user)
@@ -27,7 +29,9 @@ class CiApiTest(TestCase):
         self.group.add_user(self.project_submission_user, 'submitter')
         self.project_member_user = User.objects.create(username='project-member-user')
         self.group.add_user(self.project_member_user, 'member')
+        self.usergroup.add_user(self.project_member_user, 'submitter')
         self.build = self.project.builds.create(version='1')
+        self.userbuild = self.userproject.builds.create(version='1')
         Token.objects.create(user=self.project_submission_user, key='thekey')
         Token.objects.create(user=self.project_member_user, key='memberkey')
         Token.objects.create(user=self.project_admin_user, key='adminkey')
@@ -60,6 +64,24 @@ class CiApiTest(TestCase):
                 target=self.project,
                 environment='myenv',
                 target_build=self.build,
+                backend=self.backend,
+                definition='foo: 1',
+            ).count()
+        )
+
+    def test_submitjob_private_group(self):
+        args = {
+            'backend': 'lava',
+            'definition': 'foo: 1',
+        }
+        r = self.memberclient.post('/api/submitjob/~project-member-user/userproject/1/myenv', args)
+        self.assertEqual(201, r.status_code)
+        self.assertEqual(
+            1,
+            models.TestJob.objects.filter(
+                target=self.userproject,
+                environment='myenv',
+                target_build=self.userbuild,
                 backend=self.backend,
                 definition='foo: 1',
             ).count()
@@ -133,6 +155,27 @@ class CiApiTest(TestCase):
                 target=self.project,
                 environment='myenv',
                 target_build=self.build,
+                backend=self.backend,
+                submitted=True,
+                job_id=testjob_id
+            ).count()
+        )
+
+    @patch("squad.ci.tasks.fetch.delay")
+    def test_watch_testjob_private_group(self, fetch):
+        testjob_id = 1234
+        args = {
+            'backend': 'lava',
+            'testjob_id': testjob_id,
+        }
+        r = self.memberclient.post('/api/watchjob/~project-member-user/userproject/1/myenv', args)
+        self.assertEqual(201, r.status_code)
+        self.assertEqual(
+            1,
+            models.TestJob.objects.filter(
+                target=self.userproject,
+                environment='myenv',
+                target_build=self.userbuild,
                 backend=self.backend,
                 submitted=True,
                 job_id=testjob_id
