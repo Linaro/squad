@@ -53,7 +53,7 @@ def auth(func, mode=AuthMode.READ):
         group = get_object_or_404(models.Group, slug=group_slug)
         request.group = group
 
-        user = request.user
+        user = auth_user_from_request(request, request.user)
 
         if len(args) < 3:
             # no project, authenticate against group only
@@ -65,8 +65,6 @@ def auth(func, mode=AuthMode.READ):
         project_slug = args[2]
         project = get_object_or_404(group.projects, slug=project_slug)
         request.project = project
-
-        user = auth_user_from_request(request, user)
 
         if not (project.is_public or user.is_authenticated):
             raise PermissionDenied()
