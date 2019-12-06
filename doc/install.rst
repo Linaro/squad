@@ -206,6 +206,10 @@ __ https://docs.djangoproject.com/en/1.11/topics/email/
   Useful when multiple environments share the same broker.
   Defaults to ``''``.
 
+* ``SQUAD_CELERY_POLL_INTERVAL``: Number of seconds a worker will sleep
+  after an empty answer from SQS before the next polling attempt.
+  Defaults to ``1``.
+
 User management
 ---------------
 
