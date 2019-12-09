@@ -287,6 +287,8 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CELERY_BROKER_URL = os.getenv('SQUAD_CELERY_BROKER_URL')
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'max_retries': 5,
+    'queue_name_prefix': os.getenv('SQUAD_CELERY_QUEUE_NAME_PREFIX', ''),
+    'polling_interval': os.getenv('SQUAD_CELERY_POLL_INTERVAL', 1),
 }
 CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
 CELERY_TASK_SERIALIZER = 'msgpack'
