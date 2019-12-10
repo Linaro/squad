@@ -6,3 +6,6 @@ ipython
 pickleshare
 Werkzeug
 django-debug-toolbar
+pytest
+pytest-django
+pytest-cov

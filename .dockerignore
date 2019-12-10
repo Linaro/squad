@@ -19,3 +19,5 @@ celerybeat-schedule.db
 node_modules
 tags
 doc/_build
+.coverage
+htmlcov
