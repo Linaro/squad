@@ -125,17 +125,16 @@ class TestResultTable(list):
         for test in tests:
             memo.setdefault(test.full_name, {})
             memo[test.full_name][test.test_run.environment_id] = [test.status]
-            if test.metadata.description or test.suite.metadata.instructions_to_reproduce or test.metadata.instructions_to_reproduce or test.log:
-                error_info = {
-                    "test_description": test.metadata.description,
-                    "suite_instructions": test.suite.metadata.instructions_to_reproduce,
-                    "test_instructions": test.metadata.instructions_to_reproduce,
-                    "test_log": test.log
-                }
-                memo[test.full_name][test.test_run.environment_id].append(
-                    json.dumps(error_info))
-            else:
-                memo[test.full_name][test.test_run.environment_id].append(None)
+
+            error_info = {
+                "test_description": test.metadata.description if test.metadata else '',
+                "suite_instructions": test.suite.metadata.instructions_to_reproduce if test.suite.metadata else '',
+                "test_instructions": test.metadata.instructions_to_reproduce if test.metadata else '',
+                "test_log": test.log or '',
+            }
+            info = json.dumps(error_info) if any(error_info.values()) else None
+
+            memo[test.full_name][test.test_run.environment_id].append(info)
         for name, results in memo.items():
             test_result = TestResult(name)
             for env in table.environments:
