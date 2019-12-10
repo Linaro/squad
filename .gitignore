@@ -28,3 +28,5 @@ __pycache__
 /node_modules
 /tags
 /doc/_build
+/.coverage
+/htmlcov

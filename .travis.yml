@@ -21,6 +21,7 @@ env:
   - SCRIPT="./scripts/test-docker"
   - SCRIPT="./manage.py compilemessages" INSTALLPIP=yes
   - SCRIPT="docker run -v $(pwd):/squad --workdir /squad fsfe/reuse reuse lint"
+  - SCRIPT="python3 -m pytest" INSTALLPIP=yes
 
 before_install:
   - if test -n "$DATABASE"; then ./scripts/travis-postgresql; fi
