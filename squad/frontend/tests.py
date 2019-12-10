@@ -5,8 +5,9 @@ from django.db.models.fields import IntegerField
 from django.shortcuts import render
 
 from squad.http import auth
-from squad.core.models import Test, Suite
+from squad.core.models import Test, Suite, TestRun
 from squad.core.history import TestHistory
+from squad.core.utils import split_list
 from django.http import Http404
 from squad.frontend.views import get_build
 
@@ -46,18 +47,32 @@ class TestResultTable(list):
         self.paginator = self
         self.paginator.num_pages = 0
         self.number = 0
+        self.all_tests = {}
+
+    def __get_all_tests__(self, build, search):
+        self.all_tests = {}
+
+        test_runs = TestRun.objects.filter(build=build).values('id')
+        test_runs_ids = [test_run['id'] for test_run in test_runs]
+        for chunk in split_list(test_runs_ids, chunk_size=100):
+            query_set = Test.objects.filter(test_run_id__in=chunk)
+            if search:
+                query_set = query_set.filter(name__icontains=search)
+
+            tests = query_set.only('id', 'suite_id', 'name')
+            for test in tests:
+                self.all_tests[test.id] = test
 
     # count how many unique tests are represented in the given build, and sets
     # pagination data
-    def __count_pages__(self, build_id, search, per_page):
-        count = Test.objects.filter(
-            test_run__build_id=build_id, name__icontains=search).values(
-                'suite_id', 'name').distinct().count()
+    def __count_pages__(self, per_page):
+        distinct_tests = set([(test.suite_id, test.name) for test in self.all_tests.values()])
+        count = len(distinct_tests)
         self.num_pages = count // per_page
         if count % per_page > 0:
             self.num_pages += 1
 
-    def __get_page_filter__(self, build_id, page, search, per_page):
+    def __get_page_filter__(self, page, per_page):
         """
         Query to obtain one page os test results. It is used to know which tests
         should be in the page. It's ordered so that the tests with more failures
@@ -70,9 +85,7 @@ class TestResultTable(list):
         conditions = {}
         offset = (page - 1) * per_page
 
-        mylist = Test.objects.filter(
-            test_run__build_id=build_id,
-            name__icontains=search).values(
+        mylist = Test.objects.filter(id__in=self.all_tests.keys()).values(
                 'suite_id', 'suite__slug', 'name').annotate(
                     skips=Sum(Case(
                         When(result__isnull=True, then=1),
@@ -108,21 +121,23 @@ class TestResultTable(list):
     @classmethod
     def get(cls, build, page, search, per_page=50):
         table = cls()
+        table.__get_all_tests__(build, search)
         table.number = page
-        table.__count_pages__(build.id, search, per_page)
+        table.__count_pages__(per_page)
 
         table.environments = set([t.environment for t in build.test_runs.prefetch_related('environment').all()])
 
         tests = Test.objects.filter(
-            test_run__build=build
+            id__in=table.all_tests.keys()
         ).filter(
-            table.__get_page_filter__(build.id, page, search, per_page)
+            table.__get_page_filter__(page, per_page)
         ).prefetch_related(
             'test_run',
             'suite',
             'suite__metadata',
             'metadata',
         ).order_by('suite_id', 'name')
+
         memo = {}
         for test in tests:
             memo.setdefault(test.full_name, {})
@@ -137,11 +152,11 @@ class TestResultTable(list):
             info = json.dumps(error_info) if any(error_info.values()) else None
 
             memo[test.full_name][test.test_run.environment_id].append(info)
+
         for name, results in memo.items():
             test_result = TestResult(name)
             for env in table.environments:
-                test_result.append(results.get(
-                    env.id, ["n/a", None]))
+                test_result.append(results.get(env.id, ["n/a", None]))
             table.append(test_result)
 
         table.sort()
