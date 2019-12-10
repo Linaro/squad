@@ -120,6 +120,8 @@ class TestResultTable(list):
         ).prefetch_related(
             'test_run',
             'suite',
+            'suite__metadata',
+            'metadata',
         ).order_by('suite_id', 'name')
         memo = {}
         for test in tests:
