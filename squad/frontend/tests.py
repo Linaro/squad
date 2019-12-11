@@ -57,7 +57,7 @@ class TestResultTable(list):
             if search:
                 query_set = query_set.filter(name__icontains=search)
 
-            tests = query_set.only('id', 'suite', 'name', 'result', 'has_known_issues')
+            tests = query_set.only('id', 'suite', 'name', 'result', 'has_known_issues').order_by()
             self.all_tests += tests
 
     # count how many unique tests are represented in the given build, and sets
@@ -117,7 +117,7 @@ class TestResultTable(list):
             'suite',
             'suite__metadata',
             'metadata',
-        ).order_by('suite_id', 'name')
+        )
 
         memo = {}
         for test in tests:
