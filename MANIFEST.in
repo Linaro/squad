@@ -20,6 +20,7 @@ include .gitignore
 include .mailmap
 include .travis.yml
 include .readthedocs.yml
+include .coveragerc
 
 include           squad/core/management/commands/import_data.rst
 recursive-include squad/frontend/static/ *
