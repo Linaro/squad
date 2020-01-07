@@ -68,3 +68,10 @@ class AllTestResultsTest(TestCase):
         self.assertTrue("suite1" not in page3)
         self.assertTrue("suite2" not in page3)
         self.assertTrue("suite3" in page3)
+
+    def test_no_metadata(self):
+        suite, _ = self.test_run.build.project.suites.get_or_create(slug='a-suite')
+        self.test_run.tests.create(name='no_metadata_test', result=False, suite=suite)
+
+        response = self.client.get('/mygroup/myproject/build/1/tests/?page=2')
+        self.assertEqual(200, response.status_code)
