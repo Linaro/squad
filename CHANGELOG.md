@@ -1,3 +1,16 @@
+# 1.3.1
+
+This 1.3.1 release includes a minor bug in the api and support to work
+with AWS SQS:
+
+* settings:
+  * add support to custom polling interval
+  * add support to prefix-named queues
+  * turn on debug only when needed
+* api: fix URL pattern for api/ paths
+* http: authenticate users before checking permissions
+* Add coverage testing with pytest
+
 # 1.3
 
 This 1.3 release fixes a 500 http error code when accessing linux-log-parser
