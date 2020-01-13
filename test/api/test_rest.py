@@ -446,6 +446,11 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/builds/%d/testjobs/' % self.build.id)
         self.assertEqual(1, len(data['results']))
 
+    def test_build_filter(self):
+        created_at = str(self.build3.created_at.isoformat()).replace('+00:00', 'Z')
+        data = self.hit('/api/builds/?created_at=%s' % created_at)
+        self.assertEqual(1, len(data['results']))
+
     def test_testjob(self):
         data = self.hit('/api/testjobs/%d/' % self.testjob.id)
         self.assertEqual('myenv', data['environment'])
