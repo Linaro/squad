@@ -101,8 +101,9 @@ class TestRunFilter(filters.FilterSet):
         model = TestRun
         fields = {'job_id': ['exact', 'in', 'startswith'],
                   'job_status': ['exact', 'in', 'startswith'],
-                  'data_processed': ['exact', 'in'],
-                  'status_recorded': ['exact', 'in']}
+                  'data_processed': ['exact'],
+                  'status_recorded': ['exact'],
+                  'completed': ['exact']}
 
 
 class TestJobFilter(filters.FilterSet):
