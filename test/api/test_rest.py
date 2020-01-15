@@ -23,11 +23,14 @@ class RestApiTest(APITestCase):
         self.build2 = self.project.builds.create(version='2', datetime=t2)
         t3 = timezone.make_aware(datetime.datetime(2018, 10, 3, 1, 0, 0))
         self.build3 = self.project.builds.create(version='3', datetime=t3)
+        t4 = timezone.make_aware(datetime.datetime(2018, 10, 4, 1, 0, 0))
+        self.build4 = self.project.builds.create(version='4', datetime=t4)
         self.environment = self.project.environments.create(slug='myenv')
         self.environment_a = self.project.environments.create(slug='env-a')
         self.testrun = self.build.test_runs.create(environment=self.environment, build=self.build)
         self.testrun2 = self.build2.test_runs.create(environment=self.environment, build=self.build2)
         self.testrun3 = self.build3.test_runs.create(environment=self.environment, build=self.build3)
+        self.testrun4 = self.build4.test_runs.create(environment=self.environment, build=self.build4, completed=True)
         self.testrun_a = self.build.test_runs.create(environment=self.environment_a, build=self.build)
         self.testrun2_a = self.build2.test_runs.create(environment=self.environment_a, build=self.build2)
         self.testrun3_a = self.build3.test_runs.create(environment=self.environment_a, build=self.build3)
@@ -142,7 +145,7 @@ class RestApiTest(APITestCase):
 
     def test_project_builds(self):
         data = self.hit('/api/projects/%d/builds/' % self.project.id)
-        self.assertEqual(3, len(data['results']))
+        self.assertEqual(4, len(data['results']))
 
     def test_create_project_with_enabled_plugin_list_1_element(self):
         response = self.post(
@@ -279,7 +282,7 @@ class RestApiTest(APITestCase):
 
     def test_builds(self):
         data = self.hit('/api/builds/')
-        self.assertEqual(3, len(data['results']))
+        self.assertEqual(4, len(data['results']))
 
     def test_builds_status(self):
         self.build2.test_jobs.all().delete()
@@ -467,6 +470,10 @@ class RestApiTest(APITestCase):
     def test_testruns(self):
         data = self.hit('/api/testruns/%d/' % self.testrun.id)
         self.assertEqual(self.testrun.id, data['id'])
+
+    def test_testruns_filter(self):
+        data = self.hit('/api/testruns/?completed=%s&build__id=%s' % (self.testrun4.completed, self.build4.id))
+        self.assertEqual(1, len(data['results']))
 
     def test_testruns_tests(self):
         data = self.hit('/api/testruns/%d/tests/' % self.testrun.id)
