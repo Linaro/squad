@@ -1,3 +1,20 @@
+# 1.4
+
+This 1.4 release fixes a bug when viweing all test results page and
+enables more filteting options for build and testrun api endpoints.
+
+Complete list of changes going in:
+
+* api:
+  * rest: enable filtering testruns by 'completed'.
+  * rest: enable created date filtering on for builds in api
+* frontend:
+  * tests: remove unecessary ordering
+  * tests: reduce queries to list tests
+  * tests: simplify count of pages
+  * tests: remove duplicate queries to metadata
+  * tests: fix bug when listing tests without metadata
+
 # 1.3.1
 
 This 1.3.1 release includes a minor bug in the api and support to work
