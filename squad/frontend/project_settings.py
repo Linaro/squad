@@ -17,6 +17,12 @@ class ProjectForm(forms.ModelForm):
                   'notification_timeout', 'data_retention_days']
 
 
+class ProjectFormAdvanced(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ['project_settings']
+
+
 @auth_write
 def settings(request, group, project):
     if request.method == "POST":
@@ -33,6 +39,24 @@ def settings(request, group, project):
         'form': form,
     }
     return render(request, 'squad/project_settings/index.jinja2', context)
+
+
+@auth_write
+def advanced_settings(request, group, project):
+    if request.method == "POST":
+        form = ProjectFormAdvanced(request.POST, instance=request.project)
+        if form.is_valid():
+            form.save()
+            return redirect(request.path)
+    else:
+        form = ProjectFormAdvanced(instance=request.project)
+
+    context = {
+        'group': request.group,
+        'project': request.project,
+        'form': form,
+    }
+    return render(request, 'squad/project_settings/advanced.jinja2', context)
 
 
 @auth_write
@@ -81,5 +105,6 @@ def delete(request, group_slug, project_slug):
 urls = [
     url('^$', settings, name='project-settings'),
     url(r'^thresholds/$', thresholds, name='project-settings-thresholds'),
+    url(r'^advanced/$', advanced_settings, name='project-advanced-settings'),
     url(r'^delete/$', delete, name='project-settings-delete'),
 ]

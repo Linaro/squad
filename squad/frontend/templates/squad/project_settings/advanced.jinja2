@@ -1,0 +1,10 @@
+{% extends "squad/project_settings/base.jinja2" %}
+
+{% block settings %}
+    <h1>{{ _('Advanced settings') }}</h1>
+    
+    <form method="POST">
+        {{crispy(form)}}
+        <input class='btn btn-primary' type="submit" value="{{ _('Save') }}" />
+    </form>
+{% endblock %}
