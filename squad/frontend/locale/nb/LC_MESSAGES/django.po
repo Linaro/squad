@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-08-26 15:45-0300\n"
-"PO-Revision-Date: 2019-08-28 21:24+0000\n"
-"Last-Translator: Charles Oliveira <18oliveira.charles@gmail.com>\n"
+"PO-Revision-Date: 2020-01-23 08:21+0000\n"
+"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/squad/"
 "frontend/nb_NO/>\n"
 "Language: nb\n"
@@ -18,24 +18,28 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.11-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/frontend/project_settings.py:59
 msgid "Type the project slug (the name used in URLs) to confirm"
 msgstr ""
+"Skriv inn prosjektets tilkjennegivelse (navn brukt i nettadresser) for å "
+"bekrefte"
 
 #: squad/frontend/project_settings.py:60
 msgid "The confirmation does not match the project slug"
-msgstr ""
+msgstr "Bekreftelsen samsvarer ikke med prosjekttilkjennegivelsen"
 
 #: squad/frontend/group_settings.py:64
 msgid "Type the group slug (the name used in URLs) to confirm"
 msgstr ""
+"Skriv inn gruppens tilkjennegivelse (navn brukt i nettadresser) for å "
+"bekrefte"
 
 #: squad/frontend/group_settings.py:65
 msgid "The confirmation does not match the group slug"
-msgstr ""
+msgstr "Bekreftelsen samsvarer ikke med gruppetilkjennegivelsen"
 
 #: squad/frontend/queries.py:12
 msgid "Summary of all metrics per build"
@@ -415,12 +419,12 @@ msgstr "Sammenligningstest"
 
 #: squad/frontend/templates/squad/build.jinja2:18
 msgid "Build version to compare: "
-msgstr ""
+msgstr "Byggversjon å sammenligne: "
 
 #: squad/frontend/templates/squad/build.jinja2:20
 #: squad/frontend/templates/squad/compare_builds.jinja2:45
 msgid "Enter target version"
-msgstr ""
+msgstr "Skriv inn målversjon"
 
 #: squad/frontend/templates/squad/_builds_table.jinja2:36
 #: squad/frontend/templates/squad/_project_list.jinja2:39
@@ -443,8 +447,9 @@ msgid "Suite"
 msgstr ""
 
 #: squad/frontend/templates/squad/build.jinja2:81
+#, fuzzy
 msgid "Test Run"
-msgstr ""
+msgstr "Testkjøring"
 
 #: squad/frontend/templates/squad/build.jinja2:85
 #: squad/frontend/templates/squad/build.jinja2:179
@@ -466,7 +471,7 @@ msgstr "Filtrer enhter…"
 #: squad/frontend/templates/squad/build.jinja2:171
 #: squad/frontend/templates/squad/test_run.jinja2:119
 msgid "Test runs"
-msgstr ""
+msgstr "Testkjøringer"
 
 #: squad/frontend/templates/squad/build.jinja2:175
 msgid "Job ID"
@@ -711,7 +716,7 @@ msgstr "Siste hentingsforsøk: %s"
 #: squad/frontend/templates/squad/testjobs.jinja2:33
 #, python-format
 msgid "Test run #%s"
-msgstr ""
+msgstr "Testkjøring #%s"
 
 #: squad/frontend/templates/squad/testjobs.jinja2:36
 #, python-format
@@ -734,7 +739,7 @@ msgstr "Feilmelding"
 
 #: squad/frontend/templates/squad/testjobs.jinja2:62
 msgid "Definition"
-msgstr ""
+msgstr "Definisjon"
 
 #: squad/frontend/templates/squad/test_run.jinja2:12
 #: squad/frontend/templates/squad/test_run_suite_tests.jinja2:14
@@ -744,7 +749,7 @@ msgstr "Testmiljø: <strong>%s</strong>"
 
 #: squad/frontend/templates/squad/test_run.jinja2:23
 msgid "Test run metadata"
-msgstr ""
+msgstr "Testkjøringsmetadata"
 
 #: squad/frontend/templates/squad/test_run.jinja2:26
 msgid "Related downloads"
@@ -772,7 +777,7 @@ msgstr ""
 
 #: squad/frontend/templates/squad/test_run.jinja2:90
 msgid "Test run"
-msgstr ""
+msgstr "Testkjøring"
 
 #: squad/frontend/templates/squad/test_run.jinja2:104
 msgid "Metrics suite"
@@ -784,16 +789,16 @@ msgstr ""
 
 #: squad/frontend/templates/squad/_builds_table.jinja2:4
 msgid "Two builds need to be selected!"
-msgstr ""
+msgstr "To bygg må velges."
 
 #: squad/frontend/templates/squad/_builds_table.jinja2:5
 msgid "Selected builds must be different!"
-msgstr ""
+msgstr "De valgte byggene må være forskjellige."
 
 #: squad/frontend/templates/squad/_builds_table.jinja2:25
 #, python-format
 msgid "%d test runs"
-msgstr ""
+msgstr "%d testkjøringer"
 
 #: squad/frontend/templates/squad/_builds_table.jinja2:27
 msgid "Completed"
@@ -869,27 +874,27 @@ msgstr ""
 
 #: squad/frontend/templates/squad/_permissions.jinja2:14
 msgid "Resubmit test jobs"
-msgstr ""
+msgstr "Send inn testjobber på ny"
 
 #: squad/frontend/templates/squad/_permissions.jinja2:15
 msgid "Update group settings"
-msgstr ""
+msgstr "Oppdater gruppeinnstillinger"
 
 #: squad/frontend/templates/squad/_permissions.jinja2:16
 msgid "Update project settings"
-msgstr ""
+msgstr "Oppdater prosjektinnstillinger"
 
 #: squad/frontend/templates/squad/_permissions.jinja2:17
 msgid "Update build settings"
-msgstr ""
+msgstr "Oppdater bygginnstillinger"
 
 #: squad/frontend/templates/squad/_results_transitions_filter.jinja2:10
 msgid "From/To"
-msgstr ""
+msgstr "Fra/til"
 
 #: squad/frontend/templates/squad/_results_transitions_filter.jinja2:41
 msgid "show all tests"
-msgstr ""
+msgstr "vis alle tester"
 
 #: squad/frontend/templates/squad/_test_results_summary.jinja2:1
 #, python-format
@@ -899,22 +904,22 @@ msgstr "%d tester"
 #: squad/frontend/templates/squad/_test_results_summary.jinja2:3
 #, python-format
 msgid "%d pass"
-msgstr ""
+msgstr "%d passert"
 
 #: squad/frontend/templates/squad/_test_results_summary.jinja2:6
 #, python-format
 msgid "%d skip"
-msgstr ""
+msgstr "%d hoppet over"
 
 #: squad/frontend/templates/squad/_test_results_summary.jinja2:9
 #, python-format
 msgid "%d fail"
-msgstr ""
+msgstr "%d mislykket"
 
 #: squad/frontend/templates/squad/_test_results_summary.jinja2:12
 #, python-format
 msgid "%d xfail"
-msgstr ""
+msgstr "%d forventet å feile"
 
 #: squad/frontend/templates/squad/user_settings/base.jinja2:15
 #: squad/frontend/templates/squad/user_settings/subscriptions.jinja2:8
@@ -1069,7 +1074,7 @@ msgstr "Logg ut"
 #: squad/frontend/templates/squad/compare_builds.jinja2:17
 #: squad/frontend/templates/squad/compare_builds.jinja2:66
 msgid "Start over"
-msgstr ""
+msgstr "Start på ny"
 
 #: squad/frontend/templates/squad/compare_builds.jinja2:19
 #, fuzzy
@@ -1135,11 +1140,11 @@ msgstr "Gå til innloggingssiden."
 
 #: squad/frontend/forms.py:7
 msgid "Type the slug (the name used in URLs) to confirm"
-msgstr ""
+msgstr "Skriv inn tilkjennegivelse (navn brukt i nettadresser) for å bekrefte"
 
 #: squad/frontend/forms.py:9
 msgid "The confirmation does not match the slug"
-msgstr ""
+msgstr "Bekreftelsen samsvarer ikke med tilkjennegivelsen"
 
 #~ msgid "Delete projec"
 #~ msgstr "Slett prosjekt"
