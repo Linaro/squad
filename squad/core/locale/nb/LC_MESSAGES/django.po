@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: squad.core VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-08-26 15:45-0300\n"
-"PO-Revision-Date: 2019-06-23 01:02+0000\n"
+"PO-Revision-Date: 2020-01-23 08:21+0000\n"
 "Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/squad/"
 "core/nb_NO/>\n"
@@ -17,12 +17,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.7\n"
+"X-Generator: Weblate 3.11-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/core/models.py:71 squad/core/models.py:207
+#, fuzzy
 msgid "Slug"
-msgstr ""
+msgstr "Tilkjennegivelse"
 
 #: squad/core/models.py:73 squad/core/models.py:208
 msgid "Name"
