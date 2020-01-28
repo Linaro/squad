@@ -51,6 +51,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'is_public', 'moderate_notifications', 'custom_email_template']
     list_filter = ['group', 'is_public', 'moderate_notifications', 'custom_email_template']
     inlines = [EnvironmentInline, SubscriptionInline, AdminSubscriptionInline]
+    save_as = True
 
 
 def __resend__notification__(queryset, approve):
