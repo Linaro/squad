@@ -248,6 +248,8 @@ def build(request, group_slug, project_slug, version):
     for status in __statuses__:
         test_results.add_status(status)
 
+    test_results.environments = sorted(test_results.environments, key=lambda e: e.slug)
+
     context = {
         'project': project,
         'build': build,
