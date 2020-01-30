@@ -356,6 +356,7 @@ class RecordTestRunStatusTest(CommonTestCase):
         self.assertEqual(status.tests_pass, 3)
         self.assertEqual(status.tests_fail, 1)
         self.assertEqual(status.tests_skip, 1)
+        self.assertEqual(status.has_metrics, True)
         self.assertIsInstance(status.metrics_summary, float)
 
     def test_xfail(self):
