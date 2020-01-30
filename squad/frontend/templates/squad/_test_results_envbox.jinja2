@@ -1,0 +1,32 @@
+        {% for environment in test_results.environments %}
+        <table id='test-results-{{ environment.slug }}' class='test-results-box table table-bordered'>
+            <thead>
+                <tr>
+                    <th colspan="2">
+                        {{ environment }}
+                        {% set hide_env = 'hide_' + environment.slug.replace('-', '_') -%}
+                        <a ng-click="{{ hide_env }} = !{{ hide_env }}" class="toggle-test-results">
+                            <i ng-hide="!{{ hide_env }}" class="fa fa-minus"></i>
+                            <i ng-hide="{{ hide_env }}" class="fa fa-plus"></i>
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+            <tbody ng-hide="!{{ hide_env }}" aria-hidden="false">
+                <tr>
+                    <th>{{ _('Suite') }}</th>
+                    <th>{{ _('Test Results') }}</th>
+                </tr>
+                {% for suite, statuses in environment.suites %}
+                <tr>
+                    <td>{{ suite }}</td>
+                    <td>
+                        {% for status in statuses %}
+                        <a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{{ status.test_run.id }} {% include "squad/_test_results_summary.jinja2" %}</a><br />
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endfor %}

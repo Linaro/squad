@@ -229,6 +229,25 @@ class TestResultTable(object):
         self.test_runs.add(status.test_run)
 
 
+def __rearrange_test_results__(results_layout, test_results):
+    if results_layout == 'envbox':
+        for e in test_results.environments:
+            e.suites = []
+
+        for suite, results in test_results.data.items():
+            for env in results.keys():
+                statuses = [s for s in results[env].statuses if s.environment.id == env.id]
+                env.suites.append((suite, statuses))
+
+    if results_layout == 'suitebox':
+        test_results.suites = test_results.data.keys()
+        for suite in test_results.suites:
+            envs = []
+            for environment, cell in test_results.data[suite].items():
+                envs.append((environment, cell.statuses))
+            suite.environments = sorted(envs, key=lambda e: e[0].slug)
+
+
 @auth
 def build(request, group_slug, project_slug, version):
     project = request.project
@@ -250,10 +269,17 @@ def build(request, group_slug, project_slug, version):
 
     test_results.environments = sorted(test_results.environments, key=lambda e: e.slug)
 
+    results_layout = request.GET.get('results_layout')
+    if results_layout not in ['table', 'envbox', 'suitebox']:
+        results_layout = 'envbox' if len(test_results.environments) > 8 else 'table'
+
+    __rearrange_test_results__(results_layout, test_results)
+
     context = {
         'project': project,
         'build': build,
         'test_results': test_results,
+        'results_layout': results_layout,
         'metadata': sorted(build.important_metadata.items()),
         'has_extra_metadata': build.has_extra_metadata,
     }

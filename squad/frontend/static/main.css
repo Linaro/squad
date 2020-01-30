@@ -354,3 +354,33 @@ a[ng-click] {
 ul#compare-menu {
   z-index: 2000;
 }
+
+.results-layout-icon, .results-layout-icon:hover {
+    color: black;
+    cursor: pointer;
+    font-size: 25px;
+    margin: 5px;
+}
+
+.fa-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+table.test-results-box {
+    margin-left: 5px;
+}
+
+table.test-results-box thead tr:first-child {
+    background-color: #DDD;
+}
+
+a.toggle-test-results {
+    display: inline;
+    margin-left: 5px;
+    background-color: #777;
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
+    color: white;
+}
