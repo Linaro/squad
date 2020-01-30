@@ -3,7 +3,7 @@ import json
 from test.mock import patch
 from django.utils import timezone
 from squad.core import models
-from squad.core.tasks import UpdateProjectStatus
+from squad.core.tasks import UpdateProjectStatus, ReceiveTestRun
 from squad.ci import models as ci_models
 from rest_framework.authtoken.models import Token
 from rest_framework.reverse import reverse
@@ -135,6 +135,19 @@ class RestApiTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         response = self.client.post(url, data)
         return response
+
+    def receive(self, datestr, env, metrics={}, tests={}):
+        receive = ReceiveTestRun(self.project)
+        testrun = receive(
+            version=datestr,
+            environment_slug=env,
+            metadata_file=json.dumps(
+                {"datetime": datestr + "T00:00:00+00:00", "job_id": "1"}
+            ),
+            metrics_file=json.dumps(metrics),
+            tests_file=json.dumps(tests),
+        )
+        return testrun
 
     def test_root(self):
         self.hit('/api/')
@@ -470,6 +483,32 @@ class RestApiTest(APITestCase):
     def test_testruns(self):
         data = self.hit('/api/testruns/%d/' % self.testrun.id)
         self.assertEqual(self.testrun.id, data['id'])
+
+    def test_testruns_null_metrics_attr(self):
+        data = self.hit("/api/testruns/%d/" % self.testrun4.id)
+        self.assertIsNone(data["metrics"])
+        self.assertIsNone(data["metrics_file"])
+
+    def test_testruns_null_tests_attr(self):
+        data = self.hit("/api/testruns/%d/" % self.testrun4.id)
+        self.assertIsNone(data["tests"])
+        self.assertIsNone(data["tests_file"])
+
+    def test_testruns_not_null_metrics_attr(self):
+        testrun = self.receive(
+            "2020-01-01", "myenv2", metrics={"foo": 1, "bar/baz": 2}
+        )
+        data = self.hit("/api/testruns/%d/" % testrun.id)
+        self.assertIsNotNone(data["metrics"])
+        self.assertIsNotNone(data["metrics_file"])
+
+    def test_testruns_not_null_tests_attr(self):
+        testrun = self.receive(
+            "2017-01-01", "myenv2", tests={"foo": "pass", "bar": "fail"}
+        )
+        data = self.hit("/api/testruns/%d/" % testrun.id)
+        self.assertIsNotNone(data["tests"])
+        self.assertIsNotNone(data["tests_file"])
 
     def test_testruns_filter(self):
         data = self.hit('/api/testruns/?completed=%s&build__id=%s' % (self.testrun4.completed, self.build4.id))
