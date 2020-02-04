@@ -40,15 +40,16 @@ def fetch(job_id):
 @celery.task(bind=True)
 def submit(self, job_id):
     test_job = TestJob.objects.get(pk=job_id)
-    try:
-        test_job.backend.submit(test_job)
-        test_job.save()
-    except SubmissionIssue as issue:
-        logger.error("submitting job %s to %s: %s" % (test_job.id, test_job.backend.name, str(issue)))
-        test_job.failure = str(issue)
-        test_job.save()
-        if issue.retry:
-            raise self.retry(exc=issue, countdown=3600)  # retry in 1 hour
+    if not test_job.submitted:
+        try:
+            test_job.backend.submit(test_job)
+            test_job.save()
+        except SubmissionIssue as issue:
+            logger.error("submitting job %s to %s: %s" % (test_job.id, test_job.backend.name, str(issue)))
+            test_job.failure = str(issue)
+            test_job.save()
+            if issue.retry:
+                raise self.retry(exc=issue, countdown=3600)  # retry in 1 hour
 
 
 @celery.task
