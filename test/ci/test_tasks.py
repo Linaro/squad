@@ -126,3 +126,10 @@ class SubmitTest(TestCase):
         retry.assert_called_with(exc=exception, countdown=3600)
         self.test_job.refresh_from_db()
         self.assertEqual(self.test_job.failure, "TEMPORARY ERROR")
+
+    @patch('squad.ci.models.Backend.submit')
+    def test_avoid_multiple_submissions(self, submit_method):
+        self.test_job.submitted = True
+        self.test_job.save()
+        submit.apply(args=[self.test_job.id])
+        self.assertFalse(submit_method.called)
