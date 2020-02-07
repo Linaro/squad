@@ -1,3 +1,18 @@
+# 1.5
+
+This 1.5 release fixes a bug that made SQUAD submit a single
+TestJob multiple times. It also allows project admins to create
+copies of projects with the `Save as` option.
+
+Complete list of changes going in:
+
+* ci: tasks: avoid multiple submissions
+* core: admin: enable `save as` option for projects
+* frontend: project_settings: add advanced settings tab
+* Updated translation:
+  * Translated using Weblate (Norwegian Bokmål)
+
+
 # 1.4
 
 This 1.4 release fixes a bug when viweing all test results page and
