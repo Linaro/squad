@@ -135,7 +135,8 @@ By default, workers listen to all queues.
 
 For message brokers that support prefixed-queue names, SQUAD has the optional
 environment variable `SQUAD_CELERY_QUEUE_NAME_PREFIX`, that, if set, will
-prepend it before all queues.
+prepend it before all queue names. SQUAD also support adding a suffix via
+the optional environment variable `SQUAD_CELERY_QUEUE_NAME_SUFFIX`
 
 Further configuration
 ---------------------
@@ -204,6 +205,10 @@ __ https://docs.djangoproject.com/en/1.11/topics/email/
 
 * ``SQUAD_CELERY_QUEUE_NAME_PREFIX``: Name to prefix all queues in Celery.
   Useful when multiple environments share the same broker.
+  Defaults to ``''``.
+
+* ``SQUAD_CELERY_QUEUE_NAME_SUFFIX``: Name to concatenate all queues in Celery.
+  Useful when a queue extension is needed by the broker.
   Defaults to ``''``.
 
 * ``SQUAD_CELERY_POLL_INTERVAL``: Number of seconds a worker will sleep
