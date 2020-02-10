@@ -125,6 +125,8 @@ class Backend(BaseBackend):
                 raise SubmissionIssue(self.url_remove_token(str(fault)))
         except ssl.SSLError as fault:
             raise SubmissionIssue(self.url_remove_token(str(fault)))
+        except ConnectionRefusedError as fault:
+            raise TemporarySubmissionIssue(str(fault))
 
     def url_remove_token(self, text):
         if self.data is not None and self.data.token is not None:
