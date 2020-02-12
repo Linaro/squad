@@ -1,3 +1,22 @@
+# 1.6
+
+This 1.6 release adds support to queue suffix names, which enables
+fixing a bug that happens if SQUAD was configured with AWS SQS and
+a lab entered in maintenance state.
+
+It also adds the ability to switch test results layout when viewing
+a build home page.
+
+Complete list of changes going in:
+
+* ci: backend: lava: add exception when a lava backend is offline
+* frontend:
+  * build: add option to change test results layout
+  * views: order environments columns by alphabetical order
+* settings:
+  * fix notification tasks routing
+  * add support to suffix-named queues
+
 # 1.5
 
 This 1.5 release fixes a bug that made SQUAD submit a single
