@@ -1,12 +1,31 @@
 import json
 import yaml
 
-from django.db.models import Q, F, Value as V, CharField
+from django.db.models import Q, F, Value as V, CharField, Prefetch
 from django.db.models.functions import Concat
 from django.core import exceptions as core_exceptions
 from django.core.validators import validate_email
 from django.contrib.auth.models import User
-from squad.core.models import Annotation, Group, Project, ProjectStatus, Build, TestRun, Environment, Test, Metric, MetricThreshold, EmailTemplate, KnownIssue, PatchSource, Suite, SuiteMetadata, DelayedReport, Subscription
+from squad.core.models import (
+    Annotation,
+    Group,
+    Project,
+    ProjectStatus,
+    Build,
+    TestRun,
+    Environment,
+    Test,
+    Metric,
+    MetricThreshold,
+    EmailTemplate,
+    KnownIssue,
+    PatchSource,
+    Suite,
+    SuiteMetadata,
+    DelayedReport,
+    Subscription,
+    Status
+)
 from squad.core.tasks import prepare_report, update_delayed_report
 from squad.ci.models import Backend, TestJob
 from django.http import HttpResponse
@@ -629,7 +648,9 @@ class BuildViewSet(ModelViewSet):
 
     @action(detail=True, methods=['get'], suffix='test runs')
     def testruns(self, request, pk=None):
-        testruns = self.get_object().test_runs.order_by('-id')
+        testruns = self.get_object().test_runs.prefetch_related(
+            Prefetch("status", queryset=Status.objects.filter(suite=None))
+        ).order_by("-id")
         page = self.paginate_queryset(testruns)
         serializer = TestRunSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
@@ -762,15 +783,41 @@ class EnvironmentViewSet(ModelViewSet):
     ordering_fields = ('id', 'slug', 'name')
 
 
+class HyperlinkedMetricsIdentityField(serializers.HyperlinkedIdentityField):
+    def get_url(self, *args):
+        testrun = args[0]
+        statuses = testrun.status.all()
+        if len(statuses) > 0:
+            if testrun.status.all()[0].has_metrics:
+                return super().get_url(*args)
+        else:
+            return None
+
+
+class HyperlinkedTestsIdentityField(serializers.HyperlinkedIdentityField):
+    def get_url(self, *args):
+        testrun = args[0]
+        statuses = testrun.status.all()
+        if len(statuses) > 0:
+            tr_status = testrun.status.all()[0]
+            num_tests = (
+                tr_status.tests_pass + tr_status.tests_fail + tr_status.tests_skip + tr_status.tests_xfail
+            )
+            if num_tests > 0:
+                return super().get_url(*args)
+        else:
+            return None
+
+
 class TestRunSerializer(serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
-    tests_file = serializers.HyperlinkedIdentityField(view_name='testrun-tests-file')
-    metrics_file = serializers.HyperlinkedIdentityField(view_name='testrun-metrics-file')
+    tests_file = HyperlinkedTestsIdentityField(view_name='testrun-tests-file')
+    metrics_file = HyperlinkedMetricsIdentityField(view_name='testrun-metrics-file')
     metadata_file = serializers.HyperlinkedIdentityField(view_name='testrun-metadata-file')
     log_file = serializers.HyperlinkedIdentityField(view_name='testrun-log-file')
-    tests = serializers.HyperlinkedIdentityField(view_name='testrun-tests')
-    metrics = serializers.HyperlinkedIdentityField(view_name='testrun-metrics')
+    tests = HyperlinkedTestsIdentityField(view_name='testrun-tests')
+    metrics = HyperlinkedMetricsIdentityField(view_name='testrun-metrics')
 
     class Meta:
         model = TestRun
@@ -839,7 +886,9 @@ class TestRunViewSet(ModelViewSet):
     Only test runs from public projects and from projects accessible to you are
     available.
     """
-    queryset = TestRun.objects.order_by('-id')
+    queryset = TestRun.objects.prefetch_related(
+        Prefetch("status", queryset=Status.objects.filter(suite=None))
+    ).order_by("-id")
     project_lookup_key = 'build__project__in'
     serializer_class = TestRunSerializer
     filterset_fields = (
