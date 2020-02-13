@@ -133,3 +133,22 @@ class SubmitTest(TestCase):
         self.test_job.save()
         submit.apply(args=[self.test_job.id])
         self.assertFalse(submit_method.called)
+
+    @patch('squad.ci.tasks.submit.retry')
+    @patch('squad.ci.models.Backend.submit')
+    def test_submit_overwrite_failure_after_success(self, submit_method, retry):
+        exception = TemporarySubmissionIssue("TEMPORARY ERROR")
+        retry.return_value = Retry()
+        submit_method.side_effect = exception
+
+        with self.assertRaises(Retry):
+            submit.apply(args=[self.test_job.id])
+
+        retry.assert_called_with(exc=exception, countdown=3600)
+        self.test_job.refresh_from_db()
+        self.assertEqual(self.test_job.failure, "TEMPORARY ERROR")
+
+        submit_method.side_effect = None
+        submit.apply(args=[self.test_job.id])
+        self.test_job.refresh_from_db()
+        self.assertIsNone(self.test_job.failure)
