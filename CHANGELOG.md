@@ -1,3 +1,17 @@
+# 1.6.1
+
+This 1.6.1 release fixes a bug cause when SQUAD works with SQS
+FIFO queues. The bug prevented newer tasks from being delivered
+to workers until newer tasks were complete.
+
+Complete list of changes going in:
+
+* squad: celery: make tasks groups unique on SQS
+* pytest.ini: include more tests that were being ignored
+* pytest.ini: bump minimal code coverage
+* core: tasks: fix bug on testrun status table where 'has_metrics' defaults to false for testruns that have metrics
+* api: rest: enable displaying null for empty metrics and tests on testrun api view
+
 # 1.6
 
 This 1.6 release adds support to queue suffix names, which enables
