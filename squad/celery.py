@@ -4,6 +4,7 @@ import logging
 import os
 import resource
 import sys
+import time
 
 from celery import Celery
 from celery import Task
@@ -40,6 +41,13 @@ class SquadCelery(Celery):
         kw = {'base': MemoryUseLoggingTask}
         kw.update(kwargs)
         return super(SquadCelery, self).task(*args, **kw)
+
+    def send_task(self, *args, **options):
+
+        if settings.CELERY_BROKER_URL.startswith('sqs'):
+            options['MessageGroupId'] = str(time.time())
+
+        return super(SquadCelery, self).send_task(*args, **options)
 
 
 app = SquadCelery('squad')
