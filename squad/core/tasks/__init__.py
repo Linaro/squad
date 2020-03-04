@@ -73,6 +73,8 @@ class ValidateTestRun(object):
 
         if "job_id" not in metadata.keys():
             raise exceptions.InvalidMetadata("job_id is mandatory in metadata")
+        elif type(metadata['job_id']) not in [int, str]:
+            raise exceptions.InvalidMetadata('job_id should be an integer or a string')
         elif '/' in metadata['job_id']:
             raise exceptions.InvalidMetadata('job_id cannot contain the "/" character')
 
