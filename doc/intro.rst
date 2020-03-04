@@ -98,6 +98,26 @@ Example with test data as regular ``POST`` parameters::
         --form attachment=@/path/to/extra-info.txt \
         https://squad.example.com/api/submit/my-group/my-project/x.y.z/my-ci-env
 
+Example with test data using Python's requests library:
+
+.. code:: python
+    import json
+    import requests
+
+    tests = json.dumps({"test1": "pass", "test2": "fail"})
+    metrics = json.dumps({"metric1": 21, "metric2": 4})
+    metadata = json.dumps({"foo": "bar", "baz": "qux"})
+    log = 'log text ...'
+
+    headers = {"Auth-Token": 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'}
+    url = 'https://squad.example.com/api/submit/my-group/my-project/x.y.z/my-ci-env'
+    data = {"metadata": metadata, "log": log, "tests": tests_file}
+
+    result = requests.post(url, headers=headers, data=data)
+    if not result.ok:
+        print(f"Error submitting to qa-reports: {result.reason}: {result.text}")
+
+
 Since test results should always come from automation systems, the API
 is the only way to submit results into the system. Even manual testing
 should be automated with a driver program that asks for user input, and
