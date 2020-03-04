@@ -77,7 +77,7 @@ the format of the data files.
 Example with test data as file uploads::
 
     $ curl \
-        --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+        --header "Auth-Token: $SQUAD_TOKEN" \
         --form tests=@/path/to/test-results.json \
         --form metrics=@/path/to/metrics.json \
         --form metadata=@/path/to/metadata.json \
@@ -89,7 +89,7 @@ Example with test data as file uploads::
 Example with test data as regular ``POST`` parameters::
 
     $ curl \
-        --header "Auth-Token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+        --header "Auth-Token: $SQUAD_TOKEN" \
         --form tests='{"test1": "pass", "test2": "fail"}' \
         --form metrics='{"metric1": 21, "metric2": 4}' \
         --form metadata='{"foo": "bar", "baz": "qux"}' \
@@ -103,13 +103,14 @@ Example with test data using Python's requests library:
 .. code:: python
     import json
     import requests
+    import os
 
     tests = json.dumps({"test1": "pass", "test2": "fail"})
     metrics = json.dumps({"metric1": 21, "metric2": 4})
     metadata = json.dumps({"foo": "bar", "baz": "qux"})
     log = 'log text ...'
 
-    headers = {"Auth-Token": 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'}
+    headers = {"Auth-Token": os.getenv('SQUAD_TOKEN')}
     url = 'https://squad.example.com/api/submit/my-group/my-project/x.y.z/my-ci-env'
     data = {"metadata": metadata, "log": log, "tests": tests_file}
 
