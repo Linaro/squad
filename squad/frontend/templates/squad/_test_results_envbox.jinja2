@@ -5,7 +5,7 @@
                     <th colspan="2">
                         {{ environment }}
                         {% set hide_env = 'hide_' + environment.slug.replace('-', '_').replace('.', '_') -%}
-                        <a ng-click="{{ hide_env }} = !{{ hide_env }}" class="toggle-test-results">
+                        <a ng-click="{{ hide_env }} = !{{ hide_env }}" class="toggle-test-results" ng-init="{{ hide_env }} = true">
                             <i ng-hide="!{{ hide_env }}" class="fa fa-minus"></i>
                             <i ng-hide="{{ hide_env }}" class="fa fa-plus"></i>
                         </a>
