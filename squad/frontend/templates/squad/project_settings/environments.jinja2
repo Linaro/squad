@@ -1,0 +1,23 @@
+{% extends "squad/project_settings/base.jinja2" %}
+
+{% block settings %}
+    <h1>{{ _('Environments') }}</h1>
+    
+    <form method="POST">
+        <p>
+            Tips:
+            <ul>
+                <li>{{ _('Set "Expected test runs" to 0 (zero) to force builds to finish') }}</li>
+                <li>{{ _('Deleting an environment WILL DELETE all subsequent test runs / tests / metrics') }}</li>
+                <li>{{ _('If an environment is no longer in use, and you don\'t want to lose test results, just set "Expected test runs" to 0 (zero)') }}</li>
+                <li>{{ _('Add a new environment by filling up the last blank form in the page') }}</li>
+            </ul>
+        </p>
+        {{ form.management_form }}
+        {% for f in form %}
+            <div id="environment-separator"></div>
+            {{ crispy(f) }}
+        {% endfor %}
+        <input class='btn btn-primary' type="submit" value="{{ _('Save') }}" />
+    </form>
+{% endblock %}
