@@ -5,7 +5,7 @@ from jinja2 import Template
 from django.test import TestCase
 
 
-from squad.frontend.templatetags.squad import get_page_url, to_json
+from squad.frontend.templatetags.squad import get_page_url, strip_get_parameters, update_get_parameters, to_json
 
 
 class FakeRequest():
@@ -37,6 +37,22 @@ class FakeGet():
 
 
 class TemplateTagsTest(TestCase):
+
+    def test_strip_get_parameters(self):
+        fake_request = FakeRequest()
+        fake_request.GET = FakeGet({'page': 2, 'existing_arg': 'val'})
+        context = {'request': fake_request}
+        result = strip_get_parameters(context, ['page'])
+        self.assertIn('existing_arg', result)
+        self.assertNotIn('page', result)
+
+    def test_update_get_parameters(self):
+        fake_request = FakeRequest()
+        fake_request.GET = FakeGet({'page': 2, 'existing_arg': 'val'})
+        context = {'request': fake_request}
+        result = update_get_parameters(context, {'page': 42})
+        self.assertIn('existing_arg', result)
+        self.assertIn('page=42', result)
 
     def test_get_page_url(self):
         fake_request = FakeRequest()
