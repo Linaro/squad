@@ -4,7 +4,7 @@
                 <tr>
                     <th colspan="2">
                         {{ suite }}
-                        {% set hide_suite = 'hide_' + suite.slug.replace('-', '_') -%}
+                        {% set hide_suite = 'hide_' + suite.slug.replace('-', '_').replace('.', '_').replace('/', '_') -%}
                         <a ng-click="{{ hide_suite }} = !{{ hide_suite }}" class="toggle-test-results">
                             <i ng-hide="!{{ hide_suite }}" class="fa fa-minus"></i>
                             <i ng-hide="{{ hide_suite }}" class="fa fa-plus"></i>
