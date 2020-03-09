@@ -384,3 +384,9 @@ a.toggle-test-results {
     padding-right: 5px;
     color: white;
 }
+
+div#environment-separator {
+    height: 3px;
+    background-color: #DDD;
+    margin-bottom: 10px;
+}

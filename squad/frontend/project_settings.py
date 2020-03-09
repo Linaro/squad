@@ -3,7 +3,7 @@ from django.conf.urls import url
 from django.shortcuts import render, redirect, reverse
 from django.utils.translation import ugettext_lazy as N_
 
-from squad.core.models import Project
+from squad.core.models import Project, Environment
 from squad.http import auth_write
 from squad.frontend.forms import DeleteConfirmationForm
 from squad.frontend.queries import get_metrics_list
@@ -21,6 +21,12 @@ class ProjectFormAdvanced(forms.ModelForm):
     class Meta:
         model = Project
         fields = ['project_settings']
+
+
+class EnvironmentForm(forms.ModelForm):
+    class Meta:
+        model = Environment
+        fields = ['slug', 'expected_test_runs']
 
 
 @auth_write
@@ -75,6 +81,25 @@ def thresholds(request, group_slug, project_slug):
 
 
 @auth_write
+def environments(request, group_slug, project_slug):
+    EnvironmentFormSet = forms.inlineformset_factory(Project, Environment, form=EnvironmentForm, extra=1)
+    if request.method == "POST":
+        form = EnvironmentFormSet(request.POST, instance=request.project)
+        if form.is_valid():
+            form.save()
+            return redirect(request.path)
+    else:
+        form = EnvironmentFormSet(instance=request.project)
+
+    context = {
+        'group': request.group,
+        'project': request.project,
+        'form': form,
+    }
+    return render(request, 'squad/project_settings/environments.jinja2', context)
+
+
+@auth_write
 def thresholds_legacy(request, group_slug, project_slug):
     return redirect(reverse('project-settings-thresholds', args=[group_slug, project_slug]))
 
@@ -105,6 +130,7 @@ def delete(request, group_slug, project_slug):
 urls = [
     url('^$', settings, name='project-settings'),
     url(r'^thresholds/$', thresholds, name='project-settings-thresholds'),
+    url(r'^environments/$', environments, name='project-settings-environments'),
     url(r'^advanced/$', advanced_settings, name='project-advanced-settings'),
     url(r'^delete/$', delete, name='project-settings-delete'),
 ]
