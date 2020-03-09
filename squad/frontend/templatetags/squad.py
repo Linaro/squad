@@ -166,17 +166,24 @@ def get_page_list(items):
 
 
 @register_global_function(takes_context=True)
-def strip_get_parameters(context, parameters):
+def update_get_parameters(context, parameters):
     query_string = context['request'].GET.copy()
-    for parameter in parameters:
-        if query_string.get(parameter):
-            del query_string[parameter]
+    for p in parameters.keys():
+        if parameters[p] is None and query_string.get(p) is not None:
+            del query_string[p]
+        else:
+            query_string[p] = parameters[p]
     return '?' + query_string.urlencode()
 
 
 @register_global_function(takes_context=True)
+def strip_get_parameters(context, parameters):
+    return update_get_parameters(context, {p: None for p in parameters})
+
+
+@register_global_function(takes_context=True)
 def get_page_url(context, page):
-    return '%s&page=%d' % (strip_get_parameters(context, ['page']), page)
+    return update_get_parameters(context, {'page': page})
 
 
 @register_filter

@@ -254,10 +254,19 @@ def build(request, group_slug, project_slug, version):
     build = get_build(project, version)
     build.prefetch('test_runs')
 
-    __statuses__ = Status.objects.filter(
+    failures_only = request.GET.get('failures_only', 'true')
+    if failures_only not in ['true', 'false']:
+        failures_only = 'true'
+
+    queryset = Status.objects.filter(
         test_run__build=build,
         suite__isnull=False,
-    ).prefetch_related(
+    )
+
+    if failures_only == 'true':
+        queryset = queryset.filter(tests_fail__gt=0)
+
+    __statuses__ = queryset.prefetch_related(
         'suite',
         'test_run',
         'test_run__environment',
@@ -282,6 +291,7 @@ def build(request, group_slug, project_slug, version):
         'results_layout': results_layout,
         'metadata': sorted(build.important_metadata.items()),
         'has_extra_metadata': build.has_extra_metadata,
+        'failures_only': failures_only,
     }
     return render(request, 'squad/build.jinja2', context)
 

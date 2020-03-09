@@ -27,7 +27,7 @@
 <div ng-controller='FilterController' data-param="filter-tests">
 <h2 id="test-results">
     <span class="pull-left">{{ _('Test results') }}</span>
-    <div class="dropdown" style="z-index: 1002;">
+    <div class="dropdown pull-left" style="z-index: 1002;">
         &nbsp;
         <button class="btn btn-default dropdown-toggle" type="button" id="test_results_dropdown_menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             {{ _('by environments') if results_layout == 'envbox' else _('by suites') if results_layout == 'suitebox' else _('suites x evironments') }}
@@ -38,6 +38,16 @@
             <li{% if results_layout == 'suitebox' %} class="disabled"{% endif %}><a class="dropdown-item" href="?results_layout=suitebox#test-results">by suites</a></li>
             <li{% if results_layout == 'table' %} class="disabled"{% endif %}><a class="dropdown-item" href="?results_layout=table#test-results">suites x environments</a></li>
         </ul>
+    </div>
+    <div>
+        &nbsp;
+        <input
+            type="checkbox"
+            name="failures_only"
+            onclick="window.location = '{{ update_get_parameters({'failures_only': 'false' if failures_only == 'true' else 'true'}) }}'"
+            {% if failures_only == 'true' %}checked{% endif %}
+        />
+        <span style="font-size: 50%; font-weight: normal"> {{ _('failures only') }}</span>
     </div>
 </h2>
 <div class='row row-bordered'>
