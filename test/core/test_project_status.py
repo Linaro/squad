@@ -287,8 +287,7 @@ class ProjectStatusTest(TestCase):
         testrun.metrics.create(name='metric2', suite=self.suite, result=2)
         testrun.metrics.create(name='metric1', suite=self.suite, result=5)
         status = ProjectStatus.create_or_update(build)
-        MetricThreshold.objects.create(project=self.project,
-                                       environment=self.environment,
+        MetricThreshold.objects.create(environment=self.environment,
                                        name='metric1', value=4,
                                        is_higher_better=True)
         thresholds = status.get_exceeded_thresholds()
