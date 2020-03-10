@@ -3,10 +3,16 @@ function ThresholdResource($resource) {
                      {
                          'query': {
                              method: 'GET',
+                             url: '/api/metricthresholds/',
+                             params: {environment__project: '@id'},
                              isArray: false
                          },
                          'update': {
-                             method: 'PUT'
+                             method: 'PUT',
+                             url: '/api/metricthresholds/:id/',
+                             params:  {
+                               id:'@id'
+                             }
                          }
                      }, {
                          stripTrailingSlashes: false
@@ -14,16 +20,23 @@ function ThresholdResource($resource) {
     )
 }
 
+function getKeyByValue(object, value) {
+    return Object.keys(object).find(key => object[key] === value);
+}
+
 function MetricThresholdController($scope, Threshold) {
 
     $scope.initMetricThresholds = function() {
         // Initialize threshold for modal dialog.
         $scope.currentThreshold = new Threshold()
-
         //  Get thresholds from the backend.
-        Threshold.query({project: $scope.project}).$promise.then(
+        Threshold.query({environment__project: $scope.project}).$promise.then(
             function(data) {
                 $scope.thresholds = data.results
+                for (var i in $scope.thresholds) {
+                  var threshold = $scope.thresholds[i]
+                  threshold.environment = $scope.environments[threshold.environment.slice(0,-1).split("/").pop()]
+                }
             }
         )
     }
@@ -32,17 +45,21 @@ function MetricThresholdController($scope, Threshold) {
         // Add/update the current threshold from modal dialog.
         var savedThreshold = null
         var threshold_index = $scope.currentThreshold.index
-        $scope.currentThreshold.project = "/api/projects/" + $scope.project + "/"
-
+        // save env name to reset to name value later in modal
+        var env_name = $scope.currentThreshold.environment
+        // get env id/key using its name/value
+        $scope.currentThreshold.environment = "/api/environments/" + getKeyByValue($scope.environments, $scope.currentThreshold.environment) + "/"
         if ($scope.currentThreshold.id) {
             savedThreshold = $scope.currentThreshold.$update().then(
                 function(response) {
+                    $scope.currentThreshold.environment = env_name
                     $.extend($scope.thresholds[threshold_index],
                              $scope.currentThreshold)
                 })
         } else {
             savedThreshold = $scope.currentThreshold.$save().then(
                 function(response) {
+                    $scope.currentThreshold.environment = env_name
                     $scope.thresholds.push(response)
                 })
         }

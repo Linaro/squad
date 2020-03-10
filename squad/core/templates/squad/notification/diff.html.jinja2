@@ -80,8 +80,9 @@
     {% for threshold_metric in thresholds %}
     <h2>{{threshold_metric[1].name}}</h2>
     <ul>
-      <li>Metric result: {{threshold_metric[1].result}}</li>
-      <li>Threshold value: {{threshold_metric[0].value}}</li>
+      <li>Environment: {{threshold_metric[0].slug}}</li>
+      <li>Metric result: {{threshold_metric[2].result}}</li>
+      <li>Threshold value: {{threshold_metric[1].value}}</li>
     </ul>
     {% endfor %}
 

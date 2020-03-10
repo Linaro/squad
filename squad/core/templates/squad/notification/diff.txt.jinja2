@@ -34,9 +34,10 @@ Failures
 Threshold(s) exceeded
 ---------------------
 {% for threshold_metric in thresholds %}
-Metric name: {{threshold_metric[1].name}}
-Metric result: {{threshold_metric[1].result}}
-Threshold value: {{threshold_metric[0].value}}
+Environment: {{threshold_metric[0].slug}}
+Metric name: {{threshold_metric[2].name}}
+Metric result: {{threshold_metric[2].result}}
+Threshold value: {{threshold_metric[1].value}}
 {% endfor %}
 
 All changes{%if previous_build %} (compared to build {{previous_build.version}}){% endif %}

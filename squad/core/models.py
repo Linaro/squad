@@ -918,8 +918,9 @@ class Status(models.Model, TestSummaryBase):
 class MetricThreshold(models.Model):
 
     class Meta:
-        unique_together = ('project', 'name',)
+        unique_together = ('environment', 'name',)
 
+    environment = models.ForeignKey(Environment, null=True, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     name = models.CharField(max_length=1024)
     value = models.FloatField()
@@ -1058,20 +1059,31 @@ class ProjectStatus(models.Model, TestSummaryBase):
     def get_exceeded_thresholds(self):
         # Return a list of all (threshold, metric) objects for those
         # thresholds that were exceeded by corresponding metrics.
+        environments_qs = self.build.project.environments.all()
         thresholds_exceeded = []
         if self.has_metrics:
             test_runs = self.build.test_runs.all()
             suites = Suite.objects.filter(test__test_run__build=self.build)
+            thresholds = MetricThreshold.objects.filter(
+                environment__in=environments_qs.values_list('id', flat=True)
+            )
+            thresholds_names = thresholds.values_list('name', flat=True)
             for metric in Metric.objects.filter(
                     Q(test_run__in=test_runs) | Q(suite__in=suites),
-                    name__in=self.build.project.metricthreshold_set.values_list('name', flat=True)):
-                for threshold in self.build.project.metricthreshold_set.all():
+                    name__in=thresholds_names):
+                for threshold in thresholds:
                     if threshold.is_higher_better:
                         if metric.result < threshold.value:
-                            thresholds_exceeded.append((threshold, metric))
+                            thresholds_exceeded.append((
+                                environments_qs.get(id=threshold.environment_id),
+                                threshold,
+                                metric))
                     else:
                         if metric.result > threshold.value:
-                            thresholds_exceeded.append((threshold, metric))
+                            thresholds_exceeded.append((
+                                environments_qs.get(id=threshold.environment_id),
+                                threshold,
+                                metric))
         return thresholds_exceeded
 
 
