@@ -1,7 +1,7 @@
 celery
 coreapi
 django_crispy_forms
-Django>=2.2
+Django>=2.2,<3.0
 django-cors-headers
 django-simple-history
 django_filter>=2.0
