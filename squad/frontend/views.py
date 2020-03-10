@@ -9,7 +9,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
-from squad.core.models import Group, Metric, ProjectStatus, Status
+from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold
 from squad.core.models import Build
 from squad.core.queries import get_metric_data
 from squad.frontend.queries import get_metrics_list
@@ -487,8 +487,8 @@ def attachment(request, group_slug, project_slug, build_version, job_id, fname):
 @auth
 def metrics(request, group_slug, project_slug):
     project = request.project
-
-    environments = [{"name": e.slug} for e in project.environments.order_by('id').all()]
+    env_qs = project.environments.order_by('id').all()
+    environments = [{"name": e.slug} for e in env_qs]
     metrics = get_metrics_list(project)
 
     data = get_metric_data(
@@ -501,8 +501,9 @@ def metrics(request, group_slug, project_slug):
         "project": project,
         "environments": environments,
         "metrics": metrics,
-        "thresholds": list(project.metricthreshold_set.all().values(
-            'name', 'value')),
+        "thresholds": list(MetricThreshold.objects.filter(
+            environment__in=env_qs
+        ).values('name', 'value')),
         "data": data,
     }
     return render(request, 'squad/metrics.jinja2', context)

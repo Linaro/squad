@@ -288,13 +288,13 @@ class ProjectStatusTest(TestCase):
         testrun.metrics.create(name='metric1', suite=self.suite, result=5)
         status = ProjectStatus.create_or_update(build)
         MetricThreshold.objects.create(project=self.project,
+                                       environment=self.environment,
                                        name='metric1', value=4,
                                        is_higher_better=True)
-
         thresholds = status.get_exceeded_thresholds()
         self.assertEqual(len(thresholds), 1)
-        self.assertEqual(thresholds[0][1].name, 'metric1')
-        self.assertEqual(thresholds[0][1].result, 3)
+        self.assertEqual(thresholds[0][2].name, 'metric1')
+        self.assertEqual(thresholds[0][2].result, 3)
 
     def test_last_build_comparison(self):
         # Test that the build that we compare against is truly the last one
