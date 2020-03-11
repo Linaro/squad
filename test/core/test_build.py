@@ -90,13 +90,13 @@ class BuildTest(TestCase):
 
         self.assertEqual(metadata1, metadata2)
 
-    def test_not_finished_empty_expected_test_runs(self):
+    def test_finished_empty_expected_test_runs(self):
         env1 = self.project.environments.create(slug='env1', expected_test_runs=None)
         self.project.environments.create(slug='env2', expected_test_runs=None)
         build = self.project.builds.create(version='1')
         build.test_runs.create(environment=env1)
         finished, _ = build.finished
-        self.assertFalse(finished)
+        self.assertTrue(finished)
 
     def test_finished(self):
         env1 = self.project.environments.create(slug='env1')

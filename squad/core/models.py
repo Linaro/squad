@@ -470,18 +470,17 @@ class Build(models.Model):
             expected = count['expected']
             received = count['received']
             env_name = count['name']
-            if expected == 0:
-                continue
-            if received == 0:
-                reasons.append("No test runs for %s received so far" % env_name)
-            if expected and received < expected:
-                reasons.append(
-                    "%d test runs expected for %s, but only %d received so far" % (
-                        expected,
-                        env_name,
-                        received,
+            if expected and expected > 0:
+                if received == 0:
+                    reasons.append("No test runs for %s received so far" % env_name)
+                elif received < expected:
+                    reasons.append(
+                        "%d test runs expected for %s, but only %d received so far" % (
+                            expected,
+                            env_name,
+                            received,
+                        )
                     )
-                )
         return (len(reasons) == 0, reasons)
 
     @property
