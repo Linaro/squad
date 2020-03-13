@@ -28,9 +28,12 @@ from squad.core.models import (
 )
 from squad.core.tasks import prepare_report, update_delayed_report
 from squad.ci.models import Backend, TestJob
+from squad.compat import drf_basename
 from django.http import HttpResponse
 from django.urls import reverse
 from django import forms
+from rest_framework_extensions.routers import ExtendedDefaultRouter
+from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework import routers, serializers, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
@@ -241,13 +244,16 @@ class API(routers.APIRootView):
 
     * Client interaction is enabled with <a href="/api/schema/">/api/schema</a>
     URL.
+
+    * Testrun statuses are available at:
+        * `/testruns/<testrun_id>/status/`
     """
 
     def get_view_name(self):
         return "API"
 
 
-class APIRouter(routers.DefaultRouter):
+class APIRouter(ExtendedDefaultRouter):
 
     APIRootView = API
 
@@ -812,6 +818,30 @@ class HyperlinkedTestsIdentityField(serializers.HyperlinkedIdentityField):
             return None
 
 
+class StatusFilter(filters.FilterSet):
+    class Meta:
+        model = Status
+        fields = {'suite': ['exact', 'isnull'],
+                  'metrics_summary': ['gt', 'lt'],
+                  'tests_pass': ['gt', 'lt'],
+                  'tests_fail': ['gt', 'lt'],
+                  'tests_xfail': ['gt', 'lt'],
+                  'tests_skip': ['gt', 'lt'],
+                  'has_metrics': ['exact'], }
+
+
+class StatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Status
+        exclude = ('test_run',)
+
+
+class StatusViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+    queryset = Status.objects
+    serializer_class = StatusSerializer
+    filterset_class = StatusFilter
+
+
 class TestRunSerializer(serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
@@ -1112,7 +1142,12 @@ router.register(r'groups', GroupViewSet)
 router.register(r'projects', ProjectViewSet)
 router.register(r'builds', BuildViewSet)
 router.register(r'testjobs', TestJobViewSet)
-router.register(r'testruns', TestRunViewSet)
+router.register(r'testruns', TestRunViewSet).register(
+    r'status',
+    StatusViewSet,
+    parents_query_lookups=['test_run_id'],
+    **drf_basename('testrun-status'),
+)
 router.register(r'tests', TestViewSet)
 router.register(r'suites', SuiteViewSet)
 router.register(r'environments', EnvironmentViewSet)
