@@ -849,13 +849,22 @@ class SuiteViewSet(viewsets.ModelViewSet):
 
 
 class TestSerializer(serializers.ModelSerializer):
+
+    def __init__(self, *args, **kwargs):
+        remove_fields = kwargs.pop('remove_fields', None)
+        super(TestSerializer, self).__init__(*args, **kwargs)
+        if remove_fields:
+            # for multiple fields in a list
+            for field_name in remove_fields:
+                self.fields.pop(field_name)
+
     name = serializers.CharField(source='full_name', read_only=True)
     short_name = serializers.CharField(source='name')
     status = serializers.CharField(read_only=True)
 
     class Meta:
         model = Test
-        exclude = ('test_run', 'metadata')
+        exclude = ['metadata']
 
 
 class TestViewSet(ModelViewSet):
@@ -933,7 +942,7 @@ class TestRunViewSet(ModelViewSet):
         tests = testrun.tests.prefetch_related('suite').order_by('id')
         paginator = PageNumberPagination()
         page = paginator.paginate_queryset(tests, request)
-        serializer = TestSerializer(page, many=True, context={'request': request})
+        serializer = TestSerializer(page, many=True, context={'request': request}, remove_fields=['test_run'])
         return paginator.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['get'], suffix='metrics')
