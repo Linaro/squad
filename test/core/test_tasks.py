@@ -613,6 +613,11 @@ class TestValidateTestRun(TestCase):
     def test_invalid_job_id(self):
         self.assertInvalidMetadata('{"job_id": "foo/bar"}')
 
+    def test_invalid_job_id_data_type(self):
+        self.assertInvalidMetadata('{"job_id": 1.2}')
+        self.assertInvalidMetadata('{"job_id": [1,2]}')
+        self.assertInvalidMetadata('{"job_id": {"a": 1}}')
+
     # ~~~~~~~~~~~~ TESTS FOR METRICS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def assertInvalidMetrics(self, metrics, exception=exceptions.InvalidMetricsData):
         validate = ValidateTestRun()
