@@ -68,8 +68,9 @@ def advanced_settings(request, group, project):
 @auth_write
 def thresholds(request, group_slug, project_slug):
     project = request.project
-
-    environments = [{"name": e.slug} for e in project.environments.order_by('id').all()]
+    environments = {}
+    for env in project.environments.order_by('id').all():
+        environments[env.id] = env.slug
     metrics = get_metrics_list(project)
 
     context = {

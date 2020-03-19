@@ -188,7 +188,10 @@ class TestFilter(filters.FilterSet):
 
 
 class MetricThresholdFilter(filters.FilterSet):
-    project = filters.RelatedFilter(ProjectFilter, field_name="project", queryset=Project.objects.all(), widget=forms.TextInput)
+    environment = filters.RelatedFilter(EnvironmentFilter,
+                                        field_name="environment",
+                                        queryset=Environment.objects.all(),
+                                        widget=forms.TextInput)
 
     class Meta:
         model = MetricThreshold
@@ -1097,9 +1100,9 @@ class MetricThresholdViewSet(viewsets.ModelViewSet):
 
     queryset = MetricThreshold.objects.all()
     serializer_class = MetricThresholdSerializer
-    filterset_fields = ('name', 'value', 'is_higher_better', 'project')
+    filterset_fields = ('name', 'value', 'is_higher_better', 'environment')
     filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
-    ordering_fields = ('id', 'project', 'name')
+    ordering_fields = ('id', 'environment', 'name')
     filterset_class = MetricThresholdFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
 
