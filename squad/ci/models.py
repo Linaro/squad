@@ -11,7 +11,7 @@ from dateutil.relativedelta import relativedelta
 from squad.core.tasks import ReceiveTestRun, UpdateProjectStatus
 from squad.core.models import Project, Build, TestRun, slug_validator
 from squad.core.plugins import apply_plugins
-from squad.core.tasks.exceptions import InvalidMetadata
+from squad.core.tasks.exceptions import InvalidMetadata, DuplicatedTestJob
 from squad.core.utils import yaml_validator
 
 
@@ -69,60 +69,60 @@ class Backend(models.Model):
             self.really_fetch(test_job)
 
     def really_fetch(self, test_job):
-        implementation = self.get_implementation()
-
         test_job.last_fetch_attempt = timezone.now()
+
+        implementation = self.get_implementation()
+        results = implementation.fetch(test_job)
+        if not results:
+            test_job.save()
+            return
+
+        status, completed, metadata, tests, metrics, logs = results
+
+        test_job.job_status = status
+        if not completed:
+            tests = {}
+            metrics = {}
+            test_job.can_resubmit = True
+
+        if completed and not tests and not metrics:
+            # test job produced no results
+            # mark it incomplete
+            completed = False
+            test_job.can_resubmit = True
+
+        metadata['job_id'] = test_job.job_id
+        metadata['job_status'] = test_job.job_status
+        if test_job.url is not None:
+            metadata['job_url'] = test_job.url
+
+        try:
+            # create TestRun
+            receive = ReceiveTestRun(test_job.target, update_project_status=False)
+            testrun = receive(
+                version=test_job.target_build.version,
+                environment_slug=test_job.environment,
+                metadata_file=json.dumps(metadata),
+                tests_file=json.dumps(tests),
+                metrics_file=json.dumps(metrics),
+                log_file=logs,
+                completed=completed,
+            )
+            test_job.testrun = testrun
+        except InvalidMetadata as exception:
+            test_job.failure = str(exception)
+        except DuplicatedTestJob as exception:
+            logger.error('Failed to fetch test_job(%d): "%s"' % (test_job.id, str(exception)))
+
+        # mark test job as fetched to prevent resubmission
+        # on next fetch attempt
+        test_job.fetched = True
+        test_job.fetched_at = timezone.now()
         test_job.save()
 
-        results = implementation.fetch(test_job)
-
-        if results:
-            # create TestRun
-            status, completed, metadata, tests, metrics, logs = results
-
-            test_job.job_status = status
-            if not completed:
-                tests = {}
-                metrics = {}
-                test_job.can_resubmit = True
-
-            if completed and not tests and not metrics:
-                # test job produced no results
-                # mark it incomplete
-                completed = False
-                test_job.can_resubmit = True
-
-            metadata['job_id'] = test_job.job_id
-            metadata['job_status'] = test_job.job_status
-            if test_job.url is not None:
-                metadata['job_url'] = test_job.url
-
-            try:
-                receive = ReceiveTestRun(test_job.target, update_project_status=False)
-                testrun = receive(
-                    version=test_job.target_build.version,
-                    environment_slug=test_job.environment,
-                    metadata_file=json.dumps(metadata),
-                    tests_file=json.dumps(tests),
-                    metrics_file=json.dumps(metrics),
-                    log_file=logs,
-                    completed=completed,
-                )
-                test_job.testrun = testrun
-                test_job.fetched = True
-                test_job.fetched_at = timezone.now()
-                test_job.save()
-
-                self.__postprocess_testjob__(test_job)
-
-                UpdateProjectStatus()(testrun)
-            except InvalidMetadata as exception:
-                # mark test job as fetched to prevent resubmission
-                # on next fetch attempt
-                test_job.fetched = True
-                test_job.failure = str(exception)
-                test_job.fetched_at = timezone.now()
-                test_job.save()
+        if test_job.testrun:
+            self.__postprocess_testjob__(test_job)
+            UpdateProjectStatus()(testrun)
 
     def __postprocess_testjob__(self, test_job):
         project = test_job.target

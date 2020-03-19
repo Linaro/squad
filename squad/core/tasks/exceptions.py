@@ -1,6 +1,10 @@
 import sys
 
 
+class DuplicatedTestJob(Exception):
+    pass
+
+
 class InvalidMetadataJSON(Exception):
     pass
 

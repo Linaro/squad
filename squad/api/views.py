@@ -93,7 +93,7 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
 
     try:
         receive(**test_run_data)
-    except exceptions.invalid_input as e:
+    except (exceptions.invalid_input + (exceptions.DuplicatedTestJob,)) as e:
         logger.warning(request.get_full_path() + ": " + str(e))
         return HttpResponse(str(e), status=400)
 
