@@ -919,6 +919,7 @@ class MetricThreshold(models.Model):
     class Meta:
         unique_together = ('project', 'name',)
 
+    environment = models.ForeignKey(Environment, null=True, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     name = models.CharField(max_length=1024)
     value = models.FloatField()
