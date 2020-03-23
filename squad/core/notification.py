@@ -2,6 +2,7 @@ from collections import OrderedDict
 from squad.mail import Message
 from django.conf import settings
 import django.template
+import logging
 from django.template.loader import render_to_string
 from re import sub
 
@@ -11,6 +12,7 @@ from squad.core.comparison import TestComparison
 
 
 jinja2 = django.template.engines['jinja2']
+logger = logging.getLogger()
 
 
 class Notification(object):
@@ -169,6 +171,13 @@ class Notification(object):
 
         if NotificationDelivery.exists(self.status, subject, txt, html):
             return
+
+        # avoid "SMTP: 5.3.4 Message size exceeds fixed limit"
+        _1MB = 1024 * 1024
+        if len(txt) > _1MB or len(html) > _1MB:
+            logger.error('Notification size is greater than 1MB (%i): project %s, build %s' % (len(txt), self.project.full_name, self.build.version))
+            txt = 'The email got too big (> 1MB), please visit https://%s/api/builds/%i/email/?keep=7' % (settings.BASE_URL, self.build.id)
+            html = '<html><body>' + txt + '</body></html>'
 
         message = Message(subject, txt, sender, recipients)
         if self.project.html_mail:
