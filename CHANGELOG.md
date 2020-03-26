@@ -1,3 +1,36 @@
+# 1.7
+
+This 1.7 release updated examples in the documentation, making them
+more secure by default. It fixes bugs when submitting test results.
+
+Also, there are new additions to the UI: now test results in the build
+page are displaying failed ones by default. The user can toggle 
+the visualization to the old one as wanted. A bug in the collapse/close
+button was fixed as well and by default, all suites/environment boxes
+are expanded on page load.
+
+Complete list of changes going in:
+
+* api: rest: show testrun in test
+* doc: make auth-token examples more secure by default
+* doc: intro: add example of submit test results with requests
+* ci:
+  * models: backend: handle duplicated testjob as new exception
+  * models: refactor try-except block
+  * tasks: clean test job failure message after successful submission
+* core: 
+  * models: add environment to MetricThreshold
+  * tasks: ensure job_id to be integer or string
+  * models: finish builds status earlier
+* frontend: 
+  * test_results: expand all groupings by default
+  * build: test results: show failures only by default
+  * templatetags: add helper function to update GET parameters
+  * test_results: fix collapse/expand button
+  * project_settings: add environments to project settings UI
+  * templates: project_settings: fix basics page title
+* requirements.txt: top off django version
+
 # 1.6.1
 
 This 1.6.1 release fixes a bug cause when SQUAD works with SQS
