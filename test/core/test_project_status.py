@@ -19,7 +19,9 @@ class ProjectStatusTest(TestCase):
         self.group = Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
         self.environment = self.project.environments.create(slug='theenvironment')
-        self.suite = self.project.suites.create(slug='/')
+        self.environment_a = self.project.environments.create(slug='environment_a')
+        self.suite = self.project.suites.create(slug='suite_')
+        self.suite_a = self.project.suites.create(slug='suite_a')
         self.receive_testrun = ReceiveTestRun(self.project, update_project_status=False)
 
     def create_build(self, v, datetime=None, create_test_run=True):
@@ -281,20 +283,34 @@ class ProjectStatusTest(TestCase):
 
     def test_get_exceeded_thresholds(self):
         build = self.create_build('1')
-        testrun = build.test_runs.create(
-            environment=self.environment)
+        testrun = build.test_runs.create(environment=self.environment)
         testrun.metrics.create(name='metric1', suite=self.suite, result=3)
-        testrun.metrics.create(name='metric2', suite=self.suite, result=2)
-        testrun.metrics.create(name='metric1', suite=self.suite, result=5)
+        testrun.metrics.create(name='metric2', suite=self.suite, result=8)
+        testrun.metrics.create(name='metric3', suite=self.suite, result=5)
+
+        build_a = self.create_build('2')
+        testrun_a = build_a.test_runs.create(environment=self.environment_a)
+        testrun_a.metrics.create(name='metric4', suite=self.suite_a, result=3)
+        testrun_a.metrics.create(name='metric5', suite=self.suite_a, result=2)
+        testrun_a.metrics.create(name='metric6', suite=self.suite_a, result=7)
+
         status = ProjectStatus.create_or_update(build)
         MetricThreshold.objects.create(project=self.project,
-                                       name='metric1', value=4,
-                                       is_higher_better=True)
-
+                                       environment=self.environment,
+                                       name='suite_/metric2', value=4,
+                                       is_higher_better=False)
         thresholds = status.get_exceeded_thresholds()
         self.assertEqual(len(thresholds), 1)
-        self.assertEqual(thresholds[0][1].name, 'metric1')
-        self.assertEqual(thresholds[0][1].result, 3)
+        self.assertEqual(thresholds[0][1].name, 'metric2')
+        self.assertEqual(thresholds[0][1].result, 8)
+
+        status_a = ProjectStatus.create_or_update(build_a)
+        MetricThreshold.objects.create(project=self.project,
+                                       environment=self.environment_a,
+                                       name='suite_a/metric6', value=4,
+                                       is_higher_better=True)
+        thresholds = status_a.get_exceeded_thresholds()
+        self.assertEqual(len(thresholds), 0)
 
     def test_last_build_comparison(self):
         # Test that the build that we compare against is truly the last one
@@ -319,4 +335,4 @@ class ProjectStatusTest(TestCase):
 
         fixes3 = status3.get_fixes()
         self.assertEqual(len(fixes3['theenvironment']), 1)
-        self.assertEqual(fixes3['theenvironment'][0], 'foo')
+        self.assertEqual(fixes3['theenvironment'][0], 'suite_/foo')

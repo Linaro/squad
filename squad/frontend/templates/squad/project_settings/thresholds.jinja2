@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block settings %}
-<div ng-app="MetricThreshold" ng-controller="MetricThresholdController" ng-init="project={{ project.id }}">
+<div ng-app="MetricThreshold" ng-controller="MetricThresholdController" ng-init="project={{ project.id }}; environments={{ to_json(environments) }}">
 {% include "squad/project_settings/_threshold_table.jinja2" %}
 </div>
 {% endblock %}
@@ -16,6 +16,7 @@
 <script type="text/javascript" src='{{static("select2.js/select2.min.js")}}'></script>
 <script type="text/javascript">
 $(document).ready(function() {
+  $("#environment_name").select2();
   $("#metric_name").select2();
 });
 </script>

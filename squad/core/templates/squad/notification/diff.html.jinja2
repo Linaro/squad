@@ -78,8 +78,9 @@
 
     <h1>Threshold(s) exceeded</h1>
     {% for threshold_metric in thresholds %}
-    <h2>{{threshold_metric[1].name}}</h2>
+    <h2>{{threshold_metric[0].name}}</h2>
     <ul>
+      <li>Environment: {{threshold_metric[0].environment.slug}}</li>
       <li>Metric result: {{threshold_metric[1].result}}</li>
       <li>Threshold value: {{threshold_metric[0].value}}</li>
     </ul>

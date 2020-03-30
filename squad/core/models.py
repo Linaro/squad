@@ -7,7 +7,8 @@ import re
 
 from django.db import models
 from django.db import transaction
-from django.db.models import Q, Count, Sum, Case, When
+from django.db.models import Q, Count, Sum, Case, When, F, Value
+from django.db.models.functions import Concat
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -1059,13 +1060,19 @@ class ProjectStatus(models.Model, TestSummaryBase):
         # Return a list of all (threshold, metric) objects for those
         # thresholds that were exceeded by corresponding metrics.
         thresholds_exceeded = []
+        fullname = Concat(F('suite__slug'), Value('/'), F('name'))
         if self.has_metrics:
             test_runs = self.build.test_runs.all()
             suites = Suite.objects.filter(test__test_run__build=self.build)
-            for metric in Metric.objects.filter(
+            thresholds = MetricThreshold.objects.filter(
+                environment__in=self.build.project.environments.all())
+            thresholds_names = thresholds.values_list('name', flat=True)
+            for metric in Metric.objects.annotate(fullname=fullname).filter(
                     Q(test_run__in=test_runs) | Q(suite__in=suites),
-                    name__in=self.build.project.metricthreshold_set.values_list('name', flat=True)):
-                for threshold in self.build.project.metricthreshold_set.all():
+                    fullname__in=thresholds_names):
+                for threshold in thresholds:
+                    if metric.test_run.environment_id != threshold.environment_id:
+                        continue
                     if threshold.is_higher_better:
                         if metric.result < threshold.value:
                             thresholds_exceeded.append((threshold, metric))
