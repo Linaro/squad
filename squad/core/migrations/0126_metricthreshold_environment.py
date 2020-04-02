@@ -16,4 +16,8 @@ class Migration(migrations.Migration):
             name='environment',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='core.Environment'),
         ),
+        migrations.AlterUniqueTogether(
+            name='metricthreshold',
+            unique_together=set(),
+        ),
     ]
