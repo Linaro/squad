@@ -1,6 +1,9 @@
 import datetime
+import time
+import threading
 from unittest.mock import patch, MagicMock
-from django.test import TestCase
+from django.db import connection
+from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 
 
@@ -167,6 +170,50 @@ class TestNotificationTasks(TestCase):
         notification_timeout(status.id)
         notification_timeout(status.id)
         self.assertEqual(1, len(send_status_notification.call_args_list))
+
+    @patch("squad.core.tasks.notification.notification_timeout.apply_async")
+    def test_notification_timeout_only_one_task(self, notification_timeout_apply_async):
+        self.project1.notification_timeout = 3600  # 1 hour
+        self.project1.save()
+
+        build = self.project1.builds.create(datetime=timezone.now())
+        environment = self.project1.environments.create(slug='env')
+        build.test_runs.create(environment=environment)
+        status = ProjectStatus.create_or_update(build)
+
+        maybe_notify_project_status(status.id)
+        maybe_notify_project_status(status.id)
+        self.assertEqual(1, len(notification_timeout_apply_async.call_args_list))
+
+
+# https://stackoverflow.com/a/10949616/3908350
+class TestNotificationTasksRaceCondition(TransactionTestCase):
+
+    def mock_apply_async(args, countdown=None):
+        time.sleep(1)
+
+    @patch("squad.core.tasks.notification.notification_timeout.apply_async", side_effect=mock_apply_async)
+    def test_notification_race_condition(self, notification_timeout_apply_async):
+        group = Group.objects.create(slug='mygroup')
+        project = group.projects.create(slug='myproject1', notification_timeout=1)
+        build = project.builds.create(datetime=timezone.now())
+        status = ProjectStatus.create_or_update(build)
+
+        # ref: https://stackoverflow.com/a/56584761/3908350
+        def thread(status_id):
+            maybe_notify_project_status(status_id)
+            connection.close()
+
+        parallel_task_1 = threading.Thread(target=thread, args=(status.id,))
+        parallel_task_2 = threading.Thread(target=thread, args=(status.id,))
+
+        parallel_task_1.start()
+        parallel_task_2.start()
+
+        parallel_task_1.join()
+        parallel_task_2.join()
+
+        self.assertEqual(1, notification_timeout_apply_async.call_count)
 
 
 class TestPatchNotificationTasks(TestCase):
