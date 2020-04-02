@@ -192,6 +192,21 @@ class TestSendNotification(TestCase):
         msg = mail.outbox[0]
         self.assertIn("foo'bar", msg.body)
 
+    def test_avoid_big_emails(self):
+        _1MB = 1024 * 1024
+        self.project.subscriptions.create(email='foo@example.com')
+        template = EmailTemplate.objects.create(plain_text='dummy string' * _1MB)
+        self.project.custom_email_template = template
+        self.project.html_mail = False
+        self.project.save()
+
+        status = ProjectStatus.create_or_update(self.build2)
+        send_status_notification(status)
+
+        msg = mail.outbox[0]
+        self.assertNotIn('dummy string', msg.body)
+        self.assertIn('The email got too big', msg.body)
+
 
 class TestModeratedNotifications(TestCase):
 
@@ -268,7 +283,6 @@ class TestCustomEmailTemplate(TestCase):
 
     def test_custom_template(self):
         template = EmailTemplate.objects.create(plain_text='foo', html='bar')
-        self.project.use_custom_email_template = True
         self.project.custom_email_template = template
         self.project.save()
 
@@ -284,7 +298,6 @@ class TestCustomEmailTemplate(TestCase):
 
     def test_subject_from_custom_template(self):
         template = EmailTemplate.objects.create(subject='lalala', plain_text='foo', html='bar')
-        self.project.use_custom_email_template = True
         self.project.custom_email_template = template
         self.project.save()
 
@@ -300,7 +313,6 @@ class TestCustomEmailTemplate(TestCase):
             plain_text='foo: {{ notification.project.name }}',
             html='{% autoescape True %}bar: {{ notification.project.name }}{% endautoescape %}')
         self.project.name = "Project's name"
-        self.project.use_custom_email_template = True
         self.project.custom_email_template = template
         self.project.save()
 
@@ -334,7 +346,6 @@ class TestCustomEmailTemplate(TestCase):
             metrics={{metrics}}
         """
         template = EmailTemplate.objects.create(plain_text=expose_context_vars, html=expose_context_vars)
-        self.project.use_custom_email_template = True
         self.project.custom_email_template = template
         self.project.save()
 
