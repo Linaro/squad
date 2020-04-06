@@ -9,7 +9,6 @@ REGEX_NAME = 0
 REGEX_BODY = 1
 
 MULTILINERS = [
-    ('check-kernel-panic', r'Kernel panic - not syncing.*?end Kernel panic - not syncing'),
     ('check-kernel-exception', r'------------\[ cut here \]------------.*?------------\[ cut here \]------------'),
     ('check-kernel-trace', r'Stack:.*?---\[ end trace \w* \]---'),
 ]
@@ -18,6 +17,8 @@ ONELINERS = [
     ('check-kernel-oops', r'^[^\n]+Oops(?: -|:).*?$'),
     ('check-kernel-fault', r'^[^\n]+Unhandled fault.*?$'),
     ('check-kernel-warning', r'^[^\n]+WARNING:.*?$'),
+    ('check-kernel-bug', r'^[^\n]+BUG:.*?$'),
+    ('check-kernel-panic', r'Kernel panic - not syncing.*?$'),
 ]
 
 # Tip: broader regexes should come first
