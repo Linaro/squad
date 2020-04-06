@@ -1,3 +1,19 @@
+# 1.8
+
+This 1.8 release updated linux-log-parser plugin to search for kernel panics
+as a one line error. Also it now searches for "BUG" as well. It also migrate
+metrictreshold to use environments.
+
+Complete list of changes going in:
+
+* core: models: remove threshold contraint
+* core: models: Change client code for MetricThreshold model and migrate old data
+* core: notification: avoid sending emails when body >1MB
+* plugins: linux_log_parser: make 'kernel-panic' one-line regex
+* plugins: linux_log_parser: add BUG regex
+* scripts/upload: remove build leftover files
+* test: test_notification: remove unused attribute
+
 # 1.7
 
 This 1.7 release updated examples in the documentation, making them
