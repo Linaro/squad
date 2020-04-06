@@ -6149,3 +6149,27 @@ Running tests in ftrace
 [  577.999560] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G      D         4.14.0-rc3-00320-g076264ada9a3 #1
 [  578.008823] Hardware name: Generic DRA74X (Flattened Device Tree)
 [  578.014948] task: c180bf40 task.stack: c1800000
+[    0.750784] R13: 0000000000003ad0 R14: 0000000000000000 R15: ffffffffa10896be
+[    0.750784] FS:  0000000000000000(0000) GS:ffff941efbc00000(0000) knlGS:0000000000000000
+[    0.750784] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[    0.750784] CR2: 000000000000028c CR3: 000000001c410000 CR4: 00000000003406f0
+[    0.750784] BUG: sleeping function called from invalid context at /usr/src/kernel/include/linux/percpu-rwsem.h:38
+[    0.750784] in_atomic(): 0, irqs_disabled(): 1, non_block: 0, pid: 1, name: swapper/0
+[    0.750784] INFO: lockdep is turned off.
+[    0.750784] irq event stamp: 658470
+[    0.750784] hardirqs last  enabled at (658469): [<ffffffffa02929d1>] _raw_read_unlock_irqrestore+0x31/0x50
+[    0.750784] hardirqs last disabled at (658470): [<ffffffff9f401f3b>] trace_hardirqs_off_thunk+0x1a/0x1c
+[    0.750784] softirqs last  enabled at (658444): [<ffffffffa0600338>] __do_softirq+0x338/0x43a
+[    0.750784] softirqs last disabled at (658433): [<ffffffff9f5045e8>] irq_exit+0xb8/0xc0
+[    0.750784] CPU: 0 PID: 1 Comm: swapper/0 Tainted: G      D           5.6.0-rc4 #1
+[    0.750784] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.12.0-1 04/01/2014
+[    0.750784] Call Trace:
+[    0.750784]  dump_stack+0x7a/0xa5
+[    0.750784]  ___might_sleep+0x163/0x250
+[    0.750784]  __might_sleep+0x4a/0x80
+[    0.750784]  exit_signals+0x33/0x2d0
+[    0.750784]  do_exit+0xb6/0xcf0
+[    0.750784]  ? kernel_init_freeable+0x219/0x279
+[    0.750784]  ? rest_init+0x250/0x250
+[    0.750784]  rewind_stack_do_exit+0x17/0x20
+[    0.750784] Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000009

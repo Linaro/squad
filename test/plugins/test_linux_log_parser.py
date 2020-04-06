@@ -58,6 +58,7 @@ class TestLinuxLogParser(TestCase):
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
         self.assertIn('Kernel panic - not syncing', test.log)
+        self.assertIn('Attempted to kill init! exitcode=0x00000009', test.log)
         self.assertNotIn('Internal error: Oops', test.log)
 
     def test_detects_kernel_bug(self):
