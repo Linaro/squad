@@ -18,6 +18,7 @@ ONELINERS = [
     ('check-kernel-oops', r'^[^\n]+Oops(?: -|:).*?$'),
     ('check-kernel-fault', r'^[^\n]+Unhandled fault.*?$'),
     ('check-kernel-warning', r'^[^\n]+WARNING:.*?$'),
+    ('check-kernel-bug', r'^[^\n]+BUG:.*?$'),
 ]
 
 # Tip: broader regexes should come first

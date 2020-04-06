@@ -60,6 +60,17 @@ class TestLinuxLogParser(TestCase):
         self.assertIn('Kernel panic - not syncing', test.log)
         self.assertNotIn('Internal error: Oops', test.log)
 
+    def test_detects_kernel_bug(self):
+        testjob = self.new_testjob('oops.log')
+        self.plugin.postprocess_testjob(testjob)
+
+        test = testjob.testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-bug-999')
+        self.assertFalse(test.result)
+        self.assertIsNotNone(test.log)
+        self.assertNotIn('Booting Linux', test.log)
+        self.assertIn('BUG:', test.log)
+        self.assertNotIn('Internal error: Oops', test.log)
+
     def test_detects_multiple(self):
         testjob = self.new_testjob('multiple_issues_dmesg.log')
         self.plugin.postprocess_testjob(testjob)
