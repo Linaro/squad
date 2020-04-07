@@ -92,7 +92,7 @@ Example with test data as regular ``POST`` parameters::
         --header "Auth-Token: $SQUAD_TOKEN" \
         --form tests='{"test1": "pass", "test2": "fail"}' \
         --form metrics='{"metric1": 21, "metric2": 4}' \
-        --form metadata='{"foo": "bar", "baz": "qux"}' \
+        --form metadata='{"foo": "bar", "baz": "qux", "job_id": 123}' \
         --form log='log text ...' \
         --form attachment=@/path/to/screenshot.png \
         --form attachment=@/path/to/extra-info.txt \
@@ -101,13 +101,14 @@ Example with test data as regular ``POST`` parameters::
 Example with test data using Python's requests library:
 
 .. code:: python
+
     import json
     import requests
     import os
 
     tests = json.dumps({"test1": "pass", "test2": "fail"})
     metrics = json.dumps({"metric1": 21, "metric2": 4})
-    metadata = json.dumps({"foo": "bar", "baz": "qux"})
+    metadata = json.dumps({"foo": "bar", "baz": "qux", "job_id": 123})
     log = 'log text ...'
 
     headers = {"Auth-Token": os.getenv('SQUAD_TOKEN')}
@@ -220,7 +221,7 @@ strings. The following fields are recognized:
   representation, with seconds. This is the representation that ``date
   --iso-8601=seconds`` gives you.
 * ``job_id``: identifier for the test run. Must be unique for the
-  project.
+  project. **This field is mandatory**
 * ``job_status``: string identifying the status of the project. SQUAD
   makes no judgement about its value.
 * ``job_url``: URL pointing to the original test run.
