@@ -384,11 +384,12 @@ More details about coreapi can be found on coreapi website and DRF website:
 Badges
 ------
 
-SQUAD offers project badges that can be used in the webpages
+SQUAD offers project and build badges that can be used in the webpages
 
 ::
 
   https://<squad_instance_tld>/group/project/badge
+  https://<squad_instance_tld>/group/project/build_version/badge
 
 The colour of the badge matches the passed/failed condition.
 Following colours are presented:
