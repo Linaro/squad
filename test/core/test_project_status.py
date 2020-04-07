@@ -295,8 +295,7 @@ class ProjectStatusTest(TestCase):
         testrun_a.metrics.create(name='metric6', suite=self.suite_a, result=7)
 
         status = ProjectStatus.create_or_update(build)
-        MetricThreshold.objects.create(project=self.project,
-                                       environment=self.environment,
+        MetricThreshold.objects.create(environment=self.environment,
                                        name='suite_/metric2', value=4,
                                        is_higher_better=False)
         thresholds = status.get_exceeded_thresholds()
@@ -305,8 +304,7 @@ class ProjectStatusTest(TestCase):
         self.assertEqual(thresholds[0][1].result, 8)
 
         status_a = ProjectStatus.create_or_update(build_a)
-        MetricThreshold.objects.create(project=self.project,
-                                       environment=self.environment_a,
+        MetricThreshold.objects.create(environment=self.environment_a,
                                        name='suite_a/metric6', value=4,
                                        is_higher_better=True)
         thresholds = status_a.get_exceeded_thresholds()

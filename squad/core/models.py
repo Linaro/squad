@@ -917,8 +917,10 @@ class Status(models.Model, TestSummaryBase):
 
 class MetricThreshold(models.Model):
 
-    environment = models.ForeignKey(Environment, null=True, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    class Meta:
+        unique_together = ('environment', 'name',)
+
+    environment = models.ForeignKey(Environment, null=False, on_delete=models.CASCADE)
     name = models.CharField(max_length=1024)
     value = models.FloatField()
     is_higher_better = models.BooleanField(default=False)
