@@ -101,19 +101,7 @@ def project_home(request, group_slug, project_slug):
     return render(request, 'squad/project.jinja2', context)
 
 
-@auth
-def project_badge(request, group_slug, project_slug):
-    project = request.project
-
-    status = ProjectStatus.objects.filter(
-        build__project=project,
-        finished=True
-    ).order_by("-build__datetime").first()
-
-    title_text = project.slug
-    if request.GET and 'title' in request.GET.keys():
-        title_text = request.GET['title']
-
+def __produce_badge(title_text, status, style=None):
     badge_text = "no results found"
     if status:
         badge_text = "pass: %s, fail: %s, xfail: %s, skip: %s" % \
@@ -130,10 +118,10 @@ def project_badge(request, group_slug, project_slug):
         if status.tests_pass == 0:
             badge_colour = "#d9534f"
 
-    if request.GET:
-        if 'passrate' in request.GET.keys() and pass_rate != -1:
+    if style is not None:
+        if style == 'passrate' and pass_rate != -1:
             badge_text = "%.2f%%" % (pass_rate)
-        elif 'metrics' in request.GET.keys() and status is not None and status.has_metrics:
+        elif style == 'metrics' and status is not None and status.has_metrics:
             badge_text = str(status.metrics_summary)
             badge_colour = "#5cb85c"
 
@@ -174,6 +162,49 @@ def project_badge(request, group_slug, project_slug):
     badge = dwg.tostring()
 
     return HttpResponse(badge, content_type="image/svg+xml")
+
+
+def __badge_style(request):
+    style = None
+    if request.GET:
+        if 'passrate' in request.GET.keys():
+            style = 'passrate'
+        elif 'metrics' in request.GET.keys():
+            style = 'metrics'
+    return style
+
+
+@auth
+def project_badge(request, group_slug, project_slug):
+    project = request.project
+
+    status = ProjectStatus.objects.filter(
+        build__project=project,
+        finished=True
+    ).order_by("-build__datetime").first()
+
+    title_text = project.slug
+
+    if request.GET and 'title' in request.GET.keys():
+        title_text = request.GET['title']
+
+    style = __badge_style(request)
+    return __produce_badge(title_text, status, style)
+
+
+@auth
+def build_badge(request, group_slug, project_slug, version):
+    project = request.project
+    build = get_build(project, version)
+    status = build.status
+
+    title_text = build.version
+
+    if request.GET and 'title' in request.GET.keys():
+        title_text = request.GET['title']
+
+    style = __badge_style(request)
+    return __produce_badge(title_text, status, style)
 
 
 @auth

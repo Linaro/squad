@@ -85,6 +85,21 @@ class FrontendTest(TestCase):
     def test_build(self):
         self.hit('/mygroup/myproject/build/1.0/')
 
+    def test_build_badge(self):
+        self.hit('/mygroup/myproject/build/1.0/badge')
+
+    def test_build_badge_title(self):
+        self.hit('/mygroup/myproject/build/1.0/badge?title=abc')
+
+    def test_build_badge_passrate(self):
+        self.hit('/mygroup/myproject/build/1.0/badge?passrate')
+
+    def test_build_badge_metrics(self):
+        self.hit('/mygroup/myproject/build/1.0/badge?metrics')
+
+    def test_build_badge_invalid(self):
+        self.hit('/mygroup/myproject/build/1.0/badge?foo')
+
     def test_build_404(self):
         self.hit('/mygroup/myproject/build/999/', 404)
 
