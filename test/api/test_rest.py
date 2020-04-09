@@ -3,7 +3,7 @@ import json
 from test.mock import patch
 from django.utils import timezone
 from squad.core import models
-from squad.core.tasks import UpdateProjectStatus, ReceiveTestRun
+from squad.core.tasks import UpdateProjectStatus, ReceiveTestRun, RecordTestRunStatus, ParseTestRunData
 from squad.ci import models as ci_models
 from rest_framework.authtoken.models import Token
 from rest_framework.reverse import reverse
@@ -521,6 +521,19 @@ class RestApiTest(APITestCase):
     def test_testruns_metrics(self):
         data = self.hit('/api/testruns/%d/metrics/' % self.testrun.id)
         self.assertEqual(list, type(data['results']))
+
+    def test_testruns_status(self):
+        ParseTestRunData()(self.testrun)
+        RecordTestRunStatus()(self.testrun)
+        data = self.hit('/api/testruns/%d/status/' % self.testrun.id)
+        data2 = self.hit('/api/testruns/%d/status/?suite__isnull=true' % self.testrun.id)
+        self.assertEqual(3, data['count'])
+        self.assertEqual(10, data['results'][0]['tests_pass'])
+        self.assertEqual(8, data['results'][0]['tests_fail'])
+        self.assertEqual(0, data['results'][0]['tests_xfail'])
+        self.assertEqual(0, data['results'][0]['tests_skip'])
+        self.assertEqual(0, data['results'][0]['metrics_summary'])
+        self.assertEqual(None, data2['results'][0]['suite'])
 
     def test_testjob_definition(self):
         data = self.hit('/api/testjobs/%d/definition/' % self.testjob.id)
