@@ -285,6 +285,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Celery settings
 CELERY_BROKER_URL = os.getenv('SQUAD_CELERY_BROKER_URL')
+CELERY_TASK_ALWAYS_EAGER = CELERY_BROKER_URL is None
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'max_retries': 5,
     'queue_name_prefix': os.getenv('SQUAD_CELERY_QUEUE_NAME_PREFIX', ''),

@@ -10,6 +10,9 @@ test_result_mapping = {'pass': True, 'fail': False}
 
 
 def parse_test_result(value):
+    if value is None:
+        return None
+
     v = value.lower()
     return test_result_mapping.get(v, None)
 

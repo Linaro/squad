@@ -44,7 +44,7 @@ class SquadCelery(Celery):
 
     def send_task(self, *args, **options):
 
-        if settings.CELERY_BROKER_URL.startswith('sqs'):
+        if settings.CELERY_BROKER_URL and settings.CELERY_BROKER_URL.startswith('sqs'):
             options['MessageGroupId'] = str(time.time())
 
         return super(SquadCelery, self).send_task(*args, **options)
