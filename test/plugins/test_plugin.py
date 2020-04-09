@@ -9,8 +9,8 @@ class TestGetPluginsByFeature(TestCase):
         testrun_plugins = get_plugins_by_feature([Plugin.postprocess_testrun])
         testjob_plugins = get_plugins_by_feature([Plugin.postprocess_testjob])
         self.assertNotIn('example', testrun_plugins)
-        self.assertNotIn('linux_log_parser', testrun_plugins)
-        self.assertIn('linux_log_parser', testjob_plugins)
+        self.assertNotIn('linux_log_parser', testjob_plugins)
+        self.assertIn('linux_log_parser', testrun_plugins)
 
     def test_feature_list_is_none(self):
         plugins = get_plugins_by_feature(None)
