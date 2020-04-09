@@ -2,7 +2,6 @@ import os
 from django.test import TestCase
 from squad.plugins.linux_log_parser import Plugin
 from squad.core.models import Group
-from squad.ci.models import TestJob, Backend
 
 
 def read_sample_file(name):
@@ -19,30 +18,16 @@ class TestLinuxLogParser(TestCase):
         self.build = self.project.builds.create(version='1')
         self.env = self.project.environments.create(slug='myenv')
         self.plugin = Plugin()
-        self.backend = Backend.objects.create(name='foobar')
 
-    def new_testjob(self, logfile, name='999'):
-        testjob = TestJob.objects.create(
-            backend=self.backend,
-            definition='',
-            target=self.project,
-            target_build=self.build,
-            environment=self.env.slug,
-            name=name
-        )
-
+    def new_testrun(self, logfile, job_id='999'):
         log = read_sample_file(logfile)
-        testrun = self.build.test_runs.create(environment=self.env, log_file=log)
-        testjob.testrun = testrun
-        testjob.save()
-
-        return testjob
+        return self.build.test_runs.create(environment=self.env, log_file=log, job_id=job_id)
 
     def test_detects_oops(self):
-        testjob = self.new_testjob('oops.log')
-        self.plugin.postprocess_testjob(testjob)
+        testrun = self.new_testrun('oops.log')
+        self.plugin.postprocess_testrun(testrun)
 
-        test = testjob.testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-oops-999')
+        test = testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-oops-999')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Linux version 4.4.89-01529-gb29bace', test.log)
@@ -50,10 +35,10 @@ class TestLinuxLogParser(TestCase):
         self.assertNotIn('Kernel panic', test.log)
 
     def test_detects_kernel_panic(self):
-        testjob = self.new_testjob('kernelpanic.log')
-        self.plugin.postprocess_testjob(testjob)
+        testrun = self.new_testrun('kernelpanic.log')
+        self.plugin.postprocess_testrun(testrun)
 
-        test = testjob.testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-panic-999')
+        test = testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-panic-999')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
@@ -62,10 +47,10 @@ class TestLinuxLogParser(TestCase):
         self.assertNotIn('Internal error: Oops', test.log)
 
     def test_detects_kernel_bug(self):
-        testjob = self.new_testjob('oops.log')
-        self.plugin.postprocess_testjob(testjob)
+        testrun = self.new_testrun('oops.log')
+        self.plugin.postprocess_testrun(testrun)
 
-        test = testjob.testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-bug-999')
+        test = testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-bug-999')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
@@ -73,10 +58,10 @@ class TestLinuxLogParser(TestCase):
         self.assertNotIn('Internal error: Oops', test.log)
 
     def test_detects_multiple(self):
-        testjob = self.new_testjob('multiple_issues_dmesg.log')
-        self.plugin.postprocess_testjob(testjob)
+        testrun = self.new_testrun('multiple_issues_dmesg.log')
+        self.plugin.postprocess_testrun(testrun)
 
-        tests = testjob.testrun.tests
+        tests = testrun.tests
         test_trace = tests.get(suite__slug='linux-log-parser', name='check-kernel-trace-999')
         test_panic = tests.get(suite__slug='linux-log-parser', name='check-kernel-panic-999')
         test_exception = tests.get(suite__slug='linux-log-parser', name='check-kernel-exception-999')
@@ -120,10 +105,10 @@ class TestLinuxLogParser(TestCase):
         self.assertIn('Unhandled fault:', test_fault.log)
 
     def test_pass_if_nothing_is_found(self):
-        testjob = self.new_testjob('/dev/null')
-        self.plugin.postprocess_testjob(testjob)
+        testrun = self.new_testrun('/dev/null')
+        self.plugin.postprocess_testrun(testrun)
 
-        tests = testjob.testrun.tests
+        tests = testrun.tests
         test_trace = tests.get(suite__slug='linux-log-parser', name='check-kernel-trace-999')
         test_panic = tests.get(suite__slug='linux-log-parser', name='check-kernel-panic-999')
         test_exception = tests.get(suite__slug='linux-log-parser', name='check-kernel-exception-999')
@@ -139,19 +124,19 @@ class TestLinuxLogParser(TestCase):
         self.assertTrue(test_fault.result)
 
     def test_two_testruns_distinct_test_names(self):
-        testjob1 = self.new_testjob('/dev/null', 'job1')
-        testjob2 = self.new_testjob('/dev/null', 'job2')
+        testrun1 = self.new_testrun('/dev/null', 'job1')
+        testrun2 = self.new_testrun('/dev/null', 'job2')
 
-        self.plugin.postprocess_testjob(testjob1)
-        self.plugin.postprocess_testjob(testjob2)
+        self.plugin.postprocess_testrun(testrun1)
+        self.plugin.postprocess_testrun(testrun2)
 
-        self.assertNotEqual(testjob1.testrun.tests.all(), testjob2.testrun.tests.all())
+        self.assertNotEqual(testrun1.tests.all(), testrun2.tests.all())
 
     def test_rcu_warning(self):
-        testjob = self.new_testjob('rcu_warning.log')
-        self.plugin.postprocess_testjob(testjob)
+        testrun = self.new_testrun('rcu_warning.log')
+        self.plugin.postprocess_testrun(testrun)
 
-        tests = testjob.testrun.tests
+        tests = testrun.tests
         test_trace = tests.get(suite__slug='linux-log-parser', name='check-kernel-trace-999')
         test_panic = tests.get(suite__slug='linux-log-parser', name='check-kernel-panic-999')
         test_exception = tests.get(suite__slug='linux-log-parser', name='check-kernel-exception-999')

@@ -61,11 +61,10 @@ class Plugin(BasePlugin):
             log='\n'.join(lines),
         )
 
-    def postprocess_testjob(self, testjob):
-        testrun = testjob.testrun
+    def postprocess_testrun(self, testrun):
         log = self.__kernel_msgs_only(testrun.log_file)
         suite, _ = testrun.build.project.suites.get_or_create(slug='linux-log-parser')
-        test_name_suffix = ('-%s' % testjob.name) if testjob.name else ''
+        test_name_suffix = '-%s' % testrun.job_id
 
         regex = self.__compile_regexes(REGEXES)
         matches = regex.findall(log)
