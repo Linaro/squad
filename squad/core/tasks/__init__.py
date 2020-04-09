@@ -71,12 +71,11 @@ class ValidateTestRun(object):
         if type(metadata) != dict:
             raise exceptions.InvalidMetadata("metadata is not a object ({})")
 
-        if "job_id" not in metadata.keys():
-            raise exceptions.InvalidMetadata("job_id is mandatory in metadata")
-        elif type(metadata['job_id']) not in [int, str]:
-            raise exceptions.InvalidMetadata('job_id should be an integer or a string')
-        elif '/' in metadata['job_id']:
-            raise exceptions.InvalidMetadata('job_id cannot contain the "/" character')
+        if "job_id" in metadata.keys():
+            if type(metadata['job_id']) not in [int, str]:
+                raise exceptions.InvalidMetadata('job_id should be an integer or a string')
+            if '/' in metadata['job_id']:
+                raise exceptions.InvalidMetadata('job_id cannot contain the "/" character')
 
     def __validate_metrics(self, metrics_file):
         try:
@@ -138,15 +137,14 @@ class ReceiveTestRun(object):
             fields = self.SPECIAL_METADATA_FIELDS
             metadata_fields = {k: data[k] for k in fields if data.get(k)}
 
-            job_id = metadata_fields['job_id']
-            if build.test_runs.filter(job_id=job_id).exists():
+            job_id = metadata_fields.get('job_id')
+            if job_id is None:
+                metadata_fields['job_id'] = uuid.uuid4()
+            elif build.test_runs.filter(job_id=job_id).exists():
                 raise exceptions.DuplicatedTestJob("There is already a test run with job_id %s" % job_id)
 
         else:
-            metadata_fields = {}
-
-        if 'job_id' not in metadata_fields:
-            metadata_fields['job_id'] = uuid.uuid4()
+            metadata_fields = {'job_id': uuid.uuid4()}
 
         if log_file:
             log_file = log_file.replace("\x00", "")

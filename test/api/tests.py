@@ -321,7 +321,7 @@ class CreateTestRunApiTest(ApiTest):
                 'metadata': StringIO('{"datetime": "2016-09-01T00:00:00+00:00"}'),
             }
         )
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(201, response.status_code)
 
     def test_reject_submission_with_existing_job_id(self):
         def post():
