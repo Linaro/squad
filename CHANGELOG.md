@@ -1,3 +1,22 @@
+# 1.9
+
+This 1.9 release really fixes linux-log-parser plugin, adds badges for
+builds and fixes bugs discovered when using squad-client. Also we made
+"job_id" optional when submitting test results through the api.
+
+Complete list of changes going in:
+
+* core:
+  * api: add status to testrun
+  * data: handle null test result
+  * model: MetricThreshold remove project
+  * tasks: make "job_id" optional
+* celery: avoid crash when no broker is configured
+* doc: fix python example for submissions
+* frontend: add badge for build
+* plugins: linux_log_parser: run plugin for testruns
+* settings: run tasks when there is no broker
+
 # 1.8
 
 This 1.8 release updated linux-log-parser plugin to search for kernel panics
