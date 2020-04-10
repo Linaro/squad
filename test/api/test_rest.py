@@ -480,6 +480,16 @@ class RestApiTest(APITestCase):
         self.assertEqual(list, type(data['results']))
         self.assertEqual(2, len(data['results']))
 
+    def test_metrics(self):
+        data = self.hit('/api/metrics/')
+        self.assertEqual(list, type(data['results']))
+
+    def test_metrics_with_page_size(self):
+        self.receive("2020-01-01", "myenv2", metrics={"foo": 1, "bar/baz": 2})
+        data = self.hit('/api/metrics/?limit=2')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(2, len(data['results']))
+
     def test_testruns(self):
         data = self.hit('/api/testruns/%d/' % self.testrun.id)
         self.assertEqual(self.testrun.id, data['id'])
