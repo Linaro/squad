@@ -40,6 +40,13 @@ will send notification to project subscribers if the test result metrics exceed
 a certain value. The threshold values will also appear in the charts. Projects 
 have the `project_settings` field for any specific configuration it might require.
 
+Builds can be compared against baselines exposing regressions and fixes. Visit
+``/_/comparebuilds/``, select a project then two builds from it. This comparison
+will go over each build's tests and find all different states from each. For instance
+if a test failed in baseline but passes in a more current one, this is considered
+to be a ``"fix"``. The opposite is called ``"regression"``. The concept can vary
+for other transitions.
+
 .. _result_submit_ref_label:
 
 Submitting results
