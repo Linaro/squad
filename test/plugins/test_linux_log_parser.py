@@ -152,3 +152,10 @@ class TestLinuxLogParser(TestCase):
         self.assertFalse(test_warning.result)
 
         self.assertIn('WARNING: suspicious RCU usage', test_warning.log)
+
+    def test_non_string(self):
+        testrun = self.build.test_runs.create(environment=self.env, job_id='1111')
+        self.plugin.postprocess_testrun(testrun)
+
+        tests = testrun.tests
+        self.assertEqual(0, tests.count())
