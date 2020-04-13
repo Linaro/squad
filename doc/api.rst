@@ -381,6 +381,15 @@ More details about coreapi can be found on coreapi website and DRF website:
  * http://www.coreapi.org/
  * https://www.django-rest-framework.org/topics/api-clients/
 
+SQUAD-Client
+-------------------------
+
+SQUAD team has been working on a client tool that help users query the API
+easily, using a Python descriptive way of interacting with the backend.
+
+If you are interested in using such tool, please check it out in
+`SQUAD-Client <https://github.com/Linaro/squad-client>`_
+
 Badges
 ------
 
