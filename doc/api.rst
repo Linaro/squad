@@ -287,12 +287,23 @@ following additional routes:
 - log_file (/api/testruns/<id>/log_file/)
 - tests (/api/testruns/<id>/tests/)
 - metrics (/api/testruns/<id>/metrics/)
+- status (/api/testruns/<id>/status/)
+
+  Provides a list of TestRun's statuses. One can also passing in filters to
+  get specific results, e.g. /api/testruns/<id>/status/?suite__isnull=true
+  retrieves the overall Status object for that testrun.
 
 tests (/api/tests/)
 ~~~~~~~~~~~~~~~~~~~
 
-Provides access to Test object. In case of private projects token with
-enough privileges is required to access the object.
+Provides access to Tests objects. In case of private projects token with
+enough privileges is required to access the objects.
+
+metrics (/api/metrics/)
+~~~~~~~~~~~~~~~~~~~
+
+Provides access to Metrics objects. In case of private projects token with
+enough privileges is required to access the objects.
 
 suites (/api/suites/)
 ~~~~~~~~~~~~~~~~~~~~~
