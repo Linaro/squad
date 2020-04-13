@@ -62,6 +62,9 @@ class Plugin(BasePlugin):
         )
 
     def postprocess_testrun(self, testrun):
+        if testrun.log_file is None:
+            return
+
         log = self.__kernel_msgs_only(testrun.log_file)
         suite, _ = testrun.build.project.suites.get_or_create(slug='linux-log-parser')
         test_name_suffix = '-%s' % testrun.job_id
