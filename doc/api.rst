@@ -157,16 +157,6 @@ and searched. Both operations can be done using 'name' and 'slug' fields.
 With enough privileges Groups can also be created, modified and deleted
 using REST API with POST, PUT and DELETE HTTP requests respectively
 
-usergroups (/api/usergroups/)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Provides access to UserGroup object. This object corresponds to Django Group
-The UserGroup objects can be filtered and searched. Both operations can be
-done using 'name' field.
-
-With enough privileges UserGroups can also be created, modified and deleted
-using REST API with POST, PUT and DELETE HTTP requests respectively
-
 projects (/api/projects/)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
