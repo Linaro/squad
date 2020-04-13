@@ -1,3 +1,14 @@
+# 1.9.1
+
+This is a quick release that fixes two bugs regarding the linux log parser
+plugin. 
+
+Changes:
+
+* plugins: linux_log_parser: ignore empty logs
+* core: history: check for empty suite metadata
+
+
 # 1.9
 
 This 1.9 release really fixes linux-log-parser plugin, adds badges for
