@@ -137,6 +137,16 @@ doesn't respect 'can_resubmit' flag on the TestJob object.
 REST APIs
 ---------
 
+The REST API is powered by `Django Rest Framework (DRF)<https://www.django-rest-framework.org/>`_ and
+`Django fields lookups <https://docs.djangoproject.com/en/3.0/topics/db/queries/#field-lookups>`_.
+This means that for supported endpoints you can do a field lookup. For example,
+querying all testruns that belong to a build that belongs to a project called
+MyProject, one would run a query like:
+
+**GET** /api/testruns/?build__project__name=MyProject
+
+This gives the API flexibility for filtering in many different ways.
+
 groups (/api/groups/)
 ~~~~~~~~~~~~~~~~~~~~~
 
