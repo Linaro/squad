@@ -139,6 +139,9 @@ matter, so ``"PASS"``/``"FAIL"`` will work just fine. Any value that
 when downcased is not either ``"pass"`` or ``"fail"`` will be mapped to
 ``None``/``NULL`` and displayed in the UI as *skip*.
 
+Tests that have ``"fail"`` as results and are known to have any issues
+are displayed as *xfail* (eXpected-fail).
+
 Tests can be grouped in test suites. For that, the test name must be
 prefixed with the suite name and a slash (``/``). Therefore, slashes are
 reserved characters in this context, and cannot be used in test names.
