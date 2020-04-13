@@ -16,7 +16,7 @@ class TestResult(object):
         self.test_run = test.test_run
         self.info = {
             "test_description": test.metadata.description if test.metadata else '',
-            "suite_instructions": test.suite.metadata.instructions_to_reproduce,
+            "suite_instructions": test.suite.metadata.instructions_to_reproduce if test.suite.metadata else '',
             "test_instructions": test.metadata.instructions_to_reproduce if test.metadata else '',
             "test_log": test.log
         }
