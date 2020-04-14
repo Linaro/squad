@@ -684,7 +684,9 @@ class BuildViewSet(ModelViewSet):
         serializer = TestJobSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
-    def __return_delayed_report(self, request):
+    def __return_delayed_report(self, request, wait=False):
+        force = request.query_params.get("force", False)
+
         output_format = request.query_params.get("output", "text/plain")
         template_id = request.query_params.get("template", None)
         baseline_id = request.query_params.get("baseline", None)
@@ -724,30 +726,37 @@ class BuildViewSet(ModelViewSet):
             "data_retention_days": data_retention_days
         }
         if baseline_id is not None:
+            baseline_ok = False
             try:
                 previous_build = Build.objects.get(pk=baseline_id)
                 report_kwargs["baseline"] = previous_build.status
+                baseline_ok = True
             except Build.DoesNotExist:
-                data = {
-                    "message": "Baseline build %s does not exist" % baseline_id
-                }
-                report_kwargs.update({"build": self.get_object()})
-                # return created=False to avoid running prepare_report
-                return update_delayed_report(None, data, status.HTTP_400_BAD_REQUEST, **report_kwargs), False
+                data = {"message": "Baseline build %s does not exist" % baseline_id}
             except ProjectStatus.DoesNotExist:
-                data = {
-                    "message": "Build %s has no status" % baseline_id
-                }
-                report_kwargs.update({"build": self.get_object()})
-                # return created=False to avoid running prepare_report
-                return update_delayed_report(None, data, status.HTTP_400_BAD_REQUEST, **report_kwargs), False
-        try:
-            delayed_report, created = self.get_object().delayed_reports.get_or_create(**report_kwargs)
-        except core_exceptions.MultipleObjectsReturned:
-            delayed_report = self.get_object().delayed_reports.all()[0]  # return first available object
-            created = False
+                data = {"message": "Build %s has no status" % baseline_id}
 
-        return delayed_report, created
+            if not baseline_ok:
+                report_kwargs.update({"build": self.get_object()})
+                return update_delayed_report(None, data, status.HTTP_400_BAD_REQUEST, **report_kwargs)
+
+        if force:
+            delayed_report = self.get_object().delayed_reports.create(**report_kwargs)
+            created = True
+        else:
+            try:
+                delayed_report, created = self.get_object().delayed_reports.get_or_create(**report_kwargs)
+            except core_exceptions.MultipleObjectsReturned:
+                delayed_report = self.get_object().delayed_reports.last()
+                created = False
+
+        if created:
+            if wait:
+                delayed_report = prepare_report(delayed_report.pk)
+            else:
+                prepare_report.delay(delayed_report.pk)
+
+        return delayed_report
 
     @action(detail=True, methods=['get'], suffix='email')
     def email(self, request, pk=None):
@@ -761,10 +770,7 @@ class BuildViewSet(ModelViewSet):
          * force - force email report re-generation even if there is
                    existing one cached
         """
-        force = request.query_params.get("force", False)
-        delayed_report, created = self.__return_delayed_report(request)
-        if created or force:
-            delayed_report = prepare_report(delayed_report.pk)
+        delayed_report = self.__return_delayed_report(request, wait=True)
         if delayed_report.status_code != status.HTTP_200_OK:
             return Response(yaml.safe_load(delayed_report.error_message or ''), delayed_report.status_code)
         if delayed_report.output_format == "text/html" and delayed_report.output_html:
@@ -773,10 +779,7 @@ class BuildViewSet(ModelViewSet):
 
     @action(detail=True, methods=['get', 'post'], suffix='report', permission_classes=[AllowAny])
     def report(self, request, pk=None):
-        force = request.query_params.get("force", False)
-        delayed_report, created = self.__return_delayed_report(request)
-        if created or force:
-            prepare_report.delay(delayed_report.pk)
+        delayed_report = self.__return_delayed_report(request)
         data = {"message": "OK", "url": rest_reverse('delayedreport-detail', args=[delayed_report.pk], request=request)}
         return Response(data, status=status.HTTP_202_ACCEPTED)
 

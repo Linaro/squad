@@ -451,7 +451,7 @@ class RestApiTest(APITestCase):
         prepare_report_mock.assert_called_once()
         prepare_report_mock.reset_mock()
         response2 = self.client.get('/api/builds/%d/report/?force=true' % self.build3.id)
-        self.assertEqual(response.json(), response2.json())
+        self.assertNotEqual(response.json()['url'], response2.json()['url'])
         prepare_report_mock.assert_called_once()
 
     def test_build_testruns(self):
