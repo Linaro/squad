@@ -190,6 +190,19 @@ class TestFilter(filters.FilterSet):
                   'has_known_issues': ['exact', 'in']}
 
 
+class MetricFilter(filters.FilterSet):
+    test_run = filters.RelatedFilter(TestRunFilter, field_name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
+    suite = filters.RelatedFilter(SuiteFilter, field_name="suite", queryset=Suite.objects.all(), widget=forms.TextInput)
+
+    class Meta:
+        model = Metric
+        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'result': ['exact', 'in'],
+                  'test_run': ['exact', 'in'],
+                  'is_outlier': ['exact', 'in'],
+                  'suite': ['exact', 'in']}
+
+
 class MetricThresholdFilter(filters.FilterSet):
     environment = filters.RelatedFilter(EnvironmentFilter,
                                         field_name="environment",
@@ -912,12 +925,33 @@ class TestViewSet(ModelViewSet):
 
 
 class MetricSerializer(serializers.ModelSerializer):
+
+    def __init__(self, *args, **kwargs):
+        remove_fields = kwargs.pop('remove_fields', None)
+        super(MetricSerializer, self).__init__(*args, **kwargs)
+        if remove_fields:
+            # for multiple fields in a list
+            for field_name in remove_fields:
+                self.fields.pop(field_name)
+
     name = serializers.CharField(source='full_name', read_only=True)
+    short_name = serializers.CharField(source='name')
     measurement_list = serializers.ListField(read_only=True)
 
     class Meta:
         model = Metric
-        exclude = ('id', 'suite', 'test_run', 'measurements')
+        exclude = ['measurements']
+
+
+class MetricViewSet(ModelViewSet):
+
+    queryset = Metric.objects.prefetch_related('suite').all()
+    project_lookup_key = 'test_run__build__project__in'
+    serializer_class = MetricSerializer
+    filterset_class = MetricFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
+    pagination_class = CursorPaginationWithPageSize
+    ordering = ('id',)
 
 
 class TestRunViewSet(ModelViewSet):
@@ -984,7 +1018,7 @@ class TestRunViewSet(ModelViewSet):
         metrics = testrun.metrics.prefetch_related('suite').order_by('id')
         paginator = PageNumberPagination()
         page = paginator.paginate_queryset(metrics, request)
-        serializer = MetricSerializer(page, many=True, context={'request': request})
+        serializer = MetricSerializer(page, many=True, context={'request': request}, remove_fields=['test_run', 'id', 'suite'])
         return paginator.get_paginated_response(serializer.data)
 
 
@@ -1149,6 +1183,7 @@ router.register(r'testruns', TestRunViewSet).register(
     **drf_basename('testrun-status'),
 )
 router.register(r'tests', TestViewSet)
+router.register(r'metrics', MetricViewSet)
 router.register(r'suites', SuiteViewSet)
 router.register(r'environments', EnvironmentViewSet)
 router.register(r'backends', BackendViewSet)
