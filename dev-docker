@@ -29,6 +29,7 @@ done
 
 exec docker run \
   --env=XDG_DATA_HOME=/app/tmp/data \
+  --env=SQUAD_EXCLUDE_TEST_TAGS=skip_sqlite \
   --publish=8000:8000 \
   --volume="$basedir":/app \
   --name=squad-dev-docker \

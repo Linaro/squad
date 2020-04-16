@@ -3,7 +3,7 @@ import time
 import threading
 from unittest.mock import patch, MagicMock
 from django.db import connection
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase, TransactionTestCase, tag
 from django.utils import timezone
 
 
@@ -192,6 +192,7 @@ class TestNotificationTasksRaceCondition(TransactionTestCase):
     def mock_apply_async(args, countdown=None):
         time.sleep(1)
 
+    @tag('skip_sqlite')
     @patch("squad.core.tasks.notification.notification_timeout.apply_async", side_effect=mock_apply_async)
     def test_notification_race_condition(self, notification_timeout_apply_async):
         group = Group.objects.create(slug='mygroup')
