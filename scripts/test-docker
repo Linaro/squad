@@ -3,5 +3,5 @@
 set -exu
 
 docker build -t squad .
-docker run squad python3 manage.py test -v 3
+docker run -e SQUAD_EXCLUDE_TEST_TAGS=skip_sqlite squad python3 manage.py test -v 3
 docker run squad squad-admin showmigrations

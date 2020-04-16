@@ -15,13 +15,13 @@ services:
   - docker
 env:
   - SCRIPT=./scripts/travis TESTENV=travis-postgresql DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432 INSTALLPIP=yes
-  - SCRIPT=./scripts/travis TESTENV=travis-sqlite3 DATABASE= INSTALLPIP=yes
+  - SCRIPT=./scripts/travis TESTENV=travis-sqlite3 DATABASE= SQUAD_EXCLUDE_TEST_TAGS=skip_sqlite INSTALLPIP=yes
   - SCRIPT="./scripts/check-ignore"
-  - SCRIPT="./dev-docker ./manage.py test"
+  - SCRIPT="./dev-docker ./manage.py test" 
   - SCRIPT="./scripts/test-docker"
   - SCRIPT="./manage.py compilemessages" INSTALLPIP=yes
   - SCRIPT="docker run -v $(pwd):/squad --workdir /squad fsfe/reuse reuse lint"
-  - SCRIPT="python3 -m pytest" INSTALLPIP=yes
+  - SCRIPT="python3 -m pytest" DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432 INSTALLPIP=yes
 
 before_install:
   - if test -n "$DATABASE"; then ./scripts/travis-postgresql; fi

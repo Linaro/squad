@@ -7,6 +7,12 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == 'test':
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "test.settings")
         testing = True
+
+        exclude_tags = os.getenv('SQUAD_EXCLUDE_TEST_TAGS')
+        if exclude_tags:
+            tags = exclude_tags.split()
+            for tag in tags:
+                sys.argv += ['--exclude-tag', tag]
     else:
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "squad.settings")
     from django.core.management import execute_from_command_line

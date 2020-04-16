@@ -414,18 +414,7 @@ class UpdateProjectStatus(object):
     @staticmethod
     def __call__(testrun):
         projectstatus = ProjectStatus.create_or_update(testrun.build)
-        try:
-            maybe_notify_project_status.delay(projectstatus.id)
-        except OSError as e:
-            # can't request background task for some reason; log the error
-            # and continue.
-            #
-            # This will happen as "OSError: [Errno 111] Connection refused"
-            # in development environments without a running AMQP server,
-            # but also on production setups that are not running the
-            # background job processes because they don't need email
-            # notifications or CI integration
-            logger.error("Cannot schedule notification: " + str(e) + "\n" + traceback.format_exc())
+        maybe_notify_project_status.delay(projectstatus.id)
 
 
 class UpdateBuildSummary(object):

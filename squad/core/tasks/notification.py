@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.db import transaction
 
 from squad.celery import app as celery
 from squad.core.models import ProjectStatus, Build, DelayedReport
@@ -9,13 +10,32 @@ import requests
 
 @celery.task
 def maybe_notify_project_status(status_id):
-    projectstatus = ProjectStatus.objects.get(pk=status_id)
-    build = projectstatus.build
-    project = build.project
+    """
+        This is invoked for every new TestRun a build receives.
+        Notifications tasks work like the following:
 
-    timeout = project.notification_timeout
-    if timeout:
-        notification_timeout.apply_async(args=[status_id], countdown=timeout)
+        1. First notification attempt with `maybe_notify_project_status`,
+           it uses the attribute `Project.wait_before_notification` which
+           waits for this number of seconds AFTER `Build.datetime`. This means
+           that if the build date keeps changing, notification will delay accordingly.
+           NOTE: the notification will be sent only if `ProjectStatus.finished=True`,
+           even after timeout expiration.
+
+        2. Second notifcation attempt is achieved at `notification_timeout`, which
+           waits for an absolute number of seconds, e.g. `Project.notification_timeout`,
+           before trying to send the notification. This serves as a fallback option to
+           send out notifications, even if `ProjectStatus.finished=False`.
+    """
+
+    with transaction.atomic():
+        projectstatus = ProjectStatus.objects.select_for_update().get(pk=status_id)
+        build = projectstatus.build
+        project = build.project
+
+        if projectstatus.notified_on_timeout is None and project.notification_timeout:
+            notification_timeout.apply_async(args=[status_id], countdown=project.notification_timeout)
+            projectstatus.notified_on_timeout = False
+            projectstatus.save()
 
     if project.wait_before_notification:
         to_wait = project.wait_before_notification
