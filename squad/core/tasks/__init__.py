@@ -74,7 +74,7 @@ class ValidateTestRun(object):
         if "job_id" in metadata.keys():
             if type(metadata['job_id']) not in [int, str]:
                 raise exceptions.InvalidMetadata('job_id should be an integer or a string')
-            if '/' in metadata['job_id']:
+            if type(metadata['job_id']) is str and '/' in metadata['job_id']:
                 raise exceptions.InvalidMetadata('job_id cannot contain the "/" character')
 
     def __validate_metrics(self, metrics_file):
