@@ -31,7 +31,7 @@ hardware platform, hardware configuration, OS, build settings (e.g.
 regular compilers vs optimized compilers), etc. Results are always
 organized by environments, so we can compare apples to apples.
 
-Projects can have subscriptions, which are either users or manually-entered
+Projects can have subscriptions, which are either users registered in the system or manually-entered
 email addreses that should be notified about important events such as changing
 test results. ProjectStatus records the most recent build of a project, against
 which future results should be compared in search for important events to
@@ -176,7 +176,7 @@ storing test log in the Test object, passed JSON file can look as follows:
 
 Both forms are supported. In case log entry is missing or simple JSON
 format is used, logs for each Test object are empty. They can be filled
-in using plugins.
+in using plugins [at later time??].
 
 Metrics
 ~~~~~~~
@@ -184,7 +184,7 @@ Metrics
 Metrics must be posted as JSON, encoded in UTF-8. The JSON data must be
 a hash (an object, strictly speaking). Metric names go in the keys, and
 values must be either a single number, or an array of numbers. In the
-case of an array of numbers, then their mean will be used as the metric
+case of an array of numbers, then their mean [or average? elaborate] will be used as the metric
 result; the whole set of results will be used where applicable, e.g. to
 display ranges.
 
@@ -224,7 +224,9 @@ strings. The following fields are recognized:
 * ``job_status``: string identifying the status of the project. SQUAD
   makes no judgement about its value.
 * ``job_url``: URL pointing to the original test run.
-* ``resubmit_url``: URL that can be used to resubmit the test run.
+* ``resubmit_url``: URL that can be used to resubmit the test run. [As in: this is
+  API-level URL, which, being accessed, would trigged a resubmit (auth is an obvious concern),
+  or this is UI-level page, which user can open, login if needed and press "Resubmit" button?]
 * ``suite_versions``: a dictionary with version number strings for suite names
   used in the tests and metrics data. For example, if you have test suites
   called "foo" and "bar", their versions can be expressed having metadata that
@@ -242,7 +244,7 @@ If a metadata JSON file is not submitted, the above fields can be
 submitted as POST parameters. If a metadata JSON file is submitted, no
 POST parameters will be considered to be used as metadata.
 
-When sending a proper metadata JSON file, other fields may also be
+When sending a proper metadata JSON file, fields with other names may also be
 submitted. They will be stored, but will not be handled in any specific
 way.
 
