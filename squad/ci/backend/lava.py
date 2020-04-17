@@ -1,5 +1,4 @@
 import json
-import logging
 import re
 import requests
 import ssl
@@ -24,7 +23,6 @@ from squad.ci.backend.null import Backend as BaseBackend
 
 
 description = "LAVA"
-logger = logging.getLogger('squad.ci.backend')
 
 
 class Backend(BaseBackend):
@@ -48,8 +46,10 @@ class Backend(BaseBackend):
     def fetch(self, test_job):
         try:
             data = self.__get_job_details__(test_job.job_id)
-
-            if data['status'] in self.complete_statuses:
+            status_key = 'status'
+            if not self.use_xml_rpc:
+                status_key = 'state'
+            if data[status_key] in self.complete_statuses:
                 data['results'] = self.__get_testjob_results_yaml__(test_job.job_id)
 
                 # fetch logs
@@ -72,6 +72,10 @@ class Backend(BaseBackend):
 
     def listen(self):
         listener_url = self.get_listener_url()
+        if not listener_url:
+            self.log_warn("Can't connect, no listener URL")
+            if self.data is not None and hasattr(self.data, "name"):
+                self.log_warn("Can't listen to % backend" % self.data.name)
 
         self.log_debug("connecting to %s" % listener_url)
 
@@ -113,8 +117,24 @@ class Backend(BaseBackend):
     # ------------------------------------------------------------------------
     def __init__(self, data):
         super(Backend, self).__init__(data)
-        self.complete_statuses = ['Complete', 'Incomplete', 'Canceled']
+        self.complete_statuses = ['Complete', 'Incomplete', 'Canceled', 'Finished']
         self.__proxy__ = None
+        self.use_xml_rpc = True
+        url = None
+        self.authentication = None
+        if self.data:
+            url = urlsplit(self.data.url)
+        if url:
+            if url.path.find("RPC2") < 0 and url.path.find("api") > 0:
+                self.use_xml_rpc = False
+            self.api_url_base = '%s://%s%s' % (
+                url.scheme,
+                url.netloc,
+                url.path
+            )
+            self.authentication = {
+                "Authorization": "Token %s" % self.data.token,
+            }
 
     @contextmanager
     def handle_job_submission(self):
@@ -157,6 +177,8 @@ class Backend(BaseBackend):
         hostname = url.netloc
 
         socket = self.__get_publisher_event_socket__()
+        if not socket:
+            return None
         socket_url = urlsplit(socket)
         port = socket_url.port
         if socket_url.hostname != '*':
@@ -218,19 +240,38 @@ class Backend(BaseBackend):
         return None
 
     def __resubmit__(self, job_id):
-        return self.proxy.scheduler.resubmit_job(job_id)
+        if self.use_xml_rpc:
+            return self.proxy.scheduler.resubmit_job(job_id)
+        response = requests.post("%sjobs/%s/resubmit" % (self.api_url_base, job_id), headers=self.authentication)
+        if response.status_code == 201:
+            return response.json()['job_ids']
+        return []
 
     def __submit__(self, definition):
-        return self.proxy.scheduler.submit_job(definition)
+        if self.use_xml_rpc:
+            return self.proxy.scheduler.submit_job(definition)
+        response = requests.post("%sjobs/" % (self.api_url_base), headers=self.authentication, data={"definition": definition})
+        if response.status_code == 201:
+            return response.json()['job_ids']
+        return []
 
     def __get_job_details__(self, job_id):
-        return self.proxy.scheduler.job_details(job_id)
+        if self.use_xml_rpc:
+            return self.proxy.scheduler.job_details(job_id)
+        response = requests.get("%sjobs/%s" % (self.api_url_base, job_id), headers=self.authentication)
+        if response.status_code == 200:
+            return response.json()
+        raise FetchIssue(response.text)
 
     def __download_full_log__(self, job_id):
-        url = self.data.url.replace('/RPC2', '/scheduler/job/%s/log_file/plain' % job_id)
-        payload = {"user": self.data.username, "token": self.data.token}
-        response = requests.get(url, params=payload)
-        if response.status_code == 200:
+        response = None
+        if self.use_xml_rpc:
+            url = self.data.url.replace('/RPC2', '/scheduler/job/%s/log_file/plain' % job_id)
+            payload = {"user": self.data.username, "token": self.data.token}
+            response = requests.get(url, params=payload)
+        else:
+            response = requests.get("%sjobs/%s/logs/" % (self.api_url_base, job_id), headers=self.authentication)
+        if response and response.status_code == 200:
             return response.content
         return b''
 
@@ -267,7 +308,7 @@ class Backend(BaseBackend):
         tmp_dict = None
         tmp_key = None
         is_value = False
-        logger.debug("Length of log buffer: %s" % log_data.getbuffer().nbytes)
+        self.log_debug("Length of log buffer: %s" % log_data.getbuffer().nbytes)
         if log_data.getbuffer().nbytes > 0:
             try:
                 for event in yaml.parse(log_data, Loader=yaml.CLoader):
@@ -304,39 +345,65 @@ class Backend(BaseBackend):
             except (yaml.scanner.ScannerError, yaml.parser.ParserError):
                 log_data.seek(0)
                 wrapper = TextIOWrapper(log_data, encoding='utf-8')
-                logger.error("Problem parsing LAVA log\n" + wrapper.read() + "\n" + traceback.format_exc())
+                self.log_error("Problem parsing LAVA log\n" + wrapper.read() + "\n" + traceback.format_exc())
 
         return returned_log.getvalue()
 
     def __get_testjob_results_yaml__(self, job_id):
-        logger.debug("Retrieving result summary for job: %s" % job_id)
-        suites = self.proxy.results.get_testjob_suites_list_yaml(job_id)
-        y = yaml.safe_load(suites)
+        self.log_debug("Retrieving result summary for job: %s" % job_id)
         lava_job_results = []
-        for suite in y:
-            limit = 500
-            offset = 0
-            while True:
-                logger.debug(
-                    "requesting results for %s with offset of %s"
-                    % (suite['name'], offset)
-                )
-                results = self.proxy.results.get_testsuite_results_yaml(
-                    job_id,
-                    suite['name'],
-                    limit,
-                    offset)
-                yaml_results = yaml.load(results, Loader=yaml.CLoader)
-                lava_job_results = lava_job_results + yaml_results
-                if len(yaml_results) == limit:
-                    offset = offset + limit
+        if self.use_xml_rpc:
+            suites = self.proxy.results.get_testjob_suites_list_yaml(job_id)
+            y = yaml.safe_load(suites)
+            for suite in y:
+                limit = 500
+                offset = 0
+                while True:
+                    self.log_debug(
+                        "requesting results for %s with offset of %s"
+                        % (suite['name'], offset)
+                    )
+                    results = self.proxy.results.get_testsuite_results_yaml(
+                        job_id,
+                        suite['name'],
+                        limit,
+                        offset)
+                    yaml_results = yaml.load(results, Loader=yaml.CLoader)
+                    lava_job_results = lava_job_results + yaml_results
+                    if len(yaml_results) == limit:
+                        offset = offset + limit
+                    else:
+                        break
+        else:
+            suites_resp = requests.get("%s/jobs/%s/suites/" % (self.api_url_base, job_id), headers=self.authentication)
+            while suites_resp.status_code == 200:
+                suites_content = suites_resp.json()
+                for suite in suites_content['results']:
+                    tests_resp = requests.get("%s/jobs/%s/suites/%s/tests" % (self.api_url_base, job_id, suite['id']), headers=self.authentication)
+                    while tests_resp.status_code == 200:
+                        tests_content = tests_resp.json()
+                        for test in tests_content['results']:
+                            test['suite'] = suite['name']
+                        lava_job_results = lava_job_results + tests_content['results']
+                        if tests_content['next']:
+                            tests_resp = requests.get(tests_content['next'], headers=self.authentication)
+                        else:
+                            break
+                if suites_content['next']:
+                    suites_resp = requests.get(suites_content['next'], headers=self.authentication)
                 else:
                     break
 
         return lava_job_results
 
     def __get_publisher_event_socket__(self):
-        return self.proxy.scheduler.get_publisher_event_socket()
+        if self.use_xml_rpc:
+            return self.proxy.scheduler.get_publisher_event_socket()
+        lava_resp = requests.get("%s/system/master_config/" % (self.api_url_base), headers=self.authentication)
+        if lava_resp.status_code == 200:
+            return int(lava_resp.json()['EVENT_SOCKET'].rsplit(":", 1)[1])
+        # should there be an exception if status_code is != 200 ?
+        return None
 
     def __resolve_setting__(self, project_settings, setting_name, default=None):
         selected_setting = self.settings.get(setting_name, default)
@@ -372,7 +439,11 @@ class Backend(BaseBackend):
         results = {}
         metrics = {}
         completed = True
-        if data['status'] == 'Canceled':
+        status_key = 'status'
+        if not self.use_xml_rpc:
+            status_key = 'health'
+
+        if data[status_key] == 'Canceled':
             # consider all canceled jobs as incomplete and discard any results
             completed = False
         else:
@@ -387,7 +458,7 @@ class Backend(BaseBackend):
                             result['log_end_line'] is not None:
                         res_log = self.__download_test_log__(raw_logs, result['log_start_line'], result['log_end_line'])
                     # YAML from LAVA has all values serialized to strings
-                    if result['measurement'] == 'None':
+                    if result['measurement'] == 'None' or result['measurement'] is None:
                         res_value = result['result']
                         results.update({res_name: {'result': res_value, 'log': res_log}})
                     else:
@@ -423,7 +494,7 @@ class Backend(BaseBackend):
                     # automatically resubmit in some cases
                     if error_type in ['Infrastructure', 'Job', 'Test']:
                         self.__resubmit_job__(test_job, metadata)
-        return (data['status'], completed, job_metadata, results, metrics, self.__parse_log__(raw_logs))
+        return (data[status_key], completed, job_metadata, results, metrics, self.__parse_log__(raw_logs))
 
     def __resubmit_job__(self, test_job, metadata):
         infra_messages_re_list = []

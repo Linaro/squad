@@ -270,7 +270,7 @@ class LavaTest(TestCase):
     def setUp(self):
         ci_infra_error_messages = [RESUBMIT_STRING, RESUBMIT_STRING2, RESUBMIT_STRING4]
         self.backend = Backend.objects.create(
-            url='http://example.com/',
+            url='http://example.com/RPC2',
             username='myuser',
             token='mypassword',
             implementation_type='lava',

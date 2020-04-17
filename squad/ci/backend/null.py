@@ -99,7 +99,9 @@ class Backend(object):
         raise NotImplementedError
 
     def format_message(self, msg):
-        return self.data.name + ': ' + msg
+        if self.data and hasattr(self.data, "name"):
+            return self.data.name + ': ' + msg
+        return msg
 
     def log_info(self, msg):
         logger.info(self.format_message(msg))
