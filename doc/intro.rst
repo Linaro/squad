@@ -28,7 +28,7 @@ Suite, which is a basically used to group and analyze results together.
 Every test suite must be associated with exactly one Environment, which
 describes the environment in which the tests were executed, such as
 hardware platform, hardware configuration, OS, build settings (e.g.
-regular compilers vcs optimized compilers), etc. Results are always
+regular compilers vs optimized compilers), etc. Results are always
 organized by environments, so we can compare apples to apples.
 
 Projects can have subscriptions, which are either users or manually-entered
