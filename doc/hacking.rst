@@ -59,3 +59,23 @@ Or, you can run only the Javascript unit tests with one of these commands::
 
   python3 python3 test/javascript.py  # or
   python3 -m test.javascript
+
+
+Log monitoring
+--------------
+
+SQUAD uses Python's logging library to log events during its execution,
+it's important to keep track of those and sometimes it's nice to have
+an extra tool to give admins a heads up that things aren't working correctly
+for example when an `ERROR` log comes up.
+
+In such scenario, SQUAD will try to send emails with the log content to admins
+registered in `SQUAD_ADMINS` environment variable.
+
+SQUAD also support log monitoring and aggregation with Sentry, a tool that
+collects similar error logs and manage them nicer than just regular text emails.
+To enable Sentry support two steps are needed:
+
+* set `SENTRY_DSN` environment variable with a dsn retrieved after creating a project
+  in sentry.
+* install Sentry's Python SDK: `pip install sentry-sdk`
