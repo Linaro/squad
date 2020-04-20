@@ -338,6 +338,10 @@ class CreateTestRunApiTest(ApiTest):
         self.assertEqual(201, first.status_code)
         self.assertEqual(400, second.status_code)
 
+    def test_reject_submission_with_int_job_id(self):
+        response = self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment', {'metadata': '{"job_id": 123}'})
+        self.assertEqual(201, response.status_code)
+
     def test_accepts_uppercase_in_slug(self):
         self.group.slug = 'MyGroup'
         self.group.save()
