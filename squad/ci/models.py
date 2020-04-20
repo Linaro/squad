@@ -3,7 +3,7 @@ import logging
 import traceback
 import yaml
 from io import StringIO
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
@@ -66,28 +66,27 @@ class Backend(models.Model):
                 yield test_job
 
     def fetch(self, job_id):
-        test_job = TestJob.objects.get(pk=job_id)
-        if test_job.fetched or test_job.fetch_attempts >= test_job.backend.max_fetch_attempts:
-            return
+        with transaction.atomic():
+            test_job = TestJob.objects.select_for_update().get(pk=job_id)
+            if test_job.fetched or test_job.fetch_attempts >= test_job.backend.max_fetch_attempts:
+                return
 
-        test_job.last_fetch_attempt = timezone.now()
-        implementation = self.get_implementation()
+            try:
+                test_job.last_fetch_attempt = timezone.now()
+                results = self.get_implementation().fetch(test_job)
+                if results is None:
+                    raise TemporaryFetchIssue('Unexpected behavior')
+            except FetchIssue as issue:
+                logger.warning("error fetching job %s: %s" % (test_job.id, str(issue)))
+                test_job.failure = str(issue)
+                test_job.fetched = not issue.retry
+                test_job.fetch_attempts += 1
+                test_job.save()
+                return
 
-        try:
-            results = implementation.fetch(test_job)
-            if results is None:
-                raise TemporaryFetchIssue('Unexpected behavior')
-        except FetchIssue as issue:
-            logger.warning("error fetching job %s: %s" % (test_job.id, str(issue)))
-            test_job.failure = str(issue)
-            test_job.fetched = not issue.retry
-            test_job.fetch_attempts += 1
+            test_job.fetched = True
+            test_job.fetched_at = timezone.now()
             test_job.save()
-            return
-
-        test_job.fetched = True
-        test_job.fetched_at = timezone.now()
-        test_job.save()
 
         status, completed, metadata, tests, metrics, logs = results
 

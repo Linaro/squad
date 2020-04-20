@@ -1,5 +1,8 @@
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase, tag
+from django.db import connection
 from test.mock import patch
+import time
+import threading
 
 
 from celery.exceptions import Retry
@@ -84,6 +87,48 @@ class FetchTest(TestCase):
 
         self.test_job.refresh_from_db()
         self.assertEqual(attemps + 1, self.test_job.fetch_attempts)
+
+
+class FetchTestRaceCondition(TransactionTestCase):
+
+    def setUp(self):
+        group = core_models.Group.objects.create(slug='test')
+        project = group.projects.create(slug='test')
+        build = project.builds.create(version='test-build')
+        backend = models.Backend.objects.create()
+        self.testjob = models.TestJob.objects.create(
+            backend=backend,
+            target=project,
+            target_build=build,
+        )
+
+    def mock_backend_fetch(test_job):
+        time.sleep(1)
+        status = ''
+        completed = True
+        metadata = {}
+        tests = []
+        metrics = []
+        logs = ''
+        return status, completed, metadata, tests, metrics, logs
+
+    @tag('skip_sqlite')
+    @patch('squad.ci.backend.null.Backend.fetch', side_effect=mock_backend_fetch)
+    def test_race_condition_on_fetch(self, fetch_method):
+
+        def thread(testjob_id):
+            fetch(testjob_id)
+            connection.close()
+
+        parallel_task_1 = threading.Thread(target=thread, args=(self.testjob.id,))
+        parallel_task_2 = threading.Thread(target=thread, args=(self.testjob.id,))
+
+        parallel_task_1.start()
+        parallel_task_2.start()
+
+        parallel_task_1.join()
+        parallel_task_2.join()
+        self.assertEqual(1, fetch_method.call_count)
 
 
 class SubmitTest(TestCase):
