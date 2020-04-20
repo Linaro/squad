@@ -1,3 +1,23 @@
+# 1.10
+
+This 1.10 release fixes a race condition bug that happens whenever
+two or more workers fetch a single TestJob, triggering a fetch issue.
+Also it adds suport to Sentry, a tool to manage log events.
+
+The release also create a separate endpoint for Metrics objects.
+
+Complete list of changes going in:
+
+* api: rest: fix force-created reports
+* ci: models: fix race condition for fetch
+* core:
+  * rest: add top-level metric endpoint
+  * tasks: fix job_id as integer
+  * tasks: notification: keep only one task for notification on timeout
+  * tasks: remove try-catch block of notification task
+* manage: exclude tests that break on sqlite
+* settings: add support to Sentry
+
 # 1.9.1
 
 This is a quick release that fixes two bugs regarding the linux log parser
