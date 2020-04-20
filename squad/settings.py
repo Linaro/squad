@@ -358,6 +358,20 @@ CORS_ALLOW_METHODS = ['GET', 'HEAD']
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
+# Sentry support
+SENTRY_DSN = os.getenv('SENTRY_DSN')
+if SENTRY_DSN:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.django import DjangoIntegration
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            integrations=[DjangoIntegration()],
+            release=os.getenv('ENV', 'squad'),
+        )
+    except ImportError:
+        pass
+
 try:
     from squad.local_settings import *  # noqa: F401,F403
 except ImportError:
