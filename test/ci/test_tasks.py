@@ -56,14 +56,9 @@ class FetchTest(TestCase):
     @patch('squad.ci.models.Backend.fetch')
     def test_fetch(self, fetch_method):
         fetch.apply(args=[self.test_job.id])
-        fetch_method.assert_called_with(self.test_job)
+        fetch_method.assert_called_with(self.test_job.id)
 
-    @patch('squad.ci.models.Backend.really_fetch')
-    def test_really_fetch(self, really_fetch_method):
-        fetch.apply(args=[self.test_job.id])
-        really_fetch_method.assert_called_with(self.test_job)
-
-    @patch('squad.ci.models.Backend.fetch')
+    @patch('squad.ci.backend.null.Backend.fetch')
     def test_exception_when_fetching(self, fetch_method):
         fetch_method.side_effect = FetchIssue("ERROR")
         fetch.apply(args=[self.test_job.id])
@@ -72,7 +67,7 @@ class FetchTest(TestCase):
         self.assertEqual("ERROR", self.test_job.failure)
         self.assertTrue(self.test_job.fetched)
 
-    @patch('squad.ci.models.Backend.fetch')
+    @patch('squad.ci.backend.null.Backend.fetch')
     def test_temporary_exception_when_fetching(self, fetch_method):
         fetch_method.side_effect = TemporaryFetchIssue("ERROR")
         fetch.apply(args=[self.test_job.id])
@@ -81,7 +76,7 @@ class FetchTest(TestCase):
         self.assertEqual("ERROR", self.test_job.failure)
         self.assertFalse(self.test_job.fetched)
 
-    @patch('squad.ci.models.Backend.fetch')
+    @patch('squad.ci.backend.null.Backend.fetch')
     def test_counts_attempts_with_temporary_exceptions(self, fetch_method):
         attemps = self.test_job.fetch_attempts
         fetch_method.side_effect = TemporaryFetchIssue("ERROR")

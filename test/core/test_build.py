@@ -158,7 +158,7 @@ class BuildTest(TestCase):
             submitted=True,
             fetched=False,
         )
-        t1.backend.fetch(t1)
+        t1.backend.fetch(t1.id)
 
         t2 = TestJob.objects.create(
             job_id='2',
@@ -173,7 +173,7 @@ class BuildTest(TestCase):
         finished, _ = build.finished
         self.assertFalse(finished)
 
-        t2.backend.fetch(t2)
+        t2.backend.fetch(t2.id)
         finished, _ = build.finished
         self.assertTrue(finished)
 
@@ -196,7 +196,7 @@ class BuildTest(TestCase):
             submitted=True,
             fetched=False,
         )
-        t1.backend.fetch(t1)
+        t1.backend.fetch(t1.id)
 
         # expect 2, only 1 received
         finished, _ = build.finished

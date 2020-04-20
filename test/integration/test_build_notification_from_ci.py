@@ -38,7 +38,7 @@ class BuildNotificationFromCI(TestCase):
             job_id='123',
             environment='myenv',
         )
-        backend.fetch(testjob)
+        backend.fetch(testjob.id)
         status = build.status
         status.refresh_from_db()
         notify.delay.assert_called_with(status.id)

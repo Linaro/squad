@@ -47,4 +47,4 @@ class Command(BaseCommand):
         if options.get("background"):
             fetch.delay(testjob.id)
         else:
-            backend.fetch(testjob)
+            backend.fetch(testjob.id)
