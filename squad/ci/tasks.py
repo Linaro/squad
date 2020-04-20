@@ -1,6 +1,6 @@
 from squad.celery import app as celery
 from squad.ci.models import Backend, TestJob
-from squad.ci.exceptions import SubmissionIssue, FetchIssue
+from squad.ci.exceptions import SubmissionIssue
 from celery.utils.log import get_task_logger
 from squad.mail import Message
 from django.conf import settings
@@ -23,18 +23,9 @@ def poll(backend_id=None):
 
 @celery.task
 def fetch(job_id):
-    test_job = TestJob.objects.get(pk=job_id)
-    if test_job.fetch_attempts >= test_job.backend.max_fetch_attempts:
-        return
-    logger.info("fetching %s" % test_job)
-    try:
-        test_job.backend.fetch(test_job)
-    except FetchIssue as issue:
-        logger.warning("error fetching job %s: %s" % (test_job.id, str(issue)))
-        test_job.failure = str(issue)
-        test_job.fetched = not issue.retry
-        test_job.fetch_attempts += 1
-        test_job.save()
+    logger.info("fetching %s" % job_id)
+    backend = TestJob.objects.get(pk=job_id).backend
+    backend.fetch(job_id)
 
 
 @celery.task(bind=True)

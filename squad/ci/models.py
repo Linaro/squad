@@ -3,7 +3,7 @@ import logging
 import traceback
 import yaml
 from io import StringIO
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
@@ -12,6 +12,7 @@ from squad.core.tasks import ReceiveTestRun, UpdateProjectStatus
 from squad.core.models import Project, Build, TestRun, slug_validator
 from squad.core.plugins import apply_plugins
 from squad.core.tasks.exceptions import InvalidMetadata, DuplicatedTestJob
+from squad.ci.exceptions import FetchIssue, TemporaryFetchIssue
 from squad.core.utils import yaml_validator
 
 
@@ -64,18 +65,28 @@ class Backend(models.Model):
             else:
                 yield test_job
 
-    def fetch(self, test_job):
-        if not test_job.fetched:
-            self.really_fetch(test_job)
+    def fetch(self, job_id):
+        with transaction.atomic():
+            test_job = TestJob.objects.select_for_update().get(pk=job_id)
+            if test_job.fetched or test_job.fetch_attempts >= test_job.backend.max_fetch_attempts:
+                return
 
-    def really_fetch(self, test_job):
-        test_job.last_fetch_attempt = timezone.now()
+            try:
+                test_job.last_fetch_attempt = timezone.now()
+                results = self.get_implementation().fetch(test_job)
+                if results is None:
+                    raise TemporaryFetchIssue('Unexpected behavior')
+            except FetchIssue as issue:
+                logger.warning("error fetching job %s: %s" % (test_job.id, str(issue)))
+                test_job.failure = str(issue)
+                test_job.fetched = not issue.retry
+                test_job.fetch_attempts += 1
+                test_job.save()
+                return
 
-        implementation = self.get_implementation()
-        results = implementation.fetch(test_job)
-        if not results:
+            test_job.fetched = True
+            test_job.fetched_at = timezone.now()
             test_job.save()
-            return
 
         status, completed, metadata, tests, metrics, logs = results
 
@@ -97,7 +108,6 @@ class Backend(models.Model):
             metadata['job_url'] = test_job.url
 
         try:
-            # create TestRun
             receive = ReceiveTestRun(test_job.target, update_project_status=False)
             testrun = receive(
                 version=test_job.target_build.version,
@@ -114,10 +124,6 @@ class Backend(models.Model):
         except DuplicatedTestJob as exception:
             logger.error('Failed to fetch test_job(%d): "%s"' % (test_job.id, str(exception)))
 
-        # mark test job as fetched to prevent resubmission
-        # on next fetch attempt
-        test_job.fetched = True
-        test_job.fetched_at = timezone.now()
         test_job.save()
 
         if test_job.testrun:

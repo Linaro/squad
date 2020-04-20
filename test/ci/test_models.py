@@ -84,22 +84,22 @@ class BackendPollTest(BackendTestBase):
 
 class BackendFetchTest(BackendTestBase):
 
-    @patch("squad.ci.models.Backend.really_fetch")
-    def test_fetch_skips_already_fetched(self, really_fetch):
+    @patch("squad.ci.backend.null.Backend.fetch")
+    def test_fetch_skips_already_fetched(self, fetch):
         test_job = self.create_test_job(submitted=True, fetched=True)
-        self.backend.fetch(test_job)
+        self.backend.fetch(test_job.id)
 
-        really_fetch.assert_not_called()
+        fetch.assert_not_called()
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
-    def test_really_fetch(self, get_implementation, __now__):
+    def test_fetch(self, get_implementation, __now__):
         impl = MagicMock()
         impl.fetch = MagicMock(return_value=None)
         get_implementation.return_value = impl
 
         test_job = self.create_test_job()
-        self.backend.really_fetch(test_job)
+        self.backend.fetch(test_job.id)
 
         test_job.refresh_from_db()
         self.assertEqual(NOW, test_job.last_fetch_attempt)
@@ -110,7 +110,7 @@ class BackendFetchTest(BackendTestBase):
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
-    def test_really_fetch_creates_testrun(self, get_implementation, __now__):
+    def test_fetch_creates_testrun(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {"foo": "pass"}
         metrics = {"bar": 1}
@@ -128,7 +128,7 @@ class BackendFetchTest(BackendTestBase):
             job_id='999',
         )
 
-        self.backend.really_fetch(test_job)
+        self.backend.fetch(test_job.id)
 
         # should not crash
         test_run = core_models.TestRun.objects.get(
@@ -155,11 +155,12 @@ class BackendFetchTest(BackendTestBase):
                 result=1,
             ).count()
         )
+        test_job.refresh_from_db()
         self.assertTrue(test_job.fetched)
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
-    def test_really_fetch_sets_fetched_on_invalid_metadata(self, get_implementation, __now__):
+    def test_fetch_sets_fetched_on_invalid_metadata(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {"foo": "pass"}
         metrics = {"bar": 1}
@@ -185,14 +186,15 @@ class BackendFetchTest(BackendTestBase):
             job_id='999',
         )
 
-        self.backend.really_fetch(test_job)
+        self.backend.fetch(test_job.id)
 
+        test_job.refresh_from_db()
         self.assertTrue(test_job.fetched)
         self.assertIsNone(test_job.failure)
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
-    def test_really_fetch_with_empty_results(self, get_implementation, __now__):
+    def test_fetch_with_empty_results(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {}
         metrics = {}
@@ -210,7 +212,7 @@ class BackendFetchTest(BackendTestBase):
             job_id='999',
         )
 
-        self.backend.really_fetch(test_job)
+        self.backend.fetch(test_job.id)
 
         # should not crash
         test_run = core_models.TestRun.objects.get(
@@ -220,12 +222,13 @@ class BackendFetchTest(BackendTestBase):
             job_id='999',
             job_status='Complete',
         )
+        test_job.refresh_from_db()
         self.assertTrue(test_job.can_resubmit)
         self.assertFalse(test_run.completed)
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
-    def test_really_fetch_with_only_results(self, get_implementation, __now__):
+    def test_fetch_with_only_results(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {"foo": "pass"}
         metrics = {}
@@ -243,7 +246,7 @@ class BackendFetchTest(BackendTestBase):
             job_id='999',
         )
 
-        self.backend.really_fetch(test_job)
+        self.backend.fetch(test_job.id)
 
         # should not crash
         test_run = core_models.TestRun.objects.get(
@@ -253,12 +256,13 @@ class BackendFetchTest(BackendTestBase):
             job_id='999',
             job_status='Complete',
         )
+        test_job.refresh_from_db()
         self.assertFalse(test_job.can_resubmit)
         self.assertTrue(test_run.completed)
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
-    def test_really_fetch_with_only_metrics(self, get_implementation, __now__):
+    def test_fetch_with_only_metrics(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {}
         metrics = {"foo": 10}
@@ -276,7 +280,7 @@ class BackendFetchTest(BackendTestBase):
             job_id='999',
         )
 
-        self.backend.really_fetch(test_job)
+        self.backend.fetch(test_job.id)
 
         # should not crash
         test_run = core_models.TestRun.objects.get(
@@ -286,6 +290,7 @@ class BackendFetchTest(BackendTestBase):
             job_id='999',
             job_status='Complete',
         )
+        test_job.refresh_from_db()
         self.assertFalse(test_job.can_resubmit)
         self.assertTrue(test_run.completed)
 
@@ -310,7 +315,7 @@ class BackendFetchTest(BackendTestBase):
             job_id='999',
         )
 
-        self.backend.really_fetch(test_job)
+        self.backend.fetch(test_job.id)
 
         # should not crash
         test_run = core_models.TestRun.objects.get(
@@ -321,11 +326,12 @@ class BackendFetchTest(BackendTestBase):
             job_status='Complete',
             completed=True,
         )
+        test_job.refresh_from_db()
         self.assertEqual(test_run.job_url, test_job_url)
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
-    def test_really_fetch_ignores_results_from_incomplete_job(self, get_implementation, __now__):
+    def test_fetch_ignores_results_from_incomplete_job(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {"foo": "pass"}
         metrics = {"bar": 1}
@@ -344,7 +350,8 @@ class BackendFetchTest(BackendTestBase):
             job_id='999',
         )
 
-        self.backend.really_fetch(test_job)
+        self.backend.fetch(test_job.id)
+        test_job.refresh_from_db()
         self.assertTrue(test_job.can_resubmit)
 
         # should not crash
@@ -363,7 +370,7 @@ class BackendFetchTest(BackendTestBase):
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
-    def test_really_fetch_sets_testjob_can_resubmit_and_testrun_completed2(self, get_implementation, __now__):
+    def test_fetch_sets_testjob_can_resubmit_and_testrun_completed2(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {}
         metrics = {}
@@ -382,7 +389,8 @@ class BackendFetchTest(BackendTestBase):
             job_id='999',
         )
 
-        self.backend.really_fetch(test_job)
+        self.backend.fetch(test_job.id)
+        test_job.refresh_from_db()
         self.assertTrue(test_job.can_resubmit)
 
         # should not crash
@@ -398,7 +406,7 @@ class BackendFetchTest(BackendTestBase):
     @patch('squad.ci.backend.null.Backend.job_url', return_value="http://example.com/123")
     @patch('squad.ci.backend.null.Backend.fetch')
     @patch('squad.ci.models.ReceiveTestRun.__call__')
-    def test_really_fetch_sets_fetched_at(self, receive, backend_fetch, backend_job_url):
+    def test_fetch_sets_fetched_at(self, receive, backend_fetch, backend_job_url):
         backend_fetch.return_value = ('Completed', True, {}, {}, {}, None)
 
         env = self.project.environments.create(slug='foo')
@@ -410,14 +418,15 @@ class BackendFetchTest(BackendTestBase):
             environment='myenv',
             job_id='999',
         )
-        self.backend.really_fetch(test_job)
+        self.backend.fetch(test_job.id)
+        test_job.refresh_from_db()
         self.assertIsNotNone(test_job.fetched_at)
 
     @patch.object(models.Backend, '__postprocess_testjob__')
     @patch('squad.ci.backend.null.Backend.job_url', return_value="http://example.com/123")
     @patch('squad.ci.backend.null.Backend.fetch')
     @patch('squad.ci.models.ReceiveTestRun.__call__')
-    def test_really_fetch_postprocessing(self, receive, backend_fetch, backend_job_url, postprocess):
+    def test_fetch_postprocessing(self, receive, backend_fetch, backend_job_url, postprocess):
         backend_fetch.return_value = ('Completed', True, {}, {}, {}, None)
 
         env = self.project.environments.create(slug='foo')
@@ -429,7 +438,7 @@ class BackendFetchTest(BackendTestBase):
             environment='myenv',
             job_id='999',
         )
-        self.backend.really_fetch(test_job)
+        self.backend.fetch(test_job.id)
         postprocess.assert_called()
 
 

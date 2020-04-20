@@ -368,13 +368,15 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results_ignore_lava_suite_backend_settings(self, get_results, get_details, test_log):
         self.backend.backend_settings = 'CI_LAVA_HANDLE_SUITE: true'
+        self.backend.save()
         lava = self.backend
-        testjob = TestJob(
+        testjob = TestJob.objects.create(
             job_id='1234',
             backend=self.backend,
             target=self.project,
             target_build=self.build)
-        lava.fetch(testjob)
+        lava.fetch(testjob.id)
+        testjob.refresh_from_db()
         results = testjob.testrun.tests
         metrics = testjob.testrun.metrics
 
@@ -393,13 +395,15 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results_ignore_lava_suite_project_settings(self, get_results, get_details, test_log):
         self.project.project_settings = 'CI_LAVA_HANDLE_SUITE: true'
+        self.project.save()
         lava = self.backend
-        testjob = TestJob(
+        testjob = TestJob.objects.create(
             job_id='1234',
             backend=self.backend,
             target=self.project,
             target_build=self.build)
-        lava.fetch(testjob)
+        lava.fetch(testjob.id)
+        testjob.refresh_from_db()
         results = testjob.testrun.tests
         metrics = testjob.testrun.metrics
 
@@ -419,12 +423,13 @@ class LavaTest(TestCase):
     def test_parse_results_ignore_lava_suite_empty_project_settings(self, get_results, get_details, test_log):
         self.project.project_settings = ''
         lava = self.backend
-        testjob = TestJob(
+        testjob = TestJob.objects.create(
             job_id='1234',
             backend=self.backend,
             target=self.project,
             target_build=self.build)
-        lava.fetch(testjob)
+        lava.fetch(testjob.id)
+        testjob.refresh_from_db()
         results = testjob.testrun.tests
         metrics = testjob.testrun.metrics
 
@@ -444,16 +449,19 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results_ignore_lava_suite_project_settings_overwrites_backend(self, get_results, get_details, test_log):
         self.backend.backend_settings = 'CI_LAVA_HANDLE_SUITE: true'
+        self.backend.save()
         lava = self.backend
 
         # Project settings has higher priority than backend settings
         self.project.project_settings = 'CI_LAVA_HANDLE_SUITE: false'
-        testjob = TestJob(
+        self.project.save()
+        testjob = TestJob.objects.create(
             job_id='1234',
             backend=self.backend,
             target=self.project,
             target_build=self.build)
-        lava.fetch(testjob)
+        lava.fetch(testjob.id)
+        testjob.refresh_from_db()
         results = testjob.testrun.tests
         metrics = testjob.testrun.metrics
 
@@ -475,12 +483,13 @@ class LavaTest(TestCase):
         self.backend.backend_settings = ''
         lava = self.backend
 
-        testjob = TestJob(
+        testjob = TestJob.objects.create(
             job_id='1234',
             backend=self.backend,
             target=self.project,
             target_build=self.build)
-        lava.fetch(testjob)
+        lava.fetch(testjob.id)
+        testjob.refresh_from_db()
         results = testjob.testrun.tests
         metrics = testjob.testrun.metrics
 
@@ -497,13 +506,15 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results_handle_lava_suite_and_ignore_lava_boot(self, get_results, get_details, download_test_log):
         self.backend.backend_settings = '{"CI_LAVA_HANDLE_SUITE": true, "CI_LAVA_HANDLE_BOOT": false}'
+        self.backend.save()
         lava = self.backend
-        testjob = TestJob(
+        testjob = TestJob.objects.create(
             job_id='1234',
             backend=self.backend,
             target=self.project,
             target_build=self.build)
-        lava.fetch(testjob)
+        lava.fetch(testjob.id)
+        testjob.refresh_from_db()
         results = testjob.testrun.tests
         metrics = testjob.testrun.metrics
 
