@@ -9,13 +9,16 @@ msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-08-26 15:45-0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2020-04-23 16:11+0000\n"
+"Last-Translator: Simon Picot <simonpicot06@gmail.com>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/squad/frontend/fr/"
+">\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/frontend/project_settings.py:59
@@ -164,11 +167,11 @@ msgstr ""
 
 #: squad/frontend/templates/squad/group_settings/base.jinja2:20
 msgid "Members"
-msgstr ""
+msgstr "Membres"
 
 #: squad/frontend/templates/squad/group_settings/members.jinja2:4
 msgid "Group members"
-msgstr ""
+msgstr "Membres du groupe"
 
 #: squad/frontend/templates/squad/group_settings/members.jinja2:6
 msgid "Add a new member"
@@ -269,7 +272,7 @@ msgstr ""
 
 #: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:15
 msgid "Name"
-msgstr ""
+msgstr "Nom"
 
 #: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:18
 msgid "Higher is better"
@@ -822,15 +825,15 @@ msgstr ""
 
 #: squad/frontend/templates/squad/_permissions.jinja2:6
 msgid "Member"
-msgstr ""
+msgstr "Membre"
 
 #: squad/frontend/templates/squad/_permissions.jinja2:7
 msgid "Result submitter"
-msgstr ""
+msgstr "Soumetteur de résultat"
 
 #: squad/frontend/templates/squad/_permissions.jinja2:8
 msgid "Administrator"
-msgstr ""
+msgstr "Administrateur"
 
 #: squad/frontend/templates/squad/_permissions.jinja2:11
 msgid "View non-public projects"
