@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: squad.core VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-08-26 15:45-0300\n"
-"PO-Revision-Date: 2019-10-12 11:52+0000\n"
-"Last-Translator: Nathan <bonnemainsnathan@gmail.com>\n"
+"PO-Revision-Date: 2020-04-23 16:11+0000\n"
+"Last-Translator: Simon Picot <simonpicot06@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/squad/core/fr/>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/core/models.py:71 squad/core/models.py:207
@@ -45,7 +45,7 @@ msgstr "Membre"
 
 #: squad/core/models.py:123
 msgid "Result submitter"
-msgstr ""
+msgstr "Soumetteur de résultat"
 
 #: squad/core/models.py:124
 msgid "Administrator"
@@ -53,23 +53,23 @@ msgstr "Administrateur"
 
 #: squad/core/models.py:133
 msgid "Group member"
-msgstr ""
+msgstr "Membre du groupe"
 
 #: squad/core/models.py:134
 msgid "Group members"
-msgstr "Membres du group"
+msgstr "Membres du groupe"
 
 #: squad/core/models.py:191
 msgid "Jinja2 template for subject (single line)"
-msgstr ""
+msgstr "Modèle Jinja2 pour sujet (seule ligne)"
 
 #: squad/core/models.py:193
 msgid "Jinja2 template for text/plain content"
-msgstr ""
+msgstr "Modèle Jinja2 pour du contenu text/plain"
 
 #: squad/core/models.py:194
 msgid "Jinja2 template for text/html content"
-msgstr ""
+msgstr "Modèle Jinja2 pour du contenu text/html"
 
 #: squad/core/models.py:209
 msgid "Is public"
@@ -77,21 +77,23 @@ msgstr "Publique"
 
 #: squad/core/models.py:225
 msgid "Wait this many seconds before sending notifications"
-msgstr ""
+msgstr "Attendez quelques secondes avant d'envoyer des notifications"
 
 #: squad/core/models.py:230
 msgid "Force sending build notifications after this many seconds"
-msgstr ""
+msgstr "Forcer l'envoi de notifications de build après ces quelques secondes"
 
 #: squad/core/models.py:237
 msgid ""
 "Delete builds older than this number of days. Set to 0 or any negative "
 "number to disable."
 msgstr ""
+"Supprimer le(s) build(s) antérieurs à ce nombre de jours. Réglez sur 0 ou "
+"tout nombre négatif pour désactiver."
 
 #: squad/core/models.py:248
 msgid "Makes the project hidden from the group page by default"
-msgstr ""
+msgstr "Rend le projet caché de la page de groupe par défaut"
 
 #: squad/core/models.py:249
 msgid "Is archived"
@@ -99,12 +101,12 @@ msgstr "Archivé"
 
 #: squad/core/models.py:1225
 msgid "All builds"
-msgstr ""
+msgstr "Tout les builds"
 
 #: squad/core/models.py:1226
 msgid "Only on change"
-msgstr ""
+msgstr "Uniquement sur changement"
 
 #: squad/core/models.py:1227
 msgid "Only on regression"
-msgstr ""
+msgstr "Uniquement sur régression"
