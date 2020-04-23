@@ -1049,6 +1049,7 @@ class BackendViewSet(viewsets.ModelViewSet):
 
 
 class TestJobSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.IntegerField(read_only=True)
     url = serializers.HyperlinkedIdentityField(view_name='testjob-detail')
     external_url = serializers.CharField(source='url', read_only=True)
     definition = serializers.HyperlinkedIdentityField(view_name='testjob-definition')
