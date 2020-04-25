@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-08-26 15:45-0300\n"
-"PO-Revision-Date: 2020-04-23 16:11+0000\n"
-"Last-Translator: Simon Picot <simonpicot06@gmail.com>\n"
+"PO-Revision-Date: 2020-04-26 17:11+0000\n"
+"Last-Translator: Jeannette L <j.lavoie@net-c.ca>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/squad/frontend/fr/"
 ">\n"
 "Language: fr\n"
@@ -55,7 +55,7 @@ msgstr ""
 
 #: squad/frontend/templates/squad/test_history.jinja2:14
 msgid "permalink"
-msgstr ""
+msgstr "permalien"
 
 #: squad/frontend/templates/squad/test_history.jinja2:23
 msgid "Test results history"
@@ -68,14 +68,14 @@ msgstr ""
 #: squad/frontend/templates/squad/compare.jinja2:61
 #: squad/frontend/templates/squad/test_history.jinja2:29
 msgid "Date"
-msgstr ""
+msgstr "Date"
 
 #: squad/frontend/templates/squad/_test_run_metric.jinja2:16
 #: squad/frontend/templates/squad/_test_run_test.jinja2:26
 #: squad/frontend/templates/squad/test_history.jinja2:46
 #: squad/frontend/templates/squad/tests.jinja2:37
 msgid "Show info"
-msgstr ""
+msgstr "Afficher les infos"
 
 #: squad/frontend/templates/squad/test_history.jinja2:50
 msgid "Known issue"
@@ -94,7 +94,7 @@ msgstr ""
 #: squad/frontend/templates/squad/compare.jinja2:69
 #: squad/frontend/templates/squad/test_history.jinja2:70
 msgid "n/a"
-msgstr ""
+msgstr "n/r"
 
 #: squad/frontend/templates/squad/test_history.jinja2:90
 #: squad/frontend/templates/squad/tests.jinja2:60
@@ -125,7 +125,7 @@ msgstr ""
 #: squad/frontend/templates/squad/test_history.jinja2:111
 #: squad/frontend/templates/squad/tests.jinja2:81
 msgid "Close"
-msgstr ""
+msgstr "Fermer"
 
 #: squad/frontend/templates/squad/_results_table.jinja2:15
 #, python-format
@@ -157,7 +157,7 @@ msgstr ""
 #: squad/frontend/templates/squad/group_settings/base.jinja2:5
 #: squad/frontend/templates/squad/group_settings/base.jinja2:15
 msgid "Group settings"
-msgstr ""
+msgstr "Paramètres de groupe"
 
 #: squad/frontend/templates/squad/group_settings/base.jinja2:19
 #: squad/frontend/templates/squad/group_settings/index.jinja2:4
@@ -175,7 +175,7 @@ msgstr "Membres du groupe"
 
 #: squad/frontend/templates/squad/group_settings/members.jinja2:6
 msgid "Add a new member"
-msgstr ""
+msgstr "Ajouter un nouveau membre"
 
 #: squad/frontend/templates/squad/group_settings/members.jinja2:11
 msgid "Help on permissions"
@@ -187,39 +187,39 @@ msgstr ""
 
 #: squad/frontend/templates/squad/group_settings/members.jinja2:35
 msgid "Existing members"
-msgstr ""
+msgstr "Membres existants"
 
 #: squad/frontend/templates/squad/group_settings/members.jinja2:54
 msgid "Change"
-msgstr ""
+msgstr "Changer"
 
 #: squad/frontend/templates/squad/group_settings/members.jinja2:64
 msgid "Remove"
-msgstr ""
+msgstr "Retirer"
 
 #: squad/frontend/templates/squad/group_settings/members.jinja2:73
 #, python-format
 msgid "Member since %s"
-msgstr ""
+msgstr "Membre depuis le %s"
 
 #: squad/frontend/templates/squad/group_settings/new_group.jinja2:6
 #: squad/frontend/templates/squad/index.jinja2:8
 msgid "New group"
-msgstr ""
+msgstr "Nouveau groupe"
 
 #: squad/frontend/templates/squad/group_settings/new_group.jinja2:11
 msgid "Add group"
-msgstr ""
+msgstr "Ajouter un groupe"
 
 #: squad/frontend/templates/squad/group-nav.jinja2:22
 #: squad/frontend/templates/squad/group.jinja2:13
 #: squad/frontend/templates/squad/group_settings/new_project.jinja2:5
 msgid "New project"
-msgstr ""
+msgstr "Nouveau projet"
 
 #: squad/frontend/templates/squad/group_settings/new_project.jinja2:12
 msgid "Add project"
-msgstr ""
+msgstr "Ajouter un projet"
 
 #: squad/frontend/templates/squad/builds.jinja2:5
 #: squad/frontend/templates/squad/project-nav.jinja2:17
@@ -242,13 +242,13 @@ msgstr ""
 #: squad/frontend/templates/squad/project_settings/index.jinja2:8
 #: squad/frontend/templates/squad/user_settings/profile.jinja2:21
 msgid "Save"
-msgstr ""
+msgstr "Enregistrer"
 
 #: squad/frontend/templates/squad/project_settings/base.jinja2:21
 #: squad/frontend/templates/squad/project_settings/delete.jinja2:7
 #: squad/frontend/templates/squad/project_settings/delete.jinja2:15
 msgid "Delete project"
-msgstr ""
+msgstr "Supprimer le projet"
 
 #: squad/frontend/templates/squad/project_settings/delete.jinja2:11
 msgid ""
@@ -259,7 +259,7 @@ msgstr ""
 #: squad/frontend/templates/squad/project-nav.jinja2:30
 #: squad/frontend/templates/squad/project_settings/base.jinja2:15
 msgid "Project settings"
-msgstr ""
+msgstr "Paramètres du projet"
 
 #: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:1
 #: squad/frontend/templates/squad/project_settings/base.jinja2:20
@@ -280,12 +280,12 @@ msgstr ""
 
 #: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:21
 msgid "Value"
-msgstr ""
+msgstr "Valeur"
 
 #: squad/frontend/templates/squad/_permissions.jinja2:5
 #: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:25
 msgid "Action"
-msgstr ""
+msgstr "Action"
 
 #: squad/frontend/templates/squad/project_settings/_threshold_table.jinja2:60
 msgid "Metric threshold"
@@ -312,27 +312,27 @@ msgstr ""
 #: squad/frontend/templates/squad/login.jinja2:6
 msgid "Please correct the error below."
 msgid_plural "Please correct the errors below."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Veuillez corriger l'erreur."
+msgstr[1] "Veuillez corriger les erreurs."
 
 #: squad/frontend/templates/django/squad/_user_menu.html:29
 #: squad/frontend/templates/squad/_user_menu.jinja2:26
 #: squad/frontend/templates/squad/login.jinja2:23
 #: squad/frontend/templates/squad/login.jinja2:51
 msgid "Log in"
-msgstr ""
+msgstr "Se connecter"
 
 #: squad/frontend/templates/squad/login.jinja2:33
 msgid "Username"
-msgstr ""
+msgstr "Nom d'utilisateur"
 
 #: squad/frontend/templates/squad/login.jinja2:38
 msgid "Password"
-msgstr ""
+msgstr "Mot de passe"
 
 #: squad/frontend/templates/squad/login.jinja2:47
 msgid "Forgotten your password or username?"
-msgstr ""
+msgstr "Mot de passe ou nom d'utilisateur oublié ?"
 
 #: squad/frontend/templates/squad/build-nav.jinja2:4
 #: squad/frontend/templates/squad/test_run_suite_metrics.jinja2:7
@@ -636,6 +636,8 @@ msgstr ""
 #: squad/frontend/templates/squad/_unfinished_build.jinja2:14
 msgid "Being unfinished, this build will not trigger email notifications."
 msgstr ""
+"Étant inachevée, cette construction ne déclenchera pas de notifications par "
+"courriel."
 
 #: squad/frontend/templates/squad/_project_list.jinja2:4
 msgid "Displaying only non-archived projects."
@@ -979,6 +981,8 @@ msgid ""
 "This avatar is derived from your email address, and is provided by <a "
 "href=\"https://www.gravatar.com/\">Gravatar</a>."
 msgstr ""
+"Cet avatar est dérivé de votre adresse courriel et est fourni par <a href=\""
+"https://www.gravatar.com/\">Gravatar</a>."
 
 #: squad/frontend/templates/squad/user_settings/projects.jinja2:9
 #, python-format
