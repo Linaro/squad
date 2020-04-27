@@ -12,7 +12,7 @@ from squad.core.tasks import ReceiveTestRun, UpdateProjectStatus
 from squad.core.models import Project, Build, TestRun, slug_validator
 from squad.core.plugins import apply_plugins
 from squad.core.tasks.exceptions import InvalidMetadata, DuplicatedTestJob
-from squad.ci.exceptions import FetchIssue, TemporaryFetchIssue
+from squad.ci.exceptions import FetchIssue
 from squad.core.utils import yaml_validator
 
 
@@ -75,7 +75,10 @@ class Backend(models.Model):
                 test_job.last_fetch_attempt = timezone.now()
                 results = self.get_implementation().fetch(test_job)
                 if results is None:
-                    raise TemporaryFetchIssue('Unexpected behavior')
+                    # empty results mean the job is still in progress
+                    # or in the queue
+                    test_job.save()
+                    return
             except FetchIssue as issue:
                 logger.warning("error fetching job %s: %s" % (test_job.id, str(issue)))
                 test_job.failure = str(issue)
