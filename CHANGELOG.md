@@ -1,3 +1,23 @@
+# 1.10.1
+
+This is a bug fix release:
+
+In case the job is still in the queue or is in progress, fetch() raises
+TemporaryFetchIssue from within block that catches FetchIssue. Since
+TemporaryFetchIssue derives from FetchIssue, the exception is
+immediately consumed and fetch_attempts counter is increased. This leads
+to maxing out fetch_counter for jobs that stay in the queue for a long
+time. This patch removes the exception and instead returns from the
+fetch() function without an error. This doesn't result in increasing
+fetch_attempt counter.
+
+Complete list of changes going in:
+
+* api: rest: add ID field to TestJob object
+* ci: fix Backend.fetch() implementation
+* travis: fix reuse docker lint
+* Translated using Weblate (French)
+
 # 1.10
 
 This 1.10 release fixes a race condition bug that happens whenever
