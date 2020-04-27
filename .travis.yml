@@ -20,7 +20,7 @@ env:
   - SCRIPT="./dev-docker ./manage.py test" 
   - SCRIPT="./scripts/test-docker"
   - SCRIPT="./manage.py compilemessages" INSTALLPIP=yes
-  - SCRIPT="docker run -v $(pwd):/squad --workdir /squad fsfe/reuse reuse lint"
+  - SCRIPT="docker run -v $(pwd):/squad --workdir /squad fsfe/reuse lint"
   - SCRIPT="python3 -m pytest" DATABASE=ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432 INSTALLPIP=yes
 
 before_install:
