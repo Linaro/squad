@@ -3,7 +3,7 @@ import logging
 import traceback
 import yaml
 from io import StringIO
-from django.db import models, transaction
+from django.db import models, transaction, DatabaseError
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
@@ -67,8 +67,12 @@ class Backend(models.Model):
 
     def fetch(self, job_id):
         with transaction.atomic():
-            test_job = TestJob.objects.select_for_update().get(pk=job_id)
-            if test_job.fetched or test_job.fetch_attempts >= test_job.backend.max_fetch_attempts:
+            try:
+                test_job = TestJob.objects.select_for_update(nowait=True).get(pk=job_id)
+                if test_job.fetched or test_job.fetch_attempts >= test_job.backend.max_fetch_attempts:
+                    return
+            except DatabaseError:
+                # another thread is working on this testjob
                 return
 
             try:
