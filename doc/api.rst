@@ -137,6 +137,16 @@ doesn't respect 'can_resubmit' flag on the TestJob object.
 REST APIs
 ---------
 
+The REST API is powered by `Django Rest Framework (DRF)<https://www.django-rest-framework.org/>`_ and
+`Django fields lookups <https://docs.djangoproject.com/en/3.0/topics/db/queries/#field-lookups>`_.
+This means that for supported endpoints you can do a field lookup. For example,
+querying all testruns that belong to a build that belongs to a project called
+MyProject, one would run a query like:
+
+**GET** /api/testruns/?build__project__name=MyProject
+
+This gives the API flexibility for filtering in many different ways.
+
 groups (/api/groups/)
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -145,16 +155,6 @@ Provides access to Group object. This object corresponds to SQUAD Group
 and searched. Both operations can be done using 'name' and 'slug' fields.
 
 With enough privileges Groups can also be created, modified and deleted
-using REST API with POST, PUT and DELETE HTTP requests respectively
-
-usergroups (/api/usergroups/)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Provides access to UserGroup object. This object corresponds to Django Group
-The UserGroup objects can be filtered and searched. Both operations can be
-done using 'name' field.
-
-With enough privileges UserGroups can also be created, modified and deleted
 using REST API with POST, PUT and DELETE HTTP requests respectively
 
 projects (/api/projects/)
@@ -287,12 +287,23 @@ following additional routes:
 - log_file (/api/testruns/<id>/log_file/)
 - tests (/api/testruns/<id>/tests/)
 - metrics (/api/testruns/<id>/metrics/)
+- status (/api/testruns/<id>/status/)
+
+  Provides a list of TestRun's statuses. One can also passing in filters to
+  get specific results, e.g. /api/testruns/<id>/status/?suite__isnull=true
+  retrieves the overall Status object for that testrun.
 
 tests (/api/tests/)
 ~~~~~~~~~~~~~~~~~~~
 
-Provides access to Test object. In case of private projects token with
-enough privileges is required to access the object.
+Provides access to Tests objects. In case of private projects token with
+enough privileges is required to access the objects.
+
+metrics (/api/metrics/)
+~~~~~~~~~~~~~~~~~~~
+
+Provides access to Metrics objects. In case of private projects token with
+enough privileges is required to access the objects.
 
 suites (/api/suites/)
 ~~~~~~~~~~~~~~~~~~~~~
@@ -380,6 +391,15 @@ More details about coreapi can be found on coreapi website and DRF website:
 
  * http://www.coreapi.org/
  * https://www.django-rest-framework.org/topics/api-clients/
+
+SQUAD-Client
+-------------------------
+
+SQUAD team has been working on a client tool that help users query the API
+easily, using a Python descriptive way of interacting with the backend.
+
+If you are interested in using such tool, please check it out in
+`SQUAD-Client <https://github.com/Linaro/squad-client>`_
 
 Badges
 ------
