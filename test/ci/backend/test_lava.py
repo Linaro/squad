@@ -300,6 +300,17 @@ class LavaTest(TestCase):
         self.assertEqual('bar', testjob.name)
         __submit__.assert_called_with(test_definition)
 
+    @patch("squad.ci.backend.lava.Backend.__cancel_job__", return_value=True)
+    def test_cancel(self, __cancel__):
+        test_definition = "foo: 1\njob_name: bar"
+        testjob = TestJob(
+            definition=test_definition,
+            submitted=True,
+            job_id="12345",
+            backend=self.backend)
+        testjob.cancel()
+        __cancel__.assert_called()
+
     @patch("squad.ci.backend.lava.Backend.__submit__", return_value=['1234.0', '1234.1'])
     def test_submit_multinode(self, __submit__):
         lava = LAVABackend(None)

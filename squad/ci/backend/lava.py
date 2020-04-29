@@ -75,7 +75,7 @@ class Backend(BaseBackend):
         if not listener_url:
             self.log_warn("Can't connect, no listener URL")
             if self.data is not None and hasattr(self.data, "name"):
-                self.log_warn("Can't listen to % backend" % self.data.name)
+                self.log_warn("Can't listen to %s backend" % self.data.name)
 
         self.log_debug("connecting to %s" % listener_url)
 
@@ -223,13 +223,19 @@ class Backend(BaseBackend):
         return new_test_job
 
     def __cancel_job__(self, job_id):
-        try:
-            self.proxy.scheduler.cancel_job(job_id)
-            return True
-        except (xmlrpc.client.ProtocolError,
-                xmlrpc.client.Fault,
-                ssl.SSLError):
-            return False
+        if self.use_xml_rpc:
+            try:
+                self.proxy.scheduler.cancel_job(job_id)
+                return True
+            except (xmlrpc.client.ProtocolError,
+                    xmlrpc.client.Fault,
+                    ssl.SSLError):
+                return False
+        else:
+            response = requests.post("%sjobs/%s/cancel" % (self.api_url_base, job_id), headers=self.authentication)
+            if response.status_code == 200:
+                return True
+
         return False
 
     def __lava_job_name(self, definition):

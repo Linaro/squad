@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set -x
+
+LAVA_CONTAINER_NAME=lava_server
+
+while getopts ":s" opt; do
+  case ${opt} in
+    s)
+      docker kill "${LAVA_CONTAINER_NAME}"
+      docker rm "${LAVA_CONTAINER_NAME}"
+      exit 0
+      ;;
+    * )
+      ;;
+  esac
+done
+
+
+docker run -p 5556:5556 -p 80:80 --name "${LAVA_CONTAINER_NAME}" lavasoftware/lava-server:latest &
+# wait for docker to start
+while [ ! $(docker inspect -f '{{.State.Running}}' "${LAVA_CONTAINER_NAME}") ]
+do
+    sleep 5
+    echo "Waiting for LAVA container to start"
+done
+docker_status=$(docker inspect -f '{{.State.Running}}' "${LAVA_CONTAINER_NAME}")
+while [ $docker_status = 'false' ]
+do
+    sleep 10
+    echo "Waiting for LAVA container to start"
+    docker_status=$(docker inspect -f '{{.State.Running}}' "${LAVA_CONTAINER_NAME}")
+done
+while [ $(wget localhost -O /dev/null) ]
+do
+    sleep 5
+    echo "Waiting for LAVA gunicorn to start"
+done
+
+docker cp test/ci/backend/lava.json lava_server:/root
+docker exec "${LAVA_CONTAINER_NAME}" lava-server manage loaddata /root/lava.json
+
+# run SQUAD tests
