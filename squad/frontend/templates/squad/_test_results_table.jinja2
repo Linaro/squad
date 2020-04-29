@@ -39,9 +39,6 @@
                     <table class='test-results-details'>
                         <tr>
                             <th>
-				                <i class='fa fa-microchip'></i>{{ _('Test Run') }}
-				            </th>
-                            <th>
 				                <i class='fa fa-cog'></i>{{ _('Environment') }}
 				            </th>
                             <th>
@@ -52,10 +49,7 @@
                             {% for status in entry.statuses %}
                                 <tr id='details-row-{{status.id}}' ng-show='details_visible["details-{{suite.id}}"]'>
                                     <td>
-                                        <a href="{{url("testrun", args=[project.group.slug, project.slug, build.version, status.test_run.job_id])}}">{{status.test_run.job_id}}</a>
-                                    </td>
-                                    <td>
-                                        <a href="{{url("testrun", args=[project.group.slug, project.slug, build.version, status.test_run.job_id])}}">{{status.environment}}</a>
+                                        <a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{{status.environment}}</a>
                                     </td>
                                     <td>
                                         <a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{% include "squad/_test_results_summary.jinja2" %}</a>

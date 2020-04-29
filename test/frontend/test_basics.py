@@ -32,6 +32,9 @@ class FrontendTest(TestCase):
         self.test_run = models.TestRun.objects.last()
         attachment_data = "bar".encode()
         self.test_run.attachments.create(filename="foo", data=attachment_data, length=len(attachment_data))
+        self.suite, _ = self.project.suites.get_or_create(slug='mysuite')
+        self.test_run.tests.create(suite=self.suite, name='mytest', result=True)
+        self.test = self.test_run.tests.first()
 
     def hit(self, url, expected_status=200):
         with count_queries('url:' + url):
@@ -137,28 +140,28 @@ class FrontendTest(TestCase):
     def test_attachment(self):
         data = bytes('text file', 'utf-8')
         self.test_run.attachments.create(filename='foo.txt', data=data, length=len(data))
-        response = self.hit('/mygroup/myproject/build/1.0/testrun/1/attachments/foo.txt')
+        response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/attachments/foo.txt' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('text/plain', response['Content-Type'])
 
     def test_log(self):
-        response = self.hit('/mygroup/myproject/build/1.0/testrun/1/log')
+        response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/log' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('text/plain', response['Content-Type'])
 
     def test_no_log(self):
         self.test_run.log_file = None
         self.test_run.save()
 
-        response = self.client.get('/mygroup/myproject/build/1.0/testrun/1/log')
+        response = self.client.get('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/log' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual(404, response.status_code)
 
     def test_tests(self):
-        response = self.hit('/mygroup/myproject/build/1.0/testrun/1/tests')
+        response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/tests' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])
 
     def test_metrics(self):
-        response = self.hit('/mygroup/myproject/build/1.0/testrun/1/metrics')
+        response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metrics' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])
 
     def test_metadata(self):
-        response = self.hit('/mygroup/myproject/build/1.0/testrun/1/metadata')
+        response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metadata' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])

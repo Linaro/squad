@@ -1,0 +1,97 @@
+{% extends "squad/base.jinja2" %}
+{% block content %}
+<h2 class="page-header well">
+    <a class="h2 text-primitive" href="{{group_url(project.group)}}">{{project.group.display_name}}</a>
+    » <a class="h2 text-primitive" href="{{project_url(project)}}">{{project.display_name}}</a>
+    » <a class="h2 text-primitive" href="{{build_url(build)}}"> {{build.version}}</a>
+    » <a class="h2 text-primitive" href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{{suite}}</a>
+    » <a class="h2 text-primary" href="#">{{test.name}}</a>
+    <a name="tests"></a>
+</h2>
+
+{% include "squad/tests-details-nav.jinja2" %}
+<h2>Test Details</h2>
+     <div class='row row-bordered'>
+         <div class='col-md-12 col-sm-12'>
+             <h4>
+                  <i class='fa fa-microchip'></i>
+                  <span class='text-dark'>
+                      {{ (_('Environment: <strong>%s</strong>') % test_run.environment) | safe }}
+                  </span>
+                  {% if test_run.environment.description %}
+                      <span class='toggle-description' onclick="viewShowHide('env-desc-anchor','desc-{{test_run.environment.id}}' );"><a id='env-desc-anchor'>»</a></span>
+                      <div id="desc-{{test_run.environment.id}}" style='display: none'>
+                          <h5><strong>{{_('Description:')}}</strong> {{test_run.environment.description}}</h5>
+                      </div>
+                  {% endif %}
+                  <br>
+                  <i class='fa fa-list'></i>
+                  <span class='p-3 mb-2 text-dark'>{{ (_('Suite: <strong>%s</strong>') % suite) | safe }}
+                      {% if status.suite_version %}
+                          {{status.suite_version.version}}
+                      {% endif %}
+                  </span>
+                  <br>
+                  {% if test %}
+                      <i class='fa fa-crosshairs'></i>
+                      <span class='p-3 mb-2 text-dark'>{{ (_('Test Name: <strong>%s</strong>') % test) | safe }}</span>
+                      <br>
+                      <i class='fa fa-flag-o'></i>
+                      <span class='p-3 mb-2 {{"alert-danger" if test.status == "fail" else "alert-success" if test.status == "pass" else "alert-warning" if test.status == "skip" else "alert-info"}}'>
+                          {{ (_('Result: <strong>%s</strong>') % test.status) | safe }}
+                      </span>
+                  {% endif %}
+                  {% if test.metadata.description or test.known_issues|length > 0 or suite.metadata.description %}
+                      <span class='toggle-description' onclick="viewShowHide('test-meta-anchor','tests-meta-desc' );">
+                          <a id='test-meta-anchor'>»</a>
+                      </span>
+                      <div id='tests-meta-desc' style='display: none'>
+                          <h5>
+                              {% if test.metadata.description %}
+                                  <strong>{{_('Test Description:')}}</strong> {{test.metadata.description|safe}}
+                                  <br>
+                                  {% if test.metadata.instructions_to_reproduce %}
+                                      <strong>{{_('Instructions To Reproduce:')}}</strong> {{test.metadata.instructions_to_reproduce}}
+                                  {% endif %}
+                              {% endif %}
+                              {% if test.known_issues %}
+                                  {% with knownissues = test.known_issues.all() %}
+                                      {% for knownissue in knownissues %}
+                                         <strong>{{_('Known Issues:')}}</strong>
+                                          {%if knownissue.title %} {{knownissue.title}}, {% endif %}
+                                          {%if knownissue.url %} {{knownissue.url}}, {% endif %}
+                                          {%if knownissue.notes %} {{knownissue.notes}}, {% endif %}
+                                          {%if knownissue.intermittent %} {{_('intermittent')}}, {% else %} {{_('not intermittent')}}, {%endif %}
+                                          {%if knownissue.active %} {{_('active')}}, {% else %} {{_('not active')}}, {%endif %}
+                                          <br>
+                                      {% endfor %}
+                                  {% endwith %}
+                              {% endif%}
+                              {% if suite.metadata.description %}
+                                <span><strong>{{_('Suite Description:')}}</strong>{{suite.metadata.description|safe}}</span>
+                              {% endif %}
+
+                          </h5>
+                      </div>
+                  {% endif %}
+                  <br>
+                  <i class='fa fa-cubes'></i>
+                  <span class='p-3 mb-2 text-dark'>
+                      {{ (_('Build:')) }}
+                      <strong>
+                          <a href="{{ build_url(build) }}" class='p-3 mb-2 text-dark'>{{ test.test_run.build.version | safe }}</a>
+                      </strong>
+                  </span>
+              </h4>
+          </div>
+      </div>
+<br>
+<br>
+{% block javascript %}
+<script type="text/javascript" src='{{static("squad/showHide.js")}}'></script>
+{% endblock %}
+
+{% include "squad/test_run.jinja2" %}
+
+{% endblock %}
+

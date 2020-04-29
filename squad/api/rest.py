@@ -357,12 +357,12 @@ class LatestTestResults(object):
 
         self.build = build
         self.environments = build.project.environments.all()
-        test_suite_name, test_case_name = suite_and_test
+        self.test_suite_name, self.test_case_name = suite_and_test
         self.test_list = Test.objects.filter(
             test_run__build=self.build,
             test_run__environment__in=self.environments,
-            name=test_case_name,
-            suite__slug=test_suite_name)
+            name=self.test_case_name,
+            suite__slug=self.test_suite_name)
 
 
 class LatestTestResultsSerializer(serializers.BaseSerializer):
@@ -383,7 +383,10 @@ class LatestTestResultsSerializer(serializers.BaseSerializer):
                         args=[
                             latest_result.build.project.group.slug,
                             latest_result.build.project.slug,
-                            test.full_name
+                            latest_result.build.version,
+                            test.test_run.id,
+                            latest_result.test_suite_name.replace('/', '$'),
+                            latest_result.test_case_name
                         ])}
                 )
             environments.append(entry)
@@ -1351,7 +1354,7 @@ router.register(r'testruns', TestRunViewSet).register(
     r'status',
     StatusViewSet,
     parents_query_lookups=['test_run_id'],
-    **drf_basename('testrun-status'),
+    **drf_basename('testrun-status')
 )
 router.register(r'tests', TestViewSet)
 router.register(r'metrics', MetricViewSet)

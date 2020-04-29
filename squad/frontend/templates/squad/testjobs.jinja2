@@ -29,9 +29,6 @@
                     {{ _('Last fetch attempt: %s') % testjob.last_fetch_attempt|naturaltime }}
                 {% endif %}
 
-                {% if testjob.testrun %}
-                    <a href="{{project_url(testjob.testrun)}}">{{ _('Test run #%s') % testjob.testrun.job_id }}</a>
-                {% endif %}
                 {% if testjob.parent_job %}
                     <a href="{{ testjob.parent_job.url }}">{{ _('Resubmitted from #%s') % testjob.parent_job.job_id }}</a>
                 {% endif %}

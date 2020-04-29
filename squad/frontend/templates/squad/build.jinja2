@@ -30,7 +30,7 @@
     <div class="dropdown pull-left" style="z-index: 1002;">
         &nbsp;
         <button class="btn btn-default dropdown-toggle" type="button" id="test_results_dropdown_menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            {{ _('by environments') if results_layout == 'envbox' else _('by suites') if results_layout == 'suitebox' else _('suites x evironments') }}
+            {{ _('by environments') if results_layout == 'envbox' else _('by suites') if results_layout == 'suitebox' else _('suites x environments') }}
             <span class="caret"></span>
         </button>
         <ul class="dropdown-menu" aria-labelledby="test_results_dropdown_menu">
@@ -118,39 +118,6 @@
 </div> <!-- ng-content=FilterController -->
 
 </div> <!-- ng-app=Filter -->
-
-<div class='testruns highlight-row'>
-    <h2>{{ _('Test runs') }}</h2>
-    {% for test_run in test_results.test_runs %}
-    <a href="{{url("testrun", args=[project.group.slug, project.slug, build.version, test_run.job_id])}}">
-	<div class='row row-bordered'>
-	    <div class='col-md-3 col-sm-3' title='{{ _('Job ID') }}'>
-		<i class='fa fa-list'></i>
-		<strong>{{test_run.job_id}}</strong>
-	    </div>
-	    <div class='col-md-3 col-sm-3' title='{{ _('Environment') }}'>
-		<i class='fa fa-microchip'></i>
-		{{test_run.environment}}
-	    </div>
-
-	    <div class='col-md-4 col-sm-4' title='{{ _('Date and time') }}'>
-		<i class='fa fa-calendar'></i>
-		{{test_run.datetime|date}}
-	    </div>
-
-	    <div class='col-md-2 col-sm-2' title='{% if test_run.completed %}{{ _('Complete') }}{% else %}{{ _('Not completed') }}{% endif %}'>
-		{% if test_run.completed %}
-		<i class='fa fa-check-square-o'></i>
-		{% else %}
-		<i class='fa fa-square-o'></i>
-		{% endif %}
-		{{test_run.job_status|default("")}}
-	    </div>
-	</div>
-    </a>
-    {% endfor %}
-</div>
-
 
 {% endblock %}
 

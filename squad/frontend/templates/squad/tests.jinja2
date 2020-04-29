@@ -29,10 +29,11 @@
         </thead>
         {% if results %}
             {% for test in results %}
+            {% set test_details_url = url('testrun_suite_test_details', args=[build.project.group.slug, build.project.slug, build.version, test.test_run.id, test.suite.slug.replace('/', '$'), test.name]) %}
             <tr id='test-{{test.name|slugify}}' ng-show="match('test-{{test.name|slugify}}')">
-                <td><a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test.name])}}">{{test.name}}</a></td>
+                <td><a href="{{ test_details_url }}">{{test.name}}</a></td>
                 {% for status in test %}
-                <td class="{{status[0]}}"><a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test.name])}}">{{status[0]}}</a>
+                <td class="{{status[0]}}"><a href="{{ test_details_url }}">{{status[0]}}</a>
                   {% if status[1] %}
                   <a href='#' data-toggle="modal" data-target="#info_modal" data-status="{{ status[1] }}"><span data-toggle="tooltip" data-placement="right" title="{{ _('Show info') }}" class='fa fa-info-circle'></span></a>
                   {% endif %}
