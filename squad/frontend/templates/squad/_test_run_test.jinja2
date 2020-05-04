@@ -1,5 +1,5 @@
 <div class='row row-bordered {{test.status}} tests-{{status.id}}-{{test.status}}{% if test.has_known_issues %} known-issue{% endif %}'>
-    <div class='col-md-9 col-sm-9'>
+    <div class='col-md-8 col-sm-8'>
         <a href="{{url('test_history', args=[project.group.slug, project.slug, test.full_name])}}">
             <i class='fa fa-{% if test.status == "fail" %}times{% elif test.status == "pass" %}check{% else %}bug{% endif %}'></i>
             {{test.name}} — {{test.status|upper}}
@@ -14,6 +14,9 @@
             {% endif %}
         {% endfor %}
         {% endif %}
+    </div>
+    <div class='col-md-1 col-sm-1'>
+        <a class="pull-right" href="{{ url('testrun_log', args=[test.test_run.build.project.group.slug, test.test_run.build.project.slug, test.test_run.build.version, test.test_run.job_id]) }}">{{ _('Full log') }}</a>
     </div>
     <div class='col-md-1 col-sm-1'>
         <a class="pull-right" href="/_/comparetest/?project={{ test.test_run.build.project.pk }}&suite={{ test.suite.slug }}&test={{ test.name }}">{{ _('compare') }}</a>
