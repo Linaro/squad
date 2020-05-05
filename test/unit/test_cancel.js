@@ -1,19 +1,19 @@
-import {ResubmitController} from '../../squad/frontend/static/squad/controllers/resubmit.js'
+import {CancelController} from '../../squad/frontend/static/squad/controllers/cancel.js'
 
-angular.module('resubmitApp', []).controller(
-    'ResubmitController',
+angular.module('cancelApp', []).controller(
+    'CancelController',
     [
         '$scope',
         '$http',
         '$location',
         '$timeout',
-        ResubmitController
+        CancelController
     ]
 );
 
-describe("ResubmitController", function () {
+describe("CancelController", function () {
 
-    beforeEach(module("resubmitApp"));
+    beforeEach(module("cancelApp"));
 
     var $controller;
 
@@ -21,7 +21,7 @@ describe("ResubmitController", function () {
         $controller = _$controller_;
     }));
 
-    describe("$scope.resubmit", function () {
+    describe("$scope.cancel", function () {
 
         var $scope, $attrs, $location, $httpBackend, $timeout, controller;
 
@@ -29,7 +29,7 @@ describe("ResubmitController", function () {
             $scope = {};
             $attrs = {};
             $location = "";
-            controller = $controller('ResubmitController', {
+            controller = $controller('CancelController', {
                 $scope: $scope,
                 $attrs: $attrs,
                 $location: $location
@@ -40,9 +40,9 @@ describe("ResubmitController", function () {
 
             $timeout = $injector.get('$timeout');
             $httpBackend = $injector.get('$httpBackend');
-            $httpBackend.whenPOST("/api/testjobs/1/resubmit/").respond(
-                200, ["submitted"]);
-            $httpBackend.whenPOST("/api/testjobs/1/force_resubmit/").respond(
+            $httpBackend.whenPOST("/api/testjobs/1/cancel/").respond(
+                200, ["cancelled"]);
+            $httpBackend.whenPOST("/api/testjobs/2/cancel/").respond(
                 401, ["error"]);
         }));
 
@@ -51,8 +51,8 @@ describe("ResubmitController", function () {
             $httpBackend.verifyNoOutstandingRequest();
         });
 
-        it('tests resubmit function when response is OK', function () {
-            $scope.resubmit(1, false)
+        it('tests cancel function when response is OK', function () {
+            $scope.cancel(1)
             $httpBackend.flush();
 
             $timeout.flush();
@@ -63,12 +63,12 @@ describe("ResubmitController", function () {
             expect($scope.done).toBe(true)
         });
 
-        it('tests resubmit function when response is error', function () {
+        it('tests cancel function when response is error', function () {
             spyOn(window, 'alert')
-            $scope.resubmit(1, true)
+            $scope.cancel(2)
             $httpBackend.flush();
 
-            expect(window.alert).toHaveBeenCalledWith('There was an error while resubmitting.\nStatus = 401 (complete)');
+            expect(window.alert).toHaveBeenCalledWith('There was an error while cancelling.\nStatus = 401 (complete)');
             expect($scope.error).toBe(true)
             expect($scope.done).toBe(true)
             expect($scope.loading).toBe(false)
