@@ -1107,6 +1107,41 @@ class TestJobViewSet(ModelViewSet):
         definition = self.get_object().definition
         return HttpResponse(definition, content_type='text/plain')
 
+    @action(detail=True, methods=['post'], suffix='resubmit')
+    def resubmit(self, request, **kwargs):
+        testjob = self.get_object()
+        if testjob.resubmit():
+            # find latest child of this job
+            testjob.resubmitted_jobs.last()
+            data = {"message": "OK", "url": rest_reverse('testjob-detail', args=[testjob.pk], request=request)}
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Error cancelling job.",
+             "url": rest_reverse("testjob-detail", args=[testjob.pk], request=request)},
+            status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], suffix='force_resubmit')
+    def force_resubmit(self, request, **kwargs):
+        testjob = self.get_object()
+        if testjob.force_resubmit():
+            # find latest child of this job
+            testjob.resubmitted_jobs.last()
+            data = {"message": "OK", "url": rest_reverse('testjob-detail', args=[testjob.pk], request=request)}
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Error cancelling job.",
+             "url": rest_reverse("testjob-detail", args=[testjob.pk], request=request)},
+            status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], suffix='cancel')
+    def cancel(self, request, **kwargs):
+        testjob = self.get_object()
+        if testjob.cancel():
+            # this is faking job status as real status will only be updated
+            # after fetch operation is complete
+            return Response({'job_id': testjob.job_id, 'status': 'Canceled'}, status=status.HTTP_200_OK)
+        return Response({'job_id': testjob.job_id, 'status': testjob.job_status}, status=status.HTTP_200_OK)
+
 
 class EmailTemplateSerializer(serializers.HyperlinkedModelSerializer):
 
