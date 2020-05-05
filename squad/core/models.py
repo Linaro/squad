@@ -10,7 +10,7 @@ from django.db import transaction
 from django.db.models import Q, Count, Sum, Case, When, F, Value
 from django.db.models.functions import Concat
 from django.db.models.query import prefetch_related_objects
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.conf import settings
 from squad.mail import Message
 from django.forms.fields import URLField as FormURLField
@@ -46,9 +46,11 @@ class GroupManager(models.Manager):
         projects = Project.objects.accessible_to(user)
         project_ids = [p.id for p in projects]
         group_ids = set([p.group_id for p in projects])
+        if not isinstance(user, AnonymousUser):
+            group_ids = group_ids | set([g.id for g in Group.objects.filter(members__in=[user])])
         return self.filter(
-            Q(id__in=group_ids) | Q(members__id=user.id)
-        ).order_by('slug').annotate(
+            id__in=group_ids
+        ).distinct().order_by('slug').annotate(
             project_count=Sum(
                 Case(
                     When(projects__id__in=project_ids, then=1),
