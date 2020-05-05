@@ -57,5 +57,8 @@ class Backend(object):
                 fetch.apply_async(args=[job.id])
                 max_id = job.id
 
-    def job_url(selt, test_job):
+    def job_url(self, test_job):
         return 'https://example.com/job/%s' % test_job.job_id
+
+    def cancel(self, test_job):
+        return True

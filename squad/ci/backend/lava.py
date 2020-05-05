@@ -40,6 +40,11 @@ class Backend(BaseBackend):
                 return job_id
             return [job_id]
 
+    def cancel(self, test_job):
+        if test_job.submitted and test_job.job_id is not None:
+            return self.__cancel_job__(test_job.job_id)
+        return False
+
     def fetch(self, test_job):
         try:
             data = self.__get_job_details__(test_job.job_id)
@@ -194,6 +199,16 @@ class Backend(BaseBackend):
                 new_test_job.job_id = job_id
                 new_test_job.save()
         return new_test_job
+
+    def __cancel_job__(self, job_id):
+        try:
+            self.proxy.scheduler.cancel_job(job_id)
+            return True
+        except (xmlrpc.client.ProtocolError,
+                xmlrpc.client.Fault,
+                ssl.SSLError):
+            return False
+        return False
 
     def __lava_job_name(self, definition):
         yaml_definition = yaml.safe_load(definition)

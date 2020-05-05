@@ -254,5 +254,10 @@ class TestJob(models.Model):
         self.save()
         return True
 
+    def cancel(self):
+        if self.job_id is not None:
+            return self.backend.get_implementation().cancel(self)
+        return self.fetched
+
     def __str__(self):
         return "%s/%s" % (self.backend.name, self.job_id)
