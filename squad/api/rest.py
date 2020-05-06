@@ -56,7 +56,8 @@ class GroupFilter(filters.FilterSet):
     class Meta:
         model = Group
         fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
-                  'slug': ['exact', 'in', 'startswith', 'contains', 'icontains']}
+                  'slug': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'id': ['exact', 'in']}
 
 
 class ProjectFilter(filters.FilterSet):
@@ -83,7 +84,7 @@ class EnvironmentFilter(filters.FilterSet):
         model = Environment
         fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'slug': ['exact', 'in', 'startswith', 'contains', 'icontains'],
-                  'id': ['exact']}
+                  'id': ['exact', 'in']}
 
 
 class ProjectStatusFilter(filters.FilterSet):
@@ -104,7 +105,7 @@ class BuildFilter(filters.FilterSet):
     class Meta:
         model = Build
         fields = {'version': ['exact', 'in', 'startswith'],
-                  'id': ['exact'],
+                  'id': ['exact', 'in'],
                   'created_at': ['exact', 'lt', 'lte', 'gt', 'gte'],
                   }
 
@@ -121,7 +122,8 @@ class TestRunFilter(filters.FilterSet):
 
     class Meta:
         model = TestRun
-        fields = {'job_id': ['exact', 'in', 'startswith'],
+        fields = {'id': ['exact', 'in'],
+                  'job_id': ['exact', 'in', 'startswith'],
                   'job_status': ['exact', 'in', 'startswith'],
                   'data_processed': ['exact'],
                   'status_recorded': ['exact'],
@@ -145,7 +147,8 @@ class TestJobFilter(filters.FilterSet):
                   "can_resubmit": ['exact', 'in'],
                   "resubmitted_count": ['exact', 'in'],
                   "job_status": ['exact', 'in', 'startswith', 'contains', 'icontains'],
-                  "job_id": ['exact', 'in', 'startswith', 'contains', 'icontains']}
+                  "job_id": ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  "id": ['exact', 'in']}
 
 
 class SuiteFilter(filters.FilterSet):
@@ -153,7 +156,8 @@ class SuiteFilter(filters.FilterSet):
 
     class Meta:
         model = Suite
-        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+        fields = {'id': ['exact', 'in'],
+                  'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'slug': ['exact', 'in', 'startswith', 'contains', 'icontains']}
 
 
@@ -161,7 +165,8 @@ class SuiteMetadataFilter(filters.FilterSet):
 
     class Meta:
         model = SuiteMetadata
-        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+        fields = {'id': ['exact', 'in'],
+                  'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'suite': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'kind': ['exact', 'in', 'startswith', 'contains', 'icontains']}
 
@@ -175,7 +180,8 @@ class KnownIssueFilter(filters.FilterSet):
                   'test_name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'url': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'active': ['exact', 'in'],
-                  'intermittent': ['exact', 'in']}
+                  'intermittent': ['exact', 'in'],
+                  'id': ['exact', 'in']}
 
 
 class TestFilter(filters.FilterSet):
@@ -211,7 +217,8 @@ class MetricThresholdFilter(filters.FilterSet):
 
     class Meta:
         model = MetricThreshold
-        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains']}
+        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'id': ['exact', 'in']}
 
 
 class DelayedReportFilter(filters.FilterSet):
@@ -222,6 +229,7 @@ class DelayedReportFilter(filters.FilterSet):
         model = DelayedReport
         fields = {
             "output_format": ['exact', 'in', 'startswith', 'contains', 'icontains'],
+            "id": ['exact', 'in'],
             "template": ['exact', 'in'],
             "email_recipient": ['exact', 'in', 'startswith', 'contains', 'icontains'],
             "email_recipient_notified": ['exact'],
@@ -576,6 +584,7 @@ class ProjectStatusViewSet(viewsets.ModelViewSet):
 
 
 class PatchSourceSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = PatchSource
@@ -874,6 +883,8 @@ class TestRunSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class SuiteSerializer(serializers.ModelSerializer):
+
+    id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Suite
