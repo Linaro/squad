@@ -336,10 +336,12 @@ class Backend(BaseBackend):
             handle_lava_suite = self.__resolve_setting__(ps, 'CI_LAVA_HANDLE_SUITE', False)
             handle_lava_boot = self.__resolve_setting__(ps, 'CI_LAVA_HANDLE_BOOT', False)
             clone_measurements_to_tests = self.__resolve_setting__(ps, 'CI_LAVA_CLONE_MEASUREMENTS', False)
+            ignore_infra_errors = self.__resolve_setting__(ps, 'CI_LAVA_WORK_AROUND_INFRA_ERRORS', False)
         else:
             handle_lava_suite = self.settings.get('CI_LAVA_HANDLE_SUITE', False)
             handle_lava_boot = self.settings.get('CI_LAVA_HANDLE_BOOT', False)
             clone_measurements_to_tests = self.settings.get('CI_LAVA_CLONE_MEASUREMENTS', False)
+            ignore_infra_errors = self.settings.get('CI_LAVA_WORK_AROUND_INFRA_ERRORS', False)
 
         definition = yaml.safe_load(data['definition'])
         test_job.name = definition['job_name'][:255]
@@ -401,7 +403,8 @@ class Backend(BaseBackend):
                     error_type = metadata.get('error_type', None)
                     # detect jobs failed because of infrastructure issues
                     if error_type in ['Infrastructure', 'Job', 'Lava']:
-                        completed = False
+                        if not ignore_infra_errors:
+                            completed = False
                     # automatically resubmit in some cases
                     if error_type in ['Infrastructure', 'Job', 'Test']:
                         self.__resubmit_job__(test_job, metadata)
