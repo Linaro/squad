@@ -2,6 +2,7 @@ import {AnnotationController} from './controllers/annotation.js'
 import {BuildCompareController} from './controllers/build_compare.js'
 import {FilterController} from './controllers/filter.js'
 import {ResubmitController} from './controllers/resubmit.js'
+import {CancelController} from './controllers/cancel.js'
 import {Config as appConfig} from './config.js'
 import {attach_select2} from './attach_select2.js'
 
@@ -40,6 +41,17 @@ app.controller(
         '$location',
         '$timeout',
         ResubmitController
+    ]
+);
+
+app.controller(
+    'CancelController',
+    [
+        '$scope',
+        '$http',
+        '$location',
+        '$timeout',
+        CancelController
     ]
 );
 

@@ -84,6 +84,14 @@ class Backend(object):
         """
         raise NotImplementedError
 
+    def cancel(self, test_job):
+        """
+        Cancels the job if the backend allows it. It will not raise any
+        exceptions even if the 'cancel' call fails. Return value should be
+        True for success and False for failure.
+        """
+        raise NotImplementedError
+
     def job_url(selt, test_job):
         """
         Returns the URL of the test job in the backend

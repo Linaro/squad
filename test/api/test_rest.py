@@ -25,6 +25,8 @@ class RestApiTest(APITestCase):
         self.build3 = self.project.builds.create(version='3', datetime=t3)
         t4 = timezone.make_aware(datetime.datetime(2018, 10, 4, 1, 0, 0))
         self.build4 = self.project.builds.create(version='4', datetime=t4)
+        t5 = timezone.make_aware(datetime.datetime(2018, 10, 5, 1, 0, 0))
+        self.build5 = self.project.builds.create(version='5', datetime=t5)
         self.environment = self.project.environments.create(slug='myenv')
         self.environment_a = self.project.environments.create(slug='env-a')
         self.testrun = self.build.test_runs.create(environment=self.environment, build=self.build)
@@ -35,6 +37,7 @@ class RestApiTest(APITestCase):
         self.testrun2_a = self.build2.test_runs.create(environment=self.environment_a, build=self.build2)
         self.testrun3_a = self.build3.test_runs.create(environment=self.environment_a, build=self.build3)
         self.backend = ci_models.Backend.objects.create(name='foobar')
+        self.fake_backend = ci_models.Backend.objects.create(name='foobarfake', implementation_type='fake')
         self.patchsource = models.PatchSource.objects.create(name='baz_source', username='u', url='http://example.com', token='secret')
         self.knownissue = models.KnownIssue.objects.create(title='knownissue_foo', test_name='test/bar', active=True)
         self.knownissue.environments.add(self.environment)
@@ -63,6 +66,26 @@ class RestApiTest(APITestCase):
             target_build=self.build3,
             environment='myenv',
             testrun=self.testrun3
+        )
+        self.testjob5 = ci_models.TestJob.objects.create(
+            definition="foo: bar",
+            backend=self.fake_backend,
+            target=self.project,
+            target_build=self.build5,
+            environment='myenv',
+            job_id='1234',
+            submitted=True
+        )
+        self.testjob6 = ci_models.TestJob.objects.create(
+            definition="foo: bar",
+            backend=self.fake_backend,
+            target=self.project,
+            target_build=self.build5,
+            environment='myenv',
+            job_id='1235',
+            submitted=True,
+            fetched=True,
+            can_resubmit=True,
         )
 
         testrun_sets = [
@@ -158,7 +181,7 @@ class RestApiTest(APITestCase):
 
     def test_project_builds(self):
         data = self.hit('/api/projects/%d/builds/' % self.project.id)
-        self.assertEqual(4, len(data['results']))
+        self.assertEqual(5, len(data['results']))
 
     def test_create_project_with_enabled_plugin_list_1_element(self):
         response = self.post(
@@ -295,7 +318,7 @@ class RestApiTest(APITestCase):
 
     def test_builds(self):
         data = self.hit('/api/builds/')
-        self.assertEqual(4, len(data['results']))
+        self.assertEqual(5, len(data['results']))
 
     def test_builds_status(self):
         self.build2.test_jobs.all().delete()
@@ -548,6 +571,28 @@ class RestApiTest(APITestCase):
     def test_testjob_definition(self):
         data = self.hit('/api/testjobs/%d/definition/' % self.testjob.id)
         self.assertEqual('foo: bar', data)
+
+    def test_testjob_resubmit(self):
+        data = self.post('/api/testjobs/%d/resubmit/' % self.testjob6.id, {})
+        self.assertEqual(data.status_code, 200)
+        self.assertEqual(data.json()['message'], "OK")
+
+    def test_testjob_force_resubmit(self):
+        data = self.post('/api/testjobs/%d/force_resubmit/' % self.testjob5.id, {})
+        self.assertEqual(data.status_code, 200)
+        self.assertEqual(data.json()['message'], "OK")
+
+    def test_testjob_cancel(self):
+        data = self.post('/api/testjobs/%d/cancel/' % self.testjob5.id, {})
+        self.assertEqual(data.status_code, 200)
+        self.assertEqual(data.json()['job_id'], self.testjob5.job_id)
+        self.assertEqual(data.json()['status'], 'Canceled')
+
+    def test_testjob_cancel_fail(self):
+        data = self.post('/api/testjobs/%d/cancel/' % self.testjob2.id, {})
+        self.assertEqual(data.status_code, 200)
+        self.assertEqual(data.json()['job_id'], self.testjob2.job_id)
+        self.assertEqual(data.json()['status'], self.testjob2.job_status)
 
     def test_backends(self):
         data = self.hit('/api/backends/')

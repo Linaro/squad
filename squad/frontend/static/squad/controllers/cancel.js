@@ -1,15 +1,13 @@
-export function ResubmitController($scope, $http, $location, $timeout) {
+export function CancelController($scope, $http, $location, $timeout) {
 
     $scope.error = false
     $scope.loading = false
     $scope.done = false
-    $scope.resubmit = function(test_job_id, force) {
+    $scope.cancel = function(test_job_id) {
         if ($scope.done) return
         $scope.loading = true
 
-        var endpoint = force ? "/force_resubmit/" : "/resubmit/";
-
-        $http.post("/api/testjobs/" + test_job_id + endpoint).then(
+        $http.post("/api/testjobs/" + test_job_id + "/cancel/").then(
             function(response) {
                 $timeout(function() {
                     $scope.loading = false
@@ -17,7 +15,7 @@ export function ResubmitController($scope, $http, $location, $timeout) {
                 }, 1000)
             },
             function(response) {
-                var msg = "There was an error while resubmitting.\n" +
+                var msg = "There was an error while cancelling.\n" +
                     "Status = " + response.status + " " + response.statusText +
                     "(" + response.xhrStatus + ")"
                 alert(msg)
