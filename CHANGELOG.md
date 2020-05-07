@@ -1,3 +1,32 @@
+# 1.11
+
+This 1.11 release adds several new features. A new flag in Project/Backend
+settings allow processing valid results of LAVA jobs that had an Infrastructure
+error. In the test job page of a build, a user can now choose to cancel a job that
+is submitted but not yet fetched, also sending this cancel action to job backend.
+
+Complete list of changes going in:
+
+* api:
+  * document field lookups
+  * rest: add ID to all possible serializers and filters
+  * rest: add resubmit and cancel methods to TestJob objects
+* ci:
+  * add support for cancelling CI jobs
+  * lava: add flag allowing to accept results from failed jobs
+  * models: handle race condition without wait
+* doc:
+  * api: add note about Squad-Client tool
+  * api: add status to testrun endpoint and metrics endpoint
+  * api: remove usergroups documentation
+  * intro: add a note about xfail tests
+  * intro: add note on regressions and fixes
+* frontend:
+  * add Cancel button to test job list
+  * add link to full log from test list page
+  * ci: reduce number of queries for testjobs view
+* core: fix project counter display on index page
+
 # 1.10.1
 
 This is a bug fix release:
