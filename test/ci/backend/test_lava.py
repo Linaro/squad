@@ -114,6 +114,8 @@ TEST_RESULTS_INFRA_FAILURE = [
     },
 ]
 
+TEST_RESULTS_WITH_JOB_INFRA_ERROR = TEST_RESULTS + TEST_RESULTS_INFRA_FAILURE
+
 RESUBMIT_STRING = "Connection closed"
 TEST_RESULTS_INFRA_FAILURE_RESUBMIT = [
     {
@@ -184,6 +186,13 @@ JOB_DEFINITION_NO_METADATA = {
 
 JOB_DETAILS = {
     'status': 'Complete',
+    'id': 1234,
+    'definition': yaml.dump(JOB_DEFINITION),
+    'multinode_definition': ''
+}
+
+JOB_DETAILS_INCOMPLETE = {
+    'status': 'Incomplete',
     'id': 1234,
     'definition': yaml.dump(JOB_DEFINITION),
     'multinode_definition': ''
@@ -500,6 +509,53 @@ class LavaTest(TestCase):
         self.assertEqual(1, results.filter(name='case_bar').count())
         self.assertEqual(1, metrics.filter(name='case_foo').count())
         self.assertEqual(10.0, metrics.filter(name='case_foo').get().result)
+
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_INCOMPLETE)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_WITH_JOB_INFRA_ERROR)
+    def test_parse_results_ignore_infra_errors(self, get_results, get_details, download_test_log):
+        self.backend.backend_settings = '{"CI_LAVA_WORK_AROUND_INFRA_ERRORS": true}'
+        lava = self.backend
+
+        testjob = TestJob.objects.create(
+            job_id='1234',
+            backend=self.backend,
+            target=self.project,
+            target_build=self.build)
+        lava.fetch(testjob.id)
+        testjob.refresh_from_db()
+        results = testjob.testrun.tests
+        metrics = testjob.testrun.metrics
+
+        self.assertEqual(True, testjob.testrun.completed)
+        self.assertEqual(1, results.count())
+        self.assertEqual(1, metrics.count())
+        self.assertEqual(0, results.filter(name='device_foo').count())
+        self.assertEqual(0, metrics.filter(name='time-device_foo').count())
+        self.assertEqual(1, results.filter(name='case_bar').count())
+        self.assertEqual(1, metrics.filter(name='case_foo').count())
+        self.assertEqual(10.0, metrics.filter(name='case_foo').get().result)
+
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_INCOMPLETE)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_WITH_JOB_INFRA_ERROR)
+    def test_parse_results_dont_ignore_infra_errors(self, get_results, get_details, download_test_log):
+        self.backend.backend_settings = '{"CI_LAVA_WORK_AROUND_INFRA_ERRORS": false}'
+        lava = self.backend
+
+        testjob = TestJob.objects.create(
+            job_id='1234',
+            backend=self.backend,
+            target=self.project,
+            target_build=self.build)
+        lava.fetch(testjob.id)
+        testjob.refresh_from_db()
+        results = testjob.testrun.tests
+        metrics = testjob.testrun.metrics
+
+        self.assertEqual(False, testjob.testrun.completed)
+        self.assertEqual(0, results.count())
+        self.assertEqual(0, metrics.count())
 
     @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)

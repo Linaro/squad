@@ -146,6 +146,9 @@ LAVA backend supports the following settings:
    Before SQUAD 1.x series, the default behavior was to always process
    `auto-login-action` as boot. After 1.x, the default behavior has changed
    to do the opposite.
+ - CI_LAVA_WORK_AROUND_INFRA_ERRORS
+   boolean flag that allows to accept test results from 'Incomplete' jobs if the
+   failure was caused by infrastracture. **NOTE**: Use with caution!
 
 Example LAVA backend settings:
 
