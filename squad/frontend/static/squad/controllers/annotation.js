@@ -26,7 +26,7 @@ export function AnnotationController($scope, $http, $httpParamSerializerJQLike) 
         }, function(response) {
             var msg = "There was an error while editing annotation."
             if (response.data) {
-                msg += "\nMessage: " + response.data.description
+                msg += "\nMessage: " + response.data.detail
             }
             alert(msg)
         })

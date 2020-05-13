@@ -69,7 +69,7 @@ describe("AnnotationController", function () {
         it('tests when update function returns error', function () {
             spyOn(window, 'alert')
             $httpBackend.whenPOST("/api/annotations/").respond(
-                401, {description: "some error"});
+                401, {detail: "some error"});
             $scope.updateAnnotation(1)
             $httpBackend.flush();
             expect(window.alert).toHaveBeenCalledWith('There was an error while editing annotation.\nMessage: some error');
