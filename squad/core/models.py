@@ -275,6 +275,11 @@ class Project(models.Model, DisplayName):
     def writable_by(self, user):
         return self.group.writable_by(user)
 
+    def is_subscribed(self, user):
+        if self.subscriptions.filter(user=user):
+            return True
+        return False
+
     @property
     def full_name(self):
         return str(self.group) + '/' + self.slug

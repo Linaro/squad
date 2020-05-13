@@ -34,7 +34,7 @@
         </div>
         {% endif %}
     </div>
-    <div class="col-md-5 col-sm-5 project-listing-info">
+    <div class="col-md-4 col-sm-4 project-listing-info">
         {% if status.has_tests %}
         <div title='{{ _('Test results') }}'>
             <i class='fa fa-check-square-o'></i>
@@ -61,6 +61,9 @@
             {{status.last_updated|time}}
         </div>
         {% endif %}
+    </div>
+    <div class="col-md-1 col-sm-1 project-listing-info">
+    {% include "squad/_subscribe.jinja2" %}
     </div>
     </a>
 

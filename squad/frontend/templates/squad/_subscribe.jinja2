@@ -1,0 +1,17 @@
+    {% if user.is_authenticated %}
+  		{% if project.is_subscribed(user) %}
+		<form class="pull-right" action="{{url("settings-subscription-remove-post")}}" method="POST">
+		{% else %}
+  		<form class="pull-right" action="{{url("settings-subscriptions")}}" method="POST">
+  		{% endif %}
+    		{{ csrf_input }}
+    		<input type="hidden" name="notification-strategy" value="all"/>
+    		<input type="hidden" name="email" value="{{ user.email }}"/>
+    		<input type="hidden" name="subscription" value="{{ project.id }}"/>
+    		{% if project.is_subscribed(user) %}
+    		<button class="btn btn-default" type="submit"><i class='fa fa-bell-slash'>&nbsp;</i></button>
+    		{% else %}
+    		<button class="btn btn-default" type="submit"><i class='fa fa-bell'>&nbsp;</i></button>
+    		{% endif %}
+  		</form>
+  	{% endif %}

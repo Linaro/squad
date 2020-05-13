@@ -7,12 +7,13 @@ from django.urls import reverse
 from django.db.utils import IntegrityError
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect
 
 
 from rest_framework.authtoken.models import Token
 
 
-from squad.core.models import Group, Subscription, UserNamespace
+from squad.core.models import Group, Project, Subscription, UserNamespace
 
 
 logger = logging.getLogger()
@@ -78,7 +79,7 @@ def subscriptions(request):
             logger.warning("Subscription for given user %s already exists on project: %s", request.user, request.POST.get("subscription"))
             pass
 
-        return redirect(reverse('settings-subscriptions'))
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', request.path_info))
 
     context = {
         'subscriptions': subscriptions,
@@ -90,11 +91,17 @@ def subscriptions(request):
 
 
 @login_required
-def remove_subscription(request, id):
+def remove_subscription(request, id=None):
 
-    subscription = get_object_or_404(Subscription, pk=id, user=request.user)
+    subscription = None
+    if request.method == "POST":
+        project_id = request.POST.get("subscription")
+        project = get_object_or_404(Project, pk=project_id)
+        subscription = get_object_or_404(Subscription, project=project, user=request.user)
+    if not subscription:
+        subscription = get_object_or_404(Subscription, pk=id, user=request.user)
     subscription.delete()
-    return redirect(reverse('settings-subscriptions'))
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', request.path_info))
 
 
 @login_required
@@ -120,5 +127,6 @@ urls = [
     url('^api-token/$', api_token, name='settings-api-token'),
     url('^subscriptions/$', subscriptions, name='settings-subscriptions'),
     url(r'^remove-subscription/(?P<id>\d+)$', remove_subscription, name='settings-subscription-remove'),
+    url(r'^remove-subscription/$', remove_subscription, name='settings-subscription-remove-post'),
     url('^projects/$', projects, name='settings-projects'),
 ]
