@@ -940,6 +940,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
     last notification.
     """
     build = models.OneToOneField('Build', related_name='status', on_delete=models.CASCADE)
+    baseline = models.ForeignKey('Build', related_name='next_statuses', on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(null=True)
     finished = models.BooleanField(default=False)
