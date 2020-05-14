@@ -430,6 +430,32 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     List of projects. Includes public projects and projects that the current
     user has access to.
+
+    Additional actions:
+
+     * `api/projects/<id>/builds` GET
+
+        List of builds for the current project.
+
+     * `api/projects/<id>/suites` GET
+
+        List of test suite names available in this project
+
+     * `api/projects/<id>/tests` GET
+
+        List of test names available in this project
+
+     * `api/projects/<id>/test_results` GET
+
+        Test results of the last build
+
+     * `api/projects/<id>/subscribe` POST
+
+        Subscribe to project notifications
+
+     * `api/projects/<id>/unsubscribe` POST
+
+        Unsubscribe from project notifications
     """
     queryset = Project.objects
     serializer_class = ProjectSerializer
@@ -652,6 +678,40 @@ class BuildViewSet(ModelViewSet):
     """
     List of all builds in the system. Only builds belonging to public projects
     and to projects you have access to are available.
+
+    Additional actions:
+
+     * `api/builds/<id>/metadata` GET
+
+        Build metadata list
+
+     * `api/builds/<id>/status` GET
+
+        Build status and cached test/metric totals
+
+     * `api/builds/<id>/testruns` GET
+
+        List of test runs in the build
+
+     * `api/builds/<id>/testjobs` GET
+
+        List of test jobs in the build (if any)
+
+     * `api/builds/<id>/email` GET
+
+        This method produces the body of email notification for the build.
+        By default it uses the project settings for HTML and template.
+        These settings can be overwritten by using GET parameters:
+
+         * output - sets the output format (text/plan, text/html)
+         * template - sets the template used (id of existing template or
+                      "default" for default SQUAD templates)
+         * force - force email report re-generation even if there is
+                   existing one cached
+
+     * `api/builds/<id>/report` GET, POST
+
+        Similar to 'email' but asunchronous
     """
     queryset = Build.objects.prefetch_related('status', 'test_runs').order_by('-datetime').all()
     project_lookup_key = 'project__in'
@@ -896,6 +956,13 @@ class TestNameSerializer(serializers.BaseSerializer):
 
 
 class SuiteViewSet(viewsets.ModelViewSet):
+    """
+    Additional actions:
+
+     * `api/suites/<id>/testnames` GET
+
+        Returns list of all test names belonging to this suite
+    """
 
     queryset = Suite.objects.all()
     serializer_class = SuiteSerializer
@@ -975,6 +1042,36 @@ class TestRunViewSet(ModelViewSet):
 
     Only test runs from public projects and from projects accessible to you are
     available.
+
+    Additional actions:
+
+     * `api/testruns/<id>/tests_file` GET
+
+        Presents tests_file from original submission
+
+     * `api/testruns/<id>/metrics_file` GET
+
+        Presents metrics_file from original submission
+
+     * `api/testruns/<id>/metadata_file` GET
+
+        Presents metadata_file from original submission
+
+     * `api/testruns/<id>/log_file` GET
+
+        Presents log_file from original submission
+
+     * `api/testruns/<id>/tests` GET
+
+        Returns list of Test objects belonging to this test run. List is paginated
+
+     * `api/testruns/<id>/metrics` GET
+
+        Returns list of Metric objects belonging to this test run. List is paginated
+
+     * `api/testruns/<id>/status` GET
+
+        Presents summary view for each suite present in this test run
     """
     queryset = TestRun.objects.prefetch_related(
         Prefetch("status", queryset=Status.objects.filter(suite=None))
@@ -1074,6 +1171,24 @@ class TestJobViewSet(ModelViewSet):
     """
     List of CI test jobs. Only testjobs for public projects, and for projects
     you have access to, are available.
+
+    Additional actions:
+
+     * `api/testjobs/<id>/definition` GET
+
+        Presents original test job definition
+
+     * `api/testjobs/<id>/resubmit` POST
+
+        Allows to resubmit the job. Will produce new test job using the same backend
+
+     * `api/testjobs/<id>/force_resubmit` POST
+
+        Same as 'resubmit' but can be done also on successful jobs
+
+     * `api/testjobs/<id>/cancel` POST
+
+        Allows to cancel a job
     """
     queryset = TestJob.objects.prefetch_related('backend').order_by('-id')
     project_lookup_key = 'target_build__project__in'
