@@ -32,6 +32,7 @@ from squad.compat import drf_basename
 from django.http import HttpResponse
 from django.urls import reverse
 from django import forms
+from django.utils.translation import ugettext as _
 from rest_framework_extensions.routers import ExtendedDefaultRouter
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework import routers, serializers, viewsets, status
@@ -347,9 +348,16 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
 
 class LatestTestResults(object):
     def __init__(self, build, test_name):
+        if test_name is None:
+            raise serializers.ValidationError(_('"test_name" parameter is mandatory. Ex: suitename/testname'))
+
+        suite_and_test = test_name.rsplit("/", 1)
+        if len(suite_and_test) != 2:
+            raise serializers.ValidationError(_('"test_name" parameter should be in the format "suitename/testname"'))
+
         self.build = build
         self.environments = build.project.environments.all()
-        test_suite_name, test_case_name = test_name.rsplit("/", 1)
+        test_suite_name, test_case_name = suite_and_test
         self.test_list = Test.objects.filter(
             test_run__build=self.build,
             test_run__environment__in=self.environments,

@@ -183,6 +183,13 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/projects/%d/builds/' % self.project.id)
         self.assertEqual(5, len(data['results']))
 
+    def test_project_test_results(self):
+        response = self.client.get('/api/projects/%d/test_results/' % self.project.id)
+        self.assertEqual(400, response.status_code)
+
+        data = self.hit('/api/projects/%d/test_results/?test_name=foo/test1' % self.project.id)
+        self.assertTrue(len(data) > 0)
+
     def test_create_project_with_enabled_plugin_list_1_element(self):
         response = self.post(
             '/api/projects/',
