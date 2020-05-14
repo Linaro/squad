@@ -18,6 +18,7 @@ class ProjectStatusTest(TestCase):
     def setUp(self):
         self.group = Group.objects.create(slug='mygroup')
         self.project = self.group.projects.create(slug='myproject')
+        self.project2 = self.group.projects.create(slug='myproject2')
         self.environment = self.project.environments.create(slug='theenvironment')
         self.environment_a = self.project.environments.create(slug='environment_a')
         self.suite = self.project.suites.create(slug='suite_')
@@ -31,7 +32,7 @@ class ProjectStatusTest(TestCase):
         return build
 
     def test_status_of_first_build(self):
-        build = self.create_build('1')
+        build = self.project2.builds.create(version='1122')
         status = ProjectStatus.create_or_update(build)
 
         self.assertEqual(build, status.build)
@@ -117,7 +118,10 @@ class ProjectStatusTest(TestCase):
 
         test_run2.metrics.create(name='v1', suite=self.suite, result=5.0)
         status = ProjectStatus.create_or_update(build)
+        build.refresh_from_db()
+        status.refresh_from_db()
 
+        self.assertEqual(status, build.status)
         self.assertEqual(2, status.tests_pass)
         self.assertEqual(1, status.tests_fail)
         self.assertEqual(1, status.tests_skip)
@@ -334,3 +338,41 @@ class ProjectStatusTest(TestCase):
         fixes3 = status3.get_fixes()
         self.assertEqual(len(fixes3['theenvironment']), 1)
         self.assertEqual(fixes3['theenvironment'][0], 'suite_/foo')
+
+    def test_keep_baseline(self):
+        # Test that baseline is kept for unfinished builds
+        self.environment.expected_test_runs = 2
+        self.environment.save()
+        build1 = self.create_build('10', datetime=h(10))
+        test_run11 = build1.test_runs.first()
+        test_run11.tests.create(name='foo', suite=self.suite, result=False)
+        test_run11.tests.create(name='bar', suite=self.suite, result=False)
+        test_run12 = build1.test_runs.create(environment=self.environment)
+        test_run12.tests.create(name='foo2', suite=self.suite_a, result=False)
+        ProjectStatus.create_or_update(build1)
+
+        build2 = self.create_build('20', datetime=h(9))
+        test_run21 = build2.test_runs.first()
+        test_run21.tests.create(name='foo', suite=self.suite, result=False)
+        test_run21.tests.create(name='bar', suite=self.suite, result=True)
+        ProjectStatus.create_or_update(build2)
+
+        build3 = self.create_build('30', datetime=h(8))
+        test_run31 = build3.test_runs.first()
+        test_run31.tests.create(name='foo', suite=self.suite, result=True)
+        test_run31.tests.create(name='bar', suite=self.suite, result=True)
+        ProjectStatus.create_or_update(build3)
+
+        self.assertEqual(build2.status.baseline, build1)
+        self.assertEqual(build3.status.baseline, build1)
+
+        test_run22 = build2.test_runs.create(environment=self.environment)
+        test_run22.tests.create(name='foo2', suite=self.suite_a, result=False)
+        ProjectStatus.create_or_update(build2)
+
+        test_run32 = build3.test_runs.create(environment=self.environment)
+        test_run32.tests.create(name='foo2', suite=self.suite_a, result=False)
+        ProjectStatus.create_or_update(build3)
+
+        self.assertEqual(build2.status.baseline, build1)
+        self.assertEqual(build3.status.baseline, build1)
