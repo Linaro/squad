@@ -21,12 +21,7 @@ def valid_date(date):
         raise argparse.ArgumentTypeError(msg)
 
 
-def progress(show):
-    if show:
-        print('.', end='')
-
-
-def __get_environments__(build, project):
+def __get_environments__(build):
     project_id = build.project_id
     if environments_cache.get(project_id) is None:
         environments_cache[project_id] = build.project.environments.all()
@@ -54,6 +49,11 @@ class Command(BaseCommand):
             type=valid_date,
             help="End date for project status updates (default: today, format: YYYY-MM-DD)."
         )
+
+    def __progress__(self, show):
+        if show:
+            self.stdout.write(".", ending="")
+            self.stdout._out.flush()
 
     def handle(self, *args, **options):
         start_date = timezone.make_aware(options['start_date'])
@@ -88,6 +88,10 @@ class Command(BaseCommand):
             logger.info('Showing progress, one dot means one processed build')
 
         for build in builds.all():
-            progress(show_progress)
+            self.__progress__(show_progress)
             for environment in __get_environments__(build):
                 BuildSummary.create_or_update(build, environment)
+
+        if show_progress:
+            self.stdout.write("")
+            self.stdout._out.flush()
