@@ -1,3 +1,19 @@
+# 1.12
+
+This 1.12 release adds a bell icon to project UI allowing users
+to subscribe/unsubscribe from projects notifications, among other
+small fixes and additions.
+
+Complete list of changes going in:
+
+* api: add docstring to endpoints with additional methods
+* api: rest: handle null test_name in project/test_results
+* frontend: add subscribe feature to project listing
+* frontend: allow to subscribe/unsubscribe from project view
+* static: annotation: better handle error messages
+* test: fix flake8 warning
+
+
 # 1.11
 
 This 1.11 release adds several new features. A new flag in Project/Backend
