@@ -116,6 +116,9 @@ class BackendFetchTest(BackendTestBase):
         metrics = {"bar": 1}
         results = ('Complete', True, metadata, tests, metrics, "abc")
 
+        project_status = self.build.status
+        tests_pass_so_far = project_status.tests_pass
+
         impl = MagicMock()
         impl.fetch = MagicMock(return_value=results)
         impl.job_url = MagicMock(return_value="http://www.example.com")
@@ -155,6 +158,8 @@ class BackendFetchTest(BackendTestBase):
                 result=1,
             ).count()
         )
+        project_status.refresh_from_db()
+        self.assertEqual(project_status.tests_pass, tests_pass_so_far + 1)
         test_job.refresh_from_db()
         self.assertTrue(test_job.fetched)
 

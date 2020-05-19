@@ -135,7 +135,7 @@ class Backend(models.Model):
 
         if test_job.testrun:
             self.__postprocess_testjob__(test_job)
-            UpdateProjectStatus()(testrun)
+            UpdateProjectStatus()(test_job.testrun)
 
     def __postprocess_testjob__(self, test_job):
         project = test_job.target
