@@ -57,7 +57,7 @@ class RestApiTest(APITestCase):
             target=self.project,
             target_build=self.build2,
             environment='myenv',
-            testrun=self.testrun2
+            testrun=self.testrun2,
         )
         self.testjob3 = ci_models.TestJob.objects.create(
             definition="foo: bar",
@@ -593,13 +593,13 @@ class RestApiTest(APITestCase):
         data = self.post('/api/testjobs/%d/cancel/' % self.testjob5.id, {})
         self.assertEqual(data.status_code, 200)
         self.assertEqual(data.json()['job_id'], self.testjob5.job_id)
-        self.assertEqual(data.json()['status'], 'Canceled')
+        self.assertEqual(data.json()['status'], self.testjob5.job_status)
 
     def test_testjob_cancel_fail(self):
         data = self.post('/api/testjobs/%d/cancel/' % self.testjob2.id, {})
         self.assertEqual(data.status_code, 200)
         self.assertEqual(data.json()['job_id'], self.testjob2.job_id)
-        self.assertEqual(data.json()['status'], self.testjob2.job_status)
+        self.assertEqual(data.json()['status'], 'Canceled')
 
     def test_backends(self):
         data = self.hit('/api/backends/')

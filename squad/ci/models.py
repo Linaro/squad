@@ -257,6 +257,12 @@ class TestJob(models.Model):
     def cancel(self):
         if self.job_id is not None:
             return self.backend.get_implementation().cancel(self)
+        else:
+            self.fetched = True
+            self.submitted = True
+            self.job_status = "Canceled"
+            self.failure = "Cancelled before submission"
+            self.save()
         return self.fetched
 
     def __str__(self):
