@@ -504,6 +504,27 @@ class TestJobTest(TestCase):
 
         impl.cancel.assert_called()
 
+    @patch('squad.ci.models.Backend.get_implementation')
+    def test_cancel_not_submitted(self, get_implementation):
+        test_job = models.TestJob.objects.create(
+            target=self.project,
+            target_build=self.build,
+            environment='myenv',
+            backend=self.backend,
+            submitted=False
+        )
+        impl = MagicMock()
+        impl.cancel = MagicMock(return_value=True)
+        get_implementation.return_value = impl
+
+        test_job.cancel()
+
+        impl.cancel.assert_not_called()
+        test_job.refresh_from_db()
+        self.assertTrue(test_job.fetched)
+        self.assertTrue(test_job.submitted)
+        self.assertIsNotNone(test_job.failure)
+
     @patch('squad.ci.backend.null.Backend.resubmit', return_value="1")
     def test_records_resubmitted_count(self, backend_resubmit):
         testjob = models.TestJob.objects.create(

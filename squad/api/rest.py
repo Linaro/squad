@@ -1259,10 +1259,7 @@ class TestJobViewSet(ModelViewSet):
     @action(detail=True, methods=['post'], suffix='cancel')
     def cancel(self, request, **kwargs):
         testjob = self.get_object()
-        if testjob.cancel():
-            # this is faking job status as real status will only be updated
-            # after fetch operation is complete
-            return Response({'job_id': testjob.job_id, 'status': 'Canceled'}, status=status.HTTP_200_OK)
+        testjob.cancel()
         return Response({'job_id': testjob.job_id, 'status': testjob.job_status}, status=status.HTTP_200_OK)
 
 
