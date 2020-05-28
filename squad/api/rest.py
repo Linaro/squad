@@ -601,6 +601,7 @@ class ProjectStatusSerializer(serializers.HyperlinkedModelSerializer):
                   'has_tests',
                   'metrics_summary',
                   'build',
+                  'baseline',
                   'created_at',
                   'regressions',
                   'fixes')

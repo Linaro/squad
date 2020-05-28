@@ -5,7 +5,7 @@ from datetime import timedelta, datetime
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from squad.core.models import Project, Build, BuildSummary
+from squad.core.models import Project, Build, ProjectStatus
 
 
 logger = logging.getLogger()
@@ -21,16 +21,9 @@ def valid_date(date):
         raise argparse.ArgumentTypeError(msg)
 
 
-def __get_environments__(build):
-    project_id = build.project_id
-    if environments_cache.get(project_id) is None:
-        environments_cache[project_id] = build.project.environments.all()
-    return environments_cache[project_id]
-
-
 class Command(BaseCommand):
 
-    help = """Compute metric summaries per build per environment"""
+    help = """Compute project statuses and set the baseline field"""
 
     def add_arguments(self, parser):
         parser.add_argument('--project', help='Optionally, specify a project to compute, on the form $group/$project')
@@ -60,10 +53,9 @@ class Command(BaseCommand):
         end_date = timezone.make_aware(options['end_date'])
         project_name = options['project'] or False
         show_progress = options['show_progress']
-
+        logger.info("Filtering builds from %s to %s" % (start_date, end_date))
         builds = Build.objects.filter(
-            datetime__range=(start_date, end_date),
-            status__finished=True
+            datetime__range=(start_date, end_date)
         )
 
         project = None
@@ -89,8 +81,7 @@ class Command(BaseCommand):
 
         for build in builds.all():
             self.__progress__(show_progress)
-            for environment in __get_environments__(build):
-                BuildSummary.create_or_update(build, environment)
+            ProjectStatus.create_or_update(build)
 
         if show_progress:
             self.stdout.write("")

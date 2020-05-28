@@ -940,6 +940,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
     last notification.
     """
     build = models.OneToOneField('Build', related_name='status', on_delete=models.CASCADE)
+    baseline = models.ForeignKey('Build', related_name='next_statuses', on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(null=True)
     finished = models.BooleanField(default=False)
@@ -989,11 +990,15 @@ class ProjectStatus(models.Model, TestSummaryBase):
         regressions = None
         fixes = None
 
-        previous_build = Build.objects.filter(
-            status__finished=True,
-            datetime__lt=build.datetime,
-            project=build.project,
-        ).order_by('datetime').last()
+        previous_build = None
+        if build.status is not None and build.status.baseline is not None:
+            previous_build = build.status.baseline
+        else:
+            previous_build = Build.objects.filter(
+                status__finished=True,
+                datetime__lt=build.datetime,
+                project=build.project,
+            ).order_by('datetime').last()
         if previous_build is not None:
             comparison = TestComparison(previous_build, build)
             if comparison.regressions:
@@ -1015,10 +1020,13 @@ class ProjectStatus(models.Model, TestSummaryBase):
             'test_runs_completed': test_runs_completed,
             'test_runs_incomplete': test_runs_incomplete,
             'regressions': regressions,
-            'fixes': fixes
+            'fixes': fixes,
+            'baseline': previous_build,
         }
 
-        status, created = cls.objects.get_or_create(build=build, defaults=data)
+        status, created = cls.objects.get_or_create(
+            build=build,
+            defaults=data)
         if not created and test_summary.tests_total >= status.tests_total:
             # XXX the test above for the new total number of tests prevents
             # results that arrived earlier, but are only being processed now,
@@ -1033,6 +1041,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.last_updated = now
             status.finished = finished
             status.build = build
+            status.baseline = previous_build
             status.test_runs_total = test_runs_total
             status.test_runs_completed = test_runs_completed
             status.test_runs_incomplete = test_runs_incomplete
@@ -1045,11 +1054,18 @@ class ProjectStatus(models.Model, TestSummaryBase):
         return "%s, build %s" % (self.build.project, self.build.version)
 
     def get_previous(self):
-        return ProjectStatus.objects.filter(
-            finished=True,
-            build__datetime__lt=self.build.datetime,
-            build__project=self.build.project,
-        ).order_by('build__datetime').last()
+        if self.baseline is None:
+            previous_status = ProjectStatus.objects.filter(
+                finished=True,
+                build__datetime__lt=self.build.datetime,
+                build__project=self.build.project,
+            ).order_by('build__datetime').last()
+            if previous_status is not None:
+                self.baseline = previous_status.build
+                self.save()
+        if hasattr(self.baseline, 'status'):
+            return self.baseline.status
+        return None
 
     def __get_yaml_field__(self, field_value):
         if field_value is not None:
