@@ -22,7 +22,7 @@
                     <td>{{ environment }}</td>
                     <td>
                         {% for status in statuses %}
-                        <a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{{ status.test_run.id }} {% include "squad/_test_results_summary.jinja2" %}</a><br />
+                        <a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{% include "squad/_test_results_summary.jinja2" %}</a><br />
                         {% endfor %}
                     </td>
                 </tr>

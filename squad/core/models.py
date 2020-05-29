@@ -767,6 +767,7 @@ class Test(models.Model):
             'test_run__build',
             'test_run__build__project',
             'test_run__build__project__group',
+            'test_run__status',
         )
 
     class History(object):

@@ -356,39 +356,11 @@ def build_settings(request, group_slug, project_slug, version):
     return render(request, 'squad/build_settings.jinja2', context)
 
 
-@auth
-def test_run(request, group_slug, project_slug, build_version, job_id):
-    project = request.project
-    build = get_build(project, build_version)
-    test_run = get_object_or_404(build.test_runs, job_id=job_id)
-
-    status = test_run.status.by_suite().prefetch_related('suite', 'suite__metadata').all()
-
-    tests_status = [s for s in status if s.has_tests]
-    metrics_status = [s for s in status if s.has_metrics]
-
-    attachments = [
-        (f['filename'], file_type(f['filename']), f['length'])
-        for f in test_run.attachments.values('filename', 'length')
-    ]
-
-    context = {
-        'project': project,
-        'build': build,
-        'test_run': test_run,
-        'metadata': sorted(test_run.metadata.items()),
-        'attachments': attachments,
-        'tests_status': tests_status,
-        'metrics_status': metrics_status,
-    }
-    return render(request, 'squad/test_run.jinja2', context)
-
-
-def __test_run_suite_context__(request, group_slug, project_slug, build_version, job_id, suite_slug):
+def __test_run_suite_context__(request, group_slug, project_slug, build_version, testrun, suite_slug):
     project = request.project
     build = get_build(project, build_version)
 
-    test_run = get_object_or_404(build.test_runs, job_id=job_id)
+    test_run = get_object_or_404(build.test_runs, pk=testrun)
     suite = get_object_or_404(project.suites, slug=suite_slug.replace('$', '/'))
     status = get_object_or_404(test_run.status, suite=suite)
     context = {
@@ -403,13 +375,13 @@ def __test_run_suite_context__(request, group_slug, project_slug, build_version,
 
 
 @auth
-def test_run_suite_tests(request, group_slug, project_slug, build_version, job_id, suite_slug):
+def test_run_suite_tests(request, group_slug, project_slug, build_version, testrun, suite_slug):
     context = __test_run_suite_context__(
         request,
         group_slug,
         project_slug,
         build_version,
-        job_id,
+        testrun,
         suite_slug
     )
 
@@ -428,13 +400,33 @@ def test_run_suite_tests(request, group_slug, project_slug, build_version, job_i
 
 
 @auth
-def test_run_suite_metrics(request, group_slug, project_slug, build_version, job_id, suite_slug):
+def test_run_suite_test_details(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
     context = __test_run_suite_context__(
         request,
         group_slug,
         project_slug,
         build_version,
-        job_id,
+        testrun,
+        suite_slug
+    )
+    test = get_object_or_404(context['test_run'].tests, suite=context['suite'], name=test_name)
+    attachments = [
+        (f['filename'], file_type(f['filename']), f['length'])
+        for f in context['test_run'].attachments.values('filename', 'length')
+    ]
+
+    context.update({'test': test, 'attachments': attachments})
+    return render(request, 'squad/test_run_suite_test_details.jinja2', context)
+
+
+@auth
+def test_run_suite_metrics(request, group_slug, project_slug, build_version, testrun, suite_slug):
+    context = __test_run_suite_context__(
+        request,
+        group_slug,
+        project_slug,
+        build_version,
+        testrun,
         suite_slug
     )
     all_metrics = context['status'].metrics.prefetch_related(
@@ -461,10 +453,10 @@ def __download__(filename, data, content_type=None):
 
 
 @auth
-def test_run_log(request, group_slug, project_slug, build_version, job_id):
+def test_details_log(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
     project = request.project
     build = get_build(project, build_version)
-    test_run = get_object_or_404(build.test_runs, job_id=job_id)
+    test_run = get_object_or_404(build.test_runs, pk=testrun)
 
     if not test_run.log_file:
         raise Http404("No log file available for this test run")
@@ -473,45 +465,44 @@ def test_run_log(request, group_slug, project_slug, build_version, job_id):
 
 
 @auth
-def test_run_tests(request, group_slug, project_slug, build_version, job_id):
+def test_details_tests(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
     group = request.group
     project = request.project
     build = get_build(project, build_version)
-    test_run = get_object_or_404(build.test_runs, job_id=job_id)
+    test_run = get_object_or_404(build.test_runs, pk=testrun)
 
     filename = '%s_%s_%s_%s_tests.json' % (group.slug, project.slug, build.version, test_run.job_id)
     return __download__(filename, test_run.tests_file)
 
 
 @auth
-def test_run_metrics(request, group_slug, project_slug, build_version, job_id):
+def test_details_metrics(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
     group = request.group
     project = request.project
     build = get_build(project, build_version)
-    test_run = get_object_or_404(build.test_runs, job_id=job_id)
+    test_run = get_object_or_404(build.test_runs, pk=testrun)
 
     filename = '%s_%s_%s_%s_metrics.json' % (group.slug, project.slug, build.version, test_run.job_id)
     return __download__(filename, test_run.metrics_file)
 
 
 @auth
-def test_run_metadata(request, group_slug, project_slug, build_version, job_id):
+def test_details_metadata(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
     group = request.group
     project = request.project
     build = get_build(project, build_version)
-    test_run = get_object_or_404(build.test_runs, job_id=job_id)
+    test_run = get_object_or_404(build.test_runs, pk=testrun)
 
     filename = '%s_%s_%s_%s_metadata.json' % (group.slug, project.slug, build.version, test_run.job_id)
     return __download__(filename, test_run.metadata_file)
 
 
 @auth
-def attachment(request, group_slug, project_slug, build_version, job_id, fname):
+def attachment(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name, filename):
     project = request.project
     build = get_build(project, build_version)
-    test_run = get_object_or_404(build.test_runs, job_id=job_id)
-
-    attachment = get_object_or_404(test_run.attachments, filename=fname)
+    test_run = get_object_or_404(build.test_runs, pk=testrun)
+    attachment = get_object_or_404(test_run.attachments, filename=filename)
     return __download__(attachment.filename, attachment.data)
 
 

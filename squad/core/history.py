@@ -11,6 +11,8 @@ class TestResult(object):
     __test__ = False
 
     def __init__(self, test):
+        self.test = test
+        self.suite = test.suite
         self.known_issues = test.known_issues.all()
         self.status = test.status
         self.test_run = test.test_run

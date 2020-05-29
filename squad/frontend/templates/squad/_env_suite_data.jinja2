@@ -1,0 +1,46 @@
+<small>
+      <i class='fa fa-microchip'></i>
+      <a class='p-3 mb-2 bg-info text-dark'>
+      {{ (_('Test environment: <strong>%s</strong>') % test_run.environment) | safe }}
+      </a>
+      {% if test_run.environment.description %}
+          <span class='toggle-description' onclick="viewShowHide('env-desc-anchor','env-desc' );">
+              <a id='env-desc-anchor'>»</a>
+          </span>
+          <div id='env-desc' style='display: none'>
+              <h5>
+                {{test_run.environment.description|markdown}}
+              </h5>
+          </div>
+      {% endif %}
+      <br>
+      <i class='fa fa-list'></i>
+      <a class='p-3 mb-2 bg-info text-dark'>{{ (_('Suite: <strong>%s</strong>') % suite) | safe }}
+      {% if status.suite_version %}
+      {{status.suite_version.version}}
+      {% endif %}
+      </a>
+      {% if suite.metadata.description %}
+          <span class='toggle-description' onclick="viewShowHide('suite-desc-anchor','tests-{{suite.slug}}-description' );">
+              <a id='suite-desc-anchor'>»</a>
+          </span>
+          <div id='tests-{{suite.slug}}-description' style='display: none'>
+              <h5>
+                {{suite.metadata.description|markdown}}
+              </h5>
+          </div>
+      {% endif %}
+
+      <br>
+      {% if test %}
+      <i class='fa fa-crosshairs'></i>
+      <a class='p-3 mb-2 bg-info text-dark'>{{ (_('Test: <strong>%s</strong>') % test) | safe }}
+      </a>
+      {% endif %}
+
+
+</small>
+{% block javascript %}
+<script type="text/javascript" src='{{static("squad/showHide.js")}}'></script>
+{% endblock %}
+

@@ -18,17 +18,6 @@ from squad.jinja2 import register_global_function, register_filter
 register = template.Library()
 
 
-url_attributes = {
-    'build': (
-        lambda build: build.version,
-    ),
-    'testrun': (
-        lambda testrun: testrun.build.version,
-        lambda testrun: testrun.job_id,
-    )
-}
-
-
 @register_global_function
 def url(path, *args, **kwargs):
     try:
@@ -56,35 +45,44 @@ def project_url(the_object):
     else:
         project = the_object.project
         group = project.group
-
-        attrs = url_attributes.get(name)
-        params = tuple([f(the_object) for f in attrs])
-
-        args = (group.slug, project.slug) + params
+        args = (group.slug, project.slug) + (the_object.version,)
 
     return reverse(name, args=args)
 
 
 @register_global_function
 def testrun_suite_tests_url(group, project, build, status):
-    return testrun_suite_url(group, project, build, status, 'testrun_suite_tests')
+    return testrun_suite_or_test_url(group, project, build, status, 'testrun_suite_tests')
 
 
 @register_global_function
 def testrun_suite_metrics_url(group, project, build, status):
-    return testrun_suite_url(group, project, build, status, 'testrun_suite_metrics')
+    return testrun_suite_or_test_url(group, project, build, status, 'testrun_suite_metrics')
 
 
-def testrun_suite_url(group, project, build, status, kind):
-    testrun = status.test_run
+@register_global_function
+def testrun_suite_test_details_url(group, project, build, status, test):
+    return testrun_suite_or_test_url(group, project, build, status, 'testrun_suite_test_details', test)
+
+
+@register_global_function
+def testrun_suite_test_details_history_url(group, project, build, status, test):
+    return testrun_suite_or_test_url(group, project, build, status, 'test_history', test)
+
+
+def testrun_suite_or_test_url(group, project, build, status, kind, test=None):
+    testrun = status.test_run.id
     suite = status.suite
     args = (
         group.slug,
         project.slug,
         build.version,
-        testrun.job_id,
-        suite.slug.replace('/', '$'),  # encode / in suite names
+        testrun,
+        suite.slug.replace('/', '$'),
     )
+    if test:
+        args = args + (test,)
+
     return reverse(kind, args=args)
 
 

@@ -1,7 +1,7 @@
 import json
 
 from django.db.models import Prefetch
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import Http404
 
 from squad.http import auth
@@ -17,8 +17,10 @@ class TestResult(list):
     of the test results table.
     """
 
-    def __init__(self, name):
+    def __init__(self, name, test_run=None, suite=None):
         self.name = name
+        self.test_run = test_run
+        self.suite = suite
         self.totals = {"pass": 0, "fail": 0, "xfail": 0, "skip": 0, "n/a": 0}
 
     def append(self, item):
@@ -121,8 +123,8 @@ class TestResultTable(list):
 
         memo = {}
         for test in tests:
-            memo.setdefault(test.full_name, {})
-            memo[test.full_name][test.test_run.environment_id] = [test.status]
+            memo.setdefault(test, {})
+            memo[test][test.test_run.environment_id] = [test.status]
 
             error_info = {
                 "test_description": test.metadata.description if test.metadata else '',
@@ -132,10 +134,10 @@ class TestResultTable(list):
             }
             info = json.dumps(error_info) if any(error_info.values()) else None
 
-            memo[test.full_name][test.test_run.environment_id].append(info)
+            memo[test][test.test_run.environment_id].append(info)
 
-        for name, results in memo.items():
-            test_result = TestResult(name)
+        for test, results in memo.items():
+            test_result = TestResult(test.name, test.test_run, test.suite)
             for env in table.environments:
                 test_result.append(results.get(env.id, ["n/a", None]))
             table.append(test_result)
@@ -168,9 +170,13 @@ def tests(request, group_slug, project_slug, build_version):
 
 
 @auth
-def test_history(request, group_slug, project_slug, full_test_name):
+def test_history(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
     project = request.project
-
+    build = get_build(project, build_version)
+    test_run = get_object_or_404(build.test_runs, pk=testrun)
+    suite_slug = suite_slug.replace('$', '/')
+    suite = get_object_or_404(project.suites, slug=suite_slug)
+    status = get_object_or_404(test_run.status, suite=suite)
     try:
         page = int(request.GET.get('page', '1'))
     except ValueError:
@@ -181,10 +187,14 @@ def test_history(request, group_slug, project_slug, full_test_name):
         top = get_build(project, top)
 
     try:
+        full_test_name = "/".join([suite_slug, test_name])
         history = TestHistory(project, full_test_name, top=top, page=page)
         context = {
             "project": project,
             "history": history,
+            "build": build,
+            "status": status,
+            "test": test_name
         }
         return render(request, 'squad/test_history.jinja2', context)
     except Suite.DoesNotExist:

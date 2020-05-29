@@ -5,7 +5,6 @@
     <a class="h2 text-primitive" href="{{group_url(project.group)}}">{{project.group.display_name}}</a>
     » <a class="h2 text-primitive" href="{{project_url(project)}}">{{project.display_name}}</a>
     » <a class="h2 text-primitive" href="{{build_url(build)}}">{{ _('Build %s')  % build.version }}</a>
-    » <a class="h2 text-primitive" href="{{project_url(test_run)}}">{{ _('Test run %s') % test_run.job_id }}</a>
     » {{ _('Test results for %s') % suite.slug }}
 </h2>
 

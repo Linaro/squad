@@ -16,6 +16,7 @@
     {% endif %}
   </h2>
 
+  {% include "squad/tests-details-nav.jinja2" %}
   {% with items=history %}
     {% include "squad/_pagination.jinja2" %}
   {% endwith %}
@@ -41,7 +42,7 @@
           {% if result %}
             {% with known_issues=result.known_issues %}
               <td class='{{result.status|slugify}}'>
-                <a href="{{project_url(result.test_run)}}">{{result.status}}</a>
+                <a href="{{testrun_suite_test_details_url(project.group, project, build, result.test_run.status.get(test_run=result.test_run, suite=result.suite), result.test)}}">{{result.status}}</a>
                 {% if result.info['test_description'] or result.info['suite_instructions'] or result.info['test_instructions'] or result.info['test_log'] %}
                   <a href='#' data-toggle="modal" data-target="#info_modal" data-info="{{ to_json(result.info) }}"><span data-toggle="tooltip" data-placement="right" title="{{ _('Show info') }}" class='fa fa-info-circle'></span></a>
                 {% endif %}
