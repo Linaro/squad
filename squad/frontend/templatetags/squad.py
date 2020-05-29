@@ -167,7 +167,7 @@ def get_page_list(items):
 def update_get_parameters(context, parameters):
     query_string = context['request'].GET.copy()
     for p in parameters.keys():
-        if parameters[p] is None and query_string.get(p) is not None:
+        if parameters[p] is None and p in query_string.keys():
             del query_string[p]
         else:
             query_string[p] = parameters[p]

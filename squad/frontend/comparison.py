@@ -39,6 +39,8 @@ def __get_transitions(request):
 
     if len(marked_transitions) > 0:
         for t in marked_transitions:
+            if t is None or t == 'None':
+                continue
             _from, _to = t.split(':')
             if _from in RESULT_STATES and _to in RESULT_STATES:
                 transitions[(_from, _to)] = True

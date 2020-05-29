@@ -29,6 +29,9 @@ class FakeGet():
     def get(self, key):
         return self.__getitem__(key)
 
+    def keys(self):
+        return self.params.keys()
+
     def copy(self):
         return self
 
