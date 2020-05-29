@@ -1044,7 +1044,8 @@ class TestSerializer(serializers.ModelSerializer):
         exclude = ['metadata']
 
 
-class TestViewSet(ModelViewSet):
+# TODO: Figure a way out on how to check permissions of Test objects
+class TestViewSet(viewsets.ModelViewSet):
 
     queryset = Test.objects.prefetch_related('suite', 'known_issues').all()
     project_lookup_key = 'test_run__build__project__in'
@@ -1074,7 +1075,7 @@ class MetricSerializer(serializers.ModelSerializer):
         exclude = ['measurements']
 
 
-class MetricViewSet(ModelViewSet):
+class MetricViewSet(viewsets.ModelViewSet):
 
     queryset = Metric.objects.prefetch_related('suite').all()
     project_lookup_key = 'test_run__build__project__in'
