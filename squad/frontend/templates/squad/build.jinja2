@@ -34,9 +34,15 @@
             <span class="caret"></span>
         </button>
         <ul class="dropdown-menu" aria-labelledby="test_results_dropdown_menu">
-            <li{% if results_layout == 'envbox' %} class="disabled"{% endif %}><a class="dropdown-item" href="?results_layout=envbox#test-results">by environments</a></li>
-            <li{% if results_layout == 'suitebox' %} class="disabled"{% endif %}><a class="dropdown-item" href="?results_layout=suitebox#test-results">by suites</a></li>
-            <li{% if results_layout == 'table' %} class="disabled"{% endif %}><a class="dropdown-item" href="?results_layout=table#test-results">suites x environments</a></li>
+            <li{% if results_layout == 'envbox' %} class="disabled"{% endif %}>
+                <a class="dropdown-item" href="{{ update_get_parameters({'results_layout': 'envbox'}) }}#test-results">by environments</a>
+            </li>
+            <li{% if results_layout == 'suitebox' %} class="disabled"{% endif %}>
+                <a class="dropdown-item" href="{{ update_get_parameters({'results_layout': 'suitebox'}) }}#test-results">by suites</a>
+            </li>
+            <li{% if results_layout == 'table' %} class="disabled"{% endif %}>
+                <a class="dropdown-item" href="{{ update_get_parameters({'results_layout': 'table'}) }}#test-results">suites x environments</a>
+            </li>
         </ul>
     </div>
     <div>
@@ -44,7 +50,7 @@
         <input
             type="checkbox"
             name="failures_only"
-            onclick="window.location = '{{ update_get_parameters({'failures_only': 'false' if failures_only == 'true' else 'true'}) }}'"
+            onclick="window.location = '{{ update_get_parameters({'failures_only': 'false' if failures_only == 'true' else 'true'}) }}#test-results'"
             {% if failures_only == 'true' %}checked{% endif %}
         />
         <span style="font-size: 50%; font-weight: normal"> {{ _('failures only') }}</span>
