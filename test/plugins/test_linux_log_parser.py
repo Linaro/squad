@@ -54,7 +54,30 @@ class TestLinuxLogParser(TestCase):
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
-        self.assertIn('BUG:', test.log)
+        self.assertIn('] BUG:', test.log)
+        self.assertNotIn('Internal error: Oops', test.log)
+
+        testrun = self.new_testrun('kernel_bug_and_invalid_opcode.log', job_id='1000')
+        self.plugin.postprocess_testrun(testrun)
+
+        test = testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-bug-1000')
+        self.assertFalse(test.result)
+        self.assertIsNotNone(test.log)
+        self.assertNotIn('Booting Linux', test.log)
+        self.assertIn('] kernel BUG at', test.log)
+        self.assertNotIn('] BUG:', test.log)
+        self.assertNotIn('Internal error: Oops', test.log)
+
+    def test_detects_kernel_invalid_opcode(self):
+        testrun = self.new_testrun('kernel_bug_and_invalid_opcode.log')
+        self.plugin.postprocess_testrun(testrun)
+
+        test = testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-invalid-opcode-999')
+        self.assertFalse(test.result)
+        self.assertIsNotNone(test.log)
+        self.assertNotIn('Booting Linux', test.log)
+        self.assertIn('] invalid opcode:', test.log)
+        self.assertNotIn('] BUG:', test.log)
         self.assertNotIn('Internal error: Oops', test.log)
 
     def test_detects_multiple(self):
