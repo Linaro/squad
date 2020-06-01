@@ -17,7 +17,8 @@ ONELINERS = [
     ('check-kernel-oops', r'^[^\n]+Oops(?: -|:).*?$'),
     ('check-kernel-fault', r'^[^\n]+Unhandled fault.*?$'),
     ('check-kernel-warning', r'^[^\n]+WARNING:.*?$'),
-    ('check-kernel-bug', r'^[^\n]+BUG:.*?$'),
+    ('check-kernel-bug', r'^[^\n]+(?: kernel BUG at|BUG:).*?$'),
+    ('check-kernel-invalid-opcode', r'^[^\n]+invalid opcode:.*?$'),
     ('check-kernel-panic', r'Kernel panic - not syncing.*?$'),
 ]
 
@@ -31,7 +32,7 @@ class Plugin(BasePlugin):
         return re.compile(r'|'.join(combined), re.S | re.M)
 
     def __kernel_msgs_only(self, log):
-        kernel_msgs = re.findall(r'^\[[ \d]+\.[ \d]+\] .*?$', log, re.S | re.M)
+        kernel_msgs = re.findall(r'(\[[ \d]+\.[ \d]+\] .*?)$', log, re.S | re.M)
         return '\n'.join(kernel_msgs)
 
     def __join_matches(self, matches, regexes):
