@@ -1,3 +1,41 @@
+# 1.13
+
+This 1.14 release marks 4 years of SQUAD project, yay! It also
+adds a logo for the project along with other small bug fixes and 
+new features.
+
+The LAVA backend is now compatible with LAVA RESTfull interface, also
+now we're running tests against a real version of LAVA running on a Docker
+container.
+
+There was a small change in the workflow to check test details. The testrun
+page has been completely removed in favor of less clicking to get to test metadata
+and history.
+
+The linux log parser plugin now captures a new class of bug called "invalid opcode",
+and it catches more of "BUG" bugs.
+
+Complete list of changes going in: 
+
+* ci: 
+  * Enable REST API in LAVA backend
+  * fix ProjectStatus processing in fetch()
+  * improve TestJob.cancel()
+  * test lava backend using real LAVA instance.
+* core:
+  * Implementation of ProjectStatus baseline
+  * add ProjectStatus baseline field
+  * add compute_project_statuses command
+  * fix compute_build_summaries command
+* frontend:
+  * build: fix missing "failures only" filter
+  * add test details and remove testrun page.
+* plugins: linux_log_parser: improve BUG matches and add "invalid opcode"
+* misc:
+  * add logo to the README
+  * add logo to the main template.
+  * update the copyright years line to extend to 2020
+
 # 1.12
 
 This 1.12 release adds a bell icon to project UI allowing users
