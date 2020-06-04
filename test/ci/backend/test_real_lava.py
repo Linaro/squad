@@ -148,6 +148,11 @@ class RealLavaRPC2Test(TestCase):
         self.assertEqual(False, testjob.fetched)
         self.assertEqual(0, testjob.fetch_attempts)
 
+    @lava_test
+    def test_listen(self):
+        url = self.backend.get_implementation().get_listener_url()
+        self.assertEqual(url, "tcp://localhost:5500")
+
 
 class RealLavaRESTTest(TestCase):
 
@@ -243,3 +248,8 @@ class RealLavaRESTTest(TestCase):
         testjob.refresh_from_db()
         self.assertEqual(True, testjob.fetched)
         self.assertEqual(0, testjob.fetch_attempts)
+
+    @lava_test
+    def test_listen(self):
+        url = self.backend.get_implementation().get_listener_url()
+        self.assertEqual(url, "tcp://localhost:5500")

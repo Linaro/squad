@@ -407,7 +407,7 @@ class Backend(BaseBackend):
             return self.proxy.scheduler.get_publisher_event_socket()
         lava_resp = requests.get("%s/system/master_config/" % (self.api_url_base), headers=self.authentication)
         if lava_resp.status_code == 200:
-            return int(lava_resp.json()['EVENT_SOCKET'].rsplit(":", 1)[1])
+            return lava_resp.json()['EVENT_SOCKET']
         # should there be an exception if status_code is != 200 ?
         return None
 
