@@ -8,6 +8,7 @@ django_filter>=2.0
 djangorestframework>=3.9.2
 djangorestframework-filters>=1.0.0.dev0
 drf-extensions
+future
 gunicorn
 Jinja2
 Markdown
