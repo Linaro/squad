@@ -1,14 +1,14 @@
 version: '3.4'
 
 x-common-config: &common_config
-  image: squad
+  image: squad/local
   build:
     context: .
   volumes:
-    - home:/home
+    - home:/app
   environment:
     - SQUAD_CELERY_BROKER_URL=amqp://rabbitmq
-    - XDG_DATA_HOME=/home
+    - XDG_DATA_HOME=/app
 
 volumes:
   home:
