@@ -175,6 +175,8 @@ class Backend(BaseBackend):
     def get_listener_url(self):
         url = urlsplit(self.data.url)
         hostname = url.netloc
+        # remove port if exists
+        hostname = hostname.split(":", 1)[0]
 
         socket = self.__get_publisher_event_socket__()
         if not socket:
