@@ -15,6 +15,7 @@ RUN apt-get update -q=2 && \
         python3-djangorestframework \
         python3-djangorestframework-filters \
         python3-djangorestframework-extensions \
+        python3-future \
         python3-gunicorn \
         python3-jinja2 \
         python3-markdown \

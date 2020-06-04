@@ -17,7 +17,7 @@ while getopts ":s" opt; do
 done
 
 
-docker run -p 5556:5556 -p 80:80 --name "${LAVA_CONTAINER_NAME}" lavasoftware/lava-server:latest &
+docker run -p 5556:5556 -p 8000:80 --name "${LAVA_CONTAINER_NAME}" lavasoftware/lava-server:latest &
 # wait for docker to start
 while [ ! $(docker inspect -f '{{.State.Running}}' "${LAVA_CONTAINER_NAME}") ]
 do
@@ -31,7 +31,7 @@ do
     echo "Waiting for LAVA container to start"
     docker_status=$(docker inspect -f '{{.State.Running}}' "${LAVA_CONTAINER_NAME}")
 done
-while [ $(wget localhost -O /dev/null) ]
+while [ $(wget localhost:8000 -O /dev/null) ]
 do
     sleep 5
     echo "Waiting for LAVA gunicorn to start"
