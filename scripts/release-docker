@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -eu
+
+v="$1"
+
+docker build -t squadproject/squad:$v .
+docker tag squadproject/squad:$v squadproject/squad:latest
+
+docker push squadproject/squad:$v
+docker push squadproject/squad:latest
