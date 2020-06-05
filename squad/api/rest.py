@@ -173,7 +173,7 @@ class SuiteMetadataFilter(filters.FilterSet):
 
 
 class KnownIssueFilter(filters.FilterSet):
-    environment = filters.RelatedFilter(EnvironmentFilter, field_name="environment", queryset=Environment.objects.all(), widget=forms.TextInput)
+    environment = filters.RelatedFilter(EnvironmentFilter, field_name="environments", queryset=Environment.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = KnownIssue
