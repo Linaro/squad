@@ -1354,7 +1354,7 @@ router.register(r'testruns', TestRunViewSet).register(
     r'status',
     StatusViewSet,
     parents_query_lookups=['test_run_id'],
-    **drf_basename('testrun-status')
+    **drf_basename('testrun-status'),
 )
 router.register(r'tests', TestViewSet)
 router.register(r'metrics', MetricViewSet)
