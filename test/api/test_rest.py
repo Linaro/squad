@@ -41,6 +41,8 @@ class RestApiTest(APITestCase):
         self.patchsource = models.PatchSource.objects.create(name='baz_source', username='u', url='http://example.com', token='secret')
         self.knownissue = models.KnownIssue.objects.create(title='knownissue_foo', test_name='test/bar', active=True)
         self.knownissue.environments.add(self.environment)
+        self.knownissue2 = models.KnownIssue.objects.create(title='knownissue_bar', test_name='test/foo', active=True)
+        self.knownissue2.environments.add(self.environment_a)
         self.testuser = models.User.objects.create(username='test_user', email="test@example.com", is_superuser=False)
 
         self.testjob = ci_models.TestJob.objects.create(
@@ -623,4 +625,10 @@ class RestApiTest(APITestCase):
 
     def test_known_issues(self):
         data = self.hit('/api/knownissues/')
+        self.assertEqual(2, len(data['results']))
+
+    def test_known_issues_filter_by_environment(self):
+        env_id = self.environment_a.id
+        data = self.hit('/api/knownissues/?environment=%d' % env_id)
         self.assertEqual(1, len(data['results']))
+        self.assertEqual('knownissue_bar', data['results'][0]['title'])
