@@ -13,7 +13,3 @@ twine upload dist/*
 git tag -s -m "SQUAD release $v" "$v"
 git push
 git push --tags
-
-rm -rf build/
-rm -rf dist/
-rm -rf *.egg-info/

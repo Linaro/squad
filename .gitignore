@@ -1,6 +1,5 @@
 # KEEP THIS IN SYNC WITH .dockerignore
 /db.sqlite3
-/.git
 /.puzzle
 /secret.dat
 /squad/frontend/static/angularjs

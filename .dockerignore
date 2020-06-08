@@ -1,6 +1,5 @@
 # KEEP THIS IN SYNC WITH .gitignore
 db.sqlite3
-.git
 .puzzle
 secret.dat
 squad/local_settings.py
