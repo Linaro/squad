@@ -27,6 +27,7 @@ from squad.core.models import (
     Status
 )
 from squad.core.tasks import prepare_report, update_delayed_report
+from squad.core.comparison import TestComparison
 from squad.ci.models import Backend, TestJob
 from squad.compat import drf_basename
 from django.http import HttpResponse
@@ -467,6 +468,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
      * `api/projects/<id>/unsubscribe` POST
 
         Unsubscribe from project notifications
+
+    * `api/projects/<id>/compare_builds` POST/GET
+
+        Compares two builds and report regressions/fixes
     """
     queryset = Project.objects
     serializer_class = ProjectSerializer
@@ -571,6 +576,29 @@ class ProjectViewSet(viewsets.ModelViewSet):
         data = {"email": subscriber_email}
         return Response(data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['get', 'post'], suffix='compare_builds')
+    def compare_builds(self, request, pk=None):
+        builds_to_compare = {f: request.GET.get(f, request.POST.get(f, None)) for f in ['baseline', 'to_compare']}
+        if all(builds_to_compare.values()):
+            try:
+                int(builds_to_compare['baseline'])
+                int(builds_to_compare['to_compare'])
+                baseline = self.get_object().builds.get(pk=builds_to_compare['baseline'])
+                to_compare = self.get_object().builds.get(pk=builds_to_compare['to_compare'])
+                if not baseline.status.finished or not to_compare.status.finished:
+                    raise serializers.ValidationError("Cannot report regressions/fixes on a non-finished builds")
+            except Build.DoesNotExist:
+                raise NotFound()
+            except ValueError:
+                raise serializers.ValidationError("builds IDs must be integer")
+        else:
+            raise serializers.ValidationError("Invalid args provided. 'baseline' and 'to_compare' build ids must NOT be empty")
+
+        if baseline and to_compare:
+            comparison = TestComparison(baseline, to_compare)
+            serializer = BuildsComparisonSerializer(comparison)
+            return Response(serializer.data)
+
 
 class ProjectStatusSerializer(serializers.HyperlinkedModelSerializer):
 
@@ -671,6 +699,16 @@ class DelayedReportViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = DelayedReportFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     ordering_fields = ('id', 'created_at')
+
+
+class BuildsComparisonSerializer(serializers.BaseSerializer):
+    def to_representation(self, comparison):
+        ret = {}
+        if comparison.regressions is not None:
+            ret['regressions'] = comparison.regressions_grouped_by_suite
+        if comparison.fixes is not None:
+            ret['fixes'] = comparison.fixes_grouped_by_suite
+        return ret
 
 
 class BuildSerializer(serializers.HyperlinkedModelSerializer):

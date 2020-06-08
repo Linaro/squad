@@ -24,15 +24,18 @@ class RestApiTest(APITestCase):
         t3 = timezone.make_aware(datetime.datetime(2018, 10, 3, 1, 0, 0))
         self.build3 = self.project.builds.create(version='3', datetime=t3)
         t4 = timezone.make_aware(datetime.datetime(2018, 10, 4, 1, 0, 0))
-        self.build4 = self.project.builds.create(version='4', datetime=t4)
+        self.build4 = self.project.builds.create(version='v4', datetime=t4)
         t5 = timezone.make_aware(datetime.datetime(2018, 10, 5, 1, 0, 0))
         self.build5 = self.project.builds.create(version='5', datetime=t5)
-        self.environment = self.project.environments.create(slug='myenv')
+        t6 = timezone.make_aware(datetime.datetime(2018, 10, 6, 1, 0, 0))
+        self.build6 = self.project.builds.create(version='v6', datetime=t6)
+        self.environment = self.project.environments.create(slug='myenv', expected_test_runs=1)
         self.environment_a = self.project.environments.create(slug='env-a')
         self.testrun = self.build.test_runs.create(environment=self.environment, build=self.build)
         self.testrun2 = self.build2.test_runs.create(environment=self.environment, build=self.build2)
         self.testrun3 = self.build3.test_runs.create(environment=self.environment, build=self.build3)
         self.testrun4 = self.build4.test_runs.create(environment=self.environment, build=self.build4, completed=True)
+        self.testrun6 = self.build6.test_runs.create(environment=self.environment, build=self.build6, completed=True)
         self.testrun_a = self.build.test_runs.create(environment=self.environment_a, build=self.build)
         self.testrun2_a = self.build2.test_runs.create(environment=self.environment_a, build=self.build2)
         self.testrun3_a = self.build3.test_runs.create(environment=self.environment_a, build=self.build3)
@@ -183,7 +186,7 @@ class RestApiTest(APITestCase):
 
     def test_project_builds(self):
         data = self.hit('/api/projects/%d/builds/' % self.project.id)
-        self.assertEqual(5, len(data['results']))
+        self.assertEqual(6, len(data['results']))
 
     def test_project_test_results(self):
         response = self.client.get('/api/projects/%d/test_results/' % self.project.id)
@@ -327,7 +330,7 @@ class RestApiTest(APITestCase):
 
     def test_builds(self):
         data = self.hit('/api/builds/')
-        self.assertEqual(5, len(data['results']))
+        self.assertEqual(6, len(data['results']))
 
     def test_builds_status(self):
         self.build2.test_jobs.all().delete()
@@ -632,3 +635,20 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/knownissues/?environment=%d' % env_id)
         self.assertEqual(1, len(data['results']))
         self.assertEqual('knownissue_bar', data['results'][0]['title'])
+
+    def test_project_compare_builds_with_finished_status_and_regressions(self):
+        foo_suite, _ = self.project.suites.get_or_create(slug='foo')
+        self.testrun4.tests.get_or_create(suite=foo_suite, name='dummy', result=True)
+        self.testrun6.tests.get_or_create(suite=foo_suite, name='dummy', result=False)
+        UpdateProjectStatus()(self.testrun4)
+        UpdateProjectStatus()(self.testrun6)
+        data = self.hit('/api/projects/%d/compare_builds/?baseline=%d&to_compare=%d' % (self.project.id, self.build4.id, self.build6.id))
+        self.assertEqual(1, len(data['regressions']['myenv']['foo']))
+
+    def test_project_compare_builds_with_non_finished_status(self):
+        response = self.client.get('/api/projects/%d/compare_builds/?baseline=%d&to_compare=%d' % (self.project.id, self.build2.id, self.build3.id))
+        self.assertEqual(400, response.status_code)
+
+    def test_project_compare_builds_with_finished_status_with_verions_as_args(self):
+        response = self.client.get('/api/projects/%s/compare_builds/?baseline=%s&to_compare=%s' % (self.project.id, self.build4.version, self.build6.version))
+        self.assertEqual(400, response.status_code)
