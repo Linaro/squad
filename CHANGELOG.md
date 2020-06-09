@@ -1,6 +1,34 @@
+# 1.14
+
+This 1.13 release adds an API endpoint that allow comparison
+between builds from the same project. It also fixes a bug related
+to LAVA ci backends when retrieving listener url.
+
+The release also improves the docker image and pushes it to 
+https://hub.docker.com/repository/docker/squadproject/squad
+on every release.
+
+Complete list of changes going in:
+
+* api:
+  * rest: endpoint to compare two builds
+  * rest: fix environment filter in knownissue
+* ci:
+  * fix LAVA listener port retrieval
+  * fix get_listener_url() in case of REST
+* frontend: comparison: fix transitions
+* misc:
+  * Dockerfile: improve Dockerfile
+  * release: release docker image along with pip release
+  * remove CODEOWNERS file
+  * requirements: fix dependencies for broken celery 4.4.4
+  * settings: allow SMTP port customization
+  * test-docker: remove extra testing under docker
+  * travis: add verbosiness do test under docker
+
 # 1.13
 
-This 1.14 release marks 4 years of SQUAD project, yay! It also
+This 1.13 release marks 4 years of SQUAD project, yay! It also
 adds a logo for the project along with other small bug fixes and 
 new features.
 
