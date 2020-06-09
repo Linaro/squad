@@ -1,8 +1,11 @@
 import os
+import signal
 import unittest
 from django.test import TestCase
 from squad.ci.models import Backend, TestJob
 from squad.core.models import Group, Project
+from time import sleep
+from multiprocessing import Process
 
 
 QEMU_JOB_DEFINITION = """
@@ -153,12 +156,23 @@ class RealLavaRPC2Test(TestCase):
         url = self.backend.get_implementation().get_listener_url()
         self.assertEqual(url, "tcp://localhost:5500")
 
+    @lava_test
+    def test_start_listener(self):
+        lava_backend_listen = self.backend.get_implementation().listen
+        listener_process = Process(target=lava_backend_listen)
+        listener_process.start()
+        sleep(3)
+        listener_process.terminate()
+        while listener_process.is_alive():
+            sleep(1)
+        self.assertEqual(-signal.SIGTERM, listener_process.exitcode)
+
 
 class RealLavaRESTTest(TestCase):
 
     def setUp(self):
         self.backend = Backend.objects.create(
-            url='http://localhost:8000/api/v0.2/',
+            url='http://localhost:8000/api/v0.2',
             username='squadtest',
             token='kz8wyxmldwahe4w4086ceadedfwd0z7tadr87i60u1z30xymq38xy35ji98f0h6fgqmpwr3161zq87dytza70iqyhx5ab6xrzgh5lp1ghbcbrb0q650x8tpkgrm0a9n7',
             implementation_type='lava',
@@ -172,6 +186,10 @@ class RealLavaRESTTest(TestCase):
             group=self.group,
         )
         self.build = self.project.builds.create(version='1')
+
+    def test_final_url(self):
+        # make sure LAVA url ends with /
+        self.assertEqual("http://localhost:8000/api/v0.2/", self.backend.get_implementation().api_url_base)
 
     @lava_test
     def test_submit(self):
@@ -253,3 +271,14 @@ class RealLavaRESTTest(TestCase):
     def test_listen(self):
         url = self.backend.get_implementation().get_listener_url()
         self.assertEqual(url, "tcp://localhost:5500")
+
+    @lava_test
+    def test_start_listener(self):
+        lava_backend_listen = self.backend.get_implementation().listen
+        listener_process = Process(target=lava_backend_listen)
+        listener_process.start()
+        sleep(3)
+        listener_process.terminate()
+        while listener_process.is_alive():
+            sleep(1)
+        self.assertEqual(-signal.SIGTERM, listener_process.exitcode)

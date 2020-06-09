@@ -12,7 +12,7 @@ from io import BytesIO, TextIOWrapper, StringIO
 from zmq.utils.strtypes import u
 
 from xmlrpc import client as xmlrpclib
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urljoin
 
 
 from squad.ci.models import TestJob
@@ -132,6 +132,9 @@ class Backend(BaseBackend):
                 url.netloc,
                 url.path
             )
+            # make sure URL ens with trailing slash
+            if not self.api_url_base.endswith("/"):
+                self.api_url_base = self.api_url_base + "/"
             self.authentication = {
                 "Authorization": "Token %s" % self.data.token,
             }
@@ -234,7 +237,7 @@ class Backend(BaseBackend):
                     ssl.SSLError):
                 return False
         else:
-            response = requests.post("%sjobs/%s/cancel" % (self.api_url_base, job_id), headers=self.authentication)
+            response = requests.post(urljoin(self.api_url_base, "jobs/%s/cancel" % (job_id)), headers=self.authentication)
             if response.status_code == 200:
                 return True
 
@@ -250,7 +253,7 @@ class Backend(BaseBackend):
     def __resubmit__(self, job_id):
         if self.use_xml_rpc:
             return self.proxy.scheduler.resubmit_job(job_id)
-        response = requests.post("%sjobs/%s/resubmit" % (self.api_url_base, job_id), headers=self.authentication)
+        response = requests.post(urljoin(self.api_url_base, "jobs/%s/resubmit" % (job_id)), headers=self.authentication)
         if response.status_code == 201:
             return response.json()['job_ids']
         return []
@@ -258,7 +261,7 @@ class Backend(BaseBackend):
     def __submit__(self, definition):
         if self.use_xml_rpc:
             return self.proxy.scheduler.submit_job(definition)
-        response = requests.post("%sjobs/" % (self.api_url_base), headers=self.authentication, data={"definition": definition})
+        response = requests.post(urljoin(self.api_url_base, "jobs/"), headers=self.authentication, data={"definition": definition})
         if response.status_code == 201:
             return response.json()['job_ids']
         return []
@@ -266,7 +269,7 @@ class Backend(BaseBackend):
     def __get_job_details__(self, job_id):
         if self.use_xml_rpc:
             return self.proxy.scheduler.job_details(job_id)
-        response = requests.get("%sjobs/%s" % (self.api_url_base, job_id), headers=self.authentication)
+        response = requests.get(urljoin(self.api_url_base, "jobs/%s" % (job_id)), headers=self.authentication)
         if response.status_code == 200:
             return response.json()
         raise FetchIssue(response.text)
@@ -278,7 +281,7 @@ class Backend(BaseBackend):
             payload = {"user": self.data.username, "token": self.data.token}
             response = requests.get(url, params=payload)
         else:
-            response = requests.get("%sjobs/%s/logs/" % (self.api_url_base, job_id), headers=self.authentication)
+            response = requests.get(urljoin(self.api_url_base, "jobs/%s/logs/" % (job_id)), headers=self.authentication)
         if response and response.status_code == 200:
             return response.content
         return b''
@@ -383,11 +386,11 @@ class Backend(BaseBackend):
                     else:
                         break
         else:
-            suites_resp = requests.get("%s/jobs/%s/suites/" % (self.api_url_base, job_id), headers=self.authentication)
+            suites_resp = requests.get(urljoin(self.api_url_base, "jobs/%s/suites/" % (job_id)), headers=self.authentication)
             while suites_resp.status_code == 200:
                 suites_content = suites_resp.json()
                 for suite in suites_content['results']:
-                    tests_resp = requests.get("%s/jobs/%s/suites/%s/tests" % (self.api_url_base, job_id, suite['id']), headers=self.authentication)
+                    tests_resp = requests.get(urljoin(self.api_url_base, "jobs/%s/suites/%s/tests" % (job_id, suite['id'])), headers=self.authentication)
                     while tests_resp.status_code == 200:
                         tests_content = tests_resp.json()
                         for test in tests_content['results']:
@@ -407,7 +410,7 @@ class Backend(BaseBackend):
     def __get_publisher_event_socket__(self):
         if self.use_xml_rpc:
             return self.proxy.scheduler.get_publisher_event_socket()
-        lava_resp = requests.get("%s/system/master_config/" % (self.api_url_base), headers=self.authentication)
+        lava_resp = requests.get(urljoin(self.api_url_base, "system/master_config/"))
         if lava_resp.status_code == 200:
             return lava_resp.json()['EVENT_SOCKET']
         # should there be an exception if status_code is != 200 ?
