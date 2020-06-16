@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^(%s)/$' % group_slug_pattern, views.group_home, name='group'),
     url(r'^(%s)/(%s)/$' % group_and_project, views.project_home, name='project'),
     url(r'^(%s)/(%s)/settings/' % group_and_project, include(project_settings.urls)),
+    url(r'^(%s)/(%s)/tests/(.+)$' % group_and_project, tests.legacy_test_history, name='legacy_test_history'),
     url(r'^(%s)/(%s)/thresholds/' % group_and_project, project_settings.thresholds_legacy),
     url(r'^(%s)/(%s)/badge$' % group_and_project, views.project_badge, name='project_badge'),
     url(r'^(%s)/(%s)/metrics/$' % group_and_project, views.metrics, name='metrics'),

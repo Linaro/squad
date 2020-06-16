@@ -15,8 +15,9 @@
       {% endif %}
     {% endif %}
   </h2>
-
-  {% include "squad/tests-details-nav.jinja2" %}
+  {% if build is defined and status is defined %}
+      {% include "squad/tests-details-nav.jinja2" %}
+  {% endif %}
   {% with items=history %}
     {% include "squad/_pagination.jinja2" %}
   {% endwith %}
