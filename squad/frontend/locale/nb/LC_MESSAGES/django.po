@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-08-26 15:45-0300\n"
-"PO-Revision-Date: 2020-01-23 08:21+0000\n"
+"PO-Revision-Date: 2020-06-18 10:41+0000\n"
 "Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/squad/"
 "frontend/nb_NO/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.1.1-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/frontend/project_settings.py:59
@@ -319,13 +319,10 @@ msgid "Profile"
 msgstr "Profil"
 
 #: squad/frontend/templates/squad/login.jinja2:6
-#, fuzzy
 msgid "Please correct the error below."
 msgid_plural "Please correct the errors below."
-msgstr[0] ""
-"\n"
-"Rett feilen nedenfor.\n"
-msgstr[1] ""
+msgstr[0] "Rett feilen nedenfor."
+msgstr[1] "Rett feilene nedenfor."
 
 #: squad/frontend/templates/django/squad/_user_menu.html:29
 #: squad/frontend/templates/squad/_user_menu.jinja2:26
