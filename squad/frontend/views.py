@@ -3,7 +3,7 @@ import mimetypes
 import svgwrite
 
 from django.db.models import Case, When
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
@@ -214,13 +214,16 @@ def builds(request, group_slug, project_slug):
     all_statuses = __get_statuses__(project)
     paginator = Paginator(all_statuses, 25)
     page = request.GET.get('page', 1)
-    statuses = paginator.page(page)
+    try:
+        statuses = paginator.page(page)
 
-    context = {
-        'project': project,
-        'statuses': statuses,
-    }
-    return render(request, 'squad/builds.jinja2', context)
+        context = {
+            'project': project,
+            'statuses': statuses,
+        }
+        return render(request, 'squad/builds.jinja2', context)
+    except EmptyPage:
+        raise Http404()
 
 
 class TestResultTable(object):
