@@ -85,6 +85,9 @@ class FrontendTest(TestCase):
     def test_builds(self):
         self.hit('/mygroup/myproject/builds/')
 
+    def test_builds_unexisting_page(self):
+        self.hit('/mygroup/myproject/builds/?page=99', 404)
+
     def test_build(self):
         self.hit('/mygroup/myproject/build/1.0/')
 
