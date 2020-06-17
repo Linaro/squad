@@ -29,7 +29,7 @@
         </thead>
         {% if results %}
             {% for test in results %}
-            {% set test_details_url = url('testrun_suite_test_details', args=[build.project.group.slug, build.project.slug, build.version, test.test_run.id, test.suite.slug.replace('/', '$'), test.name]) %}
+            {% set test_details_url = url('testrun_suite_test_details', args=[build.project.group.slug, build.project.slug, build.version, test.test_run.id, test.suite.slug.replace('/', '$'), test.name.replace('/', '$')]) %}
             <tr id='test-{{test.name|slugify}}' ng-show="match('test-{{test.name|slugify}}')">
                 <td><a href="{{ test_details_url }}">{{test.name}}</a></td>
                 {% for status in test %}

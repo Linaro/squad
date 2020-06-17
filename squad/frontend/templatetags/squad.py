@@ -10,6 +10,7 @@ from hashlib import md5
 from markdown import markdown as to_markdown
 
 from squad import version
+from squad.core.models import Test
 from squad.core.utils import format_metadata
 from squad.jinja2 import register_global_function, register_filter
 
@@ -81,7 +82,10 @@ def testrun_suite_or_test_url(group, project, build, status, kind, test=None):
         suite.slug.replace('/', '$'),
     )
     if test:
-        args = args + (test,)
+        if isinstance(test, Test):
+            args = args + (test.name.replace('/', '$'),)
+        else:
+            args = args + (test.replace('/', '$'),)
 
     return reverse(kind, args=args)
 
