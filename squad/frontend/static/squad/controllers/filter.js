@@ -5,7 +5,9 @@ export function FilterController($scope, $attrs, $location) {
     var element
     if (filter && filter.trim().filter != "") {
       element = document.getElementById(id)
-      visible = element.textContent.match(filter) != null
+      if (element != null) {
+        visible = element.textContent.match(filter) != null
+      }
     } else {
       visible = true
     }

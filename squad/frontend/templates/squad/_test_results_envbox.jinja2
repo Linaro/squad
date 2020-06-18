@@ -1,5 +1,5 @@
         {% for environment in test_results.environments %}
-        <table id='test-results-{{ environment.slug }}' class='test-results-box table table-bordered'>
+        <table id='tests-{{ environment.id }}' class='test-results-box table table-bordered' ng-show='match("tests-{{environment.id}}") || match("details-{{environment.id}}")'>
             <thead>
                 <tr>
                     <th colspan="2">
