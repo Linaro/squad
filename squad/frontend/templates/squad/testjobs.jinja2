@@ -7,6 +7,10 @@
     </div>
     <h1>{{ _('Test Jobs') }}</h1>
     <div>
+
+    {% with items=testjobs %}
+      {% include "squad/_pagination.jinja2" %}
+    {% endwith %}
     {% for testjob in testjobs %}
     <div class="row row-bordered project">
         <div class="col-md-12 col-sm-12 project-listing-info">
@@ -68,6 +72,9 @@
         </div>
     </div>
     {% endfor %}
+    {% with items=testjobs %}
+      {% include "squad/_pagination.jinja2" %}
+    {% endwith %}
     </div>
 </div>
 {% endblock %}
