@@ -357,40 +357,38 @@ class LatestTestResults(object):
             raise serializers.ValidationError(_('"test_name" parameter should be in the format "suitename/testname"'))
 
         self.build = build
-        self.environments = build.project.environments.all()
+        self.test_runs = {tr.id: tr.environment for tr in self.build.test_runs.all()}
+        self.environments = build.project.environments.order_by("name", "slug")
         self.test_suite_name, self.test_case_name = suite_and_test
         self.test_list = Test.objects.filter(
-            test_run__build=self.build,
-            test_run__environment__in=self.environments,
+            test_run_id__in=self.test_runs.keys(),
             name=self.test_case_name,
-            suite__slug=self.test_suite_name)
+            suite__slug=self.test_suite_name).prefetch_related('suite', 'known_issues')
 
 
 class LatestTestResultsSerializer(serializers.BaseSerializer):
     def to_representation(self, obj):
         test_name = self.context.get('test_name')
         latest_result = LatestTestResults(obj, test_name)
-        environments = []
-        for environment in latest_result.environments.order_by("name", "slug"):
-            test = latest_result.test_list.filter(test_run__environment=environment).first()
-            entry = {
-                'environment': EnvironmentSerializer(environment, context=self.context).data,
-                'test': TestSerializer(test, context=self.context).data,
+        environments = {
+            e: {
+                'test': TestSerializer(None, context=self.context).data,
+                'environment': EnvironmentSerializer(e, context=self.context).data
             }
-            if test is not None:
-                entry.update(
-                    {'test_url_path': reverse(
-                        'test_history',
-                        args=[
-                            latest_result.build.project.group.slug,
-                            latest_result.build.project.slug,
-                            latest_result.build.version,
-                            test.test_run.id,
-                            latest_result.test_suite_name.replace('/', '$'),
-                            latest_result.test_case_name
-                        ])}
-                )
-            environments.append(entry)
+            for e in latest_result.environments
+        }
+        for test in latest_result.test_list.all():
+            e = latest_result.test_runs[test.test_run_id]
+            environments[e]['test'] = TestSerializer(test, context=self.context).data
+            environments[e]['test_url_path'] = reverse('test_history', args=[
+                latest_result.build.project.group.slug,
+                latest_result.build.project.slug,
+                latest_result.build.version,
+                test.test_run_id,
+                latest_result.test_suite_name.replace('/', '$'),
+                latest_result.test_case_name
+            ])
+
         serialized_obj = {
             'build': BuildSerializer(latest_result.build, context=self.context).data,
             'build_url_path': reverse(
@@ -400,7 +398,7 @@ class LatestTestResultsSerializer(serializers.BaseSerializer):
                     latest_result.build.project.slug,
                     latest_result.build.version
                 ]),
-            'environments': environments
+            'environments': environments.values()
         }
         return serialized_obj
 
@@ -536,7 +534,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def test_results(self, request, pk=None):
         test_name = request.query_params.get("test_name", None)
 
-        builds = self.get_object().builds.prefetch_related('test_runs').order_by('-datetime')
+        builds = self.get_object().builds.prefetch_related('test_runs__environment').order_by('-datetime')
         page = self.paginate_queryset(builds)
         serializer = LatestTestResultsSerializer(
             page,

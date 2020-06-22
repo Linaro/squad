@@ -1,5 +1,4 @@
 function CompareController($scope, $http, $location) {
-
     $scope.updateKnownIssue = function() {
         if ($scope.selectedSuite != undefined && $scope.selectedTest != undefined) {
             $http.get('/api/knownissues', {params: {'test_name': $scope.selectedSuite + "/" + $scope.selectedTest, 'active': true}})
@@ -45,7 +44,7 @@ function CompareController($scope, $http, $location) {
             $scope.showProgress[project.id] = true;
         }
         $scope.project = undefined;
-        if ($scope.selectedTest && $scope.selectedSuite) {
+        if (project.invokeCompare && $scope.selectedTest && $scope.selectedSuite) {
             $scope.showResults = true;
             $scope.doCompare()
         }
@@ -75,7 +74,7 @@ function CompareController($scope, $http, $location) {
         }
         $scope.selectedSuite = suite.suite;
         $scope.suite = undefined;
-        if ($scope.selectedTest && $scope.selectedProjects.length > 0) {
+        if (suite.invokeCompare && $scope.selectedTest && $scope.selectedProjects.length > 0) {
             $scope.showResults = true;
             $scope.doCompare()
         }
@@ -94,7 +93,7 @@ function CompareController($scope, $http, $location) {
     $scope.addTest = function(test) {
         $scope.selectedTest = test.name;
         $scope.test = undefined;
-        if ($scope.selectedSuite && $scope.selectedProjects.length > 0) {
+        if (test.invokeCompare && $scope.selectedSuite && $scope.selectedProjects.length > 0) {
             $scope.showResults = true;
             $scope.doCompare()
         }
@@ -188,6 +187,7 @@ function CompareController($scope, $http, $location) {
                 params.page = params.page || 0;
                 for(var item in data.results){
                     data.results[item].text = data.results[item].full_name;
+                    data.results[item].invokeCompare = true;
                 }
                 return {
                     results: data.results,
@@ -228,6 +228,7 @@ function CompareController($scope, $http, $location) {
                 params.page = params.page || 0;
                 for(var item in data.results){
                     data.results[item].text = data.results[item].suite;
+                    data.results[item].invokeCompare = true;
                 }
                 return {
                     results: data.results,
@@ -269,6 +270,7 @@ function CompareController($scope, $http, $location) {
                 params.page = params.page || 0;
                 for(var item in data.results){
                     data.results[item].text = data.results[item].name;
+                    data.results[item].invokeCompare = true;
                 }
                 return {
                     results: data.results,
@@ -309,6 +311,7 @@ function CompareController($scope, $http, $location) {
 
                 var option = new Option($scope.selectedProjects[i].full_name, $scope.selectedProjects[i].id, true, true);
                 option.url = $scope.selectedProjects[i].url;
+                $scope.selectedProjects[i].invokeCompare = false;
                 projectSelect.append(option).trigger('change');
                 projectSelect.trigger({
                     type: 'select2:select',
@@ -327,6 +330,7 @@ function CompareController($scope, $http, $location) {
                          kind: 'suite'}
                     }).then(function(response) {
                         var option = new Option($scope.selectedSuite, response.data.results[0].id, true, true);
+                        response.data.results[0].invokeCompare = false;
                         suiteSelect.append(option).trigger('change');
                         suiteSelect.trigger({
                             type: 'select2:select',
@@ -346,6 +350,7 @@ function CompareController($scope, $http, $location) {
                          kind: 'test'}
                     }).then(function(response) {
                         var option = new Option($scope.selectedTest, response.data.results[0].id, true, true);
+                        response.data.results[0].invokeCompare = false;
                         testSelect.append(option).trigger('change');
                         testSelect.trigger({
                             type: 'select2:select',
