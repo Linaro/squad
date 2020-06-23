@@ -16,7 +16,7 @@
 <div class='highlight-row'>
 {% for project in projects %}
 <div class="row row-bordered project {% if project.is_archived %}archived{% endif %}">
-    {% with status=project.status %}
+    {% with status=project_status(project) %}
     <a href="{{project_url(project)}}">
     <div class="col-md-4 col-sm-4">
         <strong>
