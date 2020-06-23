@@ -10,7 +10,7 @@ from hashlib import md5
 from markdown import markdown as to_markdown
 
 from squad import version
-from squad.core.models import Test
+from squad.core.models import Test, Build
 from squad.core.utils import format_metadata
 from squad.jinja2 import register_global_function, register_filter
 
@@ -93,6 +93,35 @@ def testrun_suite_or_test_url(group, project, build, status, kind, test=None):
 @register_global_function
 def build_url(build):
     return reverse("build", args=(build.project.group.slug, build.project.slug, build.version))
+
+
+@register_global_function
+def previous_build_url(build):
+    previous_build = None
+    try:
+        previous_build = build.get_previous_by_created_at(project=build.project)
+    except Build.DoesNotExist:
+        pass
+    if previous_build:
+        return build_url(previous_build)
+
+
+@register_global_function
+def next_build_url(build):
+    next_build = None
+    try:
+        next_build = build.get_next_by_created_at(project=build.project)
+    except Build.DoesNotExist:
+        pass
+    if next_build:
+        return build_url(next_build)
+    else:
+        return build_url(build)
+
+
+@register_global_function
+def back_to_latest_build_url(build):
+    return build_url(Build.objects.filter(project=build.project).last())
 
 
 @register_global_function

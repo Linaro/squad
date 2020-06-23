@@ -61,6 +61,10 @@
     {% endif %}
 
     {% endwith %}
+    <a href="{{next_build_url(build)}}" class="btn btn-default pull-right" data-toggle="tooltip" data-placement="bottom" title="Next Build"><i class='fa fa-chevron-right'>&nbsp;</i></a>
+    <a href="{{back_to_latest_build_url(build)}}" class="btn btn-default pull-right" data-toggle="tooltip" data-placement="bottom" title="Latest Build"><i class='fa fa-arrow-circle-up '>&nbsp;</i></a>
+    <a href="{{previous_build_url(build)}}" class="btn btn-default pull-right" data-toggle="tooltip" data-placement="bottom" title="Previous Build"><i class='fa fa-chevron-left'>&nbsp;</i></a>
+
 </ul>
 
 <!-- Modal HTML -->
