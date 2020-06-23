@@ -162,12 +162,12 @@ describe("CompareController", function () {
 
         it('checks the value of seletedProjects and showProgress',
            function() {
-               var project = {id: 1}
-               $scope.selectedProjects = [{id: 2}]
+               var project = {id: 1, invokeCompare: true}
+               $scope.selectedProjects = [{id: 2, invokeCompare: true}]
                $scope.selectedTest = {}
                $scope.selectedSuite = {}
                $scope.addProject(project)
-               expect($scope.selectedProjects).toEqual([{id: 2}, {id: 1}])
+               expect($scope.selectedProjects).toEqual([{id: 2, invokeCompare: true}, {id: 1, invokeCompare: true}])
                expect($scope.showProgress[project.id]).toBe(true)
                expect($scope.showResults).toBe(true)
         });
