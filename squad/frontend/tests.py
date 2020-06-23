@@ -17,8 +17,9 @@ class TestResult(list):
     of the test results table.
     """
 
-    def __init__(self, name, test_run=None, suite=None):
+    def __init__(self, name, test_run=None, suite=None, short_name=None):
         self.name = name
+        self.short_name = short_name
         self.test_run = test_run
         self.suite = suite
         self.totals = {"pass": 0, "fail": 0, "xfail": 0, "skip": 0, "n/a": 0}
@@ -123,8 +124,10 @@ class TestResultTable(list):
 
         memo = {}
         for test in tests:
-            memo.setdefault(test, {})
-            memo[test][test.test_run.environment_id] = [test.status]
+            memo.setdefault(test.full_name, {})
+            memo[test.full_name][test.test_run.environment_id] = [test.status]
+            if 'test_metadata' not in memo[test.full_name].keys():
+                memo[test.full_name]['test_metadata'] = (test.test_run, test.suite, test.name)
 
             error_info = {
                 "test_description": test.metadata.description if test.metadata else '',
@@ -134,10 +137,11 @@ class TestResultTable(list):
             }
             info = json.dumps(error_info) if any(error_info.values()) else None
 
-            memo[test][test.test_run.environment_id].append(info)
+            memo[test.full_name][test.test_run.environment_id].append(info)
 
-        for test, results in memo.items():
-            test_result = TestResult(test.name, test.test_run, test.suite)
+        for test_full_name, results in memo.items():
+            test_result = TestResult(test_full_name)
+            test_result.test_run, test_result.suite, test_result.short_name = results.get('test_metadata', None)
             for env in table.environments:
                 test_result.append(results.get(env.id, ["n/a", None]))
             table.append(test_result)
@@ -170,13 +174,24 @@ def tests(request, group_slug, project_slug, build_version):
 
 
 @auth
-def test_history(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
+def legacy_test_history(request, group_slug, project_slug, full_test_name):
+    return test_history(request, group_slug, project_slug, test_name=full_test_name)
+
+
+@auth
+def test_history(request, group_slug, project_slug, build_version=None, testrun=None, suite_slug=None, test_name=None):
     project = request.project
-    build = get_build(project, build_version)
-    test_run = get_object_or_404(build.test_runs, pk=testrun)
-    suite_slug = suite_slug.replace('$', '/')
-    suite = get_object_or_404(project.suites, slug=suite_slug)
-    status = get_object_or_404(test_run.status, suite=suite)
+    context = {"project": project}
+    if build_version and testrun and suite_slug:
+        build = get_build(project, build_version)
+        test_run = get_object_or_404(build.test_runs, pk=testrun)
+        suite_slug = suite_slug.replace('$', '/')
+        suite = get_object_or_404(project.suites, slug=suite_slug)
+        status = get_object_or_404(test_run.status, suite=suite)
+        full_test_name = "/".join([suite_slug, test_name])
+        context.update({"build": build, "status": status, "test": test_name})
+    else:
+        full_test_name = test_name.replace('$', '/')
     try:
         page = int(request.GET.get('page', '1'))
     except ValueError:
@@ -185,17 +200,9 @@ def test_history(request, group_slug, project_slug, build_version, testrun, suit
     top = request.GET.get('top', None)
     if top:
         top = get_build(project, top)
-
     try:
-        full_test_name = "/".join([suite_slug, test_name])
         history = TestHistory(project, full_test_name, top=top, page=page)
-        context = {
-            "project": project,
-            "history": history,
-            "build": build,
-            "status": status,
-            "test": test_name
-        }
+        context.update({"history": history})
         return render(request, 'squad/test_history.jinja2', context)
     except Suite.DoesNotExist:
         raise Http404("No such suite for test: %s")
