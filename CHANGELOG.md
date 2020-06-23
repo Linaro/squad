@@ -1,6 +1,26 @@
+# 1.15
+
+This 1.15 release adds pagination to list of test jobs of a build, along with
+a UI for navigating between previous and next builds.
+
+The release also fixes a broken link to test history and other small bug fixes.
+
+Complete list of changes going in:
+
+* api: rest: make project/<id>/test_results faster
+* ci: lava: update backend implementation to ensure proper URLs
+* frontend:
+  * add pagination to testjobs view
+  * add prev & next in build page
+  * fix URL reverse for test names with /
+  * fix crash when paginator page is not found
+  * fix filtering box in build view
+  * restore legacy test history url + bugfix
+* Translated using Weblate (Norwegian Bokmål)
+
 # 1.14
 
-This 1.13 release adds an API endpoint that allow comparison
+This 1.14 release adds an API endpoint that allow comparison
 between builds from the same project. It also fixes a bug related
 to LAVA ci backends when retrieving listener url.
 
