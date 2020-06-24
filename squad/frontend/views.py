@@ -71,30 +71,23 @@ def group_home(request, group_slug):
     return render(request, 'squad/group.jinja2', context)
 
 
-def __get_statuses__(project, limit=None):
-    statuses = ProjectStatus.objects.filter(
-        build__project=project
-    ).prefetch_related(
-        'build',
-        'build__project'
-    ).order_by('-build__datetime')
+def __get_builds_with_status__(project, limit=None):
+    builds = project.builds.prefetch_related('status').order_by('-datetime')
     if limit:
-        statuses = statuses[:limit]
-    return statuses
+        return builds[:limit]
+    return builds
 
 
 @auth
 def project_home(request, group_slug, project_slug):
     project = request.project
-
-    statuses = __get_statuses__(project, 11)
-    last_status = statuses.first()
-    last_build = last_status and last_status.build
+    builds = [b for b in __get_builds_with_status__(project, 11)]
+    last_build = len(builds) and builds[0] or None
 
     metadata = last_build and sorted(last_build.important_metadata.items()) or ()
     context = {
         'project': project,
-        'statuses': statuses,
+        'builds': builds,
         'last_build': last_build,
         'metadata': metadata,
     }
@@ -211,15 +204,15 @@ def build_badge(request, group_slug, project_slug, version):
 def builds(request, group_slug, project_slug):
     project = request.project
 
-    all_statuses = __get_statuses__(project)
-    paginator = Paginator(all_statuses, 25)
+    all_builds = __get_builds_with_status__(project)
+    paginator = Paginator(all_builds, 25)
     page = request.GET.get('page', 1)
     try:
-        statuses = paginator.page(page)
+        builds = paginator.page(page)
 
         context = {
             'project': project,
-            'statuses': statuses,
+            'builds': builds,
         }
         return render(request, 'squad/builds.jinja2', context)
     except EmptyPage:
