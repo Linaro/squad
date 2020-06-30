@@ -2,8 +2,6 @@
 
 {% block content %}
 
-{% with status=project.status %}
-
 {% include "squad/project-nav.jinja2" %}
 
 {% if last_build %}
@@ -23,5 +21,4 @@
 </div>
 {% endif %}
 
-{% endwith %}
 {% endblock %}

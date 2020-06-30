@@ -398,7 +398,7 @@ class Build(models.Model):
         """
         if self.__metadata__ is None:
             metadata = {}
-            for test_run in self.test_runs.defer(None).all():
+            for test_run in self.test_runs.only('metadata_file', 'build_id'):
                 for key, value in test_run.metadata.items():
                     metadata.setdefault(key, [])
                     if value not in metadata[key]:
@@ -471,7 +471,7 @@ class Build(models.Model):
             for e in self.project.environments.all()
         }
 
-        for t in self.test_runs.filter(completed=True).all():
+        for t in self.test_runs.filter(completed=True).only('build_id', 'environment_id').all():
             testruns[t.environment_id]['received'] += 1
 
         for env, count in testruns.items():
@@ -592,7 +592,6 @@ class TestRunManager(models.Manager):
             "tests_file",
             "metrics_file",
             "log_file",
-            "metadata_file",
         )
 
 
