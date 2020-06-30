@@ -1,5 +1,5 @@
-from django.contrib import admin
 from django import forms
+from django.contrib import admin
 from django.forms import ModelForm, ModelMultipleChoiceField, CheckboxSelectMultiple
 from simple_history.admin import SimpleHistoryAdmin
 
@@ -7,6 +7,7 @@ from simple_history.admin import SimpleHistoryAdmin
 from . import models
 from .tasks import postprocess_test_run
 from .tasks.notification import notify_project_status
+from squad.admin import NoDeleteListingModelAdmin
 
 
 class GroupMemberAdmin(admin.TabularInline):
@@ -18,7 +19,7 @@ class GroupMemberAdmin(admin.TabularInline):
     readonly_fields = ['member_since']
 
 
-class GroupAdmin(admin.ModelAdmin):
+class GroupAdmin(NoDeleteListingModelAdmin):
     """
     Handles groups
     """
@@ -47,7 +48,7 @@ class AdminSubscriptionInline(admin.StackedInline):
     extra = 0
 
 
-class ProjectAdmin(admin.ModelAdmin):
+class ProjectAdmin(NoDeleteListingModelAdmin):
     list_display = ['__str__', 'is_public', 'moderate_notifications', 'custom_email_template']
     list_filter = ['group', 'is_public', 'moderate_notifications', 'custom_email_template']
     inlines = [EnvironmentInline, SubscriptionInline, AdminSubscriptionInline]
@@ -94,7 +95,7 @@ class ProjectStatusAdmin(admin.ModelAdmin):
         return False
 
 
-class BuildAdmin(admin.ModelAdmin):
+class BuildAdmin(NoDeleteListingModelAdmin):
     model = models.Build
     ordering = ['-id']
     list_display = ['__str__', 'project']
@@ -136,7 +137,7 @@ def force_execute_plugins(modeladmin, request, queryset):
 force_execute_plugins.short_description = "Postprocess selected test runs"
 
 
-class TestRunAdmin(admin.ModelAdmin):
+class TestRunAdmin(NoDeleteListingModelAdmin):
     models = models.TestRun
     list_filter = [TestRunProjectFilter]
     actions = [force_execute_plugins]

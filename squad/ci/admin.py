@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from squad.ci.models import Backend, TestJob
 from squad.ci.tasks import submit, fetch, poll
+from squad.admin import NoDeleteListingModelAdmin
 
 
 def poll_backends(modeladmin, request, queryset):
@@ -12,7 +13,7 @@ def poll_backends(modeladmin, request, queryset):
 poll_backends.short_description = "Poll selected backends"
 
 
-class BackendAdmin(admin.ModelAdmin):
+class BackendAdmin(NoDeleteListingModelAdmin):
     list_display = ('name', 'url', 'implementation_type', 'listen_enabled', 'poll_enabled', 'poll_interval', 'max_fetch_attempts')
     actions = [poll_backends]
 
