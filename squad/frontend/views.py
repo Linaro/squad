@@ -2,7 +2,7 @@ import json
 import mimetypes
 import svgwrite
 
-from django.db.models import Case, When
+from django.db.models import Case, When, Prefetch
 from django.core.paginator import Paginator, EmptyPage
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
@@ -10,7 +10,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
 from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold
-from squad.core.models import Build
+from squad.core.models import Build, Subscription
 from squad.core.queries import get_metric_data
 from squad.frontend.queries import get_metrics_list
 from squad.frontend.utils import file_type, alphanum_sort
@@ -61,14 +61,35 @@ def home(request):
 
 def group_home(request, group_slug):
     group = get_object_or_404(Group, slug=group_slug)
-    projects = alphanum_sort(group.projects.accessible_to(request.user), 'name')
-    archived_projects = [p for p in projects if p.is_archived]
+
+    # Optimize number of queries to get ProjectStatus for each project
+    latest_build_queryset = Prefetch('builds', queryset=Build.objects.order_by('-datetime').only('id', 'project_id'))
+    user_subscriptions = Prefetch('subscriptions', queryset=Subscription.objects.filter(user=request.user), to_attr='user_subscriptions')
+    projects = group.projects.accessible_to(request.user).prefetch_related(latest_build_queryset, user_subscriptions)
+
+    has_archived_projects = False
+    latest_build_ids = {}
+    for project in projects:
+        project.latest_build = None
+        try:
+            build_id = project.builds.all()[0].id
+            latest_build_ids[build_id] = project
+        except IndexError:
+            pass
+
+        if not has_archived_projects and project.is_archived:
+            has_archived_projects = True
+
+    for build in Build.objects.filter(id__in=latest_build_ids.keys()).prefetch_related('status').only('id'):
+        latest_build_ids[build.id].latest_build = build
+
     context = {
         'group': group,
-        'projects': projects,
-        'has_archived_projects': len(archived_projects) > 0,
+        'projects': alphanum_sort(projects, 'name'),
+        'has_archived_projects': has_archived_projects,
     }
-    return render(request, 'squad/group.jinja2', context)
+    response = render(request, 'squad/group.jinja2', context)
+    return response
 
 
 def __get_statuses__(project, limit=None):

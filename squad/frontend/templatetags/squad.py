@@ -134,6 +134,13 @@ def build_section_url(build, name):
     return reverse(name, args=(build.project.group.slug, build.project.slug, build.version))
 
 
+@register_global_function
+def project_status(project):
+    if project.latest_build is not None:
+        return project.latest_build.status
+    return None
+
+
 # Needed to rename this function due to conflict with Django's auth module
 # that already sets a global 'site_name', overwritting ours
 # https://github.com/django/django/blob/master/django/contrib/auth/views.py#L99
