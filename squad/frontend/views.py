@@ -10,7 +10,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
 from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold
-from squad.core.models import Build, Subscription
+from squad.core.models import Build, Subscription, TestRun
 from squad.core.queries import get_metric_data
 from squad.frontend.queries import get_metrics_list
 from squad.frontend.utils import file_type, alphanum_sort
@@ -303,7 +303,6 @@ def __rearrange_test_results__(results_layout, test_results):
 def build(request, group_slug, project_slug, version):
     project = request.project
     build = get_build(project, version)
-    build.prefetch('test_runs')
 
     failures_only = request.GET.get('failures_only', 'true')
     if failures_only not in ['true', 'false']:
@@ -319,8 +318,7 @@ def build(request, group_slug, project_slug, version):
 
     __statuses__ = queryset.prefetch_related(
         'suite',
-        'test_run',
-        'test_run__environment',
+        Prefetch('test_run', queryset=TestRun.objects.prefetch_related('environment').all())
     ).order_by('-tests_fail', 'suite__slug', '-test_run__environment__slug')
 
     test_results = TestResultTable()
