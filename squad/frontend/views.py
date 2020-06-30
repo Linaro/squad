@@ -63,12 +63,15 @@ def group_home(request, group_slug):
     group = get_object_or_404(Group, slug=group_slug)
 
     # Optimize number of queries to get ProjectStatus for each project
-    latest_build_queryset = Prefetch('builds', queryset=Build.objects.order_by('-datetime').only('id', 'project_id'))
-    user_subscriptions = Prefetch('subscriptions', queryset=Subscription.objects.filter(user=request.user), to_attr='user_subscriptions')
-    projects = group.projects.accessible_to(request.user).prefetch_related(latest_build_queryset, user_subscriptions)
+    projects_queryset = group.projects.accessible_to(request.user)
+    projects_queryset = projects_queryset.prefetch_related(Prefetch('builds', queryset=Build.objects.order_by('-datetime').only('id', 'project_id')))
+
+    if request.user.is_authenticated:
+        projects_queryset = projects_queryset.prefetch_related(Prefetch('subscriptions', queryset=Subscription.objects.filter(user=request.user), to_attr='user_subscriptions'))
 
     has_archived_projects = False
     latest_build_ids = {}
+    projects = projects_queryset.all()
     for project in projects:
         project.latest_build = None
         try:
