@@ -1,3 +1,17 @@
+# 1.15.1
+
+This 1.15.1 release improves load time of group, project and build
+page.
+
+Complete list of changes going in:
+
+* core: admin: fix timeout deleting objects in admin view
+* frontend:
+  * improve group page load times
+  * improve load times for project and builds page
+  * views: fix page view for unauthenticated users
+  * views: improve build page load time
+
 # 1.15
 
 This 1.15 release adds pagination to list of test jobs of a build, along with
