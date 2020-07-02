@@ -1,6 +1,6 @@
 from django.test import Client
 from django.test import TestCase
-from squad.core.models import Group
+from squad.core.models import Group, SuiteMetadata
 
 
 class TestHistoryTest(TestCase):
@@ -12,8 +12,10 @@ class TestHistoryTest(TestCase):
         env = project.environments.create(slug='myenv')
         suite = project.suites.create(slug='mysuite')
         build = project.builds.create(version='mybuild')
+        test_name = 'mytest'
+        metadata = SuiteMetadata.objects.create(kind='test', suite=suite.slug, name=test_name)
         self.testrun = build.test_runs.create(job_id='123', environment=env)
-        self.testrun.tests.create(name='mytest', suite=suite)
+        self.testrun.tests.create(name=test_name, suite=suite, metadata=metadata)
         self.testrun.status.create(test_run=self.testrun, suite=suite)
 
     def test_tests_history_with_empty_suite_metadata(self):
