@@ -28,6 +28,7 @@ from squad.core.models import (
 )
 from squad.core.tasks import prepare_report, update_delayed_report
 from squad.core.comparison import TestComparison
+from squad.core.utils import parse_name
 from squad.ci.models import Backend, TestJob
 from squad.compat import drf_basename
 from django.http import HttpResponse
@@ -347,56 +348,46 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class LatestTestResults(object):
-    def __init__(self, build, test_name):
-        if test_name is None:
-            raise serializers.ValidationError(_('"test_name" parameter is mandatory. Ex: suitename/testname'))
-
-        suite_and_test = test_name.rsplit("/", 1)
-        if len(suite_and_test) != 2:
-            raise serializers.ValidationError(_('"test_name" parameter should be in the format "suitename/testname"'))
-
-        self.build = build
-        self.test_runs = {tr.id: tr.environment for tr in self.build.test_runs.all()}
-        self.environments = build.project.environments.order_by("name", "slug")
-        self.test_suite_name, self.test_case_name = suite_and_test
-        self.test_list = Test.objects.filter(
-            test_run_id__in=self.test_runs.keys(),
-            name=self.test_case_name,
-            suite__slug=self.test_suite_name).prefetch_related('suite', 'known_issues')
-
-
 class LatestTestResultsSerializer(serializers.BaseSerializer):
-    def to_representation(self, obj):
-        test_name = self.context.get('test_name')
-        latest_result = LatestTestResults(obj, test_name)
+    def to_representation(self, build):
+        metadata = self.context.get('metadata')
+        project_environments = self.context.get('environments')
+        suite = self.context.get('suite')
+
+        test_runs = {tr.id: tr.environment for tr in build.test_runs.all()}
+        tests = Test.objects.filter(
+            test_run_id__in=test_runs.keys(),
+            metadata=metadata,
+        ).order_by()
+
         environments = {
             e: {
                 'test': TestSerializer(None, context=self.context).data,
                 'environment': EnvironmentSerializer(e, context=self.context).data
             }
-            for e in latest_result.environments
+            for e in project_environments
         }
-        for test in latest_result.test_list.all():
-            e = latest_result.test_runs[test.test_run_id]
-            environments[e]['test'] = TestSerializer(test, context=self.context).data
+        for test in tests.all():
+            e = test_runs[test.test_run_id]
+            test.suite = suite
+            environments[e]['test'] = TestSerializer(test, context=self.context, remove_fields=['known_issues']).data
             environments[e]['test_url_path'] = reverse('test_history', args=[
-                latest_result.build.project.group.slug,
-                latest_result.build.project.slug,
-                latest_result.build.version,
+                build.project.group.slug,
+                build.project.slug,
+                build.version,
                 test.test_run_id,
-                latest_result.test_suite_name.replace('/', '$'),
-                latest_result.test_case_name
+                metadata.suite.replace('/', '$'),
+                metadata.name
             ])
 
         serialized_obj = {
-            'build': BuildSerializer(latest_result.build, context=self.context).data,
+            'build': BuildSerializer(build, context=self.context).data,
             'build_url_path': reverse(
                 'build',
                 args=[
-                    latest_result.build.project.group.slug,
-                    latest_result.build.project.slug,
-                    latest_result.build.version
+                    build.project.group.slug,
+                    build.project.slug,
+                    build.version
                 ]),
             'environments': environments.values()
         }
@@ -532,14 +523,30 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'], suffix='test_results')
     def test_results(self, request, pk=None):
-        test_name = request.query_params.get("test_name", None)
+        test_full_name = request.query_params.get('test_name', None)
+        if test_full_name is None:
+            raise serializers.ValidationError(_('"test_name" parameter is mandatory. Ex: suitename/testname'))
 
-        builds = self.get_object().builds.prefetch_related('test_runs__environment').order_by('-datetime')
+        suite_slug, test_name = parse_name(test_full_name)
+        try:
+            metadata = SuiteMetadata.objects.get(kind='test', suite=suite_slug, name=test_name)
+        except SuiteMetadata.DoesNotExist:
+            raise serializers.ValidationError(_('There is no test named "%s/%s"' % (suite_slug, test_name)))
+
+        project = self.get_object()
+        builds = project.builds.prefetch_related('test_runs__environment', 'project__group', 'status').order_by('-datetime')
+        environments = project.environments.order_by('name', 'slug')
+
+        try:
+            suite = project.suites.get(slug=suite_slug)
+        except Suite.DoesNotExist:
+            return Response()
+
         page = self.paginate_queryset(builds)
         serializer = LatestTestResultsSerializer(
             page,
             many=True,
-            context={'request': request, 'test_name': test_name}
+            context={'request': request, 'suite': suite, 'metadata': metadata, 'environments': environments}
         )
         return Response(serializer.data)
 
