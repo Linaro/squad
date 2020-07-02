@@ -341,6 +341,7 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/builds/%d/status/' % self.build3.id)
         self.assertIn('foo/test2', data['regressions'])
         self.assertIn('foo/test1', data['fixes'])
+        self.assertNotIn('myenv', data['details'])
 
     def test_builds_email_missing_status(self):
         # this should not happen normally, but let's test it anyway

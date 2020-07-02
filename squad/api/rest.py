@@ -602,10 +602,25 @@ class ProjectStatusSerializer(serializers.HyperlinkedModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
+        enriched_details = self.context.get('enriched_details', None)
         if instance.regressions is not None:
-            ret['regressions'] = json.dumps(instance.get_regressions())
+            regressions = instance.get_regressions()
+            if enriched_details:
+                for env in enriched_details.keys():
+                    env_regressions = regressions.get(env, None)
+                    if env_regressions:
+                        enriched_details[env].update({'regressions': env_regressions})
+            ret['regressions'] = json.dumps(regressions)
         if instance.fixes is not None:
+            fixes = instance.get_fixes()
+            if enriched_details:
+                for env in enriched_details.keys():
+                    print(env)
+                    env_fixes = fixes.get(env, None)
+                    if env_fixes:
+                        enriched_details[env].update({'fixes': env_fixes})
             ret['fixes'] = json.dumps(instance.get_fixes())
+        ret['details'] = enriched_details
         return ret
 
     class Meta:
@@ -776,11 +791,36 @@ class BuildViewSet(ModelViewSet):
         build = self.get_object()
         return Response(build.metadata)
 
+    def __enrich_status_details__(self, request, queryset):
+        enriched_details = {}
+        for tr in queryset:
+            try:
+                s = tr.status.all()[0]
+            except IndexError:
+                s = None
+            if s:
+                if tr.environment.name not in enriched_details.keys():
+                    enriched_details[tr.environment.name] = {'testruns': 0,
+                                                             'tests_total': 0,
+                                                             'tests_pass': 0,
+                                                             'tests_fail': 0,
+                                                             'tests_xfail': 0,
+                                                             'tests_skip': 0}
+                enriched_details[tr.environment.name]['testruns'] += 1
+                enriched_details[tr.environment.name]['tests_total'] += s.tests_pass + s.tests_fail + s.tests_xfail + s.tests_skip
+                enriched_details[tr.environment.name]['tests_pass'] += s.tests_pass
+                enriched_details[tr.environment.name]['tests_fail'] += s.tests_fail
+                enriched_details[tr.environment.name]['tests_xfail'] += s.tests_xfail
+                enriched_details[tr.environment.name]['tests_skip'] += s.tests_skip
+        return enriched_details
+
     @action(detail=True, methods=['get'], suffix='status')
     def status(self, request, pk=None):
         try:
-            status = self.get_object().status
-            serializer = ProjectStatusSerializer(status, many=False, context={'request': request})
+            build = self.get_object()
+            qs = build.test_runs.prefetch_related('environment', Prefetch("status", queryset=Status.objects.filter(suite=None)))
+            enriched_details = self.__enrich_status_details__(request, qs)
+            serializer = ProjectStatusSerializer(build.status, many=False, context={'request': request, 'enriched_details': enriched_details})
             return Response(serializer.data)
         except ProjectStatus.DoesNotExist:
             raise NotFound()
