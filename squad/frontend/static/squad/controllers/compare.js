@@ -110,22 +110,29 @@ function CompareController($scope, $http, $location) {
 
     $scope.doCompare = function() {
         // get the list of builds for each project
-        for (var i = 0; i < $scope.selectedProjects.length; i++) {
-            (function(index){
-                $scope.showProgress[$scope.selectedProjects[index].id] = true;
-                $http.get($scope.selectedProjects[index].url + "test_results/", {params: {'test_name': $scope.selectedSuite + "/" + $scope.selectedTest, "limit": 10}})
-                    .then(function(response){
-                        $scope.projectBuilds[$scope.selectedProjects[index].id] = response.data;
-                        if (response.data.length > 0) {
-                            $scope.projectEnvironments[$scope.selectedProjects[index].id] = response.data[0].environments;
-                        } else {
-                            $scope.projectEnvironments[$scope.selectedProjects[index].id] = new Array();
-                        }
-                        $scope.showProgress[$scope.selectedProjects[index].id] = false;
-                        $scope.loadedLimits[$scope.selectedProjects[index].id] = 10;
-                    });
-            })(i);
+        // TODO: fetching multiple projects at the same time causes a huge load in the backend
+        // doing one-by-one is faster. We should change this behavior once we learn what the problem is
+        function fetch_next_project(index) {
+            if(index >= $scope.selectedProjects.length)
+                return;
+
+            $scope.showProgress[$scope.selectedProjects[index].id] = true;
+            $http.get($scope.selectedProjects[index].url + "test_results/", {params: {'test_name': $scope.selectedSuite + "/" + $scope.selectedTest, "limit": 10}})
+                .then(function(response){
+                    $scope.projectBuilds[$scope.selectedProjects[index].id] = response.data;
+                    if (response.data.length > 0) {
+                        $scope.projectEnvironments[$scope.selectedProjects[index].id] = response.data[0].environments;
+                    } else {
+                        $scope.projectEnvironments[$scope.selectedProjects[index].id] = new Array();
+                    }
+                    $scope.showProgress[$scope.selectedProjects[index].id] = false;
+                    $scope.loadedLimits[$scope.selectedProjects[index].id] = 10;
+
+                    fetch_next_project(index + 1)
+                });
         }
+
+        fetch_next_project(0);
         $scope.updateKnownIssue();
     }
 
