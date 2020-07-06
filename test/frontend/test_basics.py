@@ -142,7 +142,7 @@ class FrontendTest(TestCase):
 
     def test_attachment(self):
         data = bytes('text file', 'utf-8')
-        self.test_run.attachments.create(filename='foo.txt', data=data, length=len(data))
+        self.test_run.attachments.create(filename='foo.txt', data=data, length=len(data), mimetype="text/plain")
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/attachments/foo.txt' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('text/plain', response['Content-Type'])
         self.assertEqual(b'text file', response.content)

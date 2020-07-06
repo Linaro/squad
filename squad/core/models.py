@@ -661,6 +661,7 @@ class TestRun(models.Model):
 class Attachment(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='attachments', on_delete=models.CASCADE)
     filename = models.CharField(null=False, max_length=1024)
+    mimetype = models.CharField(null=False, max_length=128, default="application/octet-stream")
     data = models.BinaryField(default=None)
     length = models.IntegerField(default=None)
 
