@@ -264,3 +264,14 @@ CI loop integration (optional)
 SQUAD can integrate with existing automation systems to participate in a
 Continuous Integration (CI) loop through its CI subsystem. For more details
 check :ref:`ci_ref_label`.
+
+
+Default auth group 'squad'
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SQUAD creates by default an auth group with most of the permissions required
+for authenticated/registered users to view, add, change and delete objects
+in the projects they have access to. The name of the group is 'squad' by default.
+All newly created users therefrom are automatically added to this group to eleviate
+the need for manual intervention to add a user each time one is created.
+
