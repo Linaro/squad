@@ -526,6 +526,11 @@ def attachment(request, group_slug, project_slug, build_version, testrun, suite_
 
 
 @auth
+def build_attachment(request, group_slug, project_slug, build_version, testrun, filename):
+    return attachment(request, group_slug, project_slug, build_version, testrun, None, None, filename)
+
+
+@auth
 def metrics(request, group_slug, project_slug):
     project = request.project
     env_qs = project.environments.order_by('id').all()
