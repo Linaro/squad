@@ -1,5 +1,6 @@
 import json
 import yaml
+import logging
 from collections import OrderedDict
 from hashlib import sha1
 import re
@@ -10,7 +11,10 @@ from django.db import transaction
 from django.db.models import Q, Count, Sum, Case, When, F, Value
 from django.db.models.functions import Concat
 from django.db.models.query import prefetch_related_objects
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import User, AnonymousUser, Group as auth_group
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 from django.conf import settings
 from squad.mail import Message
 from django.forms.fields import URLField as FormURLField
@@ -1312,3 +1316,14 @@ class Annotation(models.Model):
 
     def __str__(self):
         return '%s' % self.description
+
+
+@receiver(post_save, sender=User)
+def add_created_user_to_squad_group(sender, instance, created, **kwargs):
+    if created:
+        try:
+            squad_group = auth_group.objects.get(name='squad')
+            squad_group.user_set.add(instance)
+        except auth_group.DoesNotExist:
+            logger = logging.getLogger(__name__)
+            logger.warning('Auth group squad doesnot exist')
