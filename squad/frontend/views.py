@@ -522,7 +522,7 @@ def attachment(request, group_slug, project_slug, build_version, testrun, suite_
     build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, pk=testrun)
     attachment = get_object_or_404(test_run.attachments, filename=filename)
-    return __download__(attachment.filename, attachment.data)
+    return __download__(attachment.filename, bytes(attachment.data))
 
 
 @auth
