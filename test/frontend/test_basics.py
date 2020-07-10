@@ -150,6 +150,7 @@ class FrontendTest(TestCase):
     def test_log(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/log' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('text/plain', response['Content-Type'])
+        self.assertEqual(b'log file contents ...', response.content)
 
     def test_no_log(self):
         self.test_run.log_file = None
@@ -161,11 +162,14 @@ class FrontendTest(TestCase):
     def test_tests(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/tests' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])
+        self.assertEqual(b'{}', response.content)
 
     def test_metrics(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metrics' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])
+        self.assertEqual(b'{}', response.content)
 
     def test_metadata(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metadata' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])
+        self.assertEqual(b'{ "job_id" : "1" }', response.content)
