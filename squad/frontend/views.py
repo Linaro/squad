@@ -467,7 +467,6 @@ def __download__(filename, data, content_type=None):
         if content_type is None:
             content_type = 'application/octet-stream'
     response = HttpResponse(data, content_type=content_type)
-    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
     return response
 
 
