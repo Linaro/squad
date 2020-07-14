@@ -415,6 +415,22 @@ class Build(models.Model):
             self.__metadata__ = metadata
         return self.__metadata__
 
+    __attachments__ = None
+
+    @property
+    def attachments(self):
+        """
+        List of attachments from all testruns
+        """
+        if self.__attachments__ is None:
+            attachments = {}
+            for test_run in self.test_runs.all():
+                attachments[test_run.pk] = []
+                for attachment in test_run.attachments.all():
+                    attachments[test_run.pk].append(attachment.filename)
+            self.__attachments__ = attachments
+        return self.__attachments__
+
     @property
     def important_metadata(self):
         wanted = (self.project.important_metadata_keys or '').splitlines()
@@ -661,6 +677,7 @@ class TestRun(models.Model):
 class Attachment(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='attachments', on_delete=models.CASCADE)
     filename = models.CharField(null=False, max_length=1024)
+    mimetype = models.CharField(null=False, max_length=128, default="application/octet-stream")
     data = models.BinaryField(default=None)
     length = models.IntegerField(default=None)
 

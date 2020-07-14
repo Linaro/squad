@@ -467,7 +467,6 @@ def __download__(filename, data, content_type=None):
         if content_type is None:
             content_type = 'application/octet-stream'
     response = HttpResponse(data, content_type=content_type)
-    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
     return response
 
 
@@ -522,7 +521,12 @@ def attachment(request, group_slug, project_slug, build_version, testrun, suite_
     build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, pk=testrun)
     attachment = get_object_or_404(test_run.attachments, filename=filename)
-    return __download__(attachment.filename, bytes(attachment.data))
+    return __download__(attachment.filename, bytes(attachment.data), attachment.mimetype)
+
+
+@auth
+def build_attachment(request, group_slug, project_slug, build_version, testrun, filename):
+    return attachment(request, group_slug, project_slug, build_version, testrun, None, None, filename)
 
 
 @auth
