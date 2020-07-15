@@ -1,3 +1,25 @@
+# 1.16
+
+This 1.16 release improves load time of compare tests across
+different projects, creates a default authentication group so
+that users have object-level permission and allow download of build
+attachments.
+
+Complete list of changes going in:
+
+* frontend:
+  * add URL for downloading build attachments
+  * add test history link in test list
+  * allow serving files from database
+  * compare: improve compare load times
+  * fix attachment downloads
+  * test the actual response contents of all download urls
+* add migrations to create auth group and add users
+* api: rest: add more status details
+* attachment: add a sample unit test
+* core: store Attachment's mime-type in the model
+* pytest: only check coverage on ci
+
 # 1.15.1
 
 This 1.15.1 release improves load time of group, project and build
