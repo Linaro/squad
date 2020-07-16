@@ -1,3 +1,14 @@
+# 1.16.1
+
+This 1.16.1 release fixes a lava crash when trying to download
+big log files from a lava instance that times out. The release
+also improves load time in test history view.
+
+Complete list of changes going in:
+
+* ci: fix lava backend log download
+* frontend: test_history: improve load time
+
 # 1.16
 
 This 1.16 release improves load time of compare tests across
