@@ -3,6 +3,7 @@ from django.test import TestCase
 from io import BytesIO
 from test.mock import patch, MagicMock
 import os
+import requests
 import yaml
 import xmlrpc
 
@@ -864,6 +865,24 @@ class LavaTest(TestCase):
         log = lava.__parse_log__(log_data)
         self.assertIn("target message", log)
         self.assertNotIn("info message", log)
+
+    @patch('requests.get')
+    def test_lava_log_download(self, requests_get):
+        lava1 = LAVABackend(self.backend)
+        requests_get.side_effect = requests.exceptions.ChunkedEncodingError("Connection closed")
+        log = lava1.__download_full_log__(999)
+        requests_get.assert_called()
+        self.assertEqual(b'', log)
+
+    @patch('requests.get')
+    def test_lava_log_download_rest(self, requests_get):
+        # check REST API path
+        self.backend.url.replace("RPC2/", "api/v0.2/")
+        lava2 = LAVABackend(self.backend)
+        requests_get.side_effect = requests.exceptions.ChunkedEncodingError("Connection closed")
+        log = lava2.__download_full_log__(999)
+        requests_get.assert_called()
+        self.assertEqual(b'', log)
 
     def test_broken_lava_log_parsing(self):
         lava = LAVABackend(self.backend)
