@@ -279,9 +279,15 @@ class Backend(BaseBackend):
         if self.use_xml_rpc:
             url = self.data.url.replace('/RPC2', '/scheduler/job/%s/log_file/plain' % job_id)
             payload = {"user": self.data.username, "token": self.data.token}
-            response = requests.get(url, params=payload)
+            try:
+                response = requests.get(url, params=payload)
+            except requests.exceptions.RequestException:
+                self.log_error("Unable to download log for {backend_name}/{job_id}".format(backend_name=self.data.name, job_id=job_id))
         else:
-            response = requests.get(urljoin(self.api_url_base, "jobs/%s/logs/" % (job_id)), headers=self.authentication)
+            try:
+                response = requests.get(urljoin(self.api_url_base, "jobs/%s/logs/" % (job_id)), headers=self.authentication)
+            except requests.exceptions.RequestException:
+                self.log_error("Unable to download log for {backend_name}/{job_id}".format(backend_name=self.data.name, job_id=job_id))
         if response and response.status_code == 200:
             return response.content
         return b''
