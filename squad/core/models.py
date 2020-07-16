@@ -777,19 +777,6 @@ class Test(models.Model):
     def full_name(self):
         return join_name(self.suite.slug, self.name)
 
-    @staticmethod
-    def prefetch_related(tests):
-        prefetch_related_objects(
-            tests,
-            'known_issues',
-            'test_run',
-            'test_run__environment',
-            'test_run__build',
-            'test_run__build__project',
-            'test_run__build__project__group',
-            'test_run__status',
-        )
-
     class History(object):
         def __init__(self, since, count, last_different):
             self.since = since

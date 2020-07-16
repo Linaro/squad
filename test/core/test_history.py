@@ -107,7 +107,9 @@ class TestHistoryTest(TestCase):
     def test_no_metadata(self):
         testrun = self.project1.builds.last().test_runs.last()
         suite = testrun.tests.last().suite
-        testrun.tests.create(name='no_metadata_test', result=False, suite=suite)
-        history = TestHistory(self.project1, 'no_metadata_test')
+        test_name = 'no_metadata_test'
+        metadata = models.SuiteMetadata.objects.create(kind='test', suite=suite.slug, name=test_name)
+        testrun.tests.create(name=test_name, result=False, suite=suite, metadata=metadata)
+        history = TestHistory(self.project1, test_name)
 
         self.assertIsNotNone(history.results)
