@@ -44,7 +44,8 @@ RUN apt-get update -q=2 && \
         moreutils \
         postgresql-client \
         unzip \
-        tmux
+        tmux \
+        openssh-client
 
 # Prepare the environment
 COPY . /squad-build/
