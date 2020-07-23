@@ -75,7 +75,12 @@ class ProjectFilter(filters.FilterSet):
 
     def filter_full_name(self, queryset, field_name, value):
         if value:
-            queryset = queryset.annotate(fullname=Concat(F('group__slug'), V('/'), F('slug'),
+            group_slug = 'group__slug'
+            project_slug = 'slug'
+            if queryset.model is not Project:
+                group_slug = 'project__%s' % group_slug
+                project_slug = 'project__%s' % project_slug
+            queryset = queryset.annotate(fullname=Concat(F(group_slug), V('/'), F(project_slug),
                                          output_field=CharField())).filter(fullname__startswith=value)
         return queryset
 

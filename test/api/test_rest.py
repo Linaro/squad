@@ -504,6 +504,11 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/builds/?created_at=%s' % created_at)
         self.assertEqual(1, len(data['results']))
 
+    def test_build_filter_by_project(self):
+        project_full_name = self.build3.project.full_name
+        data = self.hit('/api/builds/?project__full_name=%s' % project_full_name)
+        self.assertEqual(6, len(data['results']))
+
     def test_testjob(self):
         data = self.hit('/api/testjobs/%d/' % self.testjob.id)
         self.assertEqual('myenv', data['environment'])
