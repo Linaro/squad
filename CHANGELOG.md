@@ -1,3 +1,12 @@
+# 1.16.2
+
+This 1.16.2 release fixes a bug when filtering objects by project's full name.
+
+Complete list of changes going in:
+
+* api: rest: fix project filter
+* Dockerfile: allow containers make ssh connections
+
 # 1.16.1
 
 This 1.16.1 release fixes a lava crash when trying to download
