@@ -48,7 +48,7 @@
               {% if result %}
                 {% if comparison_type == 'test' %}
                   <td class='{{result|slugify}}'>
-                    <a href="{{url('test_history', args=[build.project.group.slug, build.project.slug, test])}}">
+                    <a href="{{url('legacy_test_history', args=[build.project.group.slug, build.project.slug, test])}}">
                       <strong>{{result}}</strong>
                     </a>
                   </td>
