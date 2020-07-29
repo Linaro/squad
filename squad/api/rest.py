@@ -1025,6 +1025,7 @@ class StatusViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Status.objects
     serializer_class = StatusSerializer
     filterset_class = StatusFilter
+    filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
 
 
 class TestRunSerializer(serializers.HyperlinkedModelSerializer):
