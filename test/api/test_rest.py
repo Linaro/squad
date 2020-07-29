@@ -585,6 +585,7 @@ class RestApiTest(APITestCase):
         self.assertEqual(0, data['results'][0]['tests_xfail'])
         self.assertEqual(0, data['results'][0]['tests_skip'])
         self.assertEqual(0, data['results'][0]['metrics_summary'])
+        self.assertEqual(1, data2['count'])
         self.assertEqual(None, data2['results'][0]['suite'])
 
     def test_testjob_definition(self):
