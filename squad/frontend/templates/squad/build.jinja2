@@ -20,6 +20,16 @@
                     <select id="target-select" onchange="this.form.submit()" name="target" placeholder="{{ _('Enter target version') }}" class="form-control"></select>
                 </div>
             </div>
+            <div class="row">
+                <label class="col-md-3 col-sm-3">{{ _('Comparison type') }}</label>
+                <div class="col-md-4">
+                  <input id="test-comparison" name="comparison_type" type="radio" value="test" checked="checked"/>
+                  <label for="test-comparison">{{ _('compare by tests') }}</label>
+                  <input id="metric-comparison" name="comparison_type" type="radio" value="metric" />
+                  <label for="metric-comparison">{{ _('compare by metrics') }}</label>
+                </div>
+          </div>
+
         </form>
     </div>
 </div>

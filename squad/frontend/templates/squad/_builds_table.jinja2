@@ -1,9 +1,15 @@
 <div class='highlight-row' ng-app='BuildList' ng-controller='BuildListCompareController'>
 <form>
+<div class="form-group">
   <input type="hidden" ng-init="compare_button_label='{{_('Compare builds')}}'" />
   <input type="hidden" ng-init="invalid_number_of_builds_msg='{{_('Two builds need to be selected!')}}'" />
   <input type="hidden" ng-init="invalid_selected_builds_msg='{{_('Selected builds must be different!')}}'" />
-  <input type="button" ng-value="compare_button_label" class="btn btn-default" ng-click="compareBuilds('{{project.full_name}}')" />
+  <input type="button" ng-value="compare_button_label" class="btn btn-default" ng-click="compareBuilds('{{project.full_name}}')" /> &nbsp;
+  <input class="form-check-input" id="metric-comparison" name="comparison_type" type="radio" value="metric" ng-model="comparison_type" ng-init="comparison_type='test'" />
+  <label class="form-check-label" for="metric-comparison">{{ _('compare by metrics') }}</label>&nbsp;
+  <input class="form-check-input" id="test-comparison" name="comparison_type" type="radio" value="test" checked ng-model="comparison_type" />
+  <label class="form-check-label" for="test-comparison">{{ _('compare by tests') }}</label>
+</div>
 {% for build in builds %}
 {% with status=build.status %}
 <div class="row row-bordered build">
