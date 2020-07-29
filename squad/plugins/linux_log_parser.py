@@ -1,6 +1,7 @@
 import logging
 import re
 from squad.plugins import Plugin as BasePlugin
+from squad.core.models import SuiteMetadata
 
 
 logger = logging.getLogger()
@@ -55,11 +56,13 @@ class Plugin(BasePlugin):
         return snippets
 
     def __create_test(self, testrun, suite, test_name, lines):
+        metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=test_name, kind='test')
         testrun.tests.create(
             suite=suite,
             name=test_name,
             result=(len(lines) == 0),
             log='\n'.join(lines),
+            metadata=metadata,
         )
 
     def postprocess_testrun(self, testrun):
