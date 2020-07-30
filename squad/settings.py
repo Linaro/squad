@@ -365,10 +365,11 @@ if SENTRY_DSN:
     try:
         import sentry_sdk
         from sentry_sdk.integrations.django import DjangoIntegration
+        from squad.version import __version__ as squad_version
         sentry_sdk.init(
             dsn=SENTRY_DSN,
             integrations=[DjangoIntegration()],
-            release=os.getenv('ENV', 'squad'),
+            release='%s@%s' % (os.getenv('ENV', 'squad'), squad_version),
         )
     except ImportError:
         pass
