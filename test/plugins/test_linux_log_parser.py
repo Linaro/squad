@@ -182,3 +182,10 @@ class TestLinuxLogParser(TestCase):
 
         tests = testrun.tests
         self.assertEqual(0, tests.count())
+
+    def test_metadata_creation(self):
+        testrun = self.build.test_runs.create(environment=self.env, log_file='Kernel panic - not syncing', job_id='999')
+        self.plugin.postprocess_testrun(testrun)
+
+        test = testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-panic-999')
+        self.assertIsNotNone(test.metadata)
