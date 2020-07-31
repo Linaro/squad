@@ -1,10 +1,25 @@
+        <table class='table table-bordered'>
+            <tr>
+                <th colspan="2">
+                    <a
+                        ng-init="hide_all = false"
+                        ng-click="hide_all = !hide_all; {% for suite in test_results.suites -%} hide_{{ suite.id }} = hide_all; {% endfor %}"
+                        class="toggle-test-results">
+                        <i ng-hide="!hide_all" class="fa fa-minus"></i>
+                        <i ng-hide="hide_all" class="fa fa-plus"></i>
+                    </a>
+                    {{ _('Collapse/expand all') }}
+                </th>
+            </tr>
+        </table>
+
         {% for suite in test_results.suites %}
         <table id='tests-{{ suite.id }}' class='test-results-box table table-bordered' ng-show='match("tests-{{suite.id}}") || match("details-{{suite.id}}")'>
             <thead>
                 <tr>
                     <th colspan="2">
-                        {% set hide_suite = 'hide_' + suite.slug.replace('-', '_').replace('.', '_').replace('/', '_') -%}
-                        <a ng-click="{{ hide_suite }} = !{{ hide_suite }}" class="toggle-test-results" ng-init="{{ hide_suite }} = true">
+                        {% set hide_suite = 'hide_' + string(suite.id) -%}
+                        <a ng-click="{{ hide_suite }} = !{{ hide_suite }}" class="toggle-test-results" ng-init="{{ hide_suite }} = false">
                             <i ng-hide="!{{ hide_suite }}" class="fa fa-minus"></i>
                             <i ng-hide="{{ hide_suite }}" class="fa fa-plus"></i>
                         </a>

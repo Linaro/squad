@@ -367,10 +367,6 @@ ul#compare-menu {
   cursor: not-allowed;
 }
 
-table.test-results-box {
-    margin-left: 5px;
-}
-
 table.test-results-box thead tr:first-child {
     background-color: #DDD;
 }
