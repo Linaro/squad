@@ -284,18 +284,30 @@ def __rearrange_test_results__(results_layout, test_results):
     if results_layout == 'envbox':
         for e in test_results.environments:
             e.suites = []
+            e.status = Status()
 
         for suite, results in test_results.data.items():
             for env in results.keys():
                 statuses = [s for s in results[env].statuses if s.environment.id == env.id]
+                for status in statuses:
+                    env.status.tests_pass += status.tests_pass
+                    env.status.tests_skip += status.tests_skip
+                    env.status.tests_fail += status.tests_fail
+                    env.status.tests_xfail += status.tests_xfail
                 env.suites.append((suite, statuses))
 
     if results_layout == 'suitebox':
         test_results.suites = test_results.data.keys()
         for suite in test_results.suites:
             envs = []
+            suite.status = Status()
             for environment, cell in test_results.data[suite].items():
                 envs.append((environment, cell.statuses))
+                for status in cell.statuses:
+                    suite.status.tests_pass += status.tests_pass
+                    suite.status.tests_skip += status.tests_skip
+                    suite.status.tests_fail += status.tests_fail
+                    suite.status.tests_xfail += status.tests_xfail
             suite.environments = sorted(envs, key=lambda e: e[0].slug)
 
 

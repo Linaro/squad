@@ -9,6 +9,9 @@
                             <i ng-hide="{{ hide_suite }}" class="fa fa-plus"></i>
                         </a>
                         {{ suite }}
+                        {% with status=suite.status %}
+                            {% include "squad/_test_results_summary.jinja2" %}
+                        {% endwith %}
                     </th>
                 </tr>
             </thead>
