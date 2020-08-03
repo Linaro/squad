@@ -10,7 +10,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
 from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold
-from squad.core.models import Build, Subscription, TestRun
+from squad.core.models import Build, Subscription, TestRun, Project
 from squad.core.queries import get_metric_data
 from squad.frontend.queries import get_metrics_list
 from squad.frontend.utils import file_type, alphanum_sort
@@ -53,8 +53,38 @@ def get_build(project, version):
 
 
 def home(request):
+
+    ordering = request.GET.get('order')
+    if ordering not in ['by_name', 'last_updated']:
+        ordering = 'last_updated'
+
+    if ordering == 'last_updated':
+        builds_prefetch = Prefetch('builds', queryset=Build.objects.order_by('-datetime').only('id', 'project_id', 'datetime'))
+        project_prefetch = Prefetch('projects', queryset=Project.objects.prefetch_related(builds_prefetch))
+
+        all_groups = list(Group.objects.accessible_to(request.user).prefetch_related(project_prefetch))
+        for group in all_groups:
+            group.most_recent_timestamp = 0
+            for project in group.projects.all():
+                try:
+                    build = project.builds.all()[0]
+                    build_timestamp = build.datetime.timestamp()
+                    if build_timestamp > group.most_recent_timestamp:
+                        group.most_recent_timestamp = build_timestamp
+                except IndexError:
+                    pass
+
+        all_groups.sort(key=lambda g: g.most_recent_timestamp, reverse=True)
+
+    else:
+        all_groups = Group.objects.accessible_to(request.user)
+
+    user_spaces = [g for g in all_groups if g.slug.startswith('~')]
+    all_groups = [g for g in all_groups if not g.slug.startswith('~')]
+
     context = {
-        'groups': Group.objects.accessible_to(request.user),
+        'all_groups': all_groups,
+        'user_spaces': user_spaces,
     }
     return render(request, 'squad/index.jinja2', context)
 
