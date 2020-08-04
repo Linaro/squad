@@ -341,7 +341,7 @@ def build(request, group_slug, project_slug, version):
 
     results_layout = request.GET.get('results_layout')
     if results_layout not in ['table', 'envbox', 'suitebox']:
-        results_layout = 'envbox' if len(test_results.environments) > 8 else 'table'
+        results_layout = 'suitebox'
 
     __rearrange_test_results__(results_layout, test_results)
 
