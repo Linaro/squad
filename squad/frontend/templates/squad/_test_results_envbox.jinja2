@@ -1,14 +1,32 @@
+        <table class='table table-bordered'>
+            <tr>
+                <th colspan="2">
+                    <a
+                        ng-init="hide_all = false"
+                        ng-click="hide_all = !hide_all; {% for environment in test_results.environments -%} hide_{{ environment.id }} = hide_all; {% endfor %}"
+                        class="toggle-test-results">
+                        <i ng-hide="!hide_all" class="fa fa-minus"></i>
+                        <i ng-hide="hide_all" class="fa fa-plus"></i>
+                    </a>
+                    {{ _('Collapse/expand all') }}
+                </th>
+            </tr>
+        </table>
+
         {% for environment in test_results.environments %}
         <table id='tests-{{ environment.id }}' class='test-results-box table table-bordered' ng-show='match("tests-{{environment.id}}") || match("details-{{environment.id}}")'>
             <thead>
                 <tr>
                     <th colspan="2">
-                        {{ environment }}
-                        {% set hide_env = 'hide_' + environment.slug.replace('-', '_').replace('.', '_') -%}
-                        <a ng-click="{{ hide_env }} = !{{ hide_env }}" class="toggle-test-results" ng-init="{{ hide_env }} = true">
+                        {% set hide_env = 'hide_' + string(environment.id) -%}
+                        <a ng-click="{{ hide_env }} = !{{ hide_env }}" class="toggle-test-results">
                             <i ng-hide="!{{ hide_env }}" class="fa fa-minus"></i>
                             <i ng-hide="{{ hide_env }}" class="fa fa-plus"></i>
                         </a>
+                        {{ environment }}
+                        {% with status=environment.status %}
+                            {% include "squad/_test_results_summary.jinja2" %}
+                        {% endwith %}
                     </th>
                 </tr>
             </thead>
