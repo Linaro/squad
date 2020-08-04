@@ -11,55 +11,18 @@
 	        <tr id='tests-{{suite.id}}' ng-show='match("tests-{{suite.id}}") || match("details-{{suite.id}}")'>
                 <td ng-click='toggle_details("details-{{suite.id}}")'>
 		            {{suite}}
-		            <small>
-		                <i class='fa fa-chevron-down pull-right' ng-show='!details_visible["details-{{suite.id}}"]'></i>
-		                <i class='fa fa-chevron-up pull-right' ng-show='details_visible["details-{{suite.id}}"]'></i>
-		            </small>
 		        </td>
                 {% for environment in test_results.environments %}
                     {% with entry=results[environment] %}
+                        <td>
                         {% if entry %}
-                            {% if entry.has_failures %}
-                            <td class='fail'><a class='fa fa-times text-danger' href='#' onclick='return false' ng-click='toggle_details("details-{{suite.id}}")'></a></td>
-                            {% elif entry.has_known_failures %}
-                            <td class='xfail'><a class='fa fa-bug text-info' href='#' onclick='return false' ng-click='toggle_details("details-{{suite.id}}")'></a></td>
-                            {% else %}
-                            <td class='pass'><a class='fa fa-check text-success' href='#' onclick='return false' ng-click='toggle_details("details-{{suite.id}}")'></a></td>
-                            {% endif %}
-                        {% else %}
-                        <td></td>
+                            {% for status in entry.statuses %}
+                                <a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{% include "squad/_test_results_summary.jinja2" %}</a><br />
+                            {% endfor %}
                         {% endif %}
+                        </td>
                     {% endwith %}
                 {% endfor %}
-            </tr>
-	        <tr id='details-{{suite.id}}' ng-show='details_visible["details-{{suite.id}}"]'>
-                <td></td>
-                <td colspan="{{test_results.environments|length}}">
-		            {% with entries=results.values() %}
-                    <table class='test-results-details'>
-                        <tr>
-                            <th>
-				                <i class='fa fa-cog'></i>{{ _('Environment') }}
-				            </th>
-                            <th>
-				                <i class='fa fa-check-square-o'></i>{{ _('Test Results') }}
-				            </th>
-                        </tr>
-                        {% for entry in entries %}
-                            {% for status in entry.statuses %}
-                                <tr id='details-row-{{status.id}}' ng-show='details_visible["details-{{suite.id}}"]'>
-                                    <td>
-                                        <a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{{status.environment}}</a>
-                                    </td>
-                                    <td>
-                                        <a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{% include "squad/_test_results_summary.jinja2" %}</a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% endfor %}
-                    </table>
-                    {% endwith %}
-                </td>
             </tr>
             {% endfor %}
         </table>
