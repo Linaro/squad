@@ -1,3 +1,29 @@
+# 1.17
+
+This 1.17 release adds a few changes to test results layout in build view.
+It collapses all results by default and display an overall summary of tests
+in the box title for suite and environment boxes.
+
+This release also adds an extra button that allows users to select build
+comparison type (test or metrics) in build view.
+
+Complete list of changes going in:
+
+* api: rest: add filterset_class attribute to StatusViewSet
+* core: commands: add fill_test_metadata command
+* frontend:
+  * add choice of comparison type
+  * add logo do api page
+  * fix test result url to point to history
+  * test_results: add collapse/expand all option
+  * test_results: add overall summary in suite/environment boxes
+  * test_results: make suitebox the default layout
+  * test_results: move toggle box to the left
+* plugins: linux_log_parser: create metadata
+* release-docker: tag release image name
+* settings: init sentry plugin with squad release
+* settings: really configure celery max retries when queue server is out of reach
+
 # 1.16.2
 
 This 1.16.2 release fixes a bug when filtering objects by project's full name.
