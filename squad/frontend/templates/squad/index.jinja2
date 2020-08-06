@@ -1,34 +1,58 @@
 {% extends "squad/base.jinja2" %}
 
 {% block content %}
-<h2 class="page-header well">{{ _('All groups') }}</h2>
 
 {% if user.is_authenticated %}
 <div style='margin-top: 2em; margin-bottom: 2em;'>
     <a class='btn btn-default' href="{{url("new-group")}}">{{ _('New group') }}</a>
 </div>
-
 {% endif %}
-<div class='highlight-row'>
-{% for group in groups %}
-<div class="row row-bordered project">
-    <a href="{{group_url(group)}}">
-    <div class="col-md-3 col-sm-3">
-        <strong>
-            {{group.display_name}}
-        </strong>
-    </div>
-    <div class="col-md-6 col-sm-6">
-        <p>
-        {{group.description|default("")|truncatechars_html(250)}}
-        </p>
-    </div>
-    <div class="col-md-3 col-sm-3">
-        {{ (_('%s projects') % ('<span class="badge" data-toggle="tooltip" data-placement="top" title="">%d</span>' % group.project_count)) | safe}}
-    </div>
-    </a>
-</div>
-{% endfor %}
-</div>
 
+
+{% set all_groups = {_('All groups'): all_groups, _('User spaces'): user_spaces} %}
+{% for title, groups in all_groups.items()  %}
+    <h2 class="page-header well">{{ title  }}</h2>
+    <div>
+        <form action="/" method="GET">
+            <label class="form-check-label" for="order">{{ _('Order by') }}:</label>
+            <input
+              name="order"
+              value="last_updated"
+              type="radio"
+              onchange="$(this.form).submit()"
+              {{ 'checked' if request.GET.get('order') != 'by_name' else ''}}
+            />
+            <span>{{ _('last updated') }}</span>&nbsp;
+            <input
+              name="order"
+              value="by_name"
+              type="radio"
+              onchange="$(this.form).submit()"
+              {{ 'checked' if request.GET.get('order') == 'by_name' else ''}}
+            />
+            <span>{{ _('name') }}</span>
+        </form>
+    </div>
+    <div class='highlight-row'>
+    {% for group in groups %}
+    <div class="row row-bordered project">
+        <a href="{{group_url(group)}}">
+        <div class="col-md-3 col-sm-3">
+            <strong>
+                {{group.display_name}}
+            </strong>
+        </div>
+        <div class="col-md-6 col-sm-6">
+            <p>
+            {{group.description|default("")|truncatechars_html(250)}}
+            </p>
+        </div>
+        <div class="col-md-3 col-sm-3">
+            {{ (_('%s projects') % ('<span class="badge" data-toggle="tooltip" data-placement="top" title="">%d</span>' % group.project_count)) | safe}}
+        </div>
+        </a>
+    </div>
+    {% endfor %}
+    </div>
+{% endfor %}
 {% endblock %}
