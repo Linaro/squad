@@ -671,8 +671,8 @@ class CreateBuildTest(TestCase):
 
     def test_basics(self):
         create_build = CreateBuild(self.project)
-        baseline = create_build('0.0')
-        build = create_build(
+        baseline, created = create_build('0.0')
+        build, created = create_build(
             version='1.0',
             patch_source=self.patch_source,
             patch_id='111',
@@ -685,7 +685,7 @@ class CreateBuildTest(TestCase):
     @patch('squad.core.tasks.notify_patch_build_created')
     def test_notify_patch_source(self, notify_patch_build_created):
         create_build = CreateBuild(self.project)
-        build = create_build('1.0', patch_source=self.patch_source, patch_id='111')
+        build, created = create_build('1.0', patch_source=self.patch_source, patch_id='111')
         notify_patch_build_created.delay.assert_called_with(build.id)
 
     @patch('squad.core.tasks.notify_patch_build_created')

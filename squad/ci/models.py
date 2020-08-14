@@ -116,7 +116,7 @@ class Backend(models.Model):
 
         try:
             receive = ReceiveTestRun(test_job.target, update_project_status=False)
-            testrun = receive(
+            testrun, _ = receive(
                 version=test_job.target_build.version,
                 environment_slug=test_job.environment,
                 metadata_file=json.dumps(metadata),

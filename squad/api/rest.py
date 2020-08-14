@@ -28,7 +28,7 @@ from squad.core.models import (
 )
 from squad.core.tasks import prepare_report, update_delayed_report
 from squad.core.comparison import TestComparison
-from squad.core.utils import parse_name
+from squad.core.utils import parse_name, log_addition, log_change, log_deletion
 from squad.ci.models import Backend, TestJob
 from squad.compat import drf_basename
 from django.http import HttpResponse
@@ -566,9 +566,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError("Invalid 'email' field value.")
         user = User.objects.filter(email=subscriber_email).first()
         if user is None:
-            sub, _ = Subscription.objects.get_or_create(email=subscriber_email, project=self.get_object())
+            sub, created = Subscription.objects.get_or_create(email=subscriber_email, project=self.get_object())
+            if created:
+                log_addition(request, sub, "Subscription created")
         else:
-            sub, _ = Subscription.objects.get_or_create(user=user, project=self.get_object())
+            sub, created = Subscription.objects.get_or_create(user=user, project=self.get_object())
+            if created:
+                log_addition(request, sub, "Subscription created")
         data = {"email": subscriber_email}
         return Response(data, status=status.HTTP_201_CREATED)
 
@@ -582,6 +586,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
         except core_exceptions.ValidationError:
             raise serializers.ValidationError("Invalid 'email' field value.")
         subs = self.get_object().subscriptions.filter(Q(email=subscriber_email) | Q(user__email=subscriber_email))
+        for sub in subs:
+            log_deletion(request, sub, "Subscription deleted")
         subs.delete()
         data = {"email": subscriber_email}
         return Response(data, status=status.HTTP_200_OK)
@@ -912,9 +918,14 @@ class BuildViewSet(ModelViewSet):
         if force:
             delayed_report = self.get_object().delayed_reports.create(**report_kwargs)
             created = True
+            log_addition(request, delayed_report, "Force create report")
         else:
             try:
                 delayed_report, created = self.get_object().delayed_reports.get_or_create(**report_kwargs)
+                if created:
+                    log_addition(request, delayed_report, "Create report")
+                else:
+                    log_change(request, delayed_report, "Update report")
             except core_exceptions.MultipleObjectsReturned:
                 delayed_report = self.get_object().delayed_reports.last()
                 created = False
@@ -1328,11 +1339,12 @@ class TestJobViewSet(ModelViewSet):
         testjob = self.get_object()
         if testjob.resubmit():
             # find latest child of this job
-            testjob.resubmitted_jobs.last()
-            data = {"message": "OK", "url": rest_reverse('testjob-detail', args=[testjob.pk], request=request)}
+            new_testjob = testjob.resubmitted_jobs.last()
+            log_addition(request, new_testjob, "Created testjob as resubmission")
+            data = {"message": "OK", "url": rest_reverse('testjob-detail', args=[new_testjob.pk], request=request)}
             return Response(data, status=status.HTTP_200_OK)
         return Response(
-            {"message": "Error cancelling job.",
+            {"message": "Error resubmitting job.",
              "url": rest_reverse("testjob-detail", args=[testjob.pk], request=request)},
             status=status.HTTP_200_OK)
 
@@ -1341,11 +1353,12 @@ class TestJobViewSet(ModelViewSet):
         testjob = self.get_object()
         if testjob.force_resubmit():
             # find latest child of this job
-            testjob.resubmitted_jobs.last()
-            data = {"message": "OK", "url": rest_reverse('testjob-detail', args=[testjob.pk], request=request)}
+            new_testjob = testjob.resubmitted_jobs.last()
+            log_addition(request, new_testjob, "Created testjob as resubmission")
+            data = {"message": "OK", "url": rest_reverse('testjob-detail', args=[new_testjob.pk], request=request)}
             return Response(data, status=status.HTTP_200_OK)
         return Response(
-            {"message": "Error cancelling job.",
+            {"message": "Error resubmitting job.",
              "url": rest_reverse("testjob-detail", args=[testjob.pk], request=request)},
             status=status.HTTP_200_OK)
 
@@ -1353,6 +1366,7 @@ class TestJobViewSet(ModelViewSet):
     def cancel(self, request, **kwargs):
         testjob = self.get_object()
         testjob.cancel()
+        log_change(request, testjob, "Testjob cancelled")
         return Response({'job_id': testjob.job_id, 'status': testjob.job_status}, status=status.HTTP_200_OK)
 
 

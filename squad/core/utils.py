@@ -7,6 +7,7 @@ import jinja2
 from django.template.defaultfilters import safe, escape
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.utils.encoding import force_text
 
 
 def random_key(length, chars=string.printable):
@@ -130,3 +131,37 @@ def split_list(_list, chunk_size=1):
         chunks.append(_list[:chunk_size])
         _list = _list[chunk_size:]
     return chunks
+
+
+def _log_entry(request, object, message, flag):
+    from django.contrib.auth.models import AnonymousUser
+    from django.contrib.contenttypes.models import ContentType
+    from squad.http import auth_user_from_request
+    user = request.user
+    if isinstance(user, AnonymousUser):
+        user = auth_user_from_request(request, request.user)
+    if not isinstance(user, AnonymousUser):
+        from django.contrib.admin.models import LogEntry
+        LogEntry.objects.log_action(
+            user_id=user.pk,
+            content_type_id=ContentType.objects.get_for_model(object).pk,
+            object_id=object.pk,
+            object_repr=force_text(object),
+            action_flag=flag,
+            change_message=message,
+        )
+
+
+def log_addition(request, object, message):
+    from django.contrib.admin.models import ADDITION
+    _log_entry(request, object, message, ADDITION)
+
+
+def log_change(request, object, message):
+    from django.contrib.admin.models import CHANGE
+    _log_entry(request, object, message, CHANGE)
+
+
+def log_deletion(request, object, message):
+    from django.contrib.admin.models import DELETION
+    _log_entry(request, object, message, DELETION)

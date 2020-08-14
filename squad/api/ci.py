@@ -7,6 +7,7 @@ from squad.http import auth_submit, read_file_upload, auth_user_from_request
 from squad.ci.exceptions import SubmissionIssue
 from squad.ci.tasks import submit
 from squad.ci.models import Backend, TestJob
+from squad.core.utils import log_addition
 
 
 @require_http_methods(["POST"])
@@ -48,6 +49,7 @@ def submit_job(request, group_slug, project_slug, version, environment_slug):
         target_build=build,
         environment=environment_slug,
     )
+    log_addition(request, test_job, "Test Job submission")
     # schedule submission
     submit.delay(test_job.id)
 
@@ -91,6 +93,7 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
         submitted=True,
         job_id=testjob_id
     )
+    log_addition(request, test_job, "Watch Job submission")
 
     # return ID of test job
     return HttpResponse(test_job.id, status=201)
@@ -108,6 +111,9 @@ def resubmit_job(request, test_job_id, method='resubmit'):
     call = getattr(testjob, method)
     try:
         ret_value = call()
+        new_testjob = testjob.resubmitted_jobs.last()
+        if new_testjob is not None:
+            log_addition(request, new_testjob, "Create testjob as resubmission")
     except SubmissionIssue as e:
         return HttpResponse(str(e), status=500)
 
