@@ -115,6 +115,19 @@ TEST_RESULTS_INFRA_FAILURE = [
     },
 ]
 
+TEST_RESULT_FAILURE_CUSTOM = "Testing, testing... 123"
+TEST_RESULTS_INFRA_FAILURE_CUSTOM = [
+    {
+        'suite': 'lava',
+        'name': 'job',
+        'result': 'fail',
+        'metadata': {
+            'error_type': 'Infrastructure',
+            'error_msg': TEST_RESULT_FAILURE_CUSTOM
+        },
+    },
+]
+
 TEST_RESULTS_WITH_JOB_INFRA_ERROR = TEST_RESULTS + TEST_RESULTS_INFRA_FAILURE
 
 RESUBMIT_STRING = "Connection closed"
@@ -711,6 +724,23 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_RESUBMIT)
     @patch("squad.ci.backend.lava.Backend.__resubmit__", return_value="1235")
     def test_automated_resubmit(self, lava_resubmit, get_results, get_details, get_logs):
+        lava = LAVABackend(self.backend)
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend,
+            target=self.project)
+        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+        lava_resubmit.assert_called()
+        new_test_job = TestJob.objects.all().last()
+        self.assertEqual(1, new_test_job.resubmitted_count)
+        self.assertFalse(testjob.can_resubmit)
+
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_CUSTOM)
+    @patch("squad.ci.backend.lava.Backend.__resubmit__", return_value="1235")
+    def test_automated_resubmit_with_project_settings(self, lava_resubmit, get_results, get_details, get_logs):
+        self.project.project_settings = yaml.dump({'CI_LAVA_INFRA_ERROR_MESSAGES': [TEST_RESULT_FAILURE_CUSTOM]})
         lava = LAVABackend(self.backend)
         testjob = TestJob(
             job_id='1234',

@@ -515,7 +515,11 @@ class Backend(BaseBackend):
 
     def __resubmit_job__(self, test_job, metadata):
         infra_messages_re_list = []
-        for message_re in self.settings.get('CI_LAVA_INFRA_ERROR_MESSAGES', []):
+        error_messages_settings = self.settings.get('CI_LAVA_INFRA_ERROR_MESSAGES', [])
+        if hasattr(test_job, 'target') and test_job.target.project_settings is not None:
+            ps = yaml.safe_load(test_job.target.project_settings) or {}
+            error_messages_settings = self.__resolve_setting__(ps, 'CI_LAVA_INFRA_ERROR_MESSAGES', [])
+        for message_re in error_messages_settings:
             try:
                 r = re.compile(message_re, re.I)
                 infra_messages_re_list.append(r)
