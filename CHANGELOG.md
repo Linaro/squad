@@ -1,3 +1,15 @@
+# 1.18
+
+This 1.18 release fixes tooltips for test jobs view, changes how groups
+are displayed in the home page and also prioritize project settings
+over backend settings when resubmitting test jobs.
+
+Complete list of changes going in:
+
+* ci: lava: ensure project settings take priority
+* frontend: fix tooltips in testjobs page
+* frontend: home: separate groups and user spaces
+
 # 1.17
 
 This 1.17 release adds a few changes to test results layout in build view.
