@@ -422,25 +422,20 @@ class Backend(BaseBackend):
         # should there be an exception if status_code is != 200 ?
         return None
 
-    def __resolve_setting__(self, project_settings, setting_name, default=None):
-        selected_setting = self.settings.get(setting_name, default)
-        tmp_setting = project_settings.get(setting_name)
-        if tmp_setting is not None:
-            selected_setting = tmp_setting
-        return selected_setting
+    def __resolve_settings__(self, test_job):
+        result_settings = self.settings
+        if getattr(test_job, 'target', None) is not None \
+                and test_job.target.project_settings is not None:
+            ps = yaml.safe_load(test_job.target.project_settings) or {}
+            result_settings.update(ps)
+        return result_settings
 
     def __parse_results__(self, data, test_job, raw_logs):
-        if hasattr(test_job, 'target') and test_job.target.project_settings is not None:
-            ps = yaml.safe_load(test_job.target.project_settings) or {}
-            handle_lava_suite = self.__resolve_setting__(ps, 'CI_LAVA_HANDLE_SUITE', False)
-            handle_lava_boot = self.__resolve_setting__(ps, 'CI_LAVA_HANDLE_BOOT', False)
-            clone_measurements_to_tests = self.__resolve_setting__(ps, 'CI_LAVA_CLONE_MEASUREMENTS', False)
-            ignore_infra_errors = self.__resolve_setting__(ps, 'CI_LAVA_WORK_AROUND_INFRA_ERRORS', False)
-        else:
-            handle_lava_suite = self.settings.get('CI_LAVA_HANDLE_SUITE', False)
-            handle_lava_boot = self.settings.get('CI_LAVA_HANDLE_BOOT', False)
-            clone_measurements_to_tests = self.settings.get('CI_LAVA_CLONE_MEASUREMENTS', False)
-            ignore_infra_errors = self.settings.get('CI_LAVA_WORK_AROUND_INFRA_ERRORS', False)
+        project_settings = self.__resolve_settings__(test_job)
+        handle_lava_suite = project_settings.get('CI_LAVA_HANDLE_SUITE', False)
+        handle_lava_boot = project_settings.get('CI_LAVA_HANDLE_BOOT', False)
+        clone_measurements_to_tests = project_settings.get('CI_LAVA_CLONE_MEASUREMENTS', False)
+        ignore_infra_errors = project_settings.get('CI_LAVA_WORK_AROUND_INFRA_ERRORS', False)
 
         definition = yaml.safe_load(data['definition'])
         test_job.name = definition['job_name'][:255]
@@ -515,10 +510,8 @@ class Backend(BaseBackend):
 
     def __resubmit_job__(self, test_job, metadata):
         infra_messages_re_list = []
-        error_messages_settings = self.settings.get('CI_LAVA_INFRA_ERROR_MESSAGES', [])
-        if hasattr(test_job, 'target') and test_job.target.project_settings is not None:
-            ps = yaml.safe_load(test_job.target.project_settings) or {}
-            error_messages_settings = self.__resolve_setting__(ps, 'CI_LAVA_INFRA_ERROR_MESSAGES', [])
+        project_settings = self.__resolve_settings__(test_job)
+        error_messages_settings = project_settings.get('CI_LAVA_INFRA_ERROR_MESSAGES', [])
         for message_re in error_messages_settings:
             try:
                 r = re.compile(message_re, re.I)
@@ -531,7 +524,7 @@ class Backend(BaseBackend):
             if regex.search(metadata['error_msg']) is not None and \
                     test_job.resubmitted_count < 3:
                 resubmitted_job = self.resubmit(test_job)
-                if self.settings.get('CI_LAVA_SEND_ADMIN_EMAIL', True):
+                if project_settings.get('CI_LAVA_SEND_ADMIN_EMAIL', True):
                     # delay sending email by 15 seconds to allow the database object to be saved
                     send_testjob_resubmit_admin_email.apply_async(args=[test_job.pk, resubmitted_job.pk], countdown=15)
                 # re-submit the job only once
