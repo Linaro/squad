@@ -61,7 +61,7 @@ class TestListenerManager(TestCase):
         # new backend, start it too
         backend2 = Backend.objects.create(name="bar")
         manager.keep_listeners_running()
-        manager.start.assert_called_with(backend2)
+        manager.start.assert_has_calls([call(backend1), call(backend2)], any_order=True)
 
         manager.stop.assert_not_called()
 
