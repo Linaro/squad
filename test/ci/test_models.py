@@ -146,7 +146,7 @@ class BackendFetchTest(BackendTestBase):
             1,
             core_models.Test.objects.filter(
                 test_run=test_run,
-                name="foo",
+                metadata__name="foo",
                 result=True,
             ).count()
         )

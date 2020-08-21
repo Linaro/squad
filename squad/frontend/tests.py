@@ -56,11 +56,11 @@ class TestResultTable(list):
         test_runs = TestRun.objects.filter(build=build).values('id')
         test_runs_ids = [test_run['id'] for test_run in test_runs]
         for chunk in split_list(test_runs_ids, chunk_size=100):
-            query_set = Test.objects.filter(test_run_id__in=chunk).prefetch_related('suite')
+            query_set = Test.objects.filter(test_run_id__in=chunk).prefetch_related('suite', 'metadata')
             if search:
                 query_set = query_set.filter(name__icontains=search)
 
-            tests = query_set.only('id', 'suite', 'name', 'result', 'has_known_issues').order_by()
+            tests = query_set.only('id', 'suite', 'result', 'has_known_issues').order_by()
             self.all_tests += tests
 
     # count how many unique tests are represented in the given build, and sets

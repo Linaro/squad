@@ -199,7 +199,7 @@ class TestFilter(filters.FilterSet):
 
     class Meta:
         model = Test
-        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+        fields = {'metadata__name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'result': ['exact', 'in'],
                   'has_known_issues': ['exact', 'in']}
 
@@ -1097,7 +1097,7 @@ class TestSerializer(serializers.ModelSerializer):
 
 class TestViewSet(ModelViewSet):
 
-    queryset = Test.objects.prefetch_related('suite', 'known_issues').all()
+    queryset = Test.objects.prefetch_related('suite', 'known_issues', 'metadata').all()
     project_lookup_key = 'test_run__build__project__in'
     serializer_class = TestSerializer
     filterset_class = TestFilter

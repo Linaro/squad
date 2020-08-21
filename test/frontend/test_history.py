@@ -15,7 +15,7 @@ class TestHistoryTest(TestCase):
         test_name = 'mytest'
         metadata = SuiteMetadata.objects.create(kind='test', suite=suite.slug, name=test_name)
         self.testrun = build.test_runs.create(job_id='123', environment=env)
-        self.testrun.tests.create(name=test_name, suite=suite, metadata=metadata)
+        self.testrun.tests.create(suite=suite, metadata=metadata)
         self.testrun.status.create(test_run=self.testrun, suite=suite)
 
     def test_tests_history_with_empty_suite_metadata(self):
