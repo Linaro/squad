@@ -127,7 +127,7 @@ class RestApiTest(APITestCase):
                     r = {'pass': True, 'fail': False}[result]
                     suite, _ = self.project.suites.get_or_create(slug=s)
                     metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=s, name=t, kind='test')
-                    testrun.tests.create(suite=suite, name=t, result=r, metadata=metadata)
+                    testrun.tests.create(suite=suite, result=r, metadata=metadata)
 
         self.emailtemplate = models.EmailTemplate.objects.create(
             name="fooTemplate",
@@ -631,6 +631,16 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/tests/')
         self.assertEqual(list, type(data['results']))
 
+    def test_tests_filter_by_name(self):
+        data = self.hit('/api/tests/?metadata__name=test1')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(12, len(data['results']))
+
+    def test_tests_filter_by_name_not_found(self):
+        data = self.hit('/api/tests/?metadata__name=test-that-does-not-exist')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(0, len(data['results']))
+
     def test_tests_with_page_size(self):
         data = self.hit('/api/tests/?limit=2')
         self.assertEqual(list, type(data['results']))
@@ -799,8 +809,9 @@ class RestApiTest(APITestCase):
 
     def test_project_compare_builds_with_finished_status_and_regressions(self):
         foo_suite, _ = self.project.suites.get_or_create(slug='foo')
-        self.testrun4.tests.get_or_create(suite=foo_suite, name='dummy', result=True)
-        self.testrun6.tests.get_or_create(suite=foo_suite, name='dummy', result=False)
+        foo_metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=foo_suite.slug, name='dummy', kind='test')
+        self.testrun4.tests.get_or_create(suite=foo_suite, metadata=foo_metadata, result=True)
+        self.testrun6.tests.get_or_create(suite=foo_suite, metadata=foo_metadata, result=False)
         UpdateProjectStatus()(self.testrun4)
         UpdateProjectStatus()(self.testrun6)
         data = self.hit('/api/projects/%d/compare_builds/?baseline=%d&to_compare=%d' % (self.project.id, self.build4.id, self.build6.id))

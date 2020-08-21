@@ -59,7 +59,6 @@ class Plugin(BasePlugin):
         metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=test_name, kind='test')
         testrun.tests.create(
             suite=suite,
-            name=test_name,
             result=(len(lines) == 0),
             log='\n'.join(lines),
             metadata=metadata,
