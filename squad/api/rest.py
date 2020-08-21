@@ -196,11 +196,11 @@ class TestFilter(filters.FilterSet):
     test_run = filters.RelatedFilter(TestRunFilter, field_name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
     suite = filters.RelatedFilter(SuiteFilter, field_name="suite", queryset=Suite.objects.all(), widget=forms.TextInput)
     known_issues = filters.RelatedFilter(KnownIssueFilter, field_name='known_issues', queryset=KnownIssue.objects.all(), widget=forms.TextInput)
+    name = filters.CharFilter(lookup_expr='icontains', field_name='metadata__name')
 
     class Meta:
         model = Test
-        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
-                  'result': ['exact', 'in'],
+        fields = {'result': ['exact', 'in'],
                   'has_known_issues': ['exact', 'in']}
 
 
@@ -363,7 +363,7 @@ class LatestTestResultsSerializer(serializers.BaseSerializer):
         tests = Test.objects.filter(
             test_run_id__in=test_runs.keys(),
             metadata=metadata,
-        ).order_by()
+        ).prefetch_related('metadata').order_by()
 
         environments = {
             e: {
@@ -1116,7 +1116,7 @@ class TestSerializer(serializers.HyperlinkedModelSerializer):
 
 class TestViewSet(ModelViewSet):
 
-    queryset = Test.objects.prefetch_related('suite', 'known_issues').all()
+    queryset = Test.objects.prefetch_related('suite', 'known_issues', 'metadata').all()
     project_lookup_key = 'test_run__build__project__in'
     serializer_class = TestSerializer
     filterset_class = TestFilter

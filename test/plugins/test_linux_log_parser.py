@@ -27,7 +27,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('oops.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-oops-999')
+        test = testrun.tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-oops-999')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Linux version 4.4.89-01529-gb29bace', test.log)
@@ -38,7 +38,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('kernelpanic.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-panic-999')
+        test = testrun.tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-panic-999')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
@@ -50,7 +50,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('oops.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-bug-999')
+        test = testrun.tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-bug-999')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
@@ -60,7 +60,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('kernel_bug_and_invalid_opcode.log', job_id='1000')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-bug-1000')
+        test = testrun.tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-bug-1000')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
@@ -72,7 +72,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('kernel_bug_and_invalid_opcode.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-invalid-opcode-999')
+        test = testrun.tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-invalid-opcode-999')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
@@ -85,12 +85,12 @@ class TestLinuxLogParser(TestCase):
         self.plugin.postprocess_testrun(testrun)
 
         tests = testrun.tests
-        test_trace = tests.get(suite__slug='linux-log-parser', name='check-kernel-trace-999')
-        test_panic = tests.get(suite__slug='linux-log-parser', name='check-kernel-panic-999')
-        test_exception = tests.get(suite__slug='linux-log-parser', name='check-kernel-exception-999')
-        test_warning = tests.get(suite__slug='linux-log-parser', name='check-kernel-warning-999')
-        test_oops = tests.get(suite__slug='linux-log-parser', name='check-kernel-oops-999')
-        test_fault = tests.get(suite__slug='linux-log-parser', name='check-kernel-fault-999')
+        test_trace = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-trace-999')
+        test_panic = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-panic-999')
+        test_exception = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-exception-999')
+        test_warning = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-warning-999')
+        test_oops = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-oops-999')
+        test_fault = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-fault-999')
 
         self.assertTrue(test_trace.result)
         self.assertEqual('', test_trace.log)
@@ -132,12 +132,12 @@ class TestLinuxLogParser(TestCase):
         self.plugin.postprocess_testrun(testrun)
 
         tests = testrun.tests
-        test_trace = tests.get(suite__slug='linux-log-parser', name='check-kernel-trace-999')
-        test_panic = tests.get(suite__slug='linux-log-parser', name='check-kernel-panic-999')
-        test_exception = tests.get(suite__slug='linux-log-parser', name='check-kernel-exception-999')
-        test_warning = tests.get(suite__slug='linux-log-parser', name='check-kernel-warning-999')
-        test_oops = tests.get(suite__slug='linux-log-parser', name='check-kernel-oops-999')
-        test_fault = tests.get(suite__slug='linux-log-parser', name='check-kernel-fault-999')
+        test_trace = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-trace-999')
+        test_panic = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-panic-999')
+        test_exception = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-exception-999')
+        test_warning = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-warning-999')
+        test_oops = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-oops-999')
+        test_fault = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-fault-999')
 
         self.assertTrue(test_trace.result)
         self.assertTrue(test_panic.result)
@@ -160,12 +160,12 @@ class TestLinuxLogParser(TestCase):
         self.plugin.postprocess_testrun(testrun)
 
         tests = testrun.tests
-        test_trace = tests.get(suite__slug='linux-log-parser', name='check-kernel-trace-999')
-        test_panic = tests.get(suite__slug='linux-log-parser', name='check-kernel-panic-999')
-        test_exception = tests.get(suite__slug='linux-log-parser', name='check-kernel-exception-999')
-        test_warning = tests.get(suite__slug='linux-log-parser', name='check-kernel-warning-999')
-        test_oops = tests.get(suite__slug='linux-log-parser', name='check-kernel-oops-999')
-        test_fault = tests.get(suite__slug='linux-log-parser', name='check-kernel-fault-999')
+        test_trace = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-trace-999')
+        test_panic = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-panic-999')
+        test_exception = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-exception-999')
+        test_warning = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-warning-999')
+        test_oops = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-oops-999')
+        test_fault = tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-fault-999')
 
         self.assertTrue(test_trace.result)
         self.assertTrue(test_panic.result)
@@ -187,5 +187,5 @@ class TestLinuxLogParser(TestCase):
         testrun = self.build.test_runs.create(environment=self.env, log_file='Kernel panic - not syncing', job_id='999')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='linux-log-parser', name='check-kernel-panic-999')
+        test = testrun.tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-panic-999')
         self.assertIsNotNone(test.metadata)
