@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from unittest.mock import patch
-from squad.core.models import Group, Test, Suite
+from squad.core.models import Group, Test, Suite, SuiteMetadata
 
 
 def create_test(**kwargs):
@@ -59,7 +59,8 @@ class TestFailureHistoryTest(TestCase):
             version=self.date.strftime("%Y%m%d"),
         )
         test_run = build.test_runs.create(environment=environment)
-        test = test_run.tests.create(suite=self.suite, name=test, result=result)
+        metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name=test, kind='test')
+        test = test_run.tests.create(suite=self.suite, result=result, metadata=metadata)
 
         self.date = self.date + relativedelta(days=1)
         return test
