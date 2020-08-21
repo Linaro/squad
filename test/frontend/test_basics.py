@@ -34,7 +34,9 @@ class FrontendTest(TestCase):
         attachment_data = "bar".encode()
         self.test_run.attachments.create(filename="foo", data=attachment_data, length=len(attachment_data))
         self.suite, _ = self.project.suites.get_or_create(slug='mysuite')
-        self.test_run.tests.create(suite=self.suite, name='mytest', result=True)
+
+        metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='mytest', kind='test')
+        self.test_run.tests.create(suite=self.suite, result=True, metadata=metadata)
         self.test = self.test_run.tests.first()
 
         backend = Backend.objects.create(

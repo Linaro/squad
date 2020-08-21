@@ -169,7 +169,7 @@ class TestComparisonTest(TestCase):
         test data is already prepared in setUp(), but usually fixes is
         only used when comparing subsequent builds from the same project.
         """
-        models.Test.objects.filter(test_run__build=self.build1, name='c').update(has_known_issues=True)
+        models.Test.objects.filter(test_run__build=self.build1, metadata__name='c').update(has_known_issues=True)
         comparison = TestComparison.compare_builds(self.build1, self.build2)
         fixes = comparison.fixes
         self.assertEqual(['c'], fixes['myenv'])
@@ -180,7 +180,7 @@ class TestComparisonTest(TestCase):
         test data is already prepared in setUp(), but usually fixes is
         only used when comparing subsequent builds from the same project.
         """
-        tests = models.Test.objects.filter(test_run__build=self.build1, name='c')
+        tests = models.Test.objects.filter(test_run__build=self.build1, metadata__name='c')
         tests.update(has_known_issues=True)
         issue = models.KnownIssue.objects.create(title='foo bar baz', intermittent=True)
         for test in tests:
