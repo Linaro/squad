@@ -63,6 +63,11 @@ django_toolbar = None
 django_toolbar_middleware = None
 if DEBUG:
     try:
+
+        DEBUG_TOOLBAR_CONFIG = {
+            'JQUERY_URL': ''
+        }
+
         import imp
         imp.find_module('debug_toolbar')
         django_toolbar = 'debug_toolbar'
