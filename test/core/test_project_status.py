@@ -2,7 +2,7 @@ from django.utils import timezone
 from django.test import TestCase
 from dateutil.relativedelta import relativedelta
 
-from squad.core.models import Group, ProjectStatus, MetricThreshold
+from squad.core.models import Group, ProjectStatus, MetricThreshold, SuiteMetadata
 from squad.core.tasks import ReceiveTestRun
 
 
@@ -139,7 +139,8 @@ class ProjectStatusTest(TestCase):
     def test_updates_last_updated(self):
         build = self.create_build('1', datetime=h(10))
         test_run1 = build.test_runs.first()
-        test_run1.tests.create(name='foo', suite=self.suite, result=True)
+        metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='foo', kind='test')
+        test_run1.tests.create(metadata=metadata, suite=self.suite, result=True)
         status = ProjectStatus.create_or_update(build)
         old_date = status.last_updated
 
@@ -216,12 +217,13 @@ class ProjectStatusTest(TestCase):
     def test_cache_regressions(self):
         build1 = self.create_build('1', datetime=h(10))
         test_run1 = build1.test_runs.first()
-        test_run1.tests.create(name='foo', suite=self.suite, result=True)
+        foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='foo', kind='test')
+        test_run1.tests.create(metadata=foo_metadata, suite=self.suite, result=True)
         ProjectStatus.create_or_update(build1)
 
         build2 = self.create_build('2', datetime=h(9))
         test_run2 = build2.test_runs.first()
-        test_run2.tests.create(name='foo', suite=self.suite, result=False)
+        test_run2.tests.create(metadata=foo_metadata, suite=self.suite, result=False)
         status = ProjectStatus.create_or_update(build2)
 
         self.assertIsNotNone(status.regressions)
@@ -230,12 +232,13 @@ class ProjectStatusTest(TestCase):
     def test_cache_regressions_update(self):
         build1 = self.create_build('1', datetime=h(10))
         test_run1 = build1.test_runs.first()
-        test_run1.tests.create(name='foo', suite=self.suite, result=True)
+        foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='foo', kind='test')
+        test_run1.tests.create(metadata=foo_metadata, suite=self.suite, result=True)
         ProjectStatus.create_or_update(build1)
 
         build2 = self.create_build('2', datetime=h(9))
         test_run2 = build2.test_runs.first()
-        test_run2.tests.create(name='foo', suite=self.suite, result=True)
+        test_run2.tests.create(metadata=foo_metadata, suite=self.suite, result=True)
         status1 = ProjectStatus.create_or_update(build2)
 
         self.assertIsNone(status1.regressions)
@@ -243,7 +246,7 @@ class ProjectStatusTest(TestCase):
 
         build3 = self.create_build('3', datetime=h(8))
         test_run3 = build3.test_runs.first()
-        test_run3.tests.create(name='foo', suite=self.suite, result=False)
+        test_run3.tests.create(metadata=foo_metadata, suite=self.suite, result=False)
         status2 = ProjectStatus.create_or_update(build3)
 
         self.assertIsNotNone(status2.regressions)
@@ -252,12 +255,13 @@ class ProjectStatusTest(TestCase):
     def test_cache_fixes(self):
         build1 = self.create_build('1', datetime=h(10))
         test_run1 = build1.test_runs.first()
-        test_run1.tests.create(name='foo', suite=self.suite, result=False)
+        foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='foo', kind='test')
+        test_run1.tests.create(metadata=foo_metadata, suite=self.suite, result=False)
         ProjectStatus.create_or_update(build1)
 
         build2 = self.create_build('2', datetime=h(9))
         test_run2 = build2.test_runs.first()
-        test_run2.tests.create(name='foo', suite=self.suite, result=True)
+        test_run2.tests.create(metadata=foo_metadata, suite=self.suite, result=True)
         status = ProjectStatus.create_or_update(build2)
 
         self.assertIsNotNone(status.fixes)
@@ -266,12 +270,13 @@ class ProjectStatusTest(TestCase):
     def test_cache_fixes_update(self):
         build1 = self.create_build('1', datetime=h(10))
         test_run1 = build1.test_runs.first()
-        test_run1.tests.create(name='foo', suite=self.suite, result=False)
+        foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='foo', kind='test')
+        test_run1.tests.create(metadata=foo_metadata, suite=self.suite, result=False)
         ProjectStatus.create_or_update(build1)
 
         build2 = self.create_build('2', datetime=h(9))
         test_run2 = build2.test_runs.first()
-        test_run2.tests.create(name='foo', suite=self.suite, result=False)
+        test_run2.tests.create(metadata=foo_metadata, suite=self.suite, result=False)
         status1 = ProjectStatus.create_or_update(build2)
 
         self.assertIsNone(status1.fixes)
@@ -279,7 +284,7 @@ class ProjectStatusTest(TestCase):
 
         build3 = self.create_build('3', datetime=h(8))
         test_run3 = build3.test_runs.first()
-        test_run3.tests.create(name='foo', suite=self.suite, result=True)
+        test_run3.tests.create(metadata=foo_metadata, suite=self.suite, result=True)
         status2 = ProjectStatus.create_or_update(build3)
 
         self.assertIsNotNone(status2.fixes)
@@ -319,20 +324,22 @@ class ProjectStatusTest(TestCase):
         # time wise.
         build1 = self.create_build('1', datetime=h(10))
         test_run1 = build1.test_runs.first()
-        test_run1.tests.create(name='foo', suite=self.suite, result=False)
-        test_run1.tests.create(name='bar', suite=self.suite, result=False)
+        foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='foo', kind='test')
+        bar_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='bar', kind='test')
+        test_run1.tests.create(metadata=foo_metadata, suite=self.suite, result=False)
+        test_run1.tests.create(metadata=bar_metadata, suite=self.suite, result=False)
         ProjectStatus.create_or_update(build1)
 
         build2 = self.create_build('2', datetime=h(9))
         test_run2 = build2.test_runs.first()
-        test_run2.tests.create(name='foo', suite=self.suite, result=False)
-        test_run2.tests.create(name='bar', suite=self.suite, result=True)
+        test_run2.tests.create(metadata=foo_metadata, suite=self.suite, result=False)
+        test_run2.tests.create(metadata=bar_metadata, suite=self.suite, result=True)
         ProjectStatus.create_or_update(build2)
 
         build3 = self.create_build('3', datetime=h(8))
         test_run3 = build3.test_runs.first()
-        test_run3.tests.create(name='foo', suite=self.suite, result=True)
-        test_run3.tests.create(name='bar', suite=self.suite, result=True)
+        test_run3.tests.create(metadata=foo_metadata, suite=self.suite, result=True)
+        test_run3.tests.create(metadata=bar_metadata, suite=self.suite, result=True)
         status3 = ProjectStatus.create_or_update(build3)
 
         fixes3 = status3.get_fixes()
@@ -344,34 +351,39 @@ class ProjectStatusTest(TestCase):
         self.environment.expected_test_runs = 2
         self.environment.save()
         build1 = self.create_build('10', datetime=h(10))
+
+        foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='foo', kind='test')
+        foo2_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='foo2', kind='test')
+        bar_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='bar', kind='test')
+
         test_run11 = build1.test_runs.first()
-        test_run11.tests.create(name='foo', suite=self.suite, result=False)
-        test_run11.tests.create(name='bar', suite=self.suite, result=False)
+        test_run11.tests.create(metadata=foo_metadata, suite=self.suite, result=False)
+        test_run11.tests.create(metadata=bar_metadata, suite=self.suite, result=False)
         test_run12 = build1.test_runs.create(environment=self.environment)
-        test_run12.tests.create(name='foo2', suite=self.suite_a, result=False)
+        test_run12.tests.create(metadata=foo2_metadata, suite=self.suite_a, result=False)
         ProjectStatus.create_or_update(build1)
 
         build2 = self.create_build('20', datetime=h(9))
         test_run21 = build2.test_runs.first()
-        test_run21.tests.create(name='foo', suite=self.suite, result=False)
-        test_run21.tests.create(name='bar', suite=self.suite, result=True)
+        test_run21.tests.create(metadata=foo_metadata, suite=self.suite, result=False)
+        test_run21.tests.create(metadata=bar_metadata, suite=self.suite, result=True)
         ProjectStatus.create_or_update(build2)
 
         build3 = self.create_build('30', datetime=h(8))
         test_run31 = build3.test_runs.first()
-        test_run31.tests.create(name='foo', suite=self.suite, result=True)
-        test_run31.tests.create(name='bar', suite=self.suite, result=True)
+        test_run31.tests.create(metadata=foo_metadata, suite=self.suite, result=True)
+        test_run31.tests.create(metadata=bar_metadata, suite=self.suite, result=True)
         ProjectStatus.create_or_update(build3)
 
         self.assertEqual(build2.status.baseline, build1)
         self.assertEqual(build3.status.baseline, build1)
 
         test_run22 = build2.test_runs.create(environment=self.environment)
-        test_run22.tests.create(name='foo2', suite=self.suite_a, result=False)
+        test_run22.tests.create(metadata=foo2_metadata, suite=self.suite_a, result=False)
         ProjectStatus.create_or_update(build2)
 
         test_run32 = build3.test_runs.create(environment=self.environment)
-        test_run32.tests.create(name='foo2', suite=self.suite_a, result=False)
+        test_run32.tests.create(metadata=foo2_metadata, suite=self.suite_a, result=False)
         ProjectStatus.create_or_update(build3)
 
         self.assertEqual(build2.status.baseline, build1)

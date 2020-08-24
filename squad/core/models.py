@@ -752,7 +752,6 @@ class Test(models.Model):
         limit_choices_to={'kind': 'test'},
         on_delete=models.CASCADE,
     )
-    name = models.CharField(max_length=256, db_index=True)
     result = models.NullBooleanField()
     log = models.TextField(null=True, blank=True)
     known_issues = models.ManyToManyField('KnownIssue')
@@ -760,6 +759,12 @@ class Test(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def name(self):
+        if self.metadata is not None:
+            return self.metadata.name
+        return 'missing test name'
 
     @property
     def status(self):
@@ -793,7 +798,7 @@ class Test(models.Model):
         date = self.test_run.build.datetime
         previous_tests = Test.objects.filter(
             suite=self.suite,
-            name=self.name,
+            metadata__name=self.name,
             test_run__build__datetime__lt=date,
             test_run__environment=self.test_run.environment,
         ).exclude(id=self.id).order_by("-test_run__build__datetime")
@@ -809,9 +814,6 @@ class Test(models.Model):
                 break
         self.__history__ = Test.History(since, count, last_different)
         return self.__history__
-
-    class Meta:
-        ordering = ['name']
 
 
 class MetricManager(models.Manager):

@@ -109,7 +109,7 @@ class TestHistoryTest(TestCase):
         suite = testrun.tests.last().suite
         test_name = 'no_metadata_test'
         metadata = models.SuiteMetadata.objects.create(kind='test', suite=suite.slug, name=test_name)
-        testrun.tests.create(name=test_name, result=False, suite=suite, metadata=metadata)
+        testrun.tests.create(result=False, suite=suite, metadata=metadata)
         history = TestHistory(self.project1, test_name)
 
         self.assertIsNotNone(history.results)
