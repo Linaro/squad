@@ -415,7 +415,7 @@ class BackendFetchTest(BackendTestBase):
         backend_fetch.return_value = ('Completed', True, {}, {}, {}, None)
 
         env = self.project.environments.create(slug='foo')
-        receive.return_value = self.build.test_runs.create(environment=env)
+        receive.return_value = (self.build.test_runs.create(environment=env), None)
 
         test_job = self.create_test_job(
             backend=self.backend,
@@ -435,7 +435,7 @@ class BackendFetchTest(BackendTestBase):
         backend_fetch.return_value = ('Completed', True, {}, {}, {}, None)
 
         env = self.project.environments.create(slug='foo')
-        receive.return_value = self.build.test_runs.create(environment=env)
+        receive.return_value = (self.build.test_runs.create(environment=env), None)
 
         test_job = self.create_test_job(
             backend=self.backend,
