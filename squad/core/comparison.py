@@ -201,7 +201,7 @@ class TestComparison(BaseComparison):
     def __extract_test_results__(self, test_runs_ids):
         tests = models.Test.objects.filter(test_run_id__in=test_runs_ids.keys()).annotate(
             suite_slug=F('suite__slug'),
-        ).defer('log', 'metadata')
+        ).prefetch_related('metadata').defer('log')
 
         for test in tests:
             build, env = test_runs_ids.get(test.test_run_id)
