@@ -10,7 +10,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
 from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold
-from squad.core.models import Build, Subscription, TestRun, Project
+from squad.core.models import Build, Subscription, TestRun, Project, SuiteMetadata
 from squad.core.queries import get_metric_data
 from squad.frontend.queries import get_metrics_list
 from squad.frontend.utils import file_type, alphanum_sort
@@ -446,11 +446,10 @@ def test_run_suite_tests(request, group_slug, project_slug, build_version, testr
     )
 
     all_tests = context['status'].tests.prefetch_related(
-        'suite',
         'metadata',
         'known_issues',
         'suite__metadata'
-    ).order_by(Case(When(result=False, then=0), When(result=True, then=2), default=1), 'name')
+    ).order_by(Case(When(result=False, then=0), When(result=True, then=2), default=1), 'metadata__name')
 
     paginator = Paginator(all_tests, 100)
     page = request.GET.get('page', '1')
@@ -470,7 +469,8 @@ def test_run_suite_test_details(request, group_slug, project_slug, build_version
         suite_slug
     )
     test_name = test_name.replace("$", "/")
-    test = get_object_or_404(context['test_run'].tests, suite=context['suite'], name=test_name)
+    metadata = get_object_or_404(SuiteMetadata, kind='test', suite=suite_slug, name=test_name)
+    test = get_object_or_404(context['test_run'].tests, suite=context['suite'], metadata=metadata)
     attachments = [
         (f['filename'], file_type(f['filename']), f['length'])
         for f in context['test_run'].attachments.values('filename', 'length')

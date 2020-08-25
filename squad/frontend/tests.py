@@ -56,17 +56,17 @@ class TestResultTable(list):
         test_runs = TestRun.objects.filter(build=build).values('id')
         test_runs_ids = [test_run['id'] for test_run in test_runs]
         for chunk in split_list(test_runs_ids, chunk_size=100):
-            query_set = Test.objects.filter(test_run_id__in=chunk).prefetch_related('suite', 'metadata')
+            query_set = Test.objects.filter(test_run_id__in=chunk)
             if search:
-                query_set = query_set.filter(name__icontains=search)
+                query_set = query_set.filter(metadata__name__icontains=search)
 
-            tests = query_set.only('id', 'suite', 'result', 'has_known_issues').order_by()
+            tests = query_set.only('result', 'has_known_issues', 'suite_id', 'metadata_id').order_by()
             self.all_tests += tests
 
     # count how many unique tests are represented in the given build, and sets
     # pagination data
     def __count_pages__(self, per_page):
-        distinct_tests = set([(test.suite.id, test.name) for test in self.all_tests])
+        distinct_tests = set([(test.suite_id, test.metadata_id) for test in self.all_tests])
         count = len(distinct_tests)
         self.num_pages = count // per_page
         if count % per_page > 0:
@@ -85,15 +85,15 @@ class TestResultTable(list):
 
         stats = {}
         for test in self.all_tests:
-            if test.full_name not in stats:
-                stats[test.full_name] = {'pass': 0, 'fail': 0, 'xfail': 0, 'skip': 0, 'ids': []}
-            stats[test.full_name][test.status] += 1
-            stats[test.full_name]['ids'].append(test.id)
+            key = (test.suite_id, test.metadata_id)
+            if key not in stats:
+                stats[key] = {'pass': 0, 'fail': 0, 'xfail': 0, 'skip': 0, 'ids': []}
+            stats[key][test.status] += 1
+            stats[key]['ids'].append(test.id)
 
         def keyfunc(item):
-            name = item[0]
             statuses = item[1]
-            return tuple((-statuses[k] for k in ['fail', 'xfail', 'skip', 'pass'])) + (name,)
+            return tuple((-statuses[k] for k in ['fail', 'xfail', 'skip', 'pass']))
 
         ordered = sorted(stats.items(), key=keyfunc)
         tests_in_page = ordered[offset:offset + per_page]
@@ -117,7 +117,6 @@ class TestResultTable(list):
             id__in=table.__get_page_filter__(page, per_page)
         ).prefetch_related(
             Prefetch('test_run', queryset=TestRun.objects.only('environment')),
-            'suite',
             'suite__metadata',
             'metadata',
         )
