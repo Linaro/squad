@@ -8,101 +8,106 @@ msgstr ""
 "Project-Id-Version: squad.core VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-08-26 15:45-0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2020-08-30 18:33+0000\n"
+"Last-Translator: ssantos <ssantos@web.de>\n"
+"Language-Team: Portuguese <https://hosted.weblate.org/projects/squad/core/pt/"
+">\n"
 "Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 4.2.1-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/core/models.py:71 squad/core/models.py:207
 msgid "Slug"
-msgstr ""
+msgstr "Slug"
 
 #: squad/core/models.py:73 squad/core/models.py:208
 msgid "Name"
-msgstr ""
+msgstr "Nome"
 
 #: squad/core/models.py:74 squad/core/models.py:213
 msgid "Description"
-msgstr ""
+msgstr "Descrição"
 
 #: squad/core/models.py:75
 msgid "Members"
-msgstr ""
+msgstr "Membros"
 
 #: squad/core/models.py:112
 msgid "Enter a valid value."
-msgstr ""
+msgstr "Forneça um valor válido."
 
 #: squad/core/models.py:122
 msgid "Member"
-msgstr ""
+msgstr "Membro"
 
 #: squad/core/models.py:123
 msgid "Result submitter"
-msgstr ""
+msgstr "Submetedor de resultados"
 
 #: squad/core/models.py:124
 msgid "Administrator"
-msgstr ""
+msgstr "Administrador"
 
 #: squad/core/models.py:133
 msgid "Group member"
-msgstr ""
+msgstr "Membro de grupo"
 
 #: squad/core/models.py:134
 msgid "Group members"
-msgstr ""
+msgstr "Membros do grupo"
 
 #: squad/core/models.py:191
 msgid "Jinja2 template for subject (single line)"
-msgstr ""
+msgstr "Template em Jinja2 para assunto (uma linha)"
 
 #: squad/core/models.py:193
 msgid "Jinja2 template for text/plain content"
-msgstr ""
+msgstr "Template em Jinja2 para conteúdo text/plain"
 
 #: squad/core/models.py:194
 msgid "Jinja2 template for text/html content"
-msgstr ""
+msgstr "Template em Jinja2 para conteúdo text/html"
 
 #: squad/core/models.py:209
 msgid "Is public"
-msgstr ""
+msgstr "É público"
 
 #: squad/core/models.py:225
 msgid "Wait this many seconds before sending notifications"
-msgstr ""
+msgstr "Espera por esta quantidade de segundos antes de enviar notificações"
 
 #: squad/core/models.py:230
 msgid "Force sending build notifications after this many seconds"
-msgstr ""
+msgstr "Força o envio de notificações de build após esta quantidade de segundos"
 
 #: squad/core/models.py:237
 msgid ""
 "Delete builds older than this number of days. Set to 0 or any negative "
 "number to disable."
 msgstr ""
+"Remove builds mais antigas que esta quantidade de dias. Ponha 0 ou negativo "
+"para desativar."
 
 #: squad/core/models.py:248
 msgid "Makes the project hidden from the group page by default"
-msgstr ""
+msgstr "Marca o projeto como escondido por predefinição na página do grupo"
 
 #: squad/core/models.py:249
 msgid "Is archived"
-msgstr ""
+msgstr "Está arquivado"
 
 #: squad/core/models.py:1225
 msgid "All builds"
-msgstr ""
+msgstr "Todas as builds"
 
 #: squad/core/models.py:1226
 msgid "Only on change"
-msgstr ""
+msgstr "Apenas quando houver mudança"
 
 #: squad/core/models.py:1227
 msgid "Only on regression"
-msgstr ""
+msgstr "Apenas quando houver regressão"
