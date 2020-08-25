@@ -363,7 +363,7 @@ class LatestTestResultsSerializer(serializers.BaseSerializer):
         tests = Test.objects.filter(
             test_run_id__in=test_runs.keys(),
             metadata=metadata,
-        ).order_by()
+        ).prefetch_related('metadata').order_by()
 
         environments = {
             e: {
