@@ -8,6 +8,7 @@ from django.urls import reverse, NoReverseMatch
 from django.template.defaultfilters import safe
 from hashlib import md5
 from markdown import markdown as to_markdown
+from bootstrap3.templatetags.bootstrap3 import bootstrap_field as b3_field
 
 from squad import version
 from squad.core.models import Test, Build
@@ -17,6 +18,11 @@ from squad.jinja2 import register_global_function, register_filter
 
 # For DRF's compatibility with DTL
 register = template.Library()
+
+
+@register_global_function
+def bootstrap_field(*args, **kwargs):
+    return b3_field(*args, **kwargs)
 
 
 @register_global_function

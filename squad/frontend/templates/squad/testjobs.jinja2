@@ -6,6 +6,49 @@
     {% include "squad/build-nav.jinja2" %}
     </div>
     <h1>{{ _('Test Jobs') }}</h1>
+    <h4>
+    {% for field in filter.form %}
+        {% if field.value() is sameas true or field.value() is sameas false %}
+        <span class="label label-primary">{{ field.label }}:
+            {% if field.value() %}
+            <span class="badge alert-success"><i class="fa fa-check"></i></span>
+            {% else %}
+            <span class="badge alert-danger"><i class="fa fa-close"></i></span>
+            {% endif %}
+            </span>&nbsp;
+        {% else %}
+            {% if field.value() %}
+                <span class="label label-primary">{{ field.label }}:
+                {{ field.value() }}
+                </span>&nbsp;
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+    </h4>
+    <div class="panel-group" id="testjob_filter_accordion">
+        <div class="panel panel-default" id="testjob_filter_panel">
+            <div class="panel-heading testjob-filter-panel">
+                 <h4 class="panel-title">
+            <a data-toggle="collapse" data-target="#collapseFilter"
+               href="#collapseOne">
+              {{ _('Edit filters') }}
+            </a>
+          </h4>
+
+            </div>
+            <div id="collapseFilter" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <form action="" method="get">
+                        {% for field in filter.form %}
+                        {{ bootstrap_field(field) }}
+                        {% endfor %}
+                        <button type="submit" class="btn btn-default">{{ _('Filter test jobs') }}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div>
 
     {% with items=testjobs %}
