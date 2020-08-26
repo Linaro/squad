@@ -1,3 +1,15 @@
+# 1.19
+
+This 1.19 release adds a filter to testjob view page that allows users
+to query target jobs instead of going page by page.
+
+Complete list of changes going in:
+
+* frontend: add filter to testjobs view
+* settings: django-toolbar: use squad jquery
+* test: test_listen: fix multiple calls with backends
+* ci: backend: Use project settings in LAVA backend
+
 # 1.18
 
 This 1.18 release fixes tooltips for test jobs view, changes how groups
