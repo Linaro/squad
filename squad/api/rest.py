@@ -28,7 +28,7 @@ from squad.core.models import (
 )
 from squad.core.tasks import prepare_report, update_delayed_report
 from squad.core.comparison import TestComparison
-from squad.core.utils import parse_name, log_addition, log_change, log_deletion
+from squad.core.utils import parse_name, log_addition, log_change, log_deletion, split_list
 from squad.ci.models import Backend, TestJob
 from squad.compat import drf_basename
 from django.http import HttpResponse
@@ -360,10 +360,15 @@ class LatestTestResultsSerializer(serializers.BaseSerializer):
         suite = self.context.get('suite')
 
         test_runs = {tr.id: tr.environment for tr in build.test_runs.all()}
-        tests = Test.objects.filter(
-            test_run_id__in=test_runs.keys(),
-            metadata=metadata,
-        ).prefetch_related('metadata').order_by()
+        tests = []
+
+        for ids in split_list(list(test_runs.keys()), chunk_size=10):
+            partial_tests = Test.objects.filter(
+                test_run_id__in=ids,
+                metadata=metadata,
+            ).prefetch_related('metadata').order_by()
+
+            tests += partial_tests.all()
 
         environments = {
             e: {
@@ -372,7 +377,7 @@ class LatestTestResultsSerializer(serializers.BaseSerializer):
             }
             for e in project_environments
         }
-        for test in tests.all():
+        for test in tests:
             e = test_runs[test.test_run_id]
             test.suite = suite
             environments[e]['test'] = TestSerializer(test, context=self.context, remove_fields=['known_issues']).data

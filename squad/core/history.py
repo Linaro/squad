@@ -42,7 +42,7 @@ class TestHistory(object):
                 test_runs.append(test_run)
 
         tests = []
-        for test_runs_batch in split_list(test_runs, chunk_size=100):
+        for test_runs_batch in split_list(test_runs, chunk_size=10):
             prefetch_related_objects(test_runs_batch, Prefetch('tests', queryset=Test.objects.filter(metadata=metadata).prefetch_related('metadata').order_by()))
             for test_run in test_runs_batch:
                 tests += test_run.tests.all()
