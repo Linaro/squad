@@ -9,7 +9,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
-from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold
+from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold, KnownIssue
 from squad.core.models import Build, Subscription, TestRun, Project
 from squad.core.queries import get_metric_data
 from squad.frontend.queries import get_metrics_list
@@ -594,6 +594,44 @@ def metrics(request, group_slug, project_slug):
         "data": data,
     }
     return render(request, 'squad/metrics.jinja2', context)
+
+
+class TestKnownIssues(object):
+
+    def __init__(self, project, search, page=1, per_page=50):
+        tests_issues = OrderedDict()
+        self.project = project
+        env_qs = project.environments.all().prefetch_related(Prefetch('knownissue_set', queryset=KnownIssue.objects.filter(test_name__icontains=search))).order_by()
+        self.environments = [e.slug for e in env_qs]
+        testnames = set()
+        for env in env_qs:
+            issues = env.knownissue_set.all()
+            for issue in issues:
+                testnames.add(issue.test_name)
+                tests_issues.setdefault(issue.test_name, {})
+                tests_issues[issue.test_name].update({env.slug: json.dumps({"url": issue.url,
+                                                                            "notes": issue.notes,
+                                                                            "intermittent": issue.intermittent,
+                                                                            "active": issue.active})})
+        self.paginator = Paginator(sorted([t for t in testnames]), per_page)
+        self.number = page
+        self.results = {x: tests_issues[x] for x in self.paginator.page(page).object_list}
+
+
+@auth
+def known_issues(request, group_slug, project_slug):
+    project = request.project
+    search = request.GET.get('search', '')
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    context = {
+        "project": project,
+        "search": search,
+        "results": TestKnownIssues(project, search, page=page, per_page=50)
+    }
+    return render(request, 'squad/knownissues.jinja2', context)
 
 
 @auth

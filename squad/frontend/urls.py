@@ -34,6 +34,7 @@ urlpatterns = [
     url(r'^(%s)/(%s)/thresholds/' % group_and_project, project_settings.thresholds_legacy),
     url(r'^(%s)/(%s)/badge$' % group_and_project, views.project_badge, name='project_badge'),
     url(r'^(%s)/(%s)/metrics/$' % group_and_project, views.metrics, name='metrics'),
+    url(r'^(%s)/(%s)/knownissues/$' % group_and_project, views.known_issues, name='knownissues'),
     url(r'^(%s)/(%s)/builds/$' % group_and_project, views.builds, name='builds'),
     url(r'^(%s)/(%s)/build/([^/]+)/$' % group_and_project, views.build, name='build'),
     url(r'^(%s)/(%s)/build/([^/]+)/badge$' % group_and_project, views.build_badge, name='build_badge'),
