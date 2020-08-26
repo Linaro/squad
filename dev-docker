@@ -14,6 +14,7 @@ dockerfile="$datadir"/../Dockerfile.dev
   echo 'RUN apt-get install -q2 snakefood flake8 python3-django-extensions python3-django-debug-toolbar ipython3 rabbitmq-server chromium nodejs ruby-foreman procps && \'
   echo "    groupadd -g $(id -g) $(id -gn) && \\"
   echo "    useradd -m -u $(id -u) -g $(id -g) -s /bin/bash ${USER}"
+  echo "RUN pip3 install --no-dependencies zipp importlib-metadata asgiref django-bootstrap3"
   echo "WORKDIR /app"
   echo "USER ${USER}"
   echo 'CMD ["bash"]'

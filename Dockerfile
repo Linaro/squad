@@ -54,6 +54,7 @@ ENV SQUAD_STATIC_DIR=/app/static
 
 RUN cd /squad-build && ./scripts/git-build && \
     pip3 install --no-dependencies ./dist/squad*.whl squad-linaro-plugins sentry-sdk==0.14.3 && \
+    pip3 install --no-dependencies ./dist/squad*.whl zipp importlib-metadata asgiref django-bootstrap3 && \
     cd / && rm -rf /squad-build && \
     mkdir -p /app/static && \
     useradd -d /app squad && \

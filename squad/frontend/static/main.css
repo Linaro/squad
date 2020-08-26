@@ -391,3 +391,14 @@ div#environment-separator {
     background-color: #DDD;
     margin-bottom: 10px;
 }
+
+.panel-heading a:after {
+    font-family:'FontAwesome';
+    content:"\f078";
+    float: right;
+    color: grey;
+}
+
+.panel-heading a.collapsed:after {
+    content: "\f054";
+}
