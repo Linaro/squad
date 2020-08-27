@@ -14,7 +14,10 @@ from celery.schedules import crontab
 from django.conf import global_settings
 from email.utils import parseaddr
 from glob import glob
+import contextlib
+import json
 import os
+import re
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -170,7 +173,14 @@ DATABASES = {
 }
 database_config = os.getenv('DATABASE')
 if database_config:
-    db_from_env = dict(x.split('=') for x in database_config.split(':'))
+    db_from_env = dict()
+    # This will split by : but not by ":" (including whitespaces) so that
+    # dictionaries are preserved.
+    for item in re.split(r'(?<=[^"])\s*:\s*(?<=[^"])', database_config):
+        key, value = item.split('=', 1)
+        with contextlib.suppress(json.decoder.JSONDecodeError):
+            value = json.loads(value)
+        db_from_env[key] = value
     DATABASES['default'].update(db_from_env)
 
 
