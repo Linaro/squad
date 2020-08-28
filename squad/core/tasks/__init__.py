@@ -125,7 +125,7 @@ class ReceiveTestRun(object):
     )
 
     def __call__(self, version, environment_slug, metadata_file=None, metrics_file=None, tests_file=None, log_file=None, attachments={}, completed=True):
-        build, _ = self.project.builds.get_or_create(version=version)
+        build, build_created = self.project.builds.get_or_create(version=version)
         environment, _ = self.project.environments.get_or_create(slug=environment_slug)
 
         validate = ValidateTestRun()
@@ -175,7 +175,9 @@ class ReceiveTestRun(object):
             UpdateProjectStatus()(testrun)
             UpdateBuildSummary()(testrun)
 
-        return testrun
+        if build_created:
+            return (testrun, build)
+        return (testrun, None)
 
 
 def get_suite(test_run, suite_name):
@@ -457,13 +459,13 @@ class CreateBuild(object):
             'patch_id': patch_id,
             'patch_baseline': patch_baseline,
         }
-        build, _ = self.project.builds.get_or_create(
+        build, created = self.project.builds.get_or_create(
             version=version,
             defaults=defaults,
         )
         if build.patch_source and build.patch_id:
             notify_patch_build_created.delay(build.id)
-        return build
+        return (build, created)
 
 
 @celery.task

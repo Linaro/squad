@@ -1,6 +1,7 @@
 import datetime
 import json
 from test.mock import patch
+from django.contrib.admin.models import LogEntry, ADDITION, DELETION, CHANGE
 from django.utils import timezone
 from squad.core import models
 from squad.core.tasks import UpdateProjectStatus, ReceiveTestRun, RecordTestRunStatus, ParseTestRunData
@@ -165,9 +166,18 @@ class RestApiTest(APITestCase):
         response = self.client.post(url, data)
         return response
 
+    def get(self, url):
+        user, _ = models.User.objects.get_or_create(username='u', is_superuser=True)
+        if not self.group.members.filter(pk=user.pk).exists():
+            self.group.add_admin(user)
+        token, _ = Token.objects.get_or_create(user=user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = self.client.get(url)
+        return response
+
     def receive(self, datestr, env, metrics={}, tests={}):
         receive = ReceiveTestRun(self.project)
-        testrun = receive(
+        testrun, _ = receive(
             version=datestr,
             environment_slug=env,
             metadata_file=json.dumps(
@@ -231,7 +241,23 @@ class RestApiTest(APITestCase):
             }
         )
         self.assertEqual(201, response.status_code)
-        self.assertTrue(self.project.subscriptions.filter(email=email_addr).exists())
+        subscription_queryset = self.project.subscriptions.filter(email=email_addr)
+        self.assertTrue(subscription_queryset.exists())
+        user = models.User.objects.get(username='u')
+        subscription = subscription_queryset.last().pk
+        logentry_queryset = LogEntry.objects.filter(
+            user_id=user.pk,
+            object_id=subscription
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            ADDITION,
+            logentry_queryset.first().action_flag
+        )
+
         response1 = self.post(
             '/api/projects/%s/unsubscribe/' % self.project.pk,
             {
@@ -240,6 +266,14 @@ class RestApiTest(APITestCase):
         )
         self.assertEqual(200, response1.status_code)
         self.assertFalse(self.project.subscriptions.filter(email=email_addr).exists())
+        self.assertEqual(
+            2,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            DELETION,
+            logentry_queryset.first().action_flag
+        )
 
     def test_project_unsubscribe_email_different_project(self):
         email_addr = "foo@bar.com"
@@ -408,6 +442,37 @@ class RestApiTest(APITestCase):
         self.assertIsNone(report_object.status_code)
         self.assertEqual(report_object.baseline, None)  # default baseline is used
         prepare_report_mock.assert_called()
+        logentry_queryset = LogEntry.objects.filter(
+            object_id=report_object.pk
+        )
+        self.assertEqual(
+            0,  # do not create LogEntry for anonymous users
+            logentry_queryset.count()
+        )
+
+    @patch('squad.core.tasks.prepare_report.delay')
+    def test_zz_build_report_logentry(self, prepare_report_mock):
+        response = self.get('/api/builds/%d/report/' % self.build3.id)
+        self.assertEqual(202, response.status_code)
+        report_object = self.build3.delayed_reports.last()
+        self.assertTrue(response.json()['url'].endswith(reverse('delayedreport-detail', args=[report_object.pk])))
+        self.assertIsNotNone(report_object)
+        self.assertIsNone(report_object.status_code)
+        self.assertEqual(report_object.baseline, None)  # default baseline is used
+        prepare_report_mock.assert_called()
+        user = models.User.objects.get(username='u')
+        logentry_queryset = LogEntry.objects.filter(
+            user_id=user.pk,
+            object_id=report_object.pk
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            ADDITION,
+            logentry_queryset.first().action_flag
+        )
 
     @patch('squad.core.tasks.prepare_report.delay')
     def test_build_report_baseline(self, prepare_report_mock):
@@ -490,6 +555,55 @@ class RestApiTest(APITestCase):
         response2 = self.client.get('/api/builds/%d/report/?force=true' % self.build3.id)
         self.assertNotEqual(response.json()['url'], response2.json()['url'])
         prepare_report_mock.assert_called_once()
+
+    @patch('squad.core.tasks.prepare_report.delay')
+    def test_build_report_retry_force_logentry(self, prepare_report_mock):
+        response = self.get('/api/builds/%d/report/' % self.build3.id)
+        self.assertEqual(202, response.status_code)
+        user = models.User.objects.get(username='u')
+        report_object = self.build3.delayed_reports.last()
+        logentry_queryset = LogEntry.objects.filter(
+            user_id=user.pk,
+            object_id=report_object.pk
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            ADDITION,
+            logentry_queryset.first().action_flag
+        )
+        self.client.get('/api/builds/%d/report/' % self.build3.id)
+        self.assertEqual(
+            2,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            CHANGE,
+            logentry_queryset.first().action_flag
+        )
+        self.assertTrue(response.json()['url'].endswith(reverse('delayedreport-detail', args=[report_object.pk])))
+        self.assertIsNotNone(report_object)
+        self.assertIsNone(report_object.status_code)
+        prepare_report_mock.assert_called_once()
+        prepare_report_mock.reset_mock()
+        response2 = self.get('/api/builds/%d/report/?force=true' % self.build3.id)
+        self.assertNotEqual(response.json()['url'], response2.json()['url'])
+        prepare_report_mock.assert_called_once()
+        report_object2 = self.build3.delayed_reports.last()
+        logentry_queryset2 = LogEntry.objects.filter(
+            user_id=user.pk,
+            object_id=report_object2.pk
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset2.count()
+        )
+        self.assertEqual(
+            ADDITION,
+            logentry_queryset2.first().action_flag
+        )
 
     def test_build_testruns(self):
         data = self.hit('/api/builds/%d/testruns/' % self.build.id)
@@ -596,17 +710,56 @@ class RestApiTest(APITestCase):
         data = self.post('/api/testjobs/%d/resubmit/' % self.testjob6.id, {})
         self.assertEqual(data.status_code, 200)
         self.assertEqual(data.json()['message'], "OK")
+        user = models.User.objects.get(username='u')
+        logentry_queryset = LogEntry.objects.filter(
+            user_id=user.pk,
+            object_id=self.testjob6.resubmitted_jobs.first().pk
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            ADDITION,
+            logentry_queryset.first().action_flag
+        )
 
     def test_testjob_force_resubmit(self):
         data = self.post('/api/testjobs/%d/force_resubmit/' % self.testjob5.id, {})
         self.assertEqual(data.status_code, 200)
         self.assertEqual(data.json()['message'], "OK")
+        user = models.User.objects.get(username='u')
+        logentry_queryset = LogEntry.objects.filter(
+            user_id=user.pk,
+            object_id=self.testjob5.resubmitted_jobs.first().pk
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            ADDITION,
+            logentry_queryset.first().action_flag
+        )
 
     def test_testjob_cancel(self):
         data = self.post('/api/testjobs/%d/cancel/' % self.testjob5.id, {})
         self.assertEqual(data.status_code, 200)
         self.assertEqual(data.json()['job_id'], self.testjob5.job_id)
         self.assertEqual(data.json()['status'], self.testjob5.job_status)
+        user = models.User.objects.get(username='u')
+        logentry_queryset = LogEntry.objects.filter(
+            user_id=user.pk,
+            object_id=self.testjob5.pk
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            CHANGE,
+            logentry_queryset.first().action_flag
+        )
 
     def test_testjob_cancel_fail(self):
         data = self.post('/api/testjobs/%d/cancel/' % self.testjob2.id, {})

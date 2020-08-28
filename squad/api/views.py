@@ -18,6 +18,10 @@ from squad.core.tasks import ReceiveTestRun
 from squad.core.tasks import exceptions
 
 
+from squad.core.utils import log_addition
+from squad.core.utils import log_change
+
+
 logger = logging.getLogger()
 
 
@@ -47,7 +51,11 @@ def create_build(request, group_slug, project_slug, version):
         fields['patch_id'] = patch_id
 
     create_build = CreateBuild(project)
-    create_build(version=version, **fields)
+    new_build, created = create_build(version=version, **fields)
+    if created:
+        log_addition(request, new_build, "Build created")
+    else:
+        log_change(request, new_build, "Build updated")
     return HttpResponse('', status=201)
 
 
@@ -92,7 +100,10 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
     receive = ReceiveTestRun(project)
 
     try:
-        receive(**test_run_data)
+        testrun, build = receive(**test_run_data)
+        log_addition(request, testrun, "Test Run created")
+        if build:
+            log_addition(request, build, "Build created")
     except (exceptions.invalid_input + (exceptions.DuplicatedTestJob,)) as e:
         logger.warning(request.get_full_path() + ": " + str(e))
         return HttpResponse(str(e), status=400)

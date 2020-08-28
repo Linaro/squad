@@ -3,8 +3,10 @@ from io import StringIO
 
 
 from django.contrib.auth.models import User
+from django.contrib.admin.models import LogEntry, ADDITION
 from django.test import TestCase
 from django.test import Client
+from django.utils.encoding import force_text
 from test.api import APIClient
 
 
@@ -48,8 +50,22 @@ class CreateTestRunApiTest(ApiTest):
         response = self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
         self.assertEqual(response.status_code, 201)
 
-        self.project.builds.get(version='1.0.0')
-        self.project.environments.get(slug='myenvironment')
+        build = self.project.builds.get(version='1.0.0')
+        environment = self.project.environments.get(slug='myenvironment')
+        testrun = build.test_runs.get(environment=environment)
+        logentry_queryset = LogEntry.objects.filter(
+            user_id=self.project_submission_user.pk,
+            object_id=testrun.pk,
+            object_repr=force_text(testrun),
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            ADDITION,
+            logentry_queryset.last().action_flag
+        )
 
     def test_create_object_hierarchy_private(self):
         response = self.client.post('/api/submit/~project-user/userproject/1.0.0/myenvironment')
@@ -60,13 +76,13 @@ class CreateTestRunApiTest(ApiTest):
 
     def test_create_test_run(self):
         test_runs = models.TestRun.objects.count()
-        self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
+        self.client.post('/api/submit/mygroup/myproject/1.0.22/myenvironment')
         self.assertEqual(test_runs + 1, models.TestRun.objects.count())
 
     def test_receives_tests_file(self):
         with open(tests_file) as f:
             self.client.post(
-                '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+                '/api/submit/mygroup/myproject/1.0.1/myenvironment',
                 {'tests': f}
             )
         self.assertIsNotNone(models.TestRun.objects.last().tests_file)
@@ -76,7 +92,7 @@ class CreateTestRunApiTest(ApiTest):
     def test_receives_tests_file_with_logs(self):
         with open(tests_log_file) as f:
             self.client.post(
-                '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+                '/api/submit/mygroup/myproject/1.0.2/myenvironment',
                 {'tests': f}
             )
         self.assertIsNotNone(models.TestRun.objects.last().tests_file)
@@ -90,7 +106,7 @@ class CreateTestRunApiTest(ApiTest):
 
     def test_receives_tests_file_as_POST_param(self):
         self.client.post(
-            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            '/api/submit/mygroup/myproject/1.0.3/myenvironment',
             {'tests': '{"test1": "pass"}'}
         )
         self.assertIsNotNone(models.TestRun.objects.last().tests_file)
@@ -99,7 +115,7 @@ class CreateTestRunApiTest(ApiTest):
 
     def test_receives_tests_file_as_POST_param_with_logs(self):
         self.client.post(
-            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            '/api/submit/mygroup/myproject/1.0.4/myenvironment',
             {'tests': '{"test1": {"result": "pass", "log": "test log"}}'}
         )
         self.assertIsNotNone(models.TestRun.objects.last().tests_file)
@@ -112,7 +128,7 @@ class CreateTestRunApiTest(ApiTest):
     def test_receives_metrics_file(self):
         with open(metrics_file) as f:
             self.client.post(
-                '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+                '/api/submit/mygroup/myproject/1.0.5/myenvironment',
                 {'metrics': f}
             )
         self.assertIsNotNone(models.TestRun.objects.last().metrics_file)
@@ -120,7 +136,7 @@ class CreateTestRunApiTest(ApiTest):
 
     def test_receives_metrics_file_as_POST_param(self):
         self.client.post(
-            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            '/api/submit/mygroup/myproject/1.0.6/myenvironment',
             {'metrics': '{"metric1": 10}'}
         )
         self.assertIsNotNone(models.TestRun.objects.last().metrics_file)
@@ -128,18 +144,18 @@ class CreateTestRunApiTest(ApiTest):
 
     def test_receives_log_file(self):
         with open(log_file) as f:
-            self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            self.client.post('/api/submit/mygroup/myproject/1.0.7/myenvironment',
                              {'log': f})
         self.assertIsNotNone(models.TestRun.objects.last().log_file)
 
     def test_receives_log_file_as_POST_param(self):
-        self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment',
+        self.client.post('/api/submit/mygroup/myproject/1.0.8/myenvironment',
                          {'log': "THIS IS THE LOG"})
         self.assertIsNotNone(models.TestRun.objects.last().log_file)
 
     def test_process_data_on_submission(self):
         self.client.post(
-            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            '/api/submit/mygroup/myproject/1.0.9/myenvironment',
             {
                 'tests': open(tests_file),
                 'metrics': open(metrics_file),
@@ -151,7 +167,7 @@ class CreateTestRunApiTest(ApiTest):
 
     def test_receives_metadata_file(self):
         self.client.post(
-            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            '/api/submit/mygroup/myproject/1.0.10/myenvironment',
             {
                 'metadata': open(metadata_file),
             }
@@ -161,7 +177,7 @@ class CreateTestRunApiTest(ApiTest):
 
     def test_receives_metadata_file_as_POST_param(self):
         self.client.post(
-            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            '/api/submit/mygroup/myproject/1.0.11/myenvironment',
             {
                 'metadata': '{"job_id": "123", "datetime": "2016-09-01T00:00:00+00:00"}',
             }
@@ -171,7 +187,7 @@ class CreateTestRunApiTest(ApiTest):
 
     def test_receives_metadata_fields_as_POST_params(self):
         self.client.post(
-            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            '/api/submit/mygroup/myproject/1.0.12/myenvironment',
             {
                 "build_url": "http://example.com/build/1",
                 "datetime": "2016-09-01T00:00:00+00:00",
@@ -192,7 +208,7 @@ class CreateTestRunApiTest(ApiTest):
 
     def test_stores_metadata_file(self):
         self.client.post(
-            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            '/api/submit/mygroup/myproject/1.0.13/myenvironment',
             {
                 'metadata': open(metadata_file),
             }
@@ -202,7 +218,7 @@ class CreateTestRunApiTest(ApiTest):
 
     def test_attachment(self):
         self.client.post(
-            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            '/api/submit/mygroup/myproject/1.0.14/myenvironment',
             {
                 'attachment': open(metadata_file),
             }
@@ -213,7 +229,7 @@ class CreateTestRunApiTest(ApiTest):
 
     def test_multiple_attachments(self):
         self.client.post(
-            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            '/api/submit/mygroup/myproject/1.0.15/myenvironment',
             {
                 'attachment': [
                     open(metadata_file),
@@ -269,13 +285,13 @@ class CreateTestRunApiTest(ApiTest):
         self.group.add_user(member, 'submitter')
         Token.objects.create(user=member, key='memberkey')
         client = APIClient('memberkey')
-        response = client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
+        response = client.post('/api/submit/mygroup/myproject/1.0.16/myenvironment')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(models.TestRun.objects.count(), 1)
 
     def test_auth_with_global_token(self):
         self.client.token = self.global_token.key
-        response = self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment')
+        response = self.client.post('/api/submit/mygroup/myproject/1.0.17/myenvironment')
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, models.TestRun.objects.count())
 
@@ -316,7 +332,7 @@ class CreateTestRunApiTest(ApiTest):
 
     def test_reject_submission_without_job_id(self):
         response = self.client.post(
-            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            '/api/submit/mygroup/myproject/1.0.18/myenvironment',
             {
                 'metadata': StringIO('{"datetime": "2016-09-01T00:00:00+00:00"}'),
             }
@@ -326,7 +342,7 @@ class CreateTestRunApiTest(ApiTest):
     def test_reject_submission_with_existing_job_id(self):
         def post():
             return self.client.post(
-                '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+                '/api/submit/mygroup/myproject/1.0.19/myenvironment',
                 {
                     'metadata': open(metadata_file),
                 }
@@ -339,7 +355,7 @@ class CreateTestRunApiTest(ApiTest):
         self.assertEqual(400, second.status_code)
 
     def test_reject_submission_with_int_job_id(self):
-        response = self.client.post('/api/submit/mygroup/myproject/1.0.0/myenvironment', {'metadata': '{"job_id": 123}'})
+        response = self.client.post('/api/submit/mygroup/myproject/1.0.20/myenvironment', {'metadata': '{"job_id": 123}'})
         self.assertEqual(201, response.status_code)
 
     def test_accepts_uppercase_in_slug(self):
@@ -347,7 +363,7 @@ class CreateTestRunApiTest(ApiTest):
         self.group.save()
         self.project.slug = 'MyProject'
         self.project.save()
-        response = self.client.post('/api/submit/MyGroup/MyProject/1.0.0/MyEnvironment')
+        response = self.client.post('/api/submit/MyGroup/MyProject/1.0.21/MyEnvironment')
         self.assertEqual(response.status_code, 201)
 
 
@@ -376,6 +392,19 @@ class CreateBuildApiTest(ApiTest):
         build = self.project.builds.get(version='1.0.0')
         self.assertEqual(self.github, build.patch_source)
         self.assertEqual(build.patch_id, "999")
+        logentry_queryset = LogEntry.objects.filter(
+            user_id=self.project_submission_user.pk,
+            object_id=build.pk,
+            object_repr=force_text(build),
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            ADDITION,
+            logentry_queryset.last().action_flag
+        )
 
     def test_patch_source_private(self):
         response = self.client.post(

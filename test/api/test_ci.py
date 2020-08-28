@@ -1,6 +1,7 @@
 import os
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
+from django.contrib.admin.models import LogEntry, ADDITION
 from rest_framework.authtoken.models import Token
 from test.api import APIClient, RestAPIClient
 from test.mock import patch, MagicMock
@@ -58,15 +59,28 @@ class CiApiTest(TestCase):
         }
         r = self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
         self.assertEqual(201, r.status_code)
+        testjob_queryset = models.TestJob.objects.filter(
+            target=self.project,
+            environment='myenv',
+            target_build=self.build,
+            backend=self.backend,
+            definition='foo: 1',
+        )
         self.assertEqual(
             1,
-            models.TestJob.objects.filter(
-                target=self.project,
-                environment='myenv',
-                target_build=self.build,
-                backend=self.backend,
-                definition='foo: 1',
-            ).count()
+            testjob_queryset.count()
+        )
+        logentry_queryset = LogEntry.objects.filter(
+            user_id=self.project_submission_user.pk,
+            object_id=testjob_queryset.last().pk
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            ADDITION,
+            logentry_queryset.last().action_flag
         )
 
     def test_submitjob_private_group(self):
@@ -76,15 +90,28 @@ class CiApiTest(TestCase):
         }
         r = self.memberclient.post('/api/submitjob/~project-member-user/userproject/1/myenv', args)
         self.assertEqual(201, r.status_code)
+        testjob_queryset = models.TestJob.objects.filter(
+            target=self.userproject,
+            environment='myenv',
+            target_build=self.userbuild,
+            backend=self.backend,
+            definition='foo: 1',
+        )
         self.assertEqual(
             1,
-            models.TestJob.objects.filter(
-                target=self.userproject,
-                environment='myenv',
-                target_build=self.userbuild,
-                backend=self.backend,
-                definition='foo: 1',
-            ).count()
+            testjob_queryset.count()
+        )
+        logentry_queryset = LogEntry.objects.filter(
+            user_id=self.project_member_user.pk,
+            object_id=testjob_queryset.last().pk
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            ADDITION,
+            logentry_queryset.last().action_flag
         )
 
     def test_invalid_backend_test_run(self):
@@ -149,16 +176,29 @@ class CiApiTest(TestCase):
         }
         r = self.client.post('/api/watchjob/mygroup/myproject/1/myenv', args)
         self.assertEqual(201, r.status_code)
+        testjob_queryset = models.TestJob.objects.filter(
+            target=self.project,
+            environment='myenv',
+            target_build=self.build,
+            backend=self.backend,
+            submitted=True,
+            job_id=testjob_id
+        )
         self.assertEqual(
             1,
-            models.TestJob.objects.filter(
-                target=self.project,
-                environment='myenv',
-                target_build=self.build,
-                backend=self.backend,
-                submitted=True,
-                job_id=testjob_id
-            ).count()
+            testjob_queryset.count()
+        )
+        logentry_queryset = LogEntry.objects.filter(
+            user_id=self.project_submission_user.pk,
+            object_id=testjob_queryset.last().pk
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            ADDITION,
+            logentry_queryset.last().action_flag
         )
 
     @patch("squad.ci.tasks.fetch.delay")
@@ -170,16 +210,29 @@ class CiApiTest(TestCase):
         }
         r = self.memberclient.post('/api/watchjob/~project-member-user/userproject/1/myenv', args)
         self.assertEqual(201, r.status_code)
+        testjob_queryset = models.TestJob.objects.filter(
+            target=self.userproject,
+            environment='myenv',
+            target_build=self.userbuild,
+            backend=self.backend,
+            submitted=True,
+            job_id=testjob_id
+        )
         self.assertEqual(
             1,
-            models.TestJob.objects.filter(
-                target=self.userproject,
-                environment='myenv',
-                target_build=self.userbuild,
-                backend=self.backend,
-                submitted=True,
-                job_id=testjob_id
-            ).count()
+            testjob_queryset.count()
+        )
+        logentry_queryset = LogEntry.objects.filter(
+            user_id=self.project_member_user.pk,
+            object_id=testjob_queryset.last().pk
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            ADDITION,
+            logentry_queryset.last().action_flag
         )
 
     @patch("squad.ci.tasks.fetch.delay")
