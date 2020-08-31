@@ -141,6 +141,11 @@ def build_section_url(build, name):
 
 
 @register_global_function
+def download_build_attachments_url(group_slug, project_slug, build_version, testrun, filename):
+    return reverse('build_attachments', args=(group_slug, project_slug, build_version, testrun, filename))
+
+
+@register_global_function
 def project_status(project):
     if project.latest_build is not None:
         return project.latest_build.status

@@ -35,6 +35,17 @@ export function FilterController($scope, $attrs, $location) {
     $location.search($scope.URL)
   }
 
+  $scope.attachments_visibility = {}
+  $scope.selected_attachment = {}
+  $scope.show_download_button = function(changing_key){
+      for (var key in $scope.attachments_visibility){
+          for (var attachment_file in $scope.attachments_visibility[key]){
+              $scope.attachments_visibility[key][attachment_file] = false;
+          }
+      }
+      $scope.attachments_visibility[changing_key][$scope.selected_attachment[changing_key]] = true;
+  }
+
   $scope.init = function() {
     var params = $location.search()
     $scope.filter = params[$attrs.param]
