@@ -1,3 +1,17 @@
+# 1.20
+
+This 1.20 release adds log entries when users change objects via
+the API. It also allows OPTIONS database arguments to be passed
+via environment variable.
+
+Complete list of changes going in:
+
+* Translated using Weblate (Portuguese)
+* Added translation using Weblate (Portuguese)
+* core: add tests for LogEntry when using API
+* Allow equal sign in settings variable value.
+* api: log user actions as LogEntry
+
 # 1.19
 
 This 1.19 release adds a filter to testjob view page that allows users
