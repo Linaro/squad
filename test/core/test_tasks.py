@@ -16,7 +16,6 @@ from squad.core.tasks import PostProcessTestRun
 from squad.core.tasks import RecordTestRunStatus
 from squad.core.tasks import UpdateProjectStatus
 from squad.core.tasks import ProcessTestRun
-from squad.core.tasks import ProcessAllTestRuns
 from squad.core.tasks import ReceiveTestRun
 from squad.core.tasks import ValidateTestRun
 from squad.core.tasks import CreateBuild
@@ -328,14 +327,6 @@ class ParseTestRunDataTest(CommonTestCase):
         ParseTestRunData()(testrun)
         self.assertEqual(4, testrun.tests.count())
         self.assertEqual(2, testrun.metrics.count())
-
-
-class ProcessAllTestRunsTest(CommonTestCase):
-
-    def test_processes_all(self):
-        ProcessAllTestRuns()()
-        self.assertEqual(5, self.testrun.tests.count())
-        self.assertEqual(6, self.testrun.status.count())
 
 
 class RecordTestRunStatusTest(CommonTestCase):

@@ -435,18 +435,6 @@ class ProcessTestRun(object):
             RecordTestRunStatus()(testrun)
 
 
-class ProcessAllTestRuns(object):
-
-    @staticmethod
-    def __call__():
-        for testrun in TestRun.objects.filter(data_processed=False).all():
-            parser = ParseTestRunData()
-            parser(testrun)
-        for testrun in TestRun.objects.filter(status_recorded=False).all():
-            recorder = RecordTestRunStatus()
-            recorder(testrun)
-
-
 class CreateBuild(object):
 
     def __init__(self, project):
