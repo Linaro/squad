@@ -6,7 +6,7 @@ from squad.core.utils import join_name, split_list
 def get_metrics_list(project):
     unique_names = set()
 
-    env_ids = Environment.objects.filter(project=project).values('id')
+    env_ids = list(Environment.objects.filter(project=project).values_list('id', flat=True))
     testruns = TestRun.objects.filter(environment_id__in=env_ids).values('id').order_by('id')
     test_runs_ids = [tr['id'] for tr in testruns]
     for chunk in split_list(test_runs_ids, chunk_size=100):
