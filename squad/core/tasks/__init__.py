@@ -151,8 +151,6 @@ class ReceiveTestRun(object):
 
         testrun = build.test_runs.create(
             environment=environment,
-            tests_file=tests_file,
-            metrics_file=metrics_file,
             log_file=log_file,
             metadata_file=metadata_file,
             completed=completed,
@@ -167,6 +165,9 @@ class ReceiveTestRun(object):
         if not build.datetime or testrun.datetime < build.datetime:
             build.datetime = testrun.datetime
             build.save()
+
+        testrun.tests_file = tests_file
+        testrun.metrics_file = metrics_file
 
         processor = ProcessTestRun()
         processor(testrun)

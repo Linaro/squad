@@ -609,8 +609,6 @@ class TestRunManager(models.Manager):
 
     def get_queryset(self, *args, **kwargs):
         return super(TestRunManager, self).get_queryset(*args, **kwargs).defer(
-            "tests_file",
-            "metrics_file",
             "log_file",
         )
 
@@ -624,8 +622,6 @@ class TestRun(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     # these fields are potentially very large
-    tests_file = models.TextField(null=True)
-    metrics_file = models.TextField(null=True)
     log_file = models.TextField(null=True)
     metadata_file = models.TextField(null=True)
 
@@ -669,6 +665,36 @@ class TestRun(models.Model):
             else:
                 self.__metadata__ = {}
         return self.__metadata__
+
+    __tests_file__ = None
+
+    @property
+    def tests_file(self):
+        if self.__tests_file__ is None:
+            tests_file = {}
+            for test in self.tests.prefetch_related('metadata').all():
+                tests_file[test.full_name] = test.status
+            self.__tests_file__ = json.dumps(tests_file)
+        return self.__tests_file__
+
+    @tests_file.setter
+    def tests_file(self, tests_file):
+        self.__tests_file__ = tests_file
+
+    __metrics_file__ = None
+
+    @property
+    def metrics_file(self):
+        if self.__metrics_file__ is None:
+            metrics_file = {}
+            for metric in self.metrics.all():
+                metrics_file[metric.full_name] = metric.result
+            self.__metrics_file__ = json.dumps(metrics_file)
+        return self.__metrics_file__
+
+    @metrics_file.setter
+    def metrics_file(self, metrics_file):
+        self.__metrics_file__ = metrics_file
 
     def __str__(self):
         return self.job_id and ('#%s' % self.job_id) or ('(%s)' % self.id)

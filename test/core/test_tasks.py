@@ -267,9 +267,9 @@ class CommonTestCase(TestCase):
         self.testrun = TestRun.objects.create(
             build=self.build,
             environment=self.environment,
-            tests_file='{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
-            metrics_file='{"metric0": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}',
         )
+        self.testrun.tests_file = '{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}'
+        self.testrun.metrics_file = '{"metric0": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}'
 
 
 class ParseTestRunDataTest(CommonTestCase):
@@ -321,9 +321,9 @@ class ParseTestRunDataTest(CommonTestCase):
         testrun = TestRun.objects.create(
             build=self.build,
             environment=self.environment,
-            tests_file='{"' + really_long_name + '": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
-            metrics_file='{"' + really_long_name + '": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}',
         )
+        testrun.tests_file = '{"' + really_long_name + '": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}'
+        testrun.metrics_file = '{"' + really_long_name + '": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}'
         ParseTestRunData()(testrun)
         self.assertEqual(4, testrun.tests.count())
         self.assertEqual(2, testrun.metrics.count())

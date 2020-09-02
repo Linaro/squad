@@ -164,7 +164,7 @@ class FrontendTest(TestCase):
     def test_tests(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/tests' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])
-        self.assertEqual(b'{}', response.content)
+        self.assertEqual(b'{"mysuite/mytest": "pass"}', response.content)
 
     def test_metrics(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metrics' % (self.test_run.id, self.suite.slug, self.test.name))

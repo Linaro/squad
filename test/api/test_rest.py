@@ -699,6 +699,8 @@ class RestApiTest(APITestCase):
         self.assertEqual(list, type(data['results']))
 
     def test_testruns_status(self):
+        self.testrun.tests_file = ''
+        self.testrun.metrics_file = ''
         ParseTestRunData()(self.testrun)
         RecordTestRunStatus()(self.testrun)
         data = self.hit('/api/testruns/%d/status/' % self.testrun.id)
