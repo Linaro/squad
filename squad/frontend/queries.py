@@ -1,12 +1,13 @@
 from django.utils.translation import ugettext as _
-from squad.core.models import Metric, TestRun
+from squad.core.models import Environment, Metric, TestRun
 from squad.core.utils import join_name, split_list
 
 
 def get_metrics_list(project):
     unique_names = set()
 
-    testruns = TestRun.objects.filter(environment__project=project).values('id').order_by('id')
+    env_ids = Environment.objects.filter(project=project).values('id')
+    testruns = TestRun.objects.filter(environment_id__in=env_ids).values('id').order_by('id')
     test_runs_ids = [tr['id'] for tr in testruns]
     for chunk in split_list(test_runs_ids, chunk_size=100):
         metric_set = Metric.objects.filter(test_run_id__in=chunk).values('suite__slug', 'name')
