@@ -2,6 +2,7 @@ import json
 import re
 import requests
 import ssl
+import socket
 import traceback
 import yaml
 import xmlrpc
@@ -23,6 +24,61 @@ from squad.ci.backend.null import Backend as BaseBackend
 
 
 description = "LAVA"
+timeout_variable_name = "TIMEOUT"
+DEFAULT_TIMEOUT = 60
+
+
+class RequestsTransport(xmlrpclib.SafeTransport):
+    """
+    Drop in Transport for xmlrpclib that uses Requests instead of http.client
+
+
+    """
+    # change our user agent to reflect Requests
+    user_agent = "Python XMLRPC with Requests (python-requests.org)"
+
+    def __init__(self, use_https=True, cert=None, verify=None, *args, **kwargs):
+        self.cert = cert
+        self.verify = verify
+        self.use_https = use_https
+        self.timeout = socket._GLOBAL_DEFAULT_TIMEOUT
+        if 'timeout' in kwargs:
+            self.timeout = kwargs.pop('timeout')
+
+        xmlrpclib.Transport.__init__(self, *args, **kwargs)
+
+    def request(self, host, handler, request_body, verbose):
+        """
+        Make an xmlrpc request.
+        """
+        headers = {'User-Agent': self.user_agent}
+        url = self._build_url(host, handler)
+        try:
+            resp = requests.post(url, data=request_body, headers=headers,
+                                 stream=True,
+                                 cert=self.cert, verify=self.verify,
+                                 timeout=self.timeout)
+        except ValueError:
+            raise
+        except Exception:
+            raise  # something went wrong
+        else:
+            try:
+                resp.raise_for_status()
+            except requests.RequestException as e:
+                raise xmlrpclib.ProtocolError(url, resp.status_code,
+                                              str(e), resp.headers)
+            else:
+                self.verbose = verbose
+                return self.parse_response(resp.raw)
+
+    def _build_url(self, host, handler):
+        """
+        Build a url for our request based on the host, handler and use_https
+        property
+        """
+        scheme = 'https' if self.use_https else 'http'
+        return '%s://%s/%s' % (scheme, host, handler)
 
 
 class Backend(BaseBackend):
@@ -172,7 +228,14 @@ class Backend(BaseBackend):
                 url.netloc,
                 url.path
             )
-            self.__proxy__ = xmlrpclib.ServerProxy(endpoint)
+            use_https = True
+            if url.scheme == 'http':
+                use_https = False
+            proxy_timeout = self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
+            self.__proxy__ = xmlrpclib.ServerProxy(
+                endpoint,
+                transport=RequestsTransport(timeout=proxy_timeout, use_https=use_https)
+            )
         return self.__proxy__
 
     def get_listener_url(self):
@@ -237,7 +300,11 @@ class Backend(BaseBackend):
                     ssl.SSLError):
                 return False
         else:
-            response = requests.post(urljoin(self.api_url_base, "jobs/%s/cancel" % (job_id)), headers=self.authentication)
+            response = requests.post(
+                urljoin(self.api_url_base, "jobs/%s/cancel" % (job_id)),
+                headers=self.authentication,
+                timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
+            )
             if response.status_code == 200:
                 return True
 
@@ -253,7 +320,11 @@ class Backend(BaseBackend):
     def __resubmit__(self, job_id):
         if self.use_xml_rpc:
             return self.proxy.scheduler.resubmit_job(job_id)
-        response = requests.post(urljoin(self.api_url_base, "jobs/%s/resubmit" % (job_id)), headers=self.authentication)
+        response = requests.post(
+            urljoin(self.api_url_base, "jobs/%s/resubmit" % (job_id)),
+            headers=self.authentication,
+            timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
+        )
         if response.status_code == 201:
             return response.json()['job_ids']
         return []
@@ -261,7 +332,12 @@ class Backend(BaseBackend):
     def __submit__(self, definition):
         if self.use_xml_rpc:
             return self.proxy.scheduler.submit_job(definition)
-        response = requests.post(urljoin(self.api_url_base, "jobs/"), headers=self.authentication, data={"definition": definition})
+        response = requests.post(
+            urljoin(self.api_url_base, "jobs/"),
+            headers=self.authentication,
+            data={"definition": definition},
+            timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
+        )
         if response.status_code == 201:
             return response.json()['job_ids']
         return []
@@ -269,7 +345,11 @@ class Backend(BaseBackend):
     def __get_job_details__(self, job_id):
         if self.use_xml_rpc:
             return self.proxy.scheduler.job_details(job_id)
-        response = requests.get(urljoin(self.api_url_base, "jobs/%s" % (job_id)), headers=self.authentication)
+        response = requests.get(
+            urljoin(self.api_url_base, "jobs/%s" % (job_id)),
+            headers=self.authentication,
+            timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
+        )
         if response.status_code == 200:
             return response.json()
         raise FetchIssue(response.text)
@@ -280,12 +360,21 @@ class Backend(BaseBackend):
             url = self.data.url.replace('/RPC2', '/scheduler/job/%s/log_file/plain' % job_id)
             payload = {"user": self.data.username, "token": self.data.token}
             try:
-                response = requests.get(url, params=payload)
+                response = requests.get(
+                    url,
+                    params=payload,
+                    timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
+                )
+
             except requests.exceptions.RequestException:
                 self.log_error("Unable to download log for {backend_name}/{job_id}".format(backend_name=self.data.name, job_id=job_id))
         else:
             try:
-                response = requests.get(urljoin(self.api_url_base, "jobs/%s/logs/" % (job_id)), headers=self.authentication)
+                response = requests.get(
+                    urljoin(self.api_url_base, "jobs/%s/logs/" % (job_id)),
+                    headers=self.authentication,
+                    timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
+                )
             except requests.exceptions.RequestException:
                 self.log_error("Unable to download log for {backend_name}/{job_id}".format(backend_name=self.data.name, job_id=job_id))
         if response and response.status_code == 200:
@@ -392,22 +481,38 @@ class Backend(BaseBackend):
                     else:
                         break
         else:
-            suites_resp = requests.get(urljoin(self.api_url_base, "jobs/%s/suites/" % (job_id)), headers=self.authentication)
+            suites_resp = requests.get(
+                urljoin(self.api_url_base, "jobs/%s/suites/" % (job_id)),
+                headers=self.authentication,
+                timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
+            )
             while suites_resp.status_code == 200:
                 suites_content = suites_resp.json()
                 for suite in suites_content['results']:
-                    tests_resp = requests.get(urljoin(self.api_url_base, "jobs/%s/suites/%s/tests" % (job_id, suite['id'])), headers=self.authentication)
+                    tests_resp = requests.get(
+                        urljoin(self.api_url_base, "jobs/%s/suites/%s/tests" % (job_id, suite['id'])),
+                        headers=self.authentication,
+                        timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
+                    )
                     while tests_resp.status_code == 200:
                         tests_content = tests_resp.json()
                         for test in tests_content['results']:
                             test['suite'] = suite['name']
                         lava_job_results = lava_job_results + tests_content['results']
                         if tests_content['next']:
-                            tests_resp = requests.get(tests_content['next'], headers=self.authentication)
+                            tests_resp = requests.get(
+                                tests_content['next'],
+                                headers=self.authentication,
+                                timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
+                            )
                         else:
                             break
                 if suites_content['next']:
-                    suites_resp = requests.get(suites_content['next'], headers=self.authentication)
+                    suites_resp = requests.get(
+                        suites_content['next'],
+                        headers=self.authentication,
+                        timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
+                    )
                 else:
                     break
 
@@ -416,7 +521,10 @@ class Backend(BaseBackend):
     def __get_publisher_event_socket__(self):
         if self.use_xml_rpc:
             return self.proxy.scheduler.get_publisher_event_socket()
-        lava_resp = requests.get(urljoin(self.api_url_base, "system/master_config/"))
+        lava_resp = requests.get(
+            urljoin(self.api_url_base, "system/master_config/"),
+            timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
+        )
         if lava_resp.status_code == 200:
             return lava_resp.json()['EVENT_SOCKET']
         # should there be an exception if status_code is != 200 ?
