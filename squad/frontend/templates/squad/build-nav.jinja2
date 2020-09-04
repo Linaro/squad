@@ -42,7 +42,7 @@
         {{ _('Metadata') }}
         </a>
     </li>
-    {% if build.test_jobs.count %}
+    {% if build.test_jobs.count() %}
     <li role="presentation" {% if url_name == 'testjobs' %}class="active"{% endif %}>
         <a href="{{build_section_url(build, 'testjobs')}}">
             {{ _('Test jobs') }}

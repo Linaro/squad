@@ -4,6 +4,7 @@ from django.test import Client
 from django.contrib.auth.models import User
 
 
+from squad.ci.models import Backend
 from squad.core import models
 from squad.core.tasks import ReceiveTestRun
 from squad.core.tasks import cleanup_build
@@ -35,6 +36,30 @@ class FrontendTest(TestCase):
         self.suite, _ = self.project.suites.get_or_create(slug='mysuite')
         self.test_run.tests.create(suite=self.suite, name='mytest', result=True)
         self.test = self.test_run.tests.first()
+
+        backend = Backend.objects.create(
+            url='http://example.com',
+            username='foobar',
+            token='mypassword',
+        )
+        self.build = self.test_run.build
+        self.build.test_jobs.create(
+            target=self.build.project,
+            environment='myenv',
+            backend=backend,
+        )
+        self.build.test_jobs.create(
+            target=self.build.project,
+            environment='myenv',
+            backend=backend,
+            job_status='Incomplete',
+        )
+        self.build.test_jobs.create(
+            target=self.build.project,
+            environment='myenv',
+            backend=backend,
+            job_status='Complete',
+        )
 
     def hit(self, url, expected_status=200):
         with count_queries('url:' + url):
@@ -122,6 +147,11 @@ class FrontendTest(TestCase):
 
     def test_build_testjobs_404(self):
         self.hit('/mygroup/myproject/build/999/testjobs/', 404)
+
+    def test_build_testjobs_tab(self):
+        response = self.hit('/mygroup/myproject/build/1.0/testjobs/')
+        # assert that all 3 testjobs badges are displayed and have each 1 in it
+        self.assertTrue(re.match(r'.*?(?:badge-(Created|Complete|Incomplete)[^>]+title="\1">1.*?){3}.*?', str(response.content)))
 
     def test_build_latest_finished(self):
         self.hit('/mygroup/myproject/build/latest-finished/')
