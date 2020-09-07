@@ -314,6 +314,23 @@ class LavaTest(TestCase):
         self.assertEqual('bar', testjob.name)
         __submit__.assert_called_with(test_definition)
 
+    @patch("requests.post", side_effect=requests.exceptions.Timeout)
+    def test_submit_timeout(self, post):
+        test_definition = "foo: 1\njob_name: bar"
+        testjob = TestJob(
+            definition=test_definition,
+            backend=self.backend)
+        self.assertRaises(requests.exceptions.Timeout, self.backend.submit, testjob)
+
+    @patch("requests.post", side_effect=requests.exceptions.Timeout)
+    def test_submit_rest_timeout(self, post):
+        self.backend.url.replace("RPC2/", "api/v0.2/")
+        test_definition = "foo: 1\njob_name: bar"
+        testjob = TestJob(
+            definition=test_definition,
+            backend=self.backend)
+        self.assertRaises(requests.exceptions.Timeout, self.backend.submit, testjob)
+
     @patch("squad.ci.backend.lava.Backend.__cancel_job__", return_value=True)
     def test_cancel(self, __cancel__):
         test_definition = "foo: 1\njob_name: bar"
@@ -324,6 +341,27 @@ class LavaTest(TestCase):
             backend=self.backend)
         testjob.cancel()
         __cancel__.assert_called()
+
+    @patch("requests.post", side_effect=requests.exceptions.Timeout)
+    def test_cancel_timeout(self, __cancel__):
+        test_definition = "foo: 1\njob_name: bar"
+        testjob = TestJob(
+            definition=test_definition,
+            submitted=True,
+            job_id="12345",
+            backend=self.backend)
+        self.assertRaises(requests.exceptions.Timeout, testjob.cancel)
+
+    @patch("requests.post", side_effect=requests.exceptions.Timeout)
+    def test_cancel_rest_timeout(self, __cancel__):
+        self.backend.url.replace("RPC2/", "api/v0.2/")
+        test_definition = "foo: 1\njob_name: bar"
+        testjob = TestJob(
+            definition=test_definition,
+            submitted=True,
+            job_id="12345",
+            backend=self.backend)
+        self.assertRaises(requests.exceptions.Timeout, testjob.cancel)
 
     @patch("squad.ci.backend.lava.Backend.__submit__", return_value=['1234.0', '1234.1'])
     def test_submit_multinode(self, __submit__):
