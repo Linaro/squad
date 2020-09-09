@@ -628,6 +628,9 @@ class TestRun(models.Model):
     metrics_file = models.TextField(null=True)
     log_file = models.TextField(null=True)
     metadata_file = models.TextField(null=True)
+    tests_file_storage = models.FileField(null=True)
+    metrics_file_storage = models.FileField(null=True)
+    log_file_storage = models.FileField(null=True)
 
     # custom manager to skip potentially large fields by default
     objects = TestRunManager()
