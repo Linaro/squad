@@ -647,6 +647,7 @@ class TestRun(models.Model):
 
     class Meta:
         unique_together = ('build', 'job_id')
+        index_together = ["id", "environment"]
 
     def save(self, *args, **kwargs):
         if not self.datetime:
