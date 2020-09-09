@@ -689,6 +689,7 @@ class Attachment(models.Model):
     filename = models.CharField(null=False, max_length=1024)
     mimetype = models.CharField(null=False, max_length=128, default="application/octet-stream")
     data = models.BinaryField(default=None)
+    storage = models.FileField(null=True)
     length = models.IntegerField(default=None)
 
 
