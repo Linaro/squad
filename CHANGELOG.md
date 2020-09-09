@@ -1,3 +1,16 @@
+# 1.21
+
+This 1.21 release changes the lava backend XML-RPC
+transport layer to use requests, also including a pre-defined
+timeout. The release adds Celery plugin for Sentry users.
+
+Complete list of changes going in:
+
+* ci: add tests for LAVA backend call timeouts
+* ci: lava: change XML-RPC transport to use requests
+* frontent: build: include test jobs with no status in Test jobs tab
+* settings: add CeleryIntegration to sentry
+
 # 1.20
 
 This 1.20 release adds log entries when users change objects via
