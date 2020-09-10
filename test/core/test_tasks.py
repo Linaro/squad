@@ -7,6 +7,8 @@ import yaml
 from dateutil.relativedelta import relativedelta
 from django.test import TestCase
 from django.utils import timezone
+from django.core.files import File
+from io import StringIO
 from unittest.mock import patch
 
 
@@ -268,9 +270,9 @@ class CommonTestCase(TestCase):
         self.testrun = TestRun.objects.create(
             build=self.build,
             environment=self.environment,
-            tests_file='{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
-            metrics_file='{"metric0": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}',
         )
+        self.testrun.tests_file_storage.save("testrun/%s/tests_file" % self.testrun.pk, File(StringIO('{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}')))
+        self.testrun.metrics_file_storage.save("testrun/%s/metrics_file" % self.testrun.pk, File(StringIO('{"metric0": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}')))
 
 
 class ParseTestRunDataTest(CommonTestCase):
@@ -322,9 +324,9 @@ class ParseTestRunDataTest(CommonTestCase):
         testrun = TestRun.objects.create(
             build=self.build,
             environment=self.environment,
-            tests_file='{"' + really_long_name + '": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
-            metrics_file='{"' + really_long_name + '": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}',
         )
+        testrun.tests_file_storage.save("testrun/%s/tests_file" % testrun.pk, File(StringIO('{"' + really_long_name + '": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}')))
+        testrun.metrics_file_storage.save("testrun/%s/metrics_file" % testrun.pk, File(StringIO('{"' + really_long_name + '": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}')))
         ParseTestRunData()(testrun)
         self.assertEqual(4, testrun.tests.count())
         self.assertEqual(2, testrun.metrics.count())
@@ -379,7 +381,8 @@ class RecordTestRunStatusTest(CommonTestCase):
             test_name='foobar/test1',
         )
         issue.environments.add(self.environment)
-        self.testrun.tests_file = re.sub('"pass"', '"fail"', self.testrun.tests_file)
+        new_tests_file = re.sub('"pass"', '"fail"', self.testrun.tests_file_storage.read().decode())
+        self.testrun.tests_file_storage.save(self.testrun.tests_file_storage.name, File(StringIO(new_tests_file)))
         self.testrun.save()
         ParseTestRunData()(self.testrun)
         RecordTestRunStatus()(self.testrun)
@@ -521,7 +524,7 @@ class ReceiveTestRunTest(TestCase):
         receive('199', 'myenv', metadata_file=json.dumps(metadata_in), log_file=LOG_FILE_CONTENT)
         testrun = TestRun.objects.last()
 
-        self.assertEqual(LOG_FILE_CONTENT, testrun.log_file)
+        self.assertEqual(LOG_FILE_CONTENT, testrun.log_file_storage.read().decode())
 
     def test_logfile_with_null_bytes(self):
         receive = ReceiveTestRun(self.project)
@@ -534,7 +537,7 @@ class ReceiveTestRunTest(TestCase):
         receive('199', 'myenv', metadata_file=json.dumps(metadata_in), log_file=LOG_FILE_CONTENT)
         testrun = TestRun.objects.last()
 
-        self.assertEqual(LOG_FILE_PROPER_CONTENT, testrun.log_file)
+        self.assertEqual(LOG_FILE_PROPER_CONTENT, testrun.log_file_storage.read().decode())
 
     def test_build_datetime(self):
         receive = ReceiveTestRun(self.project)

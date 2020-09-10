@@ -518,10 +518,10 @@ def test_details_log(request, group_slug, project_slug, build_version, testrun, 
     build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, pk=testrun)
 
-    if not test_run.log_file:
+    if not test_run.log_file_storage:
         raise Http404("No log file available for this test run")
 
-    return HttpResponse(test_run.log_file, content_type="text/plain")
+    return HttpResponse(test_run.log_file_storage, content_type="text/plain")
 
 
 @auth
@@ -532,7 +532,7 @@ def test_details_tests(request, group_slug, project_slug, build_version, testrun
     test_run = get_object_or_404(build.test_runs, pk=testrun)
 
     filename = '%s_%s_%s_%s_tests.json' % (group.slug, project.slug, build.version, test_run.job_id)
-    return __download__(filename, test_run.tests_file)
+    return __download__(filename, test_run.tests_file_storage)
 
 
 @auth
@@ -543,7 +543,7 @@ def test_details_metrics(request, group_slug, project_slug, build_version, testr
     test_run = get_object_or_404(build.test_runs, pk=testrun)
 
     filename = '%s_%s_%s_%s_metrics.json' % (group.slug, project.slug, build.version, test_run.job_id)
-    return __download__(filename, test_run.metrics_file)
+    return __download__(filename, test_run.metrics_file_storage)
 
 
 @auth
@@ -563,7 +563,7 @@ def attachment(request, group_slug, project_slug, build_version, testrun, suite_
     build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, pk=testrun)
     attachment = get_object_or_404(test_run.attachments, filename=filename)
-    return __download__(attachment.filename, bytes(attachment.data), attachment.mimetype)
+    return __download__(attachment.filename, attachment.storage, attachment.mimetype)
 
 
 @auth

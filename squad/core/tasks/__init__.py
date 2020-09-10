@@ -1,6 +1,8 @@
 from django.core.exceptions import MultipleObjectsReturned
 from django.utils import timezone
+from django.core.files import File
 from collections import defaultdict
+from io import StringIO, BytesIO
 import json
 import logging
 import traceback
@@ -57,7 +59,7 @@ class ValidateTestRun(object):
             self.__validate_metadata__(metadata_file)
 
         if metrics_file:
-            self.__validate_metrics(metrics_file)
+            self.__validate_metrics__(metrics_file)
 
         if tests_file:
             self.__validate_tests__(tests_file)
@@ -77,7 +79,7 @@ class ValidateTestRun(object):
             if type(metadata['job_id']) is str and '/' in metadata['job_id']:
                 raise exceptions.InvalidMetadata('job_id cannot contain the "/" character')
 
-    def __validate_metrics(self, metrics_file):
+    def __validate_metrics__(self, metrics_file):
         try:
             metrics = json.loads(metrics_file)
         except json.decoder.JSONDecodeError as e:
@@ -151,16 +153,17 @@ class ReceiveTestRun(object):
 
         testrun = build.test_runs.create(
             environment=environment,
-            tests_file=tests_file,
-            metrics_file=metrics_file,
-            log_file=log_file,
             metadata_file=metadata_file,
             completed=completed,
             **metadata_fields
         )
+        testrun.tests_file_storage.save("testrun/%s/tests_file" % testrun.pk, File(StringIO(tests_file)))
+        testrun.metrics_file_storage.save("testrun/%s/metrics_file" % testrun.pk, File(StringIO(metrics_file)))
+        testrun.log_file_storage.save("testrun/%s/log_file" % testrun.pk, File(StringIO(log_file)))
 
         for f, data in attachments.items():
-            testrun.attachments.create(filename=f, data=data, length=len(data))
+            attachment = testrun.attachments.create(filename=f, length=len(data))
+            attachment.storage.save(f, File(BytesIO(data)))
 
         testrun.refresh_from_db()
 
@@ -207,46 +210,48 @@ class ParseTestRunData(object):
             issues.setdefault(issue.test_name, [])
             issues[issue.test_name].append(issue)
 
-        for test in test_parser()(test_run.tests_file):
-            # TODO: remove check below when test_name size changes in the schema
-            if len(test['test_name']) > 256:
-                continue
-            suite = get_suite(
-                test_run,
-                test['group_name']
-            )
-            metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=test['test_name'], kind='test')
-            full_name = join_name(suite.slug, test['test_name'])
-            test_issues = issues.get(full_name, [])
-            test_obj = Test.objects.create(
-                test_run=test_run,
-                suite=suite,
-                metadata=metadata,
-                name=test['test_name'],
-                result=test['pass'],
-                log=test['log'],
-                has_known_issues=bool(test_issues),
-            )
-            for issue in test_issues:
-                test_obj.known_issues.add(issue)
+        if test_run.tests_file_storage:
+            for test in test_parser()(test_run.tests_file_storage):
+                # TODO: remove check below when test_name size changes in the schema
+                if len(test['test_name']) > 256:
+                    continue
+                suite = get_suite(
+                    test_run,
+                    test['group_name']
+                )
+                metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=test['test_name'], kind='test')
+                full_name = join_name(suite.slug, test['test_name'])
+                test_issues = issues.get(full_name, [])
+                test_obj = Test.objects.create(
+                    test_run=test_run,
+                    suite=suite,
+                    metadata=metadata,
+                    name=test['test_name'],
+                    result=test['pass'],
+                    log=test['log'],
+                    has_known_issues=bool(test_issues),
+                )
+                for issue in test_issues:
+                    test_obj.known_issues.add(issue)
 
-        for metric in metric_parser()(test_run.metrics_file):
-            # TODO: remove check below when test_name size changes in the schema
-            if len(metric['name']) > 256:
-                continue
-            suite = get_suite(
-                test_run,
-                metric['group_name']
-            )
-            metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=metric['name'], kind='metric')
-            Metric.objects.create(
-                test_run=test_run,
-                suite=suite,
-                metadata=metadata,
-                name=metric['name'],
-                result=metric['result'],
-                measurements=','.join([str(m) for m in metric['measurements']]),
-            )
+        if test_run.metrics_file_storage:
+            for metric in metric_parser()(test_run.metrics_file_storage):
+                # TODO: remove check below when test_name size changes in the schema
+                if len(metric['name']) > 256:
+                    continue
+                suite = get_suite(
+                    test_run,
+                    metric['group_name']
+                )
+                metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=metric['name'], kind='metric')
+                Metric.objects.create(
+                    test_run=test_run,
+                    suite=suite,
+                    metadata=metadata,
+                    name=metric['name'],
+                    result=metric['result'],
+                    measurements=','.join([str(m) for m in metric['measurements']]),
+                )
 
         test_run.data_processed = True
         test_run.save()

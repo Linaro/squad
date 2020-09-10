@@ -24,10 +24,10 @@ class JSONTestDataParser(object):
 
     @staticmethod
     def __call__(test_data):
-        if test_data is None or test_data == '':
+        if test_data is None or len(test_data) == 0:
             return []
 
-        input_data = json.loads(test_data)
+        input_data = json.load(test_data)
         data = []
         for key, value in input_data.items():
             group_name, test_name = parse_name(key)
@@ -60,10 +60,10 @@ class JSONMetricDataParser(object):
 
     @staticmethod
     def __call__(json_text):
-        if json_text is None or json_text == '':
+        if json_text is None or len(json_text) == 0:
             return []
 
-        input_data = json.loads(json_text)
+        input_data = json.load(json_text)
         data = []
 
         for key, value in input_data.items():

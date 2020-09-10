@@ -85,7 +85,7 @@ class CreateTestRunApiTest(ApiTest):
                 '/api/submit/mygroup/myproject/1.0.1/myenvironment',
                 {'tests': f}
             )
-        self.assertIsNotNone(models.TestRun.objects.last().tests_file)
+        self.assertIsNotNone(models.TestRun.objects.last().tests_file_storage)
         self.assertNotEqual(0, models.Test.objects.count())
         self.assertIsNone(models.Test.objects.last().log)
 
@@ -95,7 +95,7 @@ class CreateTestRunApiTest(ApiTest):
                 '/api/submit/mygroup/myproject/1.0.2/myenvironment',
                 {'tests': f}
             )
-        self.assertIsNotNone(models.TestRun.objects.last().tests_file)
+        self.assertIsNotNone(models.TestRun.objects.last().tests_file_storage)
         self.assertNotEqual(0, models.Test.objects.count())
         test_one = models.Test.objects.filter(name="test_one").first()
         test_two = models.Test.objects.filter(name="test_two").first()
@@ -109,7 +109,7 @@ class CreateTestRunApiTest(ApiTest):
             '/api/submit/mygroup/myproject/1.0.3/myenvironment',
             {'tests': '{"test1": "pass"}'}
         )
-        self.assertIsNotNone(models.TestRun.objects.last().tests_file)
+        self.assertIsNotNone(models.TestRun.objects.last().tests_file_storage)
         self.assertNotEqual(0, models.Test.objects.count())
         self.assertIsNone(models.Test.objects.last().log)
 
@@ -118,7 +118,7 @@ class CreateTestRunApiTest(ApiTest):
             '/api/submit/mygroup/myproject/1.0.4/myenvironment',
             {'tests': '{"test1": {"result": "pass", "log": "test log"}}'}
         )
-        self.assertIsNotNone(models.TestRun.objects.last().tests_file)
+        self.assertIsNotNone(models.TestRun.objects.last().tests_file_storage)
         self.assertNotEqual(0, models.Test.objects.count())
         self.assertIsNotNone(models.Test.objects.last().log)
         test1 = models.Test.objects.filter(name="test1").first()
@@ -131,7 +131,7 @@ class CreateTestRunApiTest(ApiTest):
                 '/api/submit/mygroup/myproject/1.0.5/myenvironment',
                 {'metrics': f}
             )
-        self.assertIsNotNone(models.TestRun.objects.last().metrics_file)
+        self.assertIsNotNone(models.TestRun.objects.last().metrics_file_storage)
         self.assertNotEqual(0, models.Metric.objects.count())
 
     def test_receives_metrics_file_as_POST_param(self):
@@ -139,19 +139,19 @@ class CreateTestRunApiTest(ApiTest):
             '/api/submit/mygroup/myproject/1.0.6/myenvironment',
             {'metrics': '{"metric1": 10}'}
         )
-        self.assertIsNotNone(models.TestRun.objects.last().metrics_file)
+        self.assertIsNotNone(models.TestRun.objects.last().metrics_file_storage)
         self.assertNotEqual(0, models.Metric.objects.count())
 
     def test_receives_log_file(self):
         with open(log_file) as f:
             self.client.post('/api/submit/mygroup/myproject/1.0.7/myenvironment',
                              {'log': f})
-        self.assertIsNotNone(models.TestRun.objects.last().log_file)
+        self.assertIsNotNone(models.TestRun.objects.last().log_file_storage)
 
     def test_receives_log_file_as_POST_param(self):
         self.client.post('/api/submit/mygroup/myproject/1.0.8/myenvironment',
                          {'log': "THIS IS THE LOG"})
-        self.assertIsNotNone(models.TestRun.objects.last().log_file)
+        self.assertIsNotNone(models.TestRun.objects.last().log_file_storage)
 
     def test_process_data_on_submission(self):
         self.client.post(
@@ -225,7 +225,7 @@ class CreateTestRunApiTest(ApiTest):
         )
         t = models.TestRun.objects.last()
         attachment = t.attachments.first()
-        self.assertEqual(open(metadata_file, mode='rb').read(), bytes(attachment.data))
+        self.assertEqual(open(metadata_file, mode='rb').read(), attachment.storage.read())
 
     def test_multiple_attachments(self):
         self.client.post(

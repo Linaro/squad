@@ -1,4 +1,6 @@
 import re
+from io import BytesIO
+from django.core.files import File
 from django.test import TestCase
 from django.test import Client
 from django.contrib.auth.models import User
@@ -32,7 +34,8 @@ class FrontendTest(TestCase):
         )
         self.test_run = models.TestRun.objects.last()
         attachment_data = "bar".encode()
-        self.test_run.attachments.create(filename="foo", data=attachment_data, length=len(attachment_data))
+        attachment = self.test_run.attachments.create(filename="foo", length=len(attachment_data))
+        attachment.storage.save("foo", File(BytesIO(attachment_data)))
         self.suite, _ = self.project.suites.get_or_create(slug='mysuite')
         self.test_run.tests.create(suite=self.suite, name='mytest', result=True)
         self.test = self.test_run.tests.first()
@@ -172,7 +175,8 @@ class FrontendTest(TestCase):
 
     def test_attachment(self):
         data = bytes('text file', 'utf-8')
-        self.test_run.attachments.create(filename='foo.txt', data=data, length=len(data), mimetype="text/plain")
+        attachment = self.test_run.attachments.create(filename='foo.txt', length=len(data), mimetype="text/plain")
+        attachment.storage.save('foo.txt', File(BytesIO(data)))
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/attachments/foo.txt' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('text/plain', response['Content-Type'])
         self.assertEqual(b'text file', response.content)
@@ -183,8 +187,7 @@ class FrontendTest(TestCase):
         self.assertEqual(b'log file contents ...', response.content)
 
     def test_no_log(self):
-        self.test_run.log_file = None
-        self.test_run.save()
+        self.test_run.log_file_storage.delete()
 
         response = self.client.get('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/log' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual(404, response.status_code)
