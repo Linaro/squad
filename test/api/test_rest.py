@@ -232,6 +232,23 @@ class RestApiTest(APITestCase):
         project = self.hit('/api/projects/?slug=newproject')['results'][0]
         self.assertEqual(['foo', 'bar'], project['enabled_plugins_list'])
 
+    def test_create_project_with_non_admin_account(self):
+        user, _ = models.User.objects.get_or_create(username='u')
+        self.group.add_user(user)
+        token, _ = Token.objects.get_or_create(user=user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = self.client.post(
+            '/api/projects/',
+            {
+                'group': "http://testserver/api/groups/%d/" % self.group.id,
+                'slug': 'newproject',
+                'enabled_plugins_list': ['foo', 'bar'],
+            }
+        )
+        self.assertEqual(201, response.status_code)
+        project = self.client.get('/api/projects/?slug=newproject').json()['results'][0]
+        self.assertEqual(['foo', 'bar'], project['enabled_plugins_list'])
+
     def test_project_subscribe_unsubscribe_email(self):
         email_addr = "foo@bar.com"
         response = self.post(
