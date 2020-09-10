@@ -37,7 +37,6 @@ def create_squad_group_and_add_users(apps, schema_editor):
                 try:
                     perm = Permission.objects.get(name=name, codename=codename, content_type=ct)
                 except Permission.DoesNotExist:
-                    print('Permission not found with name %s. Creating one' % name)
                     perm = Permission.objects.create(name=name, codename=codename, content_type=ct)
 
                 squad_group.permissions.add(perm)
