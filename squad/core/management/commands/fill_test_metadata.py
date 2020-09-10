@@ -33,4 +33,4 @@ class Command(BaseCommand):
 
             count_processed += 1
             if count_processed % 1000 == 0 and show_progress:
-                print('.', ending='', flush=True)
+                print('.', end='', flush=True)
