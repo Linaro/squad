@@ -3,8 +3,8 @@ FROM debian:buster-slim
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -q=2 && \
-    apt-get install -q=2 --no-install-recommends iproute2 auto-apt-proxy && \
-    apt-get install -q=2 --no-install-recommends \
+    apt-get install -q=2 --yes --no-install-recommends iproute2 auto-apt-proxy && \
+    apt-get install -q=2 --yes --no-install-recommends \
         python3 \
         python3-celery \
         python3-coreapi  \
@@ -53,8 +53,8 @@ COPY . /squad-build/
 ENV SQUAD_STATIC_DIR=/app/static
 
 RUN cd /squad-build && ./scripts/git-build && \
-    pip3 install --no-dependencies ./dist/squad*.whl squad-linaro-plugins sentry-sdk==0.14.3 && \
-    pip3 install --no-dependencies ./dist/squad*.whl zipp importlib-metadata asgiref django-bootstrap3 && \
+    pip3 install --no-dependencies ./dist/squad*.whl squad-linaro-plugins sentry-sdk==0.14.3 zipp importlib-metadata asgiref django-bootstrap3 django-storages && \
+	pip3 install boto3 && \
     cd / && rm -rf /squad-build && \
     mkdir -p /app/static && \
     useradd -d /app squad && \
