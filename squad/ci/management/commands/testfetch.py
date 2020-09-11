@@ -2,6 +2,7 @@ import time
 from squad.core.models import Group
 from squad.ci.models import Backend
 from squad.ci.tasks import fetch
+from squad.ci.utils import task_id
 from django.core.management.base import BaseCommand
 
 
@@ -45,6 +46,6 @@ class Command(BaseCommand):
         testjob = backend.test_jobs.create(target=project, job_id=job_id, target_build=build)
 
         if options.get("background"):
-            fetch.delay(testjob.id)
+            fetch.apply_async(args=(testjob.id,), task_id=task_id(testjob))
         else:
             backend.fetch(testjob.id)

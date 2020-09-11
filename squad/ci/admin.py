@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from squad.ci.models import Backend, TestJob
 from squad.ci.tasks import submit, fetch, poll
+from squad.ci.utils import task_id
 from squad.admin import NoDeleteListingModelAdmin
 
 
@@ -28,7 +29,7 @@ submit_job.short_description = 'Submit selected test jobs'
 
 def fetch_job(modeladmin, request, queryset):
     for test_job in queryset:
-        fetch.delay(test_job.id)
+        fetch.apply_async(args=(test_job.id,), task_id=task_id(test_job))
 
 
 fetch_job.short_description = 'Fetch results of the selected test jobs'
