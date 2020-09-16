@@ -1,3 +1,17 @@
+# 1.22
+
+This 1.22 release increase metric name field from 100 characters
+to 256, as it is for test name. The release also allows by default
+all users to make changes to projects, as long as they belong
+to the respective group.
+
+Complete list of changes going in:
+
+* core: 
+  * make metric name 256 characteres long instead of 100
+  * add project perms to default squad group
+  * migrations: remove print creating permissions
+
 # 1.21
 
 This 1.21 release changes the lava backend XML-RPC
