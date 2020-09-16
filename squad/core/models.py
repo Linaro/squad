@@ -831,7 +831,7 @@ class Metric(models.Model):
         limit_choices_to={'kind': 'metric'},
         on_delete=models.CASCADE,
     )
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=256)
     result = models.FloatField()
     measurements = models.TextField()  # comma-separated float numbers
     is_outlier = models.BooleanField(default=False)
