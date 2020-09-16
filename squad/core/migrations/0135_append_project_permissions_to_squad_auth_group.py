@@ -38,7 +38,7 @@ def append_project_permissions_to_squad_auth_group(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0132_attachment_mimetype'),
+        ('core', '0134_index_together_testrun'),
     ]
 
     operations = [
