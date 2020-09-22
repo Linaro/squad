@@ -26,19 +26,23 @@ class CiApiTest(TestCase):
 
         self.project_admin_user = User.objects.create(username='project-admin')
         self.group.add_admin(self.project_admin_user)
-        self.project_submission_user = User.objects.create(username='project-user')
-        self.group.add_user(self.project_submission_user, 'submitter')
+        self.project_privileged_user = User.objects.create(username='project-user')
+        self.group.add_user(self.project_privileged_user, 'privileged')
+        self.project_submitter_level_user = User.objects.create(username='project-user-submitter-level')
+        self.group.add_user(self.project_submitter_level_user, 'submitter')
         self.project_member_user = User.objects.create(username='project-member-user')
         self.group.add_user(self.project_member_user, 'member')
-        self.usergroup.add_user(self.project_member_user, 'submitter')
+        self.usergroup.add_user(self.project_member_user, 'privileged')
         self.build = self.project.builds.create(version='1')
         self.userbuild = self.userproject.builds.create(version='1')
-        Token.objects.create(user=self.project_submission_user, key='thekey')
+        Token.objects.create(user=self.project_privileged_user, key='thekey')
+        Token.objects.create(user=self.project_submitter_level_user, key='thesubmitterkey')
         Token.objects.create(user=self.project_member_user, key='memberkey')
         Token.objects.create(user=self.project_admin_user, key='adminkey')
 
         self.backend = models.Backend.objects.create(name='lava', implementation_type='fake')
         self.client = APIClient('thekey')
+        self.submitter_client = APIClient('thesubmitterkey')
         self.restclient = RestAPIClient('thekey')
         self.memberclient = APIClient('memberkey')
         self.adminclient = APIClient('adminkey')
@@ -57,6 +61,8 @@ class CiApiTest(TestCase):
             'backend': 'lava',
             'definition': 'foo: 1',
         }
+        r = self.submitter_client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
+        self.assertEqual(403, r.status_code)
         r = self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
         self.assertEqual(201, r.status_code)
         testjob_queryset = models.TestJob.objects.filter(
@@ -71,7 +77,7 @@ class CiApiTest(TestCase):
             testjob_queryset.count()
         )
         logentry_queryset = LogEntry.objects.filter(
-            user_id=self.project_submission_user.pk,
+            user_id=self.project_privileged_user.pk,
             object_id=testjob_queryset.last().pk
         )
         self.assertEqual(
@@ -152,6 +158,8 @@ class CiApiTest(TestCase):
             'backend': 'lava',
             'definition': 'foo: 1',
         }
+        r = self.submitter_client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
+        self.assertEqual(403, r.status_code)
         self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
         job_id = models.TestJob.objects.last().id
         submit.assert_called_with(job_id)
@@ -189,7 +197,7 @@ class CiApiTest(TestCase):
             testjob_queryset.count()
         )
         logentry_queryset = LogEntry.objects.filter(
-            user_id=self.project_submission_user.pk,
+            user_id=self.project_privileged_user.pk,
             object_id=testjob_queryset.last().pk
         )
         self.assertEqual(

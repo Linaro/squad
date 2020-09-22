@@ -13,15 +13,20 @@ from squad.core import models
 class AuthMode(Enum):
     READ = 0
     WRITE = 1
-    SUBMIT = 2
+    SUBMIT_RESULTS = 2
+    PRIVILEGED = 3
 
 
 def auth_write(func):
     return auth(func, AuthMode.WRITE)
 
 
-def auth_submit(func):
-    return auth(func, AuthMode.SUBMIT)
+def auth_submit_results(func):
+    return auth(func, AuthMode.SUBMIT_RESULTS)
+
+
+def auth_privileged(func):
+    return auth(func, AuthMode.PRIVILEGED)
 
 
 def auth_user_from_request(request, user):
@@ -76,7 +81,10 @@ def auth(func, mode=AuthMode.READ):
             # exists.
             raise PermissionDenied()
 
-        if mode == AuthMode.SUBMIT and not project.can_submit(user):
+        if mode == AuthMode.SUBMIT_RESULTS and not project.can_submit_results(user):
+            return HttpResponseForbidden()
+
+        if mode == AuthMode.PRIVILEGED and not project.can_submit_testjobs(user):
             return HttpResponseForbidden()
 
         if mode == AuthMode.WRITE and not project.writable_by(user):
