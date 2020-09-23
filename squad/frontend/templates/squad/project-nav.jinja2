@@ -25,6 +25,12 @@
     </a>
   </li>
 
+ <li role="presentation" {% if url_name == 'knownissues' %}class="active"{% endif %}>
+    <a href="{{url('knownissues', args=[project.group.slug, project.slug])}}">
+      {{ _('Known Issues') }}
+    </a>
+  </li>
+
   {% if project.writable_by(user) %}
   <li role="presentation" {% if 'project-settings' in url_name %}class="active"{% endif %}>
     <a href="{{project_section_url(project, 'project-settings')}}">

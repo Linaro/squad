@@ -1,0 +1,131 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+
+<h2>{{ _('Known Issues') }}</h2>
+
+{% with items=results %}
+{% include "squad/_pagination.jinja2" %}
+{% endwith %}
+
+<div>
+    <div class='row row-bordered'>
+        <div class='col-md-12 col-sm-12 filter'>
+          <a id="searchLink"><button type='button' class='btn btn-primary fa fa-search'></button></a>
+          <input name='search' id='search' type='text' placeholder='{{ _('Filter results ...') }}' value='{{search}}' />
+        </div>
+    </div>
+
+    <table class='test-results'>
+        <thead>
+            <th>{{ _('Known Issue') }}</th>
+            {% for env in results.environments %}
+            <th>{{env}}</th>
+            {% endfor %}
+        </thead>
+        {% for test, issues in results.results.items() %}
+        {% set test_history_url = url('legacy_test_history', args=[project.group.slug, project.slug, test]) %}
+        <tr id='test-{{test|slugify}}' ng-show="match('test-{{test|slugify}}')">
+            <td><a href="{{ test_history_url }}">{{test}}</a></td>
+            {% for env in results.environments %}
+                {% with result=issues[env] %}
+                    <td>
+                        {% if result %}
+                                <a href='#' data-toggle="modal" data-target="#info_modal" data-status="{{ result }}"><span data-toggle="tooltip" data-placement="right" title="{{ _('Show info') }}" class='fa fa-info-circle'></span></a>
+
+                        {% else %}
+                                {{ _('n/a') }}
+                        {% endif %}
+                    </td>
+                {% endwith %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+
+<!-- Modal HTML -->
+<div id="info_modal" class="modal fade" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">{{ _('Known-issue Details') }}</h4>
+      </div>
+      <div class="modal-body">
+        <div id="url" style="display: none;">
+          <p><strong>{{ _('Url:') }}</strong></p>
+          <a id="url_inner" href=""></a>
+        </div>
+        <div id="notes" style="display: none;">
+          <p><strong>{{ _('Notes:') }}</strong></p>
+          <div id="notes_inner">
+            <pre></pre>
+          </div>
+        </div>
+        <div id="active">
+          <span>
+            <strong>{{ _('Active:') }}</strong>&nbsp;&nbsp;
+            <i id="active_inner"></i>
+          </span>
+        </div>
+        <div id="intermittent">
+          <span>
+            <strong>{{ _('Intermittent:') }}</strong>
+            <i id="intermittent_inner"></i>
+          </span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="modalClosed()">{{ _('Close') }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script type="module" src='{{static("squad/build.js")}}'></script>
+<script type="text/javascript" src='{{static("squad/table.js")}}'></script>
+<script type="text/javascript">
+$('[data-toggle="tooltip"]').tooltip();
+function loadSearchURL(pageParam, search) {
+  searchURL = pageParam + "&search=" + search;
+  window.location = searchURL;
+}
+$("#search").keypress(function(e) {
+  if(e.which == 13) {
+    window.location = "?page=1&search=" + $("#search").val();
+    return false;
+  }
+});
+$("#searchLink").click(function(event) {
+  window.location = "?page=1&search=" + $("#search").val();
+  return false;
+});
+$(".pagination > li > a").click(function(event) {
+  window.location = $(this).attr("href") + "&search=" + $("#search").val();
+  return false;
+});
+$('#info_modal').on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget);
+  var result = button.data('status');
+  if(result['url']) {
+    $('#url').show();
+    var link = document.getElementById('url_inner');
+    link.href = result['url'];
+    $('#url_inner').html(result['url']);
+  }
+  if(result['notes']) {
+    $('#notes').show();
+    if(result['notes']) {
+      $('#notes_inner pre:first').html(result['notes']);
+      }
+    }
+  document.getElementById('active_inner').className = (result['active'] ? 'fa fa-check' : 'fa fa-times');
+  document.getElementById('intermittent_inner').className = (result['intermittent'] ? 'fa fa-check' : 'fa fa-times');
+})
+</script>
+{% endblock %}
