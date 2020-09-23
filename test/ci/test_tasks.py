@@ -11,6 +11,7 @@ from celery.exceptions import Retry
 from squad.ci import models
 from squad.core import models as core_models
 from squad.ci.tasks import poll, fetch, submit
+from squad.ci.utils import task_id
 from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue
 from squad.ci.exceptions import FetchIssue, TemporaryFetchIssue
 
@@ -42,7 +43,7 @@ class PollTest(TestCase):
         backend = models.Backend.objects.create(name='b1')
         testjob = backend.test_jobs.create(target=project, submitted=True)
         poll.apply()
-        fetch_method.delay.assert_called_with(testjob.id)
+        fetch_method.apply_async.assert_called_with(args=(testjob.id,), task_id=task_id(testjob))
 
 
 class FetchTest(TestCase):

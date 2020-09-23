@@ -1,6 +1,7 @@
 from squad.celery import app as celery
 from squad.ci.models import Backend, TestJob
 from squad.ci.exceptions import SubmissionIssue
+from squad.ci.utils import task_id
 from celery.utils.log import get_task_logger
 from squad.mail import Message
 from django.conf import settings
@@ -18,7 +19,7 @@ def poll(backend_id=None):
         backends = Backend.objects.all()
     for backend in backends:
         for test_job in backend.poll():
-            fetch.delay(test_job.id)
+            fetch.apply_async(args=(test_job.id,), task_id=task_id(test_job))
 
 
 @celery.task

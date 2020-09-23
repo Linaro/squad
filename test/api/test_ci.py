@@ -156,7 +156,7 @@ class CiApiTest(TestCase):
         job_id = models.TestJob.objects.last().id
         submit.assert_called_with(job_id)
 
-    @patch("squad.ci.tasks.fetch.delay")
+    @patch("squad.ci.tasks.fetch.apply_async")
     def test_auth_on_watch_testjob(self, fetch):
         testjob_id = 1234
         args = {
@@ -167,7 +167,7 @@ class CiApiTest(TestCase):
         r = self.client.post('/api/watchjob/mygroup/myproject/1/myenv', args)
         self.assertEqual(403, r.status_code)
 
-    @patch("squad.ci.tasks.fetch.delay")
+    @patch("squad.ci.tasks.fetch.apply_async")
     def test_watch_testjob(self, fetch):
         testjob_id = 1234
         args = {
@@ -201,7 +201,7 @@ class CiApiTest(TestCase):
             logentry_queryset.last().action_flag
         )
 
-    @patch("squad.ci.tasks.fetch.delay")
+    @patch("squad.ci.tasks.fetch.apply_async")
     def test_watch_testjob_private_group(self, fetch):
         testjob_id = 1234
         args = {
@@ -235,7 +235,7 @@ class CiApiTest(TestCase):
             logentry_queryset.last().action_flag
         )
 
-    @patch("squad.ci.tasks.fetch.delay")
+    @patch("squad.ci.tasks.fetch.apply_async")
     def test_watch_testjob_mising_id(self, fetch):
         args = {
             'backend': 'lava'
