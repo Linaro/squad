@@ -15,6 +15,7 @@ from rest_framework.authtoken.models import Token
 
 
 tests_file = os.path.join(os.path.dirname(__file__), 'tests.json')
+tests_two_file = os.path.join(os.path.dirname(__file__), 'tests_two.json')
 tests_log_file = os.path.join(os.path.dirname(__file__), 'tests_log.json')
 metrics_file = os.path.join(os.path.dirname(__file__), 'benchmarks.json')
 log_file = os.path.join(os.path.dirname(__file__), 'test_run.log')
@@ -33,15 +34,19 @@ class ApiTest(TestCase):
         self.project = self.group.projects.create(slug='myproject')
         self.usergroup = models.UserNamespace.objects.create(slug='~project-user')
         self.userproject = self.usergroup.projects.create(slug='userproject')
-        self.project_submission_user = User.objects.create(username='project-user')
-        self.group.add_admin(self.project_submission_user)
-        self.usergroup.add_admin(self.project_submission_user)
-        Token.objects.create(user=self.project_submission_user, key='thekey')
+        self.project_submission_admin_user = User.objects.create(username='project-user')
+        self.project_submitter_level = User.objects.create(username='project-user-two')
+        self.group.add_admin(self.project_submission_admin_user)
+        self.group.add_user(self.project_submitter_level, 'submitter')
+        self.usergroup.add_admin(self.project_submission_admin_user)
+        Token.objects.create(user=self.project_submission_admin_user, key='thekey')
+        Token.objects.create(user=self.project_submitter_level, key='thesubmitterkey')
 
         self.global_submission_user = User.objects.create(username='global-user', is_staff=True)
         self.global_token = Token.objects.create(user=self.global_submission_user)
 
         self.client = APIClient('thekey')
+        self.submitter_client = APIClient('thesubmitterkey')
 
 
 class CreateTestRunApiTest(ApiTest):
@@ -54,7 +59,7 @@ class CreateTestRunApiTest(ApiTest):
         environment = self.project.environments.get(slug='myenvironment')
         testrun = build.test_runs.get(environment=environment)
         logentry_queryset = LogEntry.objects.filter(
-            user_id=self.project_submission_user.pk,
+            user_id=self.project_submission_admin_user.pk,
             object_id=testrun.pk,
             object_repr=force_text(testrun),
         )
@@ -77,12 +82,21 @@ class CreateTestRunApiTest(ApiTest):
     def test_create_test_run(self):
         test_runs = models.TestRun.objects.count()
         self.client.post('/api/submit/mygroup/myproject/1.0.22/myenvironment')
-        self.assertEqual(test_runs + 1, models.TestRun.objects.count())
+        self.submitter_client.post('/api/submit/mygroup/myproject/1.0.23/myenvironment2')
+        self.assertEqual(test_runs + 2, models.TestRun.objects.count())
 
     def test_receives_tests_file(self):
         with open(tests_file) as f:
             self.client.post(
                 '/api/submit/mygroup/myproject/1.0.1/myenvironment',
+                {'tests': f}
+            )
+        self.assertIsNotNone(models.TestRun.objects.last().tests_file)
+        self.assertNotEqual(0, models.Test.objects.count())
+        self.assertIsNone(models.Test.objects.last().log)
+        with open(tests_two_file) as f:
+            self.submitter_client.post(
+                '/api/submit/mygroup/myproject/1.1.5/myenvironment3',
                 {'tests': f}
             )
         self.assertIsNotNone(models.TestRun.objects.last().tests_file)
@@ -108,6 +122,13 @@ class CreateTestRunApiTest(ApiTest):
         self.client.post(
             '/api/submit/mygroup/myproject/1.0.3/myenvironment',
             {'tests': '{"test1": "pass"}'}
+        )
+        self.assertIsNotNone(models.TestRun.objects.last().tests_file)
+        self.assertNotEqual(0, models.Test.objects.count())
+        self.assertIsNone(models.Test.objects.last().log)
+        self.submitter_client.post(
+            '/api/submit/mygroup/myproject/1.1.3/myenvironment3',
+            {'tests': '{"submitterTest": "pass"}'}
         )
         self.assertIsNotNone(models.TestRun.objects.last().tests_file)
         self.assertNotEqual(0, models.Test.objects.count())
@@ -393,7 +414,7 @@ class CreateBuildApiTest(ApiTest):
         self.assertEqual(self.github, build.patch_source)
         self.assertEqual(build.patch_id, "999")
         logentry_queryset = LogEntry.objects.filter(
-            user_id=self.project_submission_user.pk,
+            user_id=self.project_submission_admin_user.pk,
             object_id=build.pk,
             object_repr=force_text(build),
         )

@@ -93,8 +93,11 @@ class Group(models.Model, DisplayName):
     def accessible_to(self, user):
         return GroupMember.objects.filter(group=self, user=user.id).exists() or self.writable_by(user)
 
-    def can_submit(self, user):
-        return user.is_superuser or user.is_staff or self.has_access(user, 'admin', 'submitter')
+    def can_submit_results(self, user):
+        return user.is_superuser or user.is_staff or self.has_access(user, 'admin', 'privileged', 'submitter')
+
+    def can_submit_testjobs(self, user):
+        return user.is_superuser or user.is_staff or self.has_access(user, 'admin', 'privileged')
 
     def writable_by(self, user):
         return user.is_superuser or user.is_staff or self.has_access(user, 'admin')
@@ -128,6 +131,7 @@ class GroupMember(models.Model):
     ACCESS_LEVELS = (
         ('member', N_('Member')),
         ('submitter', N_('Result submitter')),
+        ('privileged', N_('Privileged')),
         ('admin', N_('Administrator')),
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -273,8 +277,11 @@ class Project(models.Model, DisplayName):
     def accessible_to(self, user):
         return self.is_public or self.group.accessible_to(user)
 
-    def can_submit(self, user):
-        return self.group.can_submit(user)
+    def can_submit_testjobs(self, user):
+        return self.group.can_submit_testjobs(user)
+
+    def can_submit_results(self, user):
+        return self.group.can_submit_results(user)
 
     def writable_by(self, user):
         return self.group.writable_by(user)

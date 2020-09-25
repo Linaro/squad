@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from squad.http import auth_submit, read_file_upload, auth_user_from_request
+from squad.http import auth_privileged, read_file_upload, auth_user_from_request
 from squad.ci.exceptions import SubmissionIssue
 from squad.ci.tasks import submit
 from squad.ci.models import Backend, TestJob
@@ -12,7 +12,7 @@ from squad.core.utils import log_addition
 
 @require_http_methods(["POST"])
 @csrf_exempt
-@auth_submit
+@auth_privileged
 def submit_job(request, group_slug, project_slug, version, environment_slug):
     backend_name = request.POST.get('backend')
     if backend_name is None:
@@ -59,7 +59,7 @@ def submit_job(request, group_slug, project_slug, version, environment_slug):
 
 @require_http_methods(["POST"])
 @csrf_exempt
-@auth_submit
+@auth_privileged
 def watch_job(request, group_slug, project_slug, version, environment_slug):
     backend_name = request.POST.get('backend')
     if backend_name is None:
@@ -105,7 +105,7 @@ def resubmit_job(request, test_job_id, method='resubmit'):
     testjob = get_object_or_404(TestJob.objects, pk=test_job_id)
     user = auth_user_from_request(request, request.user)
     project = testjob.target
-    if not project.can_submit(user):
+    if not project.can_submit_testjobs(user):
         return HttpResponse(status=401)
 
     call = getattr(testjob, method)

@@ -6,7 +6,7 @@ import logging
 
 
 from squad.http import read_file_upload
-from squad.http import auth_submit
+from squad.http import auth_submit_results
 
 
 from squad.core.models import Build
@@ -27,7 +27,7 @@ logger = logging.getLogger()
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@auth_submit
+@auth_submit_results
 def create_build(request, group_slug, project_slug, version):
     project = request.project
 
@@ -61,7 +61,7 @@ def create_build(request, group_slug, project_slug, version):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@auth_submit
+@auth_submit_results
 def add_test_run(request, group_slug, project_slug, version, environment_slug):
     project = request.project
 
