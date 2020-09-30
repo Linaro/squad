@@ -336,7 +336,7 @@ class PatchSource(models.Model):
     username = models.CharField(max_length=128)
     _password = models.CharField(max_length=128, null=True, blank=True, db_column="password")
     url = CustomURLField(help_text="scheme://host, ex: 'http://github.com', 'ssh://gerrit.host, etc'")
-    token = models.CharField(max_length=1024, blank=True)
+    token = models.CharField(max_length=1024, blank=True, null=True)
     implementation = PluginField(
         default='null',
         features=[
