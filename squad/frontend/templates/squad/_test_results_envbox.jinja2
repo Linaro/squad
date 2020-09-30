@@ -39,9 +39,56 @@
                 <tr>
                     <td>{{ suite }}</td>
                     <td>
-                        {% for status in statuses %}
-                        <a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{% include "squad/_test_results_summary.jinja2" %}</a><br />
-                        {% endfor %}
+                    {% for status in statuses %}
+                        <a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{% include "squad/_test_results_summary.jinja2" %}</a>
+                        {% if status.test_run.attachments.all()|length > 0  %}
+                        {% with tr_id = status.test_run.id%}
+                        {% set download_key = '%s-%s-%s' % (suite, environment, tr_id) %}
+                            <select
+                                name="attachment"
+                                data-toggle="tooltip"
+                                title="{{ _('Download Attachment') }}"
+                                class="form-control-lg"
+                                style="width: 40%;"
+                                ng-model='selected_attachment["{{ download_key }}"]'
+                                ng-change='show_download_button("{{ download_key }}")'
+                                ng-cloak
+                                >
+                                <option value="" disabled selected hidden>Download Attachment</option>
+                                {% for attachment in status.test_run.attachments.all() %}
+                                    <option
+                                        ng-init='attachments_visibility["{{ download_key }}"]["{{ attachment.filename }}"] = false'
+                                        value="{{ attachment.filename }}"
+                                    >
+                                        {{ attachment.filename }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% for attachment in status.test_run.attachments.all() %}
+                            {% set download_url = download_build_attachments_url(project.group.slug, project.slug, build.version, tr_id, attachment.filename) %}
+                                <a
+                                    href="{{ download_url }}"
+                                    value ="{{ _('Download') }}"
+                                    class="btn btn-default"
+                                    data-toggle="tooltip"
+                                    title="Download"
+                                    ng-cloak
+                                    ng-hide='!attachments_visibility["{{ download_key }}"]["{{ attachment.filename }}"]'
+                                    />
+                                    <i class='fa fa-download'>&nbsp;</i>
+                                </a>
+                                {% if statuses|length > 1 %}
+                                    <br/>
+                                {% endif %}
+                            {% endfor %}
+                        {% endwith %}
+                        {% else%}
+                          {% if statuses|length > 1 %}
+                              <br/>
+                          {% endif %}
+                        {% endif %}
+
+                    {% endfor %}
                     </td>
                 </tr>
                 {% endfor %}

@@ -360,7 +360,7 @@ def build(request, group_slug, project_slug, version):
 
     __statuses__ = queryset.prefetch_related(
         'suite',
-        Prefetch('test_run', queryset=TestRun.objects.prefetch_related('environment').all())
+        Prefetch('test_run', queryset=TestRun.objects.prefetch_related('environment', 'attachments').all())
     ).order_by('-tests_fail', 'suite__slug', '-test_run__environment__slug')
 
     test_results = TestResultTable()
