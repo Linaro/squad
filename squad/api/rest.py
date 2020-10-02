@@ -1071,9 +1071,9 @@ class SuiteViewSet(viewsets.ModelViewSet):
     """
     Additional actions:
 
-     * `api/suites/<id>/testnames` GET
+     * `api/suites/<id>/tests` GET
 
-        Returns list of all test names belonging to this suite
+        Returns list of all test belonging to this suite
     """
 
     queryset = Suite.objects.all()
@@ -1081,10 +1081,14 @@ class SuiteViewSet(viewsets.ModelViewSet):
     filterset_class = SuiteFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
 
-    @action(detail=True, methods=['get'], suffix='testnames')
-    def testnames(self, request, pk=None):
-        # In [4]: [t.name for t in SuiteMetadata.objects.filter(kind='test', suite='testsuite1')]
-        pass
+    @action(detail=True, methods=['get'], suffix='tests')
+    def tests(self, request, pk=None):
+        suite = self.get_object()
+        tests = Test.objects.filter(suite=suite).prefetch_related('metadata', 'suite', 'known_issues').order_by('id')
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(tests, request)
+        serializer = TestSerializer(page, many=True, context={'request': request}, remove_fields=['suite'])
+        return paginator.get_paginated_response(serializer.data)
 
 
 class TestSerializer(serializers.ModelSerializer):
