@@ -299,6 +299,7 @@ function ChartPanel($http, DATA) {
             }
 
             var ctx = document.createElement('canvas')
+            ctx.setAttribute('id', this.metric.name)
             target.appendChild(ctx)
 
             var scatterChart = new Chart(ctx, {
@@ -698,11 +699,11 @@ function ChartsController($scope, $http, $location, $compile, ChartPanel, DATA) 
 
                 var title_container = "<div>" +
                     "<div class='h4 col-md-11 text-center'>" + metric.label +
-                    "</div><div class='h4 pull-right'><button " +
+                    "</div><div id='" + metric.name + "-div'"+"class='h4 pull-right'><span><button " +
                     "ng-click='toggleFullScreen(\"" + target_id +
                     "\")' class='btn btn-default btn-xs' " +
                     "title='Toggle Fullscreen'><i class='fa fa-expand' " +
-                    "aria-hidden='true'></i></button></div></div>"
+                    "aria-hidden='true'></i></button></span></div></div>"
                 var elem = $compile(title_container)($scope)
                 $(target).append(elem)
 
@@ -719,6 +720,13 @@ function ChartsController($scope, $http, $location, $compile, ChartPanel, DATA) 
                 if (! metric.dynamic) {
                     metric.drawn = true
                 }
+                var canvas_id = document.getElementById(metric.name).id
+                var button_id = canvas_id + "-anchor"
+                var canvas_div = document.getElementById(metric.name+'-div').children[0]
+                var download_elem = "<a id='"+ button_id + "' ng-click='downloadChartImage(\""+ canvas_id + "\""+
+                    ",\"" + button_id + "\")' class='btn btn-default btn-xs'" +
+                    "title='Download' download><i class='fa fa-download' aria-hidden='true'></i></a>"
+                $(canvas_div).append($compile(download_elem)($scope))
 
                 var slider_container = "<slider-range metrics='selectedMetrics' metric-index='" + index + "' ranges='ranges' format-date='formatDate(x)' filter-by-date='filterByDate(chartPanel, minLimit, maxLimit)' update-url='updateURL()' get-environment-ids='getEnvironmentIds()' value-min='" + min_value + "' value-max='" + max_value + "'></slider-range>"
                 elem = $compile(slider_container)($scope)
@@ -875,6 +883,12 @@ function ChartsController($scope, $http, $location, $compile, ChartPanel, DATA) 
                 document.webkitExitFullscreen();
             }
         }
+    }
+
+    $scope.downloadChartImage = function (target_id, button_id) {
+        var image_url = document.getElementById(target_id).toDataURL('image/jpeg', 1.0);
+        var download_button = document.getElementById(button_id);
+        download_button.href = image_url;
     }
 
     $scope.initPage()
