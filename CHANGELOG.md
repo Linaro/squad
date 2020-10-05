@@ -1,3 +1,25 @@
+# 1.23
+
+This 1.23 release adds a few items to frontend: download attachments
+button right on build view, download metric charts and known issues on
+project view.
+
+The release also changes task id for fetch tasks, this will help debugging
+fetch-related errors.
+
+Complete list of changes going in:
+
+* ci: tasks: define task_id for fetch tasks
+* core:
+  * frontend add group 'privileged' access level
+  * make PatchSource.token nullable
+* frontend:
+  * Fix a typo on the delete project button
+  * add known issues to project view
+  * export metrics graphs as picture
+  * rest: add dropdown to download attachments
+
+
 # 1.22
 
 This 1.22 release increase metric name field from 100 characters
