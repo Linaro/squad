@@ -1,5 +1,5 @@
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404
 from enum import Enum
 from rest_framework.authtoken.models import Token
@@ -8,6 +8,12 @@ from rest_framework.exceptions import AuthenticationFailed
 
 
 from squad.core import models
+
+
+class JsonResponseForbidden(JsonResponse):
+    def __init__(self, *args, **kwargs):
+        kwargs['status'] = 403
+        return super(JsonResponseForbidden, self).__init__(*args, **kwargs)
 
 
 class AuthMode(Enum):
@@ -22,11 +28,11 @@ def auth_write(func):
 
 
 def auth_submit_results(func):
-    return auth(func, AuthMode.SUBMIT_RESULTS)
+    return auth(func, AuthMode.SUBMIT_RESULTS, is_json=True)
 
 
 def auth_privileged(func):
-    return auth(func, AuthMode.PRIVILEGED)
+    return auth(func, AuthMode.PRIVILEGED, is_json=True)
 
 
 def auth_user_from_request(request, user):
@@ -51,9 +57,10 @@ def auth_user_from_request(request, user):
     return user
 
 
-def auth(func, mode=AuthMode.READ):
+def auth(func, mode=AuthMode.READ, is_json=False):
     def auth_wrapper(*args, **kwargs):
         request = args[0]
+        request.is_json = is_json
         group_slug = args[1]
         group = get_object_or_404(models.Group, slug=group_slug)
         request.group = group
@@ -82,13 +89,13 @@ def auth(func, mode=AuthMode.READ):
             raise PermissionDenied()
 
         if mode == AuthMode.SUBMIT_RESULTS and not project.can_submit_results(user):
-            return HttpResponseForbidden()
+            return response_forbidden('User needs permission to submit results.', is_json)
 
         if mode == AuthMode.PRIVILEGED and not project.can_submit_testjobs(user):
-            return HttpResponseForbidden()
+            return response_forbidden('User needs permission to submit test jobs.', is_json)
 
         if mode == AuthMode.WRITE and not project.writable_by(user):
-            return HttpResponseForbidden()
+            return response_forbidden('User needs permission to make changes to the project.', is_json)
 
         # authentication OK, call the original view
         return func(*args, **kwargs)
@@ -101,3 +108,9 @@ def read_file_upload(stream):
     for chunk in stream.chunks():
         data = data + chunk
     return data
+
+
+def response_forbidden(message=None, is_json=False):
+    if is_json:
+        return JsonResponseForbidden({'detail': message})
+    return HttpResponseForbidden()
