@@ -830,3 +830,13 @@ class RestApiTest(APITestCase):
     def test_project_compare_builds_with_finished_status_with_verions_as_args(self):
         response = self.client.get('/api/projects/%s/compare_builds/?baseline=%s&to_compare=%s' % (self.project.id, self.build4.version, self.build6.version))
         self.assertEqual(400, response.status_code)
+
+    def test_suites(self):
+        data = self.hit('/api/suites/')
+        print(data)
+        self.assertEqual(2, data['count'])
+
+    def test_suite_tests(self):
+        foo_suite = self.project.suites.get(slug='foo')
+        data = self.hit('/api/suites/%d/tests/' % foo_suite.id)
+        self.assertEqual(54, data['count'])
