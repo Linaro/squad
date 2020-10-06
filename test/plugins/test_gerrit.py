@@ -74,13 +74,15 @@ class GerritPluginTest(TestCase):
             url='https://the.host',
             username='theuser',
             password='1234',
-            implementation='gerrit'
+            implementation='gerrit',
+            token=''
         )
         self.ssh_patch_source = PatchSource.objects.create(
             name='ssh-gerrit',
             url='ssh://the.host',
             username='theuser',
-            implementation='gerrit'
+            implementation='gerrit',
+            token=''
         )
 
         self.build1 = self.project.builds.create(version='1', patch_source=self.http_patch_source, patch_id='1,1')
