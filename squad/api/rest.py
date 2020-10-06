@@ -1306,7 +1306,7 @@ class TestJobViewSet(ModelViewSet):
 
         Allows to cancel a job
     """
-    queryset = TestJob.objects.prefetch_related('backend').order_by('-id')
+    queryset = TestJob.objects.prefetch_related('backend').order_by('-id').defer('definition')
     project_lookup_key = 'target_build__project__in'
     serializer_class = TestJobSerializer
     filterset_fields = (
