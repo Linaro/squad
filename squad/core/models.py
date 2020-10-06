@@ -840,6 +840,7 @@ class Metric(models.Model):
     )
     name = models.CharField(max_length=256)
     result = models.FloatField()
+    unit = models.CharField(null=True, max_length=30)
     measurements = models.TextField()  # comma-separated float numbers
     is_outlier = models.BooleanField(default=False)
 

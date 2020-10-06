@@ -33,13 +33,13 @@ class ApiDataTest(TestCase):
 
     def test_basics(self):
         self.receive("2016-09-01", metrics={
-            "foo": 1,
-            "bar/baz": 2,
+            "foo": {"value": 1, "unit": "kb"},
+            "bar/baz": {"value": 2, "unit": "kb"},
         })
 
         self.receive("2016-09-02", metrics={
-            "foo": 2,
-            "bar/baz": 3,
+            "foo": {"value": 2, "unit": ""},
+            "bar/baz": {"value": 3, "unit": "minutes"}
         })
 
         resp = self.get_json('/api/data/mygroup/myproject?metric=foo&metric=bar/baz&environment=env1')
@@ -60,13 +60,13 @@ class ApiDataTest(TestCase):
 
     def test_metrics_csv(self):
         self.receive("2018-09-17", metrics={
-            "foo": 1,
-            "bar/baz": 2,
+            "foo": {"value": 1, "unit": ""},
+            "bar/baz": {"value": 2, "unit": ""}
         })
 
         self.receive("2018-09-18", metrics={
-            "foo": 2,
-            "bar/baz": 3,
+            "foo": {"value": 2, "unit": "hours"},
+            "bar/baz": {"value": 3, "unit": "minutes"}
         })
 
         resp = self.client.get('/api/data/mygroup/myproject?metric=foo&environment=env1&format=csv')
@@ -128,13 +128,13 @@ class ApiDataTest(TestCase):
 
     def test_all_metrics(self):
         self.receive("2018-09-01", metrics={
-            "foo": 1,
-            "bar/baz": 2,
+            "foo": {"value": 1, "unit": "kb"},
+            "bar/baz": {"value": 2, "unit": "seconds"}
         })
 
         self.receive("2018-09-02", metrics={
-            "foo": 2,
-            "bar/baz": 3,
+            "foo": {"value": 2, "unit": ""},
+            "bar/baz": {"value": 3, "unit": ""}
         })
 
         resp = self.get_json('/api/data/mygroup/myproject?environment=env1')
@@ -156,14 +156,14 @@ class ApiDataTest(TestCase):
 
     def test_dynamic_summary(self):
         self.receive("2019-06-04", metrics={
-            "foo": 2,
-            "bar/baz": 2,
+            "foo": {"value": 2, "unit": ""},
+            "bar/baz": {"value": 2, "unit": ""}
         })  # geomean = 2
 
         self.receive("2019-06-05", metrics={
-            "foo": 3,
-            "bar/baz": 3,
-            'fox/qux': 3,
+            "foo": {"value": 3, "unit": ""},
+            "bar/baz": {"value": 3, "unit": "seconds"},
+            'fox/qux': {"value": 3, "unit": "minutes"}
         })  # geomean = 3
         resp = self.get_json(
             '/api/data/mygroup/myproject?environment=env1&metric=foo&metric=bar/baz&metric=:dynamic_summary:')
@@ -176,8 +176,8 @@ class ApiDataTest(TestCase):
 
     def test_dynamic_summary_no_selected_metrics(self):
         self.receive("2019-06-04", metrics={
-            "foo": 2,
-            "bar/baz": 2,
+            "foo": {"value": 2, "unit": "kg"},
+            "bar/baz": {"value": 2, "unit": "cm"}
         })
         resp = self.get_json(
             '/api/data/mygroup/myproject?environment=env1&metric=:dynamic_summary:')

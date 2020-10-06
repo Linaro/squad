@@ -65,9 +65,14 @@ class JSONMetricDataParser(object):
 
         input_data = json.loads(json_text)
         data = []
-
-        for key, value in input_data.items():
-            group_name, name = parse_name(key)
+        for metric, value_dict in input_data.items():
+            unit = None
+            if type(value_dict) is dict:
+                unit = value_dict.get('unit', None)
+                value = value_dict.get('value', None)
+            else:
+                value = value_dict
+            group_name, name = parse_name(metric)
             result, measurements = parse_metric(value)
             if result is not None and not (math.isnan(result) or math.isinf(result)):
                 data.append({
@@ -75,6 +80,6 @@ class JSONMetricDataParser(object):
                     "group_name": group_name,
                     "result": result,
                     "measurements": measurements,
+                    "unit": unit,
                 })
-
         return data

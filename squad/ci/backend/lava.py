@@ -583,7 +583,8 @@ class Backend(BaseBackend):
                         results.update({res_name: {'result': res_value, 'log': res_log}})
                     else:
                         res_value = result['measurement']
-                        metrics.update({res_name: float(res_value)})
+                        unit = result['unit']
+                        metrics.update({res_name: {'value': float(res_value), 'unit': unit}})
                         if clone_measurements_to_tests:
                             res_value = result['result']
                             results.update({res_name: res_value})
@@ -598,8 +599,9 @@ class Backend(BaseBackend):
                         # it's appended to the test name. This way regressions can
                         # be found with more granularity
                         res_name = "%s-%s" % (res_name, job_metadata['testsuite'])
+                    unit = result['unit']
                     results.update({res_name: result['result']})
-                    metrics.update({res_time_name: float(result['measurement'])})
+                    metrics.update({res_time_name: {'value': float(result['measurement']), 'unit': unit}})
 
                 # Handle failed lava jobs
                 if result['suite'] == 'lava' and result['name'] == 'job' and result['result'] == 'fail':

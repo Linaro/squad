@@ -155,10 +155,18 @@ class CreateTestRunApiTest(ApiTest):
         self.assertIsNotNone(models.TestRun.objects.last().metrics_file)
         self.assertNotEqual(0, models.Metric.objects.count())
 
-    def test_receives_metrics_file_as_POST_param(self):
+    def test_receives_metrics_file_as_POST_param_with_no_metric_unit(self):
         self.client.post(
             '/api/submit/mygroup/myproject/1.0.6/myenvironment',
             {'metrics': '{"metric1": 10}'}
+        )
+        self.assertIsNotNone(models.TestRun.objects.last().metrics_file)
+        self.assertNotEqual(0, models.Metric.objects.count())
+
+    def test_receives_metrics_file_as_POST_param(self):
+        self.client.post(
+            '/api/submit/mygroup/myproject/1.0.6/myenvironment',
+            {'metrics': '{"metric1": {"value": 10, "unit": ""}}'}
         )
         self.assertIsNotNone(models.TestRun.objects.last().metrics_file)
         self.assertNotEqual(0, models.Metric.objects.count())

@@ -28,47 +28,47 @@ class MetricComparisonTest(TestCase):
         self.project2 = self.group.projects.create(slug='project2')
 
         self.receive_test_run(self.project1, '0', 'myenv', {
-            'z': 0.1,
+            'z': {"value": 0.1, "unit": ""}
         })
         self.receive_test_run(self.project1, '0', 'myenv', {
-            'z': 0.2,
+            'z': {"value": 0.2, "unit": "bikes"}
         })
         self.receive_test_run(self.project2, '0', 'otherenv', {
-            'z': 0.1,
-        })
+            'z': {"value": 0.1, "unit": "seconds"}
 
-        self.receive_test_run(self.project1, '1', 'myenv', {
-            'a': 0.2,
-            'b': 0.3,
         })
         self.receive_test_run(self.project1, '1', 'myenv', {
-            'c': 0.4,
-            'd/e': 0.5,
+            'a': {"value": 0.2, "unit": "seconds"},
+            'b': {"value": 0.3, "unit": "seconds"}
+        })
+        self.receive_test_run(self.project1, '1', 'myenv', {
+            'c': {"value": 0.4, "unit": "seconds"},
+            'd/e': {"value": 0.5, "unit": "seconds"}
         })
         self.receive_test_run(self.project2, '1', 'myenv', {
-            'a': 0.2,
-            'b': 0.3,
+            'a': {"value": 0.2, "unit": "seconds"},
+            'b': {"value": 0.3, "unit": "seconds"}
         })
         self.receive_test_run(self.project2, '1', 'myenv', {
-            'c': 2.5,
-            'd/e': 2.5,
+            'c': {"value": 2.5, "unit": "seconds"},
+            'd/e': {"value": 2.5, "unit": "seconds"}
         })
 
         self.receive_test_run(self.project1, '1', 'otherenv', {
-            'a': 0.2,
-            'b': 0.4,
+            'a': {"value": 0.2, "unit": "seconds"},
+            'b': {"value": 0.4, "unit": "seconds"}
         })
         self.receive_test_run(self.project1, '1', 'otherenv', {
-            'c': 0.5,
-            'd/e': 0.6,
+            'c': {"value": 0.5, "unit": "seconds"},
+            'd/e': {"value": 0.6, "unit": "seconds"}
         })
         self.receive_test_run(self.project2, '1', 'otherenv', {
-            'a': 0.2,
-            'b': 0.4,
+            'a': {"value": 0.2, "unit": "seconds"},
+            'b': {"value": 0.4, "unit": "seconds"}
         })
         self.receive_test_run(self.project2, '1', 'otherenv', {
-            'c': 2.5,
-            'd/e': 2.4,
+            'c': {"value": 2.5, "unit": "seconds"},
+            'd/e': {"value": 2.4, "unit": "seconds"}
         })
 
         self.build0 = self.project1.builds.first()

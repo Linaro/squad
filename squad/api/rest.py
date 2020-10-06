@@ -214,7 +214,8 @@ class MetricFilter(filters.FilterSet):
                   'result': ['exact', 'in'],
                   'test_run': ['exact', 'in'],
                   'is_outlier': ['exact', 'in'],
-                  'suite': ['exact', 'in']}
+                  'suite': ['exact', 'in'],
+                  'unit': ['exact', 'in']}
 
 
 class MetricThresholdFilter(filters.FilterSet):

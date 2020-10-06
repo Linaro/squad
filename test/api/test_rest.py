@@ -658,7 +658,7 @@ class RestApiTest(APITestCase):
         self.assertEqual(list, type(data['results']))
 
     def test_metrics_with_page_size(self):
-        self.receive("2020-01-01", "myenv2", metrics={"foo": 1, "bar/baz": 2})
+        self.receive("2020-01-01", "myenv2", metrics={"foo": {'value': 1, 'unit': 'boxes'}, "bar/baz": {'value': 2, 'unit': None}})
         data = self.hit('/api/metrics/?limit=2')
         self.assertEqual(list, type(data['results']))
         self.assertEqual(2, len(data['results']))
@@ -679,7 +679,7 @@ class RestApiTest(APITestCase):
 
     def test_testruns_not_null_metrics_attr(self):
         testrun = self.receive(
-            "2020-01-01", "myenv2", metrics={"foo": 1, "bar/baz": 2}
+            "2020-01-01", "myenv2", metrics={"foo": {'value': 1, 'unit': 'boxes'}, "bar/baz": {'value': 2, 'unit': None}}
         )
         data = self.hit("/api/testruns/%d/" % testrun.id)
         self.assertIsNotNone(data["metrics"])

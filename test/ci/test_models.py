@@ -113,7 +113,7 @@ class BackendFetchTest(BackendTestBase):
     def test_fetch_creates_testrun(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {"foo": "pass"}
-        metrics = {"bar": 1}
+        metrics = {"bar": {"value": 1, "unit": ""}}
         results = ('Complete', True, metadata, tests, metrics, "abc")
 
         project_status = self.build.status
@@ -168,7 +168,7 @@ class BackendFetchTest(BackendTestBase):
     def test_fetch_sets_fetched_on_invalid_metadata(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {"foo": "pass"}
-        metrics = {"bar": 1}
+        metrics = {"bar": {"value": 1, "unit": "nuggets"}}
         results = ('Complete', True, metadata, tests, metrics, "abc")
 
         impl = MagicMock()
@@ -270,7 +270,7 @@ class BackendFetchTest(BackendTestBase):
     def test_fetch_with_only_metrics(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {}
-        metrics = {"foo": 10}
+        metrics = {"foo": {"value": 10, "unit": "boxes"}}
         results = ('Complete', True, metadata, tests, metrics, "abc")
 
         impl = MagicMock()
@@ -304,7 +304,7 @@ class BackendFetchTest(BackendTestBase):
     def test_create_testrun_job_url(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {"foo": "pass"}
-        metrics = {"bar": 1}
+        metrics = {"bar": {"value": 1, "unit": "donuts"}}
         results = ('Complete', True, metadata, tests, metrics, "abc")
         test_job_url = "http://www.example.com"
 
@@ -339,7 +339,7 @@ class BackendFetchTest(BackendTestBase):
     def test_fetch_ignores_results_from_incomplete_job(self, get_implementation, __now__):
         metadata = {"foo": "bar"}
         tests = {"foo": "pass"}
-        metrics = {"bar": 1}
+        metrics = {"bar": {"value": 1, "unit": ""}}
         results = ('Incomplete', False, metadata, tests, metrics, "abc")
         #                        ^^^^^ job resulted in an infra failure
 

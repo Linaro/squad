@@ -478,7 +478,6 @@ class LavaTest(TestCase):
         testjob.refresh_from_db()
         results = testjob.testrun.tests
         metrics = testjob.testrun.metrics
-
         self.assertEqual(None, lava.get_implementation().settings.get('CI_LAVA_HANDLE_SUITE'))
         self.assertEqual(2, results.count())
         self.assertEqual(3, metrics.count())
@@ -636,7 +635,6 @@ class LavaTest(TestCase):
         testjob.refresh_from_db()
         results = testjob.testrun.tests
         metrics = testjob.testrun.metrics
-
         self.assertEqual(True, lava.get_implementation().settings.get('CI_LAVA_HANDLE_SUITE'))
         self.assertEqual(False, lava.get_implementation().settings.get('CI_LAVA_HANDLE_BOOT'))
         self.assertEqual(2, results.count())
@@ -661,7 +659,7 @@ class LavaTest(TestCase):
         self.assertEqual(len(results), 2)
         self.assertIn('log', results['DefinitionFoo/case_bar'].keys())
         self.assertEqual(len(metrics), 2)
-        self.assertEqual(10, metrics['DefinitionFoo/case_foo'])
+        self.assertEqual(10, metrics['DefinitionFoo/case_foo']["value"])
         self.assertEqual('job_foo', testjob.name)
 
     @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
@@ -684,7 +682,7 @@ class LavaTest(TestCase):
 
         self.assertEqual(len(results), 3)
         self.assertEqual(len(metrics), 2)
-        self.assertEqual(10, metrics['DefinitionFoo/case_foo'])
+        self.assertEqual(10, metrics['DefinitionFoo/case_foo']["value"])
         self.assertEqual('job_foo', testjob.name)
 
     @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
