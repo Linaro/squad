@@ -53,8 +53,19 @@ COPY . /squad-build/
 ENV SQUAD_STATIC_DIR=/app/static
 
 RUN cd /squad-build && ./scripts/git-build && \
-    pip3 install --no-dependencies ./dist/squad*.whl squad-linaro-plugins sentry-sdk==0.14.3 && \
-    pip3 install --no-dependencies ./dist/squad*.whl zipp importlib-metadata asgiref django-bootstrap3 && \
+    pip3 install --no-dependencies \
+      ./dist/squad*.whl \
+      squad-linaro-plugins \
+      asgiref \
+      boto3==1.15.13 \
+      botocore==1.18.13 \
+      django-bootstrap3 \
+      django-storages==1.9 \
+      importlib-metadata \
+      jmespath==0.10.0 \
+      s3transfer==0.3.3 \
+      sentry-sdk==0.14.3 \
+      zipp && \
     cd / && rm -rf /squad-build && \
     mkdir -p /app/static && \
     useradd -d /app squad && \
