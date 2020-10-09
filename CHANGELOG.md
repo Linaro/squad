@@ -1,3 +1,16 @@
+# 1.24
+
+This 1.24 release adds "tests" to suite endpoints, makes
+test job endpoint a bit faster to load and fix the recently
+added "Known Issues" project tab.
+
+Complete list of changes going in:
+
+* api: rest: defer definition from TestJob endpoint
+* api: rest: add tests endpoint to suite view
+* frontend: fix missing project nav in knownissues
+* test: fix gerrit unit tests
+
 # 1.23
 
 This 1.23 release adds a few items to frontend: download attachments
