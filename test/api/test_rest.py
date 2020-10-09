@@ -833,7 +833,6 @@ class RestApiTest(APITestCase):
 
     def test_suites(self):
         data = self.hit('/api/suites/')
-        print(data)
         self.assertEqual(2, data['count'])
 
     def test_suite_tests(self):
