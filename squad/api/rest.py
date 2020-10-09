@@ -399,11 +399,13 @@ class LatestTestResultsSerializer(serializers.BaseSerializer):
         return serialized_obj
 
 
-class SuiteMetadataSerializer(serializers.ModelSerializer):
+class SuiteMetadataSerializer(serializers.HyperlinkedModelSerializer):
+
+    id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = SuiteMetadata
-        fields = ('id', 'name', 'suite', 'kind', 'description', 'instructions_to_reproduce')
+        fields = '__all__'
 
 
 class SuiteMetadataViewset(viewsets.ModelViewSet):
@@ -1054,7 +1056,7 @@ class TestRunSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class SuiteSerializer(serializers.ModelSerializer):
+class SuiteSerializer(serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
 
@@ -1091,7 +1093,9 @@ class SuiteViewSet(viewsets.ModelViewSet):
         return paginator.get_paginated_response(serializer.data)
 
 
-class TestSerializer(serializers.ModelSerializer):
+class TestSerializer(serializers.HyperlinkedModelSerializer):
+
+    id = serializers.IntegerField(read_only=True)
 
     def __init__(self, *args, **kwargs):
         remove_fields = kwargs.pop('remove_fields', None)
@@ -1121,7 +1125,9 @@ class TestViewSet(ModelViewSet):
     ordering = ('id',)
 
 
-class MetricSerializer(serializers.ModelSerializer):
+class MetricSerializer(serializers.HyperlinkedModelSerializer):
+
+    id = serializers.IntegerField(read_only=True)
 
     def __init__(self, *args, **kwargs):
         remove_fields = kwargs.pop('remove_fields', None)
@@ -1249,7 +1255,8 @@ class TestRunViewSet(ModelViewSet):
         return paginator.get_paginated_response(serializer.data)
 
 
-class BackendSerializer(serializers.ModelSerializer):
+class BackendSerializer(serializers.HyperlinkedModelSerializer):
+
     id = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -1414,7 +1421,7 @@ class KnownIssueViewSet(viewsets.ModelViewSet):
     ordering_fields = ('title', 'id')
 
 
-class AnnotationSerializer(serializers.ModelSerializer):
+class AnnotationSerializer(serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
 
