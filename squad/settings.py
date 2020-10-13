@@ -102,6 +102,7 @@ __apps__ = [
     'squad.api',
     'squad.frontend',
     'squad.ci',
+    'django_celery_results',
 ]
 
 INSTALLED_APPS = [app for app in __apps__ if app]
@@ -340,6 +341,7 @@ CELERY_TASK_ROUTES = {
     'squad.ci.tasks.submit': {'queue': 'ci_quick'},
     'squad.ci.tasks.send_testjob_resubmit_admin_email': {'queue': 'ci_quick'},
 }
+CELERY_RESULT_BACKEND = 'django-db'
 
 # Manually add suffix to queue names, if available
 queue_name_suffix = os.getenv('SQUAD_CELERY_QUEUE_NAME_SUFFIX')

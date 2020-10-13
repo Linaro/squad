@@ -13,6 +13,7 @@ RUN apt-get update -q=2 && \
         python3-django \
         python3-django-auth-ldap \
         python3-django-cors-headers \
+        python3-django-celery-results \
         python3-django-crispy-forms \
         python3-django-filters \
         python3-django-simple-history \

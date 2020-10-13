@@ -1,8 +1,9 @@
-celery
+celery<5.0,>=4.4
 coreapi
 django_crispy_forms
 Django>=2.2,<3.0
 django-bootstrap3
+django-celery-results
 django-cors-headers
 django-simple-history
 django_filter>=2.0
