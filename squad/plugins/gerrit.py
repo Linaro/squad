@@ -106,6 +106,31 @@ class Plugin(BasePlugin):
         else:
             return Plugin.__gerrit_post__(build, payload)
 
+    def __get_labels__(self, build, success):
+        labels = {}
+        empty = [None, {}]
+        if not success:
+            labels = {'Code-Review': '-1'}
+
+        plugins_settings = build.project.get_setting('plugins')
+        if plugins_settings in empty:
+            return labels
+
+        settings = plugins_settings.get('gerrit')
+        if settings in empty:
+            return labels
+
+        build_finished = settings.get('build_finished')
+        if build_finished in empty:
+            return labels
+
+        if success:
+            labels = build_finished.get('success', {})
+        else:
+            labels = build_finished.get('error', labels)
+
+        return labels
+
     def notify_patch_build_created(self, build):
         data = {
             'message': Plugin.__message__(build),
@@ -113,22 +138,20 @@ class Plugin(BasePlugin):
         return self.__gerrit_request__(build, data)
 
     def notify_patch_build_finished(self, build):
-        down_vote = False
         try:
             if build.status.tests_fail == 0:
                 message = "All tests passed"
+                success = True
             else:
                 message = "Some tests failed (%d)" % build.status.tests_fail
-                down_vote = True
+                success = False
         except ProjectStatus.DoesNotExist:
             logger.error('ProjectStatus for build %s/%s does not exist' % (build.project.slug, build.version))
             message = "An error occurred"
 
         data = {
             'message': Plugin.__message__(build, finished=True, extra_message=message),
+            'labels': self.__get_labels__(build, success=success)
         }
-
-        if down_vote:
-            data['labels'] = {'Code-Review': ' -1'}
 
         return self.__gerrit_request__(build, data)
