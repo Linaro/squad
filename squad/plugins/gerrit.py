@@ -75,8 +75,10 @@ class Plugin(BasePlugin):
             patchset=patchset,
         )
 
-        if payload.get('labels') and payload['labels'].get('Code-Review'):
-            cmd += ' --code-review %s' % (payload['labels']['Code-Review'])
+        labels = payload.get('labels', {})
+        for label in labels.keys():
+            value = labels[label]
+            cmd += ' --label %s=%s' % (label.lower(), value)
 
         ssh = ['ssh']
         ssh += DEFAULT_SSH_OPTIONS
