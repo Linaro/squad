@@ -82,3 +82,9 @@ class ProjectTest(TestCase):
             p.full_clean()
         p.project_settings = 'foo: bar\n'
         p.full_clean()
+
+    def test_get_project_settings(self):
+        p = Project.objects.create(group=self.group, slug='foobar', project_settings='{"setting1": "value"}')
+        self.assertEqual("value", p.get_setting("setting1"))
+        self.assertEqual(None, p.get_setting("unkown_setting"))
+        self.assertEqual("default", p.get_setting("unkown_setting", "default"))

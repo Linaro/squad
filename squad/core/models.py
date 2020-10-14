@@ -306,6 +306,13 @@ class Project(models.Model, DisplayName):
     def enabled_plugins(self):
         return self.enabled_plugins_list
 
+    __settings__ = None
+
+    def get_setting(self, key, default=None):
+        if self.__settings__ is None:
+            self.__settings__ = yaml.safe_load(self.project_settings or '') or {}
+        return self.__settings__.get(key, default)
+
 
 # URLField uses URLValidator which supports only http(s) and ftp(s)
 # ref: https://github.com/django/django/pull/1717#issuecomment-25830269
