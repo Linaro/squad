@@ -1,4 +1,13 @@
 {
-    "benchmark_one": 1.5,
-    "benchmark_two": [1,2,3,4]
+    "benchmark_one":
+    {
+        "value": 1.5,
+        "unit": "seconds"
+    },
+
+    "benchmark_two":
+    {
+        "value": [1,2,3,4],
+        "unit": "seconds"
+    }
 }

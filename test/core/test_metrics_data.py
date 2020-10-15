@@ -4,15 +4,15 @@ from squad.core.data import JSONMetricDataParser
 
 TEST_DATA = """
 {
-    "invalid/metric1": NaN,
-    "invalid/metric2": Infinity,
-    "invalid/metric3": [NaN],
-    "invalid/metric4": [Infinity],
-    "ungrouped_int": 10,
-    "ungrouped_float": 20.5,
-    "ungrouped_multiple": [10,11,10,11],
-    "group1/var": 50,
-    "group2/var": 60
+"invalid/metric1": {"value": NaN, "unit": ""},
+"invalid/metric2": {"value": Infinity, "unit": ""},
+"invalid/metric3": {"value": [NaN], "unit": ""},
+"invalid/metric4": {"value": [Infinity], "unit": ""},
+"ungrouped_int": {"value": 10, "unit": "seconds"},
+"ungrouped_float": {"value": 20.5, "unit": "kb"},
+"ungrouped_multiple": {"value": [10,11,10,11], "unit": "clicks"},
+"group1/var": {"value": 50, "unit": "hours"},
+"group2/var": {"value": 60, "unit": "miles"}
 }
 """
 parser = JSONMetricDataParser()
@@ -58,6 +58,6 @@ class JSONMetricDataParserTest(TestCase):
         self.assertEqual([10, 11, 10, 11], item['measurements'])
 
     def test_nested_group(self):
-        item = parser('{"foo/bar/baz": 1}')[0]
+        item = parser('{"foo/bar/baz": {"value": 1, "unit": ""}}')[0]
         self.assertEqual('foo/bar', item['group_name'])
         self.assertEqual('baz', item['name'])

@@ -86,7 +86,11 @@ class ValidateTestRun(object):
         if type(metrics) != dict:
             raise exceptions.InvalidMetricsData.type(metrics)
 
-        for key, value in metrics.items():
+        for metric, value_dict in metrics.items():
+            if type(value_dict) is dict:
+                value = value_dict.get('value', None)
+            else:
+                value = value_dict
             if type(value) is str:
                 try:
                     value = float(value)
@@ -127,7 +131,6 @@ class ReceiveTestRun(object):
     def __call__(self, version, environment_slug, metadata_file=None, metrics_file=None, tests_file=None, log_file=None, attachments={}, completed=True):
         build, build_created = self.project.builds.get_or_create(version=version)
         environment, _ = self.project.environments.get_or_create(slug=environment_slug)
-
         validate = ValidateTestRun()
         validate(metadata_file, metrics_file, tests_file)
 
@@ -246,6 +249,7 @@ class ParseTestRunData(object):
                 name=metric['name'],
                 result=metric['result'],
                 measurements=','.join([str(m) for m in metric['measurements']]),
+                unit=metric['unit'],
             )
 
         test_run.data_processed = True

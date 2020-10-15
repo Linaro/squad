@@ -10,7 +10,7 @@ job_status = 'Finished'
 completed = True
 metadata = {'foo': 'bar'}
 tests = {'test1': 'pass'}
-metrics = {'metric1': 1}
+metrics = {'metric1': {"value": 1, "unit": ""}}
 logs = "hello world\nfinished\n"
 
 

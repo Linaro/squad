@@ -269,7 +269,7 @@ class CommonTestCase(TestCase):
             build=self.build,
             environment=self.environment,
             tests_file='{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
-            metrics_file='{"metric0": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}',
+            metrics_file='{"metric0": {"value": 1, "unit": ""},  "foobar/metric1": {"value": 10, "unit": "kb"}, "foobar/metric2": {"value": "10.5", "unit": "kb"}}',
         )
 
 
@@ -323,7 +323,7 @@ class ParseTestRunDataTest(CommonTestCase):
             build=self.build,
             environment=self.environment,
             tests_file='{"' + really_long_name + '": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
-            metrics_file='{"' + really_long_name + '": 1, "foobar/metric1": 10, "foobar/metric2": "10.5"}',
+            metrics_file='{"' + really_long_name + '": {"value": 1, "unit": "seconds"}, "foobar/metric1": {"value": 10, "unit": ""}, "foobar/metric2": {"value": "10.5", "unit": "cycles"}}',
         )
         ParseTestRunData()(testrun)
         self.assertEqual(4, testrun.tests.count())
@@ -631,17 +631,17 @@ class TestValidateTestRun(TestCase):
         self.assertInvalidMetrics('[]')
 
     def test_invalid_metrics_str_as_values(self):
-        self.assertInvalidMetrics('{ "foo" : "bar"}')
+        self.assertInvalidMetrics('{ "foo" : {"value": "bar", "unit": ""}}')
 
     def test_invalid_metrics_list_of_str_as_values(self):
-        self.assertInvalidMetrics('{ "foo" : ["bar"]}')
+        self.assertInvalidMetrics('{ "foo" : {"value": ["bar"], "unit": ""}}')
 
     def assertValidMetrics(self, metrics):
         validate = ValidateTestRun()
         validate(metrics_file=metrics)
 
     def test_number_as_string(self):
-        self.assertValidMetrics('{"foo": "1.00000"}')
+        self.assertValidMetrics('{"foo": {"value": "1.00000", "unit": ""}}')
 
     # ~~~~~~~~~~~~ TESTS FOR TESTS DATA ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def assertInvalidTests(self, tests, exception=exceptions.InvalidTestsData):
