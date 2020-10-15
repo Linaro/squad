@@ -196,6 +196,14 @@ __ https://docs.djangoproject.com/en/1.11/topics/email/
   use in exception notifications. Each address must be formatted as
   ``First Last <first.last@example.com>``.
 
+* ``SQUAD_SEND_ADMIN_ERROR_EMAIL``: Determines whether or not to send exception
+  notifications to administrators. Defaults to ``True``.
+
+* ``SENTRY_DSN``: Defines Sentry's DSN token, if defined SQUAD will attempt to 
+  import Sentry SDK and use it. Defaults to ``None``. If Sentry is configured
+  it's recommended to disable sending admin notifications by setting
+  ``SQUAD_SEND_ADMIN_ERROR_EMAIL = False``.
+
 * ``SQUAD_STATIC_DIR``: Directory where SQUAD will find it's preprocessed
   static assets. This usually does not need to be set manually, and exists
   mostly for use in the Docker image.
