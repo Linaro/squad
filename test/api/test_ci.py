@@ -48,13 +48,24 @@ class CiApiTest(TestCase):
         self.adminclient = APIClient('adminkey')
 
     def test_auth(self):
-        args = {
-            'backend': 'lava',
-            'definition': 'foo: 1',
-        }
         self.client.token = 'invalid-token'
-        r = self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
+
+        r = self.client.post('/api/submitjob/mygroup/myproject/1/myenv')
         self.assertEqual(403, r.status_code)
+        self.assertEqual('User needs permission to submit test jobs.', r.json()['detail'])
+
+        r = self.client.post('/api/watchjob/mygroup/myproject/1/myenv')
+        self.assertEqual(403, r.status_code)
+        self.assertEqual('User needs permission to submit test jobs.', r.json()['detail'])
+
+    def test_group_project_not_found(self):
+        r = self.client.post('/api/submitjob/nonexistentgroup/myproject/1/myenv')
+        self.assertEqual(404, r.status_code)
+        self.assertEqual('No Group matches the given query.', r.json()['detail'])
+
+        r = self.client.post('/api/submitjob/mygroup/nonexistentproject/1/myenv')
+        self.assertEqual(404, r.status_code)
+        self.assertEqual('No Project matches the given query.', r.json()['detail'])
 
     def test_creates_test_run(self):
         args = {
