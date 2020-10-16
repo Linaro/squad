@@ -242,8 +242,9 @@ SITE_NAME = os.getenv('SQUAD_SITE_NAME', 'SQUAD')
 SQUAD_ADMINS = os.getenv('SQUAD_ADMINS')
 ADMINS = SQUAD_ADMINS and [parseaddr(s.strip()) for s in SQUAD_ADMINS.split(',')] or []
 
+SEND_ADMIN_ERROR_EMAIL = os.getenv('SQUAD_SEND_ADMIN_ERROR_EMAIL', True)
 logging_handlers = ['console']
-if not DEBUG and ADMINS:
+if not DEBUG and ADMINS and SEND_ADMIN_ERROR_EMAIL:
     logging_handlers += ['mail_admins']
 
 LOGGING = {
