@@ -6,6 +6,17 @@ from unittest.mock import patch
 from squad.core.models import Group, PatchSource
 from squad.plugins import gerrit
 
+plugins_settings = """
+plugins:
+  gerrit:
+    build_finished:
+      success:
+        My-Custom-Label: "+1"
+      error:
+        Custom-Code-Review: "-1"
+        Other-Label: "-2"
+"""
+
 
 class FakeObject():
     pass
@@ -81,6 +92,7 @@ class GerritPluginTest(TestCase):
             name='ssh-gerrit',
             url='ssh://the.host',
             username='theuser',
+            password='',
             implementation='gerrit',
             token=''
         )
@@ -159,3 +171,75 @@ class GerritPluginTest(TestCase):
     def test_malformed_patch_id(self):
         plugin = self.build3.patch_source.get_implementation()
         self.assertFalse(plugin.notify_patch_build_created(self.build3))
+
+    @patch('squad.plugins.gerrit.subprocess', FakeSubprocess)
+    def test_ssh_default_labels(self):
+        self.build2.status.tests_fail = 1
+        self.build2.status.save()
+        plugin = self.build2.patch_source.get_implementation()
+        self.assertTrue(plugin.notify_patch_build_finished(self.build2))
+        self.assertIn('--label code-review=-1', FakeSubprocess.given_cmd())
+
+        self.build2.status.tests_fail = 0
+        self.build2.status.save()
+        plugin = self.build2.patch_source.get_implementation()
+        self.assertTrue(plugin.notify_patch_build_finished(self.build2))
+        self.assertNotIn('--label code-review=+1', FakeSubprocess.given_cmd())
+
+    @patch('squad.plugins.gerrit.subprocess', FakeSubprocess)
+    def test_ssh_custom_labels(self):
+        self.project.project_settings = plugins_settings
+        self.project.save()
+
+        self.build2.status.tests_fail = 1
+        self.build2.status.save()
+        plugin = self.build2.patch_source.get_implementation()
+        self.assertTrue(plugin.notify_patch_build_finished(self.build2))
+        self.assertIn('--label custom-code-review=-1', FakeSubprocess.given_cmd())
+        self.assertIn('--label other-label=-2', FakeSubprocess.given_cmd())
+        self.assertNotIn('--label my-custom-label=+1', FakeSubprocess.given_cmd())
+
+        self.build2.status.tests_fail = 0
+        self.build2.status.save()
+        plugin = self.build2.patch_source.get_implementation()
+        self.assertTrue(plugin.notify_patch_build_finished(self.build2))
+        self.assertIn('--label my-custom-label=+1', FakeSubprocess.given_cmd())
+        self.assertNotIn('--label custom-code-review=-1', FakeSubprocess.given_cmd())
+
+    @patch('squad.plugins.gerrit.requests', FakeRequests)
+    def test_rest_default_labels(self):
+        self.build1.status.tests_fail = 1
+        self.build1.status.save()
+        plugin = self.build1.patch_source.get_implementation()
+        self.assertTrue(plugin.notify_patch_build_finished(self.build1))
+        labels = FakeRequests.given_json()['labels']
+        self.assertEqual('-1', labels.get('Code-Review'))
+
+        self.build1.status.tests_fail = 0
+        self.build1.status.save()
+        plugin = self.build1.patch_source.get_implementation()
+        self.assertTrue(plugin.notify_patch_build_finished(self.build1))
+        labels = FakeRequests.given_json()['labels']
+        self.assertEqual(None, labels.get('Code-Review'))
+
+    @patch('squad.plugins.gerrit.requests', FakeRequests)
+    def test_rest_custom_labels(self):
+        self.project.project_settings = plugins_settings
+        self.project.save()
+
+        self.build1.status.tests_fail = 1
+        self.build1.status.save()
+        plugin = self.build1.patch_source.get_implementation()
+        self.assertTrue(plugin.notify_patch_build_finished(self.build1))
+        labels = FakeRequests.given_json()['labels']
+        self.assertEqual('-1', labels.get('Custom-Code-Review'))
+        self.assertEqual('-2', labels.get('Other-Label'))
+        self.assertEqual(None, labels.get('My-Custom-Label'))
+
+        self.build1.status.tests_fail = 0
+        self.build1.status.save()
+        plugin = self.build1.patch_source.get_implementation()
+        self.assertTrue(plugin.notify_patch_build_finished(self.build1))
+        labels = FakeRequests.given_json()['labels']
+        self.assertEqual('+1', labels.get('My-Custom-Label'))
+        self.assertEqual(None, labels.get('Custom-Code-Review'))

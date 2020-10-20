@@ -170,6 +170,25 @@ Where:
  - `patch_id` is a string in a form like "change-id/patchset" of the respective Gerrit
    repository.
 
+**NOTE**
+
+By default, the plugin will only apply "Code-Review -1" for builds that errored.
+Custom labels are supported if specified in project settings. Here is a example on how
+to specify custom labels for gerrit:
+
+    ...
+    plugins:
+      gerrit:
+        build_finished:
+          success:
+            Code-Review: "+1"
+            Validation-Bot-Review: "+1"
+          error:
+            Code-Review: "-1"
+            My-Custom-Bot-Review: "-1"
+    ...
+
+
 If everything was successfully submitted, you should see a notification in the Gerrit
 page for that Change. Subsequent tests on that build are going to be performed
 and as SQUAD detects that all tests are done, another notification should be sent out
