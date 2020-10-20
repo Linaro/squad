@@ -1,3 +1,12 @@
+# 1.25.1
+
+This 1.25.1 release fixes a bug that caused broken links to show
+up in default notification templates.
+
+Complete list of changes going in:
+
+* core: templates: notification: Fix broken links
+
 # 1.25
 
 This 1.25 release adds a few major items:
