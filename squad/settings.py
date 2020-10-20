@@ -244,7 +244,7 @@ ADMINS = SQUAD_ADMINS and [parseaddr(s.strip()) for s in SQUAD_ADMINS.split(',')
 
 SEND_ADMIN_ERROR_EMAIL = os.getenv('SQUAD_SEND_ADMIN_ERROR_EMAIL', True)
 logging_handlers = ['console']
-if not DEBUG and ADMINS and SEND_ADMIN_ERROR_EMAIL:
+if not DEBUG and ADMINS and SEND_ADMIN_ERROR_EMAIL in [True, 'True', 'true']:
     logging_handlers += ['mail_admins']
 
 LOGGING = {
