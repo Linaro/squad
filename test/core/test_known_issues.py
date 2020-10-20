@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils import timezone
 
-from squad.core.models import Group, KnownIssue
+from squad.core.models import Group, KnownIssue, SuiteMetadata
 
 
 class KnownIssueTest(TestCase):
@@ -20,7 +20,8 @@ class KnownIssueTest(TestCase):
         )
         test_run = build.test_runs.create(environment=self.env1)
         # create failed test
-        test = test_run.tests.create(suite=self.suite1, name="test_foo", result=False)
+        foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite1.slug, name='test_foo', kind='test')
+        test = test_run.tests.create(suite=self.suite1, metadata=foo_metadata, result=False)
         known_issue = KnownIssue.objects.create(
             title="foo",
             test_name=test.full_name
@@ -36,7 +37,8 @@ class KnownIssueTest(TestCase):
         )
         test_run = build.test_runs.create(environment=self.env1)
         # create failed test
-        test = test_run.tests.create(suite=self.suite1, name="test_foo", result=False)
+        foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite1.slug, name='test_foo', kind='test')
+        test = test_run.tests.create(suite=self.suite1, metadata=foo_metadata, result=False)
         known_issue = KnownIssue.objects.create(
             title="foo",
             test_name=test.full_name
@@ -55,7 +57,8 @@ class KnownIssueTest(TestCase):
         )
         test_run = build.test_runs.create(environment=self.env1)
         # create failed test
-        test = test_run.tests.create(suite=self.suite1, name="test_foo", result=False)
+        foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite1.slug, name='test_foo', kind='test')
+        test = test_run.tests.create(suite=self.suite1, metadata=foo_metadata, result=False)
         known_issue = KnownIssue.objects.create(
             title="foo",
             test_name=test.full_name
@@ -71,7 +74,8 @@ class KnownIssueTest(TestCase):
         )
         test_run = build.test_runs.create(environment=self.env1)
         # create failed test
-        test = test_run.tests.create(suite=self.suite1, name="test_foo", result=False)
+        foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite1.slug, name='test_foo', kind='test')
+        test = test_run.tests.create(suite=self.suite1, metadata=foo_metadata, result=False)
         known_issue = KnownIssue.objects.create(
             title="foo",
             test_name=test.full_name

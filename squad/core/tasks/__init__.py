@@ -225,7 +225,6 @@ class ParseTestRunData(object):
                 test_run=test_run,
                 suite=suite,
                 metadata=metadata,
-                name=test['test_name'],
                 result=test['pass'],
                 log=test['log'],
                 has_known_issues=bool(test_issues),

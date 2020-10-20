@@ -282,7 +282,7 @@ class ParseTestRunDataTest(CommonTestCase):
 
     def test_name_with_variant(self):
         ParseTestRunData()(self.testrun)
-        special_case = self.testrun.tests.filter(name="case.for[result/variants]")
+        special_case = self.testrun.tests.filter(metadata__name="case.for[result/variants]")
         self.assertEqual(1, special_case.count())
 
     def test_does_not_process_twice(self):
@@ -574,7 +574,7 @@ class ReceiveTestRunTest(TestCase):
 
         receive('199', 'myenv', metadata_file=json.dumps(metadata), tests_file=json.dumps(tests))
         testrun = TestRun.objects.last()
-        values = [t.result for t in testrun.tests.order_by('name')]
+        values = [t.result for t in testrun.tests.order_by('metadata__name')]
         self.assertEqual([True, False, None], values)
 
     def test_generate_job_id_when_not_present(self):
