@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0137_patchsource_token_null'),
+        ('core', '0138_metric_unit'),
     ]
 
     operations = [
