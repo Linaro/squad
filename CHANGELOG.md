@@ -1,3 +1,36 @@
+# 1.25
+
+This 1.25 release adds a few major items:
+
+* adds support of "unit" for metrics, but still preserves backwards compatibility
+* api:
+  * standardizes API to use self discoverable url instead of id for all endpoints
+  * handles http errors as Json, instead of regular Django pages
+* prepare squad to get test name column removed by making the field nullable
+  and stop using it
+* adds option to disable sending emails to admins in setups that use other types of
+  notification, e.g. Sentry
+* adds support for celery result backends, which allows celery to run group of tasks
+
+Complete list of changes going in:
+
+* api:
+  * rest: sandardize url-id in rest api
+  * http: handle 404 as json on api requests
+* core:
+  * models: add unit field to Metric model
+  * models: add shortcut to get project settings
+  * migrations: "rebased" migration to make test name nullable
+* models: use SuiteMetadata.name in favor of Test.name
+* plugins:
+  * gerrit: add support to custom labels
+  * gerrit: allow multiple labels review
+* settings:
+  * add celery result backend
+  * add option to turn off admin error emails
+  * fix SQUAD_SEND_ADMIN_ERROR_EMAIL flag values
+* test: remove leftover print
+
 # 1.24
 
 This 1.24 release adds "tests" to suite endpoints, makes
