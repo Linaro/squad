@@ -2,6 +2,11 @@ import random
 import string
 import yaml
 import jinja2
+import hashlib
+import base64
+
+
+from cryptography.fernet import Fernet
 
 
 from django.template.defaultfilters import safe, escape
@@ -78,26 +83,21 @@ def jinja2_validator(template):
         raise ValidationError(e)
 
 
-def repeat_to_length(s, wanted):
-    return (s * ((wanted // len(s)) + 1))[:wanted]
+def __get_cryptographic_key__():
+    sha256_object = hashlib.sha256()
+    sha256_object.update(str.encode(settings.SECRET_KEY))
+    key = base64.b64encode(str.encode(sha256_object.hexdigest()[:32]))
+    return key
 
 
-# xor cipher: https://en.wikipedia.org/wiki/XOR_cipher
-def xor(s, t):
-    if isinstance(s, str):
-        return ''.join([chr(ord(a) ^ ord(b)) for a, b in zip(s, t)])
-    else:
-        return bytes([a ^ b for a, b in zip(s, t)])
+def encrypt(clear_text):
+    key = __get_cryptographic_key__()
+    return Fernet(key).encrypt(str.encode(clear_text)).decode()
 
 
-def encrypt(text):
-    key = repeat_to_length(settings.SECRET_KEY, len(text))
-    return xor(text, key)
-
-
-def decrypt(crypted):
-    key = repeat_to_length(settings.SECRET_KEY, len(crypted))
-    return xor(crypted, key)
+def decrypt(crypted_text):
+    key = __get_cryptographic_key__()
+    return Fernet(key).decrypt(str.encode(crypted_text)).decode()
 
 
 def split_dict(_dict, chunk_size=1):
