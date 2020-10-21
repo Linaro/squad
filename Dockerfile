@@ -8,6 +8,7 @@ RUN apt-get update -q=2 && \
         python3 \
         python3-celery \
         python3-coreapi  \
+        python3-cryptography \
         python3-dateutil \
         python3-dev \
         python3-django \
