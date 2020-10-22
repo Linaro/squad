@@ -606,6 +606,8 @@ class Backend(BaseBackend):
                 # Handle failed lava jobs
                 if result['suite'] == 'lava' and result['name'] == 'job' and result['result'] == 'fail':
                     metadata = result['metadata']
+                    if isinstance(metadata, str):
+                        metadata = yaml.safe_load(metadata)
                     test_job.failure = str(metadata)
                     test_job.save()
                     error_type = metadata.get('error_type', None)

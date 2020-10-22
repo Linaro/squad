@@ -115,6 +115,15 @@ TEST_RESULTS_INFRA_FAILURE = [
     },
 ]
 
+TEST_RESULTS_INFRA_FAILURE_STR = [
+    {
+        'suite': 'lava',
+        'name': 'job',
+        'result': 'fail',
+        'metadata': "{'error_type': 'Infrastructure', 'error_msg': 'foo-bar'}",
+    },
+]
+
 TEST_RESULT_FAILURE_CUSTOM = "Testing, testing... 123"
 TEST_RESULTS_INFRA_FAILURE_CUSTOM = [
     {
@@ -689,6 +698,18 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE)
     def test_completed(self, get_results, get_details, get_logs):
+        lava = LAVABackend(None)
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend,
+            target=self.project)
+        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+        self.assertFalse(completed)
+
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_STR)
+    def test_incomplete_string_results_metadata(self, get_results, get_details, get_logs):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
