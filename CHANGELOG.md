@@ -1,3 +1,14 @@
+# 1.25.2
+
+This 1.25.2 release fixes two bugs: first treats lava results' metadata
+field as both string and yaml, the second bug hunt us down for a few months
+triggering gerrit test exceptions at random, but it's fixed now.
+
+Complete list of changes going in:
+
+* ci: backend: lava: Parse results always expects metadata as a dict.
+* core: utils: improve cryptographic functions
+
 # 1.25.1
 
 This 1.25.1 release fixes a bug that caused broken links to show
