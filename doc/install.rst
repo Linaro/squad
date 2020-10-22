@@ -11,11 +11,22 @@ Make sure you have the ``pip`` Python package manager installed on your Python 3
 environment, and the C library for YAML development. On Debian/Ubuntu,
 the easiest way to do that is::
 
-    apt-get install python3-pip libyaml-dev libpq-dev
+    apt-get install python3-pip libyaml-dev
 
 Install squad::
 
     pip3 install squad
+
+
+By default, SQUAD works with sqlite, but if Postgres is required, then specific
+binaries are needed::
+
+    apt-get install python3-pip libyaml-dev libpq-dev
+
+Install squad with Postgres support::
+
+    pip3 install squad[postgres]
+
 
 Message broker
 --------------
