@@ -101,6 +101,9 @@ def compare_test(request):
 
 
 def compare_builds(request):
+    import time
+    outer_start = time.time()
+    print('comparing builds')
     project_slug = request.GET.get('project')
     comparison_type = request.GET.get('comparison_type', 'test')
     transitions = __get_transitions(request)
@@ -112,15 +115,24 @@ def compare_builds(request):
 
         baseline_build = request.GET.get('baseline')
         target_build = request.GET.get('target')
+        print('comparing %s against %s' % (baseline_build, target_build))
         if baseline_build and target_build:
             baseline = get_object_or_404(project.builds, version=baseline_build)
             target = get_object_or_404(project.builds, version=target_build)
 
             comparison_class = __get_comparison_class(comparison_type)
-            comparison = comparison_class.compare_builds(baseline, target)
+            start = time.time()
+            print('starting comparison')
+            comparison = comparison_class(baseline, target, suites=['cts-lkft/arm64-v8a.CtsDeqpTestCases'])
+            duration = time.time() - start
+            print('finished comparison! took %f' % duration, flush=True)
 
+            start = time.time()
+            print('applying transitions')
             if comparison_type == 'test' and len(transitions):
                 comparison.apply_transitions([t for t, checked in transitions.items() if checked])
+            duration = time.time() - start
+            print('finished applying transitions! took %f' % duration, flush=True)
 
             comparison.results = __paginate(comparison.results, request)
 
@@ -131,4 +143,8 @@ def compare_builds(request):
         'transitions': transitions,
     }
 
-    return render(request, 'squad/compare_builds.jinja2', context)
+    response = render(request, 'squad/compare_builds.jinja2', context)
+
+    duration = time.time() - outer_start
+    print('finished comparing builds! took %f' % duration, flush=True)
+    return response
