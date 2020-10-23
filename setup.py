@@ -17,6 +17,10 @@ requirements = [req for req in requirements_txt if valid_requirement(req)]
 if os.getenv('REQ_IGNORE_VERSIONS'):
     requirements = [req.split('>=')[0] for req in requirements]
 
+extras_require = {
+    'postgres': 'psycopg2',
+}
+
 
 if len(sys.argv) > 1 and sys.argv[1] in ['sdist', 'bdist', 'bdist_wheel'] and not os.getenv('SQUAD_RELEASE'):
     raise RuntimeError('Please use scripts/release to make releases!')
@@ -39,6 +43,7 @@ setup(
         ]
     },
     install_requires=requirements,
+    extras_require=extras_require,
     license='AGPLv3+',
     description="Software Quality Dashboard",
     long_description="Software Quality Dashboard",  # FIXME
