@@ -848,5 +848,5 @@ class RestApiTest(APITestCase):
 
     def test_suite_tests(self):
         foo_suite = self.project.suites.get(slug='foo')
-        data = self.hit('/api/suites/%d/tests/' % foo_suite.id)
-        self.assertEqual(54, data['count'])
+        data = self.hit('/api/suites/%d/tests/?limit=1000' % foo_suite.id)
+        self.assertEqual(54, len(data['results']))
