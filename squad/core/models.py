@@ -766,7 +766,6 @@ class Test(models.Model):
         limit_choices_to={'kind': 'test'},
         on_delete=models.CASCADE,
     )
-    name = models.CharField(max_length=256, db_index=True, null=True, default=None, blank=True)
     result = models.NullBooleanField()
     log = models.TextField(null=True, blank=True)
     known_issues = models.ManyToManyField('KnownIssue')
