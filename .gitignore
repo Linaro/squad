@@ -29,3 +29,5 @@ __pycache__
 /doc/_build
 /.coverage
 /htmlcov
+/storage
+/test/storage
