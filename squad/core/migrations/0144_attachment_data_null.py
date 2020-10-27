@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0139_attachment_storage'),
+        ('core', '0143_attachment_storage'),
     ]
 
     operations = [
