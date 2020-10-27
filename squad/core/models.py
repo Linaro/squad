@@ -642,6 +642,9 @@ class TestRun(models.Model):
     metrics_file = models.TextField(null=True)
     log_file = models.TextField(null=True)
     metadata_file = models.TextField(null=True)
+    tests_file_storage = models.FileField(null=True)
+    metrics_file_storage = models.FileField(null=True)
+    log_file_storage = models.FileField(null=True)
 
     # custom manager to skip potentially large fields by default
     objects = TestRunManager()
@@ -692,7 +695,8 @@ class Attachment(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='attachments', on_delete=models.CASCADE)
     filename = models.CharField(null=False, max_length=1024)
     mimetype = models.CharField(null=False, max_length=128, default="application/octet-stream")
-    data = models.BinaryField(default=None)
+    data = models.BinaryField(default=None, null=True)
+    storage = models.FileField(null=True)
     length = models.IntegerField(default=None)
 
 
