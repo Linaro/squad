@@ -471,6 +471,7 @@ def test_run_suite_test_details(request, group_slug, project_slug, build_version
         suite_slug
     )
     test_name = test_name.replace("$", "/")
+    suite_slug = suite_slug.replace("$", "/")
     metadata = get_object_or_404(SuiteMetadata, kind='test', suite=suite_slug, name=test_name)
     test = get_object_or_404(context['test_run'].tests, suite=context['suite'], metadata=metadata)
     attachments = [
