@@ -230,6 +230,9 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.getenv('SQUAD_STATIC_DIR', os.path.join(DATA_DIR, 'static'))
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# Squad default storage directory
+MEDIA_ROOT = os.getenv('SQUAD_STORAGE_DIR', 'storage')
+
 # Always use IPython for shell_plus
 SHELL_PLUS = "ipython"
 

@@ -20,3 +20,5 @@ tags
 doc/_build
 .coverage
 htmlcov
+storage
+test/storage

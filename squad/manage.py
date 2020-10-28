@@ -1,10 +1,12 @@
 import os
 import sys
+import shutil
 
 
 def main():
     testing = False
     if len(sys.argv) > 1 and sys.argv[1] == 'test':
+        clear_test_storage()
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "test.settings")
         testing = True
 
@@ -40,6 +42,10 @@ def performance_tests():
 def javascript_tests():
     import test.javascript
     return test.javascript.javascript_tests()
+
+
+def clear_test_storage():
+    shutil.rmtree('test/storage', ignore_errors=True)
 
 
 if __name__ == "__main__":
