@@ -3,7 +3,7 @@ import logging
 from django.db.models import Q, F
 from django.core.management.base import BaseCommand
 
-from squad.core.models import Suite, Test, SuiteMetadata
+from squad.core.models import Test, SuiteMetadata
 
 
 logger = logging.getLogger()
@@ -24,7 +24,7 @@ class Command(BaseCommand):
         condition = Q(suite__slug__icontains=android_suites[0])
         condition |= Q(suite__slug__icontains=android_suites[1])
         logger.info("fetching %s tests" % (batch_size if batch_size else 'all'))
-        tests = Test.objects.exclude(metadata__suite=F('suite__slug')).prefetch_related('suite', 'metadata').defer('log')
+        tests = Test.objects.filter(condition).exclude(metadata__suite=F('suite__slug')).prefetch_related('suite', 'metadata').defer('log')
         if batch_size:
             tests = tests[:batch_size]
         count_processed = 0
