@@ -1,3 +1,44 @@
+# 1.26
+
+This 1.26 marks a big change in SQUAD: it *completely removes
+the name from Test models*. This field/column is the responsible
+for half the size of DB and it might become an issue in setups 
+with hundreds of millions of tests.
+
+This release also starts adapting SQUAD to use storage for TestRun
+files (tests, metrics and logs) and Attachment. The next release
+should start using these new fields and further releases will swap
+to use storage fields only, thus saving lots of space in DB.
+
+The release also fixes a timeout when viewing a build page, and a
+timeout when acessing api for testrun/suite tests.
+
+Lastly, this release makes Postgres an optional dependency for
+SQUAD, which now should be installed as `pip install squad[postgres]`
+if that RDBS is required, otherwise Sqlite will be used instead.
+
+Complete list of changes going in:
+
+* api: improve testrun/suite tests load times
+* core:
+  * add FileField to Attachment to store contents
+  * add FileFields to store Testrun attachments
+  * add mgmt command for moving attachments out of DB
+  * allow Attachment.data to be null
+  * commands: add script to clean tradefed bad entries
+  * fix progress print in mgmt commands
+  * migrations: fix storage migrations
+  * models: increase size of password in PatchSource
+  * models: remove name column from Test
+* dockerfile: add django-storages and boto3
+* dockerfile: downgrade boto3
+* frontend, views: fix suite parsing in test details
+* frontend: views: avoid loading attachment data
+* settings: define default location for storage
+* setup: make postgres optional
+* test: core: test storage fields
+
+
 # 1.25.2
 
 This 1.25.2 release fixes two bugs: first treats lava results' metadata
