@@ -11,6 +11,7 @@ class DisabledHTMLFilterBackend(RestFrameworkFilterBackend):
 
 class CursorPaginationWithPageSize(CursorPagination):
     page_size_query_param = 'limit'
+    ordering = '-id'
 
 
 # ref: https://bradmontgomery.net/blog/disabling-forms-django-rest-frameworks-browsable-api/

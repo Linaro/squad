@@ -42,7 +42,6 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.reverse import reverse as rest_reverse
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from squad.compat import ComplexFilterBackend
 from squad.api.utils import CursorPaginationWithPageSize
@@ -1088,7 +1087,7 @@ class SuiteViewSet(viewsets.ModelViewSet):
     def tests(self, request, pk=None):
         suite = self.get_object()
         tests = Test.objects.filter(suite=suite).prefetch_related('metadata', 'suite', 'known_issues').order_by('id')
-        paginator = PageNumberPagination()
+        paginator = CursorPaginationWithPageSize()
         page = paginator.paginate_queryset(tests, request)
         serializer = TestSerializer(page, many=True, context={'request': request}, remove_fields=['suite'])
         return paginator.get_paginated_response(serializer.data)
@@ -1240,8 +1239,8 @@ class TestRunViewSet(ModelViewSet):
     @action(detail=True, methods=['get'], suffix='tests')
     def tests(self, request, pk=None):
         testrun = self.get_object()
-        tests = testrun.tests.prefetch_related('suite').order_by('id')
-        paginator = PageNumberPagination()
+        tests = testrun.tests.prefetch_related('suite', 'known_issues', 'metadata').order_by('id')
+        paginator = CursorPaginationWithPageSize()
         page = paginator.paginate_queryset(tests, request)
         serializer = TestSerializer(page, many=True, context={'request': request}, remove_fields=['test_run'])
         return paginator.get_paginated_response(serializer.data)
@@ -1250,7 +1249,7 @@ class TestRunViewSet(ModelViewSet):
     def metrics(self, request, pk=None):
         testrun = self.get_object()
         metrics = testrun.metrics.prefetch_related('suite').order_by('id')
-        paginator = PageNumberPagination()
+        paginator = CursorPaginationWithPageSize()
         page = paginator.paginate_queryset(metrics, request)
         serializer = MetricSerializer(page, many=True, context={'request': request}, remove_fields=['test_run', 'id', 'suite'])
         return paginator.get_paginated_response(serializer.data)
