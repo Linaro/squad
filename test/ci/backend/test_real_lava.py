@@ -82,7 +82,7 @@ class RealLavaRPC2Test(TestCase):
             username='squadtest',
             token='kz8wyxmldwahe4w4086ceadedfwd0z7tadr87i60u1z30xymq38xy35ji98f0h6fgqmpwr3161zq87dytza70iqyhx5ab6xrzgh5lp1ghbcbrb0q650x8tpkgrm0a9n7',
             implementation_type='lava',
-            backend_settings='',
+            backend_settings='{"CI_LAVA_HANDLE_SUITE": True, "CI_LAVA_CLONE_MEASUREMENTS": True}',
         )
         self.group = Group.objects.create(
             name="group_foo"
@@ -176,7 +176,7 @@ class RealLavaRESTTest(TestCase):
             username='squadtest',
             token='kz8wyxmldwahe4w4086ceadedfwd0z7tadr87i60u1z30xymq38xy35ji98f0h6fgqmpwr3161zq87dytza70iqyhx5ab6xrzgh5lp1ghbcbrb0q650x8tpkgrm0a9n7',
             implementation_type='lava',
-            backend_settings='',
+            backend_settings='{"CI_LAVA_HANDLE_SUITE": True, "CI_LAVA_CLONE_MEASUREMENTS": True}',
         )
         self.group = Group.objects.create(
             name="group_foo"

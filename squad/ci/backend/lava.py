@@ -583,7 +583,12 @@ class Backend(BaseBackend):
                         results.update({res_name: {'result': res_value, 'log': res_log}})
                     else:
                         res_value = result['measurement']
-                        unit = result['unit']
+                        try:
+                            unit = result['unit']
+                        except KeyError:
+                            # work around the bug in LAVA
+                            # https://git.lavasoftware.org/lava/lava/-/issues/449
+                            unit = result.get('units', 'items')
                         metrics.update({res_name: {'value': float(res_value), 'unit': unit}})
                         if clone_measurements_to_tests:
                             res_value = result['result']
@@ -599,7 +604,12 @@ class Backend(BaseBackend):
                         # it's appended to the test name. This way regressions can
                         # be found with more granularity
                         res_name = "%s-%s" % (res_name, job_metadata['testsuite'])
-                    unit = result['unit']
+                    try:
+                        unit = result['unit']
+                    except KeyError:
+                        # work around the bug in LAVA
+                        # https://git.lavasoftware.org/lava/lava/-/issues/449
+                        unit = result.get('units', 'items')
                     results.update({res_name: result['result']})
                     metrics.update({res_time_name: {'value': float(result['measurement']), 'unit': unit}})
 
