@@ -100,6 +100,7 @@ class GerritPluginTest(TestCase):
         self.build1 = self.project.builds.create(version='1', patch_source=self.http_patch_source, patch_id='1,1')
         self.build2 = self.project.builds.create(version='2', patch_source=self.ssh_patch_source, patch_id='1,1')
         self.build3 = self.project.builds.create(version='3', patch_source=self.ssh_patch_source, patch_id=':')
+        self.build4 = self.project.builds.create(version='4', patch_source=self.http_patch_source, patch_id='1/1')
 
     def test_basic_validation(self):
         validation_error = False
@@ -125,6 +126,12 @@ class GerritPluginTest(TestCase):
     def test_http_notify_patch_build_finished(self):
         plugin = self.build1.patch_source.get_implementation()
         self.assertTrue(plugin.notify_patch_build_finished(self.build1))
+        self.assertIn('Build finished', FakeRequests.given_json()['message'])
+
+    @patch('squad.plugins.gerrit.requests', FakeRequests)
+    def test_http_notify_patch_build4_finished(self):
+        plugin = self.build4.patch_source.get_implementation()
+        self.assertTrue(plugin.notify_patch_build_finished(self.build4))
         self.assertIn('Build finished', FakeRequests.given_json()['message'])
 
     @patch('squad.plugins.gerrit.requests', FakeRequests)
