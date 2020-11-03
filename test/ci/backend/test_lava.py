@@ -103,6 +103,95 @@ TEST_RESULTS = [
      'url': '/results/testcase/123456'},
 ]
 
+TEST_RESULTS_REST = [
+    {'duration': '',
+     'id': '5089687',
+     'job': '22505',
+     'level': 'None',
+     'log_end_line': '4',
+     'log_start_line': '1',
+     'logged': '2017-09-05 07:53:07.040871+00:00',
+     'measurement': '29.7200000000',
+     'metadata': {'case': 'auto-login-action',
+                  'definition': 'lava',
+                  'duration': '29.72',
+                  'level': '4.5',
+                  'result': 'pass'},
+     'name': 'auto-login-action',
+     'result': 'pass',
+     'suite': 'lava',
+     'timeout': '',
+     'units': 'seconds',
+     'url': '/results/testcase/5089687'},
+    {'duration': '',
+     'job': '1234',
+     'level': 'None',
+     'log_end_line': '4',
+     'log_start_line': '5',
+     'logged': '2017-02-15 11:31:21.973616+00:00',
+     'measurement': '10',
+     'metadata': {'case': 'case_foo',
+                  'definition': '1_DefinitionFoo',
+                  'measurement': '10',
+                  'result': 'pass',
+                  'units': 'bottles'},
+     'name': 'case_foo',
+     'result': 'pass',
+     'suite': '1_DefinitionFoo',
+     'timeout': '',
+     'units': 'bottles',
+     'url': '/results/1234/1_DefinitionFoo/case_foo'},
+    {'duration': '',
+     'job': '1234',
+     'level': 'None',
+     'log_end_line': '5',
+     'log_start_line': '4',
+     'logged': '2017-02-15 11:31:21.973616+00:00',
+     'measurement': 'None',
+     'metadata': {'case': 'case_bar',
+                  'definition': '1_DefinitionFoo',
+                  'measurement': 'None',
+                  'result': 'pass'},
+     'name': 'case_bar',
+     'result': 'pass',
+     'suite': '1_DefinitionFoo',
+     'timeout': '',
+     'units': '',
+     'url': '/results/1234/1_DefinitionFoo/case_bar'},
+    {'duration': '',
+     'job': '12345',
+     'level': 'None',
+     'log_end_line': '6',
+     'log_start_line': '5',
+     'logged': '2018-02-15 11:31:21.973616+00:00',
+     'measurement': 'None',
+     'metadata': {'case': 'validate',
+                  'definition': 'lava',
+                  'result': 'pass'},
+     'name': 'validate',
+     'result': 'pass',
+     'suite': 'lava',
+     'timeout': '',
+     'units': '',
+     'url': '/results/testcase/12345'},
+    {'duration': '',
+     'job': '123456',
+     'level': 'None',
+     'log_end_line': '4',
+     'log_start_line': '1',
+     'logged': '2018-02-15 11:31:21.973616+00:00',
+     'measurement': '0E-10',
+     'metadata': {'case': 'power-off',
+                  'definition': 'lava',
+                  'result': 'pass'},
+     'name': 'power-off',
+     'result': 'pass',
+     'suite': 'lava',
+     'timeout': '',
+     'units': '',
+     'url': '/results/testcase/123456'},
+]
+
 TEST_RESULTS_INFRA_FAILURE = [
     {
         'suite': 'lava',
@@ -659,6 +748,24 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results(self, get_results, get_details, download_test_log):
+        lava = LAVABackend(self.backend)
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend)
+        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+
+        self.assertEqual(len(results), 2)
+        self.assertIn('log', results['DefinitionFoo/case_bar'].keys())
+        self.assertEqual(len(metrics), 2)
+        self.assertEqual(10, metrics['DefinitionFoo/case_foo']["value"])
+        self.assertEqual('job_foo', testjob.name)
+
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_REST)
+    def test_parse_results_rest(self, get_results, get_details, download_test_log):
+        # this test is a workaround of LAVA bug
+        # https://git.lavasoftware.org/lava/lava/-/issues/449
         lava = LAVABackend(self.backend)
         testjob = TestJob(
             job_id='1234',
