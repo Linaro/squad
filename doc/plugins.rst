@@ -119,9 +119,9 @@ by a freshly opened Github Pull Request::
     $ curl \
         -X POST \
         --header "Auth-Token: $SQUAD_TOKEN" \
-        --patch_source=your-github-patch-source \
-        --patch_baseline=build-v1 \
-        --patch_id=the_owner/the_repo/8223a534d7bf \
+        -d patch_source=your-github-patch-source \
+        -d patch_baseline=build-v1 \
+        -d patch_id=the_owner/the_repo/8223a534d7bf \
         https://squad.example.com/api/createbuild/my-group/my-project/build-v2
 
 Where:
@@ -151,9 +151,9 @@ by a freshly created change::
     $ curl \
         -X POST \
         --header "Auth-Token: $SQUAD_TOKEN" \
-        --patch_source=your-gerrit-patch-source \
-        --patch_baseline=build-v1 \
-        --patch_id=change-id/patchset \
+        -d patch_source=your-gerrit-patch-source \
+        -d patch_baseline=build-v1 \
+        -d patch_id=change-id/patchset \
         https://squad.example.com/api/createbuild/my-group/my-project/build-v2
 
 Where:
