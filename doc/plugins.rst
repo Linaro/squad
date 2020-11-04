@@ -176,7 +176,9 @@ By default, the plugin will only apply "Code-Review -1" for builds that errored.
 Custom labels are supported if specified in project settings. Here is a example on how
 to specify custom labels for gerrit:
 
-    ...
+
+.. code-block:: yaml
+
     plugins:
       gerrit:
         build_finished:
@@ -186,7 +188,6 @@ to specify custom labels for gerrit:
           error:
             Code-Review: "-1"
             My-Custom-Bot-Review: "-1"
-    ...
 
 
 If everything was successfully submitted, you should see a notification in the Gerrit
