@@ -1355,3 +1355,13 @@ def add_created_user_to_squad_group(sender, instance, created, **kwargs):
         except auth_group.DoesNotExist:
             logger = logging.getLogger(__name__)
             logger.warning('Auth group squad doesnot exist')
+
+
+class PluginScratch(models.Model):
+    """
+    This object is meant to be used by plugins for storing
+    temporary data that is too big to be sent via message
+    queue.
+    """
+    build = models.ForeignKey(Build, on_delete=models.CASCADE)
+    storage = models.TextField(null=True, blank=True)
