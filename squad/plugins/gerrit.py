@@ -16,6 +16,7 @@ from squad.frontend.templatetags.squad import build_url as __build_url__
 logger = logging.getLogger()
 DEFAULT_SSH_PORT = '29418'
 DEFAULT_SSH_OPTIONS = ['-o', 'UserKnownHostsFile=/dev/null', '-o', 'StrictHostKeyChecking=no', '-o', 'LogLevel=ERROR']
+PATCH_SET_DIVIDER_REGEX = '[:/,]'
 
 
 def build_url(build):
@@ -49,7 +50,7 @@ class Plugin(BasePlugin):
         patch_source = build.patch_source
         parsed_url = urlparse(patch_source.url)
         auth = requests.auth.HTTPBasicAuth(patch_source.username, patch_source.password)
-        change_id, patchset = re.split(r'[:/,]', build.patch_id)
+        change_id, patchset = re.split(r'%s' % PATCH_SET_DIVIDER_REGEX, build.patch_id)
 
         url = '{scheme}://{host}/a/changes/{change_id}/revisions/{patchset}/review'.format(
             scheme=parsed_url.scheme,
@@ -67,7 +68,7 @@ class Plugin(BasePlugin):
     def __gerrit_ssh__(build, payload):
         patch_source = build.patch_source
         parsed_url = urlparse(patch_source.url)
-        change_id, patchset = re.split(r'[:/,]', build.patch_id)
+        change_id, patchset = re.split(r'%s' % PATCH_SET_DIVIDER_REGEX, build.patch_id)
 
         cmd = 'gerrit review -m "{message}" {change_id},{patchset}'.format(
             message=payload['message'],
@@ -96,7 +97,7 @@ class Plugin(BasePlugin):
         return True
 
     def __gerrit_request__(self, build, payload):
-        regex = r'.+[:,].+'
+        regex = r'.+%s.+' % PATCH_SET_DIVIDER_REGEX
         if re.match(regex, build.patch_id) is None:
             logger.warning('patch_id "%s" for build "%s" failed to match "%s"' % (build.patch_id, build.id, regex))
             return False
