@@ -522,6 +522,7 @@ class ReceiveTestRunTest(TestCase):
         testrun = TestRun.objects.last()
 
         self.assertEqual(LOG_FILE_CONTENT, testrun.log_file)
+        self.assertEqual(LOG_FILE_CONTENT, testrun.log_file_storage.read().decode())
 
     def test_logfile_with_null_bytes(self):
         receive = ReceiveTestRun(self.project)
@@ -535,6 +536,7 @@ class ReceiveTestRunTest(TestCase):
         testrun = TestRun.objects.last()
 
         self.assertEqual(LOG_FILE_PROPER_CONTENT, testrun.log_file)
+        self.assertEqual(LOG_FILE_PROPER_CONTENT, testrun.log_file_storage.read().decode())
 
     def test_build_datetime(self):
         receive = ReceiveTestRun(self.project)
