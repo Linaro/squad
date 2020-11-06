@@ -50,8 +50,10 @@ def maybe_notify_project_status(status_id):
             return
 
     if projectstatus.finished and not projectstatus.notified:
-        notify_patch_build_finished.delay(projectstatus.build_id)
-        send_status_notification(projectstatus)
+        # check if there are any outstanding PluginScratch objects
+        if not projectstatus.build.pluginscratch_set.all():
+            notify_patch_build_finished.delay(projectstatus.build_id)
+            send_status_notification(projectstatus)
 
 
 @celery.task
