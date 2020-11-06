@@ -1,5 +1,4 @@
 import math
-import multiprocessing
 import threading
 
 from django.core.files.base import ContentFile
@@ -10,7 +9,7 @@ from squad.core.models import Attachment, TestRun
 from squad.core.utils import split_list
 
 
-STEP = 1000
+STEP = 100
 
 
 class TestRunFileExporterThread(threading.Thread):
@@ -65,20 +64,38 @@ class Command(BaseCommand):
         parser.add_argument(
             '--show-progress',
             action='store_true',
-            help='Prints out one dot every 1000 (one thousand) testruns processed'
+            help='Prints out one dot every 100 (one thousand) testruns processed'
+        )
+        parser.add_argument(
+            '--num-threads',
+            type=int,
+            default=2,
+            help='Number of simultaneous parallel threads to work'
+        )
+        parser.add_argument(
+            '--groups',
+            default='',
+            help='List of groups slugs separated by ","'
         )
 
     def handle(self, *args, **options):
         show_progress = options['show_progress']
+        num_threads = options['num_threads']
+        groups = options['groups']
 
         null_storage_files = Q(tests_file_storage__isnull=True) | Q(metrics_file_storage__isnull=True) | Q(log_file_storage__isnull=True)
-        testrun_ids = TestRun.objects.filter(null_storage_files).order_by('id').values_list('id', flat=True)
+        queryset = TestRun.objects.filter(null_storage_files)
+
+        if groups != '':
+            groups_slugs = groups.split(',')
+            queryset = queryset.filter(build__project__group__slug__in=groups_slugs)
+
+        testrun_ids = queryset.order_by('id').values_list('id', flat=True)
 
         if len(testrun_ids) == 0:
             print('Nothing to do!')
             return
 
-        num_threads = multiprocessing.cpu_count() * 2
         chunk_size = math.floor(len(testrun_ids) / num_threads) + 1
         chunks = split_list(testrun_ids, chunk_size=chunk_size)
 
@@ -92,12 +109,12 @@ class Command(BaseCommand):
             thread.join()
 
         # Check that everything worked as expected
-        count = TestRun.objects.filter(null_storage_files).count()
+        count = queryset.count()
         if count > 0:
             print('Something went wrong! %d test runs still do not have files exported' % count)
             return
 
-        count = Attachment.objects.filter(storage__isnull=True).count()
+        count = Attachment.objects.filter(storage__isnull=True, test_run__in=queryset.all()).count()
         if count > 0:
             print('Something went wrong! %d attachments still do not have files exported' % count)
             return
