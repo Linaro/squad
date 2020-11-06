@@ -55,6 +55,21 @@ class TestNotificationTasks(TestCase):
         maybe_notify_project_status(status.id)
         notify_patch_build_finished.delay.assert_called_with(build.id)
 
+    @patch("squad.core.tasks.notification.notify_patch_build_finished")
+    def test_maybe_notify_project_status_notify_patch_build_finished_active_plugin(self, notify_patch_build_finished):
+        build = self.project1.builds.create(datetime=timezone.now())
+        environment = self.project1.environments.create(slug='env')
+        build.test_runs.create(environment=environment)
+        build.pluginscratch_set.create()
+        status = ProjectStatus.create_or_update(build)
+
+        maybe_notify_project_status(status.id)
+        notify_patch_build_finished.delay.assert_not_called()
+
+        build.pluginscratch_set.all().delete()
+        maybe_notify_project_status(status.id)
+        notify_patch_build_finished.delay.assert_called_with(build.id)
+
     @patch("squad.core.tasks.notification.send_status_notification")
     def test_maybe_notify_project_status_do_not_send_dup_notification(self, send_status_notification):
         build = self.project1.builds.create(datetime=timezone.now())
@@ -137,6 +152,20 @@ class TestNotificationTasks(TestCase):
         build = self.project1.builds.create(datetime=timezone.now())
         environment = self.project1.environments.create(slug='env')
         build.test_runs.create(environment=environment)
+        status = ProjectStatus.create_or_update(build)
+
+        notification_timeout(status.id)
+        send_status_notification.assert_called_with(status)
+
+    @patch("squad.core.tasks.notification.send_status_notification")
+    def test_notification_timeout_active_plugin(self, send_status_notification):
+        self.project1.notification_timeout = 3600  # 1 hour
+        self.project1.save()
+
+        build = self.project1.builds.create(datetime=timezone.now())
+        environment = self.project1.environments.create(slug='env')
+        build.test_runs.create(environment=environment)
+        build.pluginscratch_set.create()
         status = ProjectStatus.create_or_update(build)
 
         notification_timeout(status.id)
