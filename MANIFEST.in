@@ -39,3 +39,4 @@ exclude           squad/local_settings.py
 exclude           squad/local_settings.py.off
 recursive-exclude squad/frontend/static/vendor/ *
 recursive-exclude doc/_build/ *
+recursive-exclude test/storage/ *
