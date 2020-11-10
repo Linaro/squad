@@ -1,3 +1,11 @@
+# 1.27.1
+
+This is a quick release to hide storage fields
+
+Complete list of changes going in:
+
+* api: rest: hide storage fields
+
 # 1.27
 
 This 1.27 release starts using external storage for test
