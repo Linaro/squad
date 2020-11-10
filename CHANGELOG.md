@@ -1,3 +1,31 @@
+# 1.27
+
+This 1.27 release starts using external storage for test
+run files as a step prior to remove them from DB. Next releases
+will come accordingly.
+
+The release also works around a bug with LAVA REST responses
+that don't always include the unit of a metric.
+
+Lastly, this release adds a new model called `PluginScratch`, to be
+used by plugins whenever extra database storage is required. Plugins
+should clean up their data after work is finished.
+
+Complete list of changes going in:
+
+* ci: work around LAVA REST error
+* commands: migrate_attachments: avoid OOM errors
+* core:
+  * add PluginScratch object
+  * delay notification if there are PluginScratch-es
+  * migrate_attachments: reduce number of threads
+  * start using storage
+* doc:
+  * conf: turn off magic quotes
+  * plugins: make gerrit configuration yaml code
+  * fix curl calls in plugins page
+* plugins: gerrit: use same regex for split and match checks
+
 # 1.26
 
 This 1.26 marks a big change in SQUAD: it *completely removes
