@@ -188,6 +188,8 @@ class TestJob(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     submitted_at = models.DateTimeField(null=True)
     fetched_at = models.DateTimeField(null=True)
+    started_at = models.DateTimeField(null=True)
+    ended_at = models.DateTimeField(null=True)
 
     # control
     submitted = models.BooleanField(default=False)

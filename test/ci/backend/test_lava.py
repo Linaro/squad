@@ -300,7 +300,26 @@ JOB_DETAILS = {
     'status': 'Complete',
     'id': 1234,
     'definition': yaml.dump(JOB_DEFINITION),
-    'multinode_definition': ''
+    'multinode_definition': '',
+    'start_time': '2020-11-13T10:23:41.265697Z',
+    'end_time': '2020-11-13T10:23:50.019407Z'
+}
+
+JOB_DETAILS_START_DATE = {
+    'status': 'Complete',
+    'id': 1234,
+    'definition': yaml.dump(JOB_DEFINITION),
+    'multinode_definition': '',
+    'start_time': '2020-11-13T10:23:50.019407Z'
+}
+
+JOB_DETAILS_INVALID_DATES = {
+    'status': 'Complete',
+    'id': 1234,
+    'definition': yaml.dump(JOB_DEFINITION),
+    'multinode_definition': '',
+    'start_time': 'abc',
+    'end_time': 'def'
 }
 
 JOB_DETAILS_INCOMPLETE = {
@@ -407,6 +426,7 @@ class LavaTest(TestCase):
         test_definition = "foo: 1\njob_name: bar"
         testjob = TestJob(
             definition=test_definition,
+            target=self.project,
             backend=self.backend)
         self.assertEqual(['1234'], lava.submit(testjob))
         self.assertEqual('bar', testjob.name)
@@ -417,6 +437,7 @@ class LavaTest(TestCase):
         test_definition = "foo: 1\njob_name: bar"
         testjob = TestJob(
             definition=test_definition,
+            target=self.project,
             backend=self.backend)
         self.assertRaises(requests.exceptions.Timeout, self.backend.submit, testjob)
 
@@ -426,6 +447,7 @@ class LavaTest(TestCase):
         test_definition = "foo: 1\njob_name: bar"
         testjob = TestJob(
             definition=test_definition,
+            target=self.project,
             backend=self.backend)
         self.assertRaises(requests.exceptions.Timeout, self.backend.submit, testjob)
 
@@ -436,6 +458,7 @@ class LavaTest(TestCase):
             definition=test_definition,
             submitted=True,
             job_id="12345",
+            target=self.project,
             backend=self.backend)
         testjob.cancel()
         __cancel__.assert_called()
@@ -447,6 +470,7 @@ class LavaTest(TestCase):
             definition=test_definition,
             submitted=True,
             job_id="12345",
+            target=self.project,
             backend=self.backend)
         self.assertRaises(requests.exceptions.Timeout, testjob.cancel)
 
@@ -458,6 +482,7 @@ class LavaTest(TestCase):
             definition=test_definition,
             submitted=True,
             job_id="12345",
+            target=self.project,
             backend=self.backend)
         self.assertRaises(requests.exceptions.Timeout, testjob.cancel)
 
@@ -467,6 +492,7 @@ class LavaTest(TestCase):
         test_definition = "foo: 1\njob_name: bar"
         testjob = TestJob(
             definition=test_definition,
+            target=self.project,
             backend=self.backend)
         self.assertEqual(['1234.0', '1234.1'], lava.submit(testjob))
         self.assertEqual('bar', testjob.name)
@@ -479,12 +505,52 @@ class LavaTest(TestCase):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='9999',
+            target=self.project,
             backend=self.backend)
         results = lava.fetch(testjob)
 
         get_details.assert_called_with('9999')
         get_results.assert_called_with('9999')
         self.assertEqual('Complete', results[0])
+        testjob.refresh_from_db()
+        self.assertIsNotNone(testjob.started_at)
+        self.assertIsNotNone(testjob.ended_at)
+
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_INVALID_DATES)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
+    def test_fetch_invalid_dates(self, get_results, get_details, test_log):
+        lava = LAVABackend(None)
+        testjob = TestJob(
+            job_id='9999',
+            target=self.project,
+            backend=self.backend)
+        results = lava.fetch(testjob)
+
+        get_details.assert_called_with('9999')
+        get_results.assert_called_with('9999')
+        self.assertEqual('Complete', results[0])
+        testjob.refresh_from_db()
+        self.assertIsNone(testjob.started_at)
+        self.assertIsNone(testjob.ended_at)
+
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_START_DATE)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
+    def test_fetch_missing_dates(self, get_results, get_details, test_log):
+        lava = LAVABackend(None)
+        testjob = TestJob(
+            job_id='9999',
+            target=self.project,
+            backend=self.backend)
+        results = lava.fetch(testjob)
+
+        get_details.assert_called_with('9999')
+        get_results.assert_called_with('9999')
+        self.assertEqual('Complete', results[0])
+        testjob.refresh_from_db()
+        self.assertIsNotNone(testjob.started_at)
+        self.assertIsNone(testjob.ended_at)
 
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_RUNNING)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__")
@@ -492,6 +558,7 @@ class LavaTest(TestCase):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='9999',
+            target=self.project,
             backend=self.backend)
         lava.fetch(testjob)
 
@@ -504,6 +571,7 @@ class LavaTest(TestCase):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
+            target=self.project,
             backend=self.backend)
         status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
 
@@ -516,6 +584,7 @@ class LavaTest(TestCase):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
+            target=self.project,
             backend=self.backend)
         status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
 
@@ -528,6 +597,7 @@ class LavaTest(TestCase):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
+            target=self.project,
             backend=self.backend)
         status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
 
@@ -751,6 +821,7 @@ class LavaTest(TestCase):
         lava = LAVABackend(self.backend)
         testjob = TestJob(
             job_id='1234',
+            target=self.project,
             backend=self.backend)
         status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
 
@@ -769,6 +840,7 @@ class LavaTest(TestCase):
         lava = LAVABackend(self.backend)
         testjob = TestJob(
             job_id='1234',
+            target=self.project,
             backend=self.backend)
         status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
 
@@ -969,6 +1041,7 @@ class LavaTest(TestCase):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
+            target=self.project,
             backend=self.backend)
         with self.assertRaises(SubmissionIssue):
             lava.submit(testjob)
@@ -978,6 +1051,7 @@ class LavaTest(TestCase):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
+            target=self.project,
             backend=self.backend)
         with self.assertRaises(TemporarySubmissionIssue):
             lava.submit(testjob)
@@ -987,6 +1061,7 @@ class LavaTest(TestCase):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
+            target=self.project,
             backend=self.backend)
         with self.assertRaises(TemporarySubmissionIssue):
             lava.submit(testjob)
@@ -1103,6 +1178,7 @@ class LavaTest(TestCase):
         testjob = TestJob(
             definition=test_definition,
             backend=self.backend,
+            target=self.project,
             job_id='9999',
         )
         with self.assertRaises(SubmissionIssue):
