@@ -8,6 +8,7 @@ import yaml
 import xmlrpc
 import zmq
 
+from dateutil.parser import isoparse
 from contextlib import contextmanager
 from io import BytesIO, TextIOWrapper, StringIO
 from zmq.utils.strtypes import u
@@ -106,6 +107,23 @@ class Backend(BaseBackend):
             if not self.use_xml_rpc:
                 status_key = 'state'
             if data[status_key] in self.complete_statuses:
+                # fill in start and end datetime for the job
+                start_time = data.get('start_time', None)
+                end_time = data.get('end_time', None)
+                # convert to datetime
+                if type(start_time) == str:
+                    try:
+                        start_time = isoparse(start_time)
+                    except ValueError:
+                        start_time = None
+                if type(end_time) == str:
+                    try:
+                        end_time = isoparse(end_time)
+                    except ValueError:
+                        end_time = None
+                test_job.started_at = start_time
+                test_job.ended_at = end_time
+                test_job.save()
                 data['results'] = self.__get_testjob_results_yaml__(test_job.job_id)
 
                 # fetch logs
@@ -234,7 +252,8 @@ class Backend(BaseBackend):
             proxy_timeout = self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
             self.__proxy__ = xmlrpclib.ServerProxy(
                 endpoint,
-                transport=RequestsTransport(timeout=proxy_timeout, use_https=use_https)
+                transport=RequestsTransport(timeout=proxy_timeout, use_https=use_https, use_builtin_types=True),
+                use_builtin_types=True
             )
         return self.__proxy__
 
