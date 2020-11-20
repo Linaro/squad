@@ -51,11 +51,23 @@ class FetchTest(TestCase):
     def setUp(self):
         group = core_models.Group.objects.create(slug='test')
         project = group.projects.create(slug='test')
+        build = project.builds.create(version='test')
         backend = models.Backend.objects.create()
         self.test_job = models.TestJob.objects.create(
             backend=backend,
             target=project,
+            target_build=build,
+            job_id='test',
         )
+
+    def mock_backend_fetch(test_job):
+        status = ''
+        completed = True
+        metadata = {}
+        tests = {}
+        metrics = {}
+        logs = ''
+        return status, completed, metadata, tests, metrics, logs
 
     @patch('squad.ci.models.Backend.fetch')
     def test_fetch(self, fetch_method):
@@ -79,6 +91,24 @@ class FetchTest(TestCase):
         self.test_job.refresh_from_db()
         self.assertEqual("ERROR", self.test_job.failure)
         self.assertFalse(self.test_job.fetched)
+
+    @patch('squad.ci.backend.null.Backend.fetch')
+    @patch('squad.ci.backend.null.Backend.job_url')
+    def test_clear_exception_after_successful_fetch(self, job_url, fetch_method):
+        fetch_method.side_effect = TemporaryFetchIssue("ERROR")
+        fetch.apply(args=[self.test_job.id])
+
+        self.test_job.refresh_from_db()
+        self.assertEqual("ERROR", self.test_job.failure)
+        self.assertFalse(self.test_job.fetched)
+
+        fetch_method.side_effect = FetchTest.mock_backend_fetch
+        job_url.side_effect = lambda a: 'test'
+        fetch.apply(args=[self.test_job.id])
+        self.test_job.refresh_from_db()
+        fetch_method.assert_called_with(self.test_job)
+        self.assertIsNone(self.test_job.failure)
+        self.assertTrue(self.test_job.fetched)
 
     @patch('squad.ci.backend.null.Backend.fetch')
     def test_counts_attempts_with_temporary_exceptions(self, fetch_method):
