@@ -77,14 +77,27 @@ class TestHistory(object):
         suite = project.suites.prefetch_related('metadata').get(slug=suite_slug)
         metadata = SuiteMetadata.objects.get(kind='test', suite=suite_slug, name=test_name)
         tests = self.__get_tests__(builds, metadata)
+        all_envs = set(project.environments.all())
         for test in tests:
             build = test.test_run.build
             environment = test.test_run.environment
-
             environments[environment] = True
             known_issues = issues_by_env.get(environment.id)
 
             results[build][environment] = TestResult(test, suite, metadata, known_issues)
+
+        for build in results.keys():
+            recorded_envs = set(results[build].keys())
+            remaining_envs = all_envs - recorded_envs
+            for env in remaining_envs:
+                results[build][env] = None
+                environments[env] = True
+        # Make sure all builds that don't have the test have None at least
+        for b in builds:
+            if not results[b]:
+                for env in all_envs:
+                    results[build][env] = None
+                    environments[env] = True
 
         self.environments = sorted(environments.keys(), key=lambda env: env.slug)
         self.results = results
