@@ -9,9 +9,9 @@
     <input type="hidden" name="email" value="{{ user.email }}"/>
     <input type="hidden" name="subscription" value="{{ project.id }}"/>
     {% if project.user_subscriptions %}
-        <button class="btn btn-default" type="submit"><i class='fa fa-bell-slash'>&nbsp;</i></button>
+        <button class="btn btn-default" type="submit" data-toggle="tooltip" title="unsubscribe from project"><i class='fa fa-bell-slash'>&nbsp;</i></button>
     {% else %}
-        <button class="btn btn-default" type="submit"><i class='fa fa-bell'>&nbsp;</i></button>
+        <button class="btn btn-default" type="submit"><i class='fa fa-bell' data-toggle="tooltip" title="subscribe to project">&nbsp;</i></button>
     {% endif %}
     </form>
 {% endif %}
