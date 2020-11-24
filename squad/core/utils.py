@@ -11,6 +11,7 @@ from cryptography.fernet import Fernet
 
 from django.template.defaultfilters import safe, escape
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.conf import settings
 from django.utils.encoding import force_text
 
@@ -165,3 +166,11 @@ def log_change(request, object, message):
 def log_deletion(request, object, message):
     from django.contrib.admin.models import DELETION
     _log_entry(request, object, message, DELETION)
+
+
+def storage_save(obj, storage_field, filename, content):
+    content_bytes = content or ''
+    if type(content_bytes) == str:
+        content_bytes = content_bytes.encode()
+    filename = '%s/%s/%s' % (obj.__class__.__name__.lower(), obj.pk, filename)
+    storage_field.save(filename, ContentFile(content_bytes))

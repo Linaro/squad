@@ -1,7 +1,6 @@
 import math
 import threading
 
-from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 
@@ -25,33 +24,11 @@ class TestRunFileExporterThread(threading.Thread):
         for offset in range(0, count, STEP):
             ids = self.testrun_ids[offset:offset + STEP]
             for testrun in TestRun.objects.filter(id__in=ids).prefetch_related('attachments').all():
-                export_testrun_files(testrun)
+                testrun.save_files()
 
             if self.show_progress:
                 print('.', end='', flush=True)
         print('[thread-%s] done' % self.thread_id)
-
-
-def export_testrun_files(testrun):
-    if not testrun.tests_file_storage:
-        storage_save(testrun, testrun.tests_file_storage, 'tests_file', testrun.tests_file)
-
-    if not testrun.metrics_file_storage:
-        storage_save(testrun, testrun.metrics_file_storage, 'metrics_file', testrun.metrics_file)
-
-    if not testrun.log_file_storage:
-        storage_save(testrun, testrun.log_file_storage, 'log_file', testrun.log_file)
-
-    for attachment in testrun.attachments.all():
-        storage_save(attachment, attachment.storage, attachment.filename, attachment.data)
-
-
-def storage_save(obj, storage_field, filename, content):
-    content_bytes = content or ''
-    if type(content_bytes) == str:
-        content_bytes = content_bytes.encode()
-    filename = '%s/%s/%s' % (obj.__class__.__name__.lower(), obj.pk, filename)
-    storage_field.save(filename, ContentFile(content_bytes))
 
 
 class Command(BaseCommand):

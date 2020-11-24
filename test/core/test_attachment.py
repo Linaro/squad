@@ -1,5 +1,3 @@
-from io import BytesIO
-from django.core.files import File
 from django.test import TestCase
 from squad.core.models import Group, TestRun, Attachment
 
@@ -19,15 +17,19 @@ class TestAttachment(TestCase):
         )
         attachment.save()
 
+        self.test_run.save_files()
+
         fromdb = Attachment.objects.get(pk=attachment.pk)
-        self.assertEqual(b"abc", bytes(fromdb.data))
+        self.assertEqual(b"abc", fromdb.data)
 
     def test_storage_fields(self):
-        contents = 'attachment file content'
+        contents = b'attachment file content'
         attachment = Attachment.objects.create(test_run=self.test_run, filename="foo.txt", length=len(contents), old_data=contents)
 
         self.assertFalse(attachment.storage)
-        contents = BytesIO(contents.encode())
-        contents_file = File(contents)
-        storage_filename = "attachment/%s/%s" % (attachment.id, attachment.filename)
-        attachment.storage.save(storage_filename, contents_file)
+
+        self.test_run.save_files()
+
+        attachment.refresh_from_db()
+
+        self.assertEqual(contents, attachment.storage.read())

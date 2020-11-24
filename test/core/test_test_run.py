@@ -1,5 +1,3 @@
-from io import StringIO
-from django.core.files import File
 from django.test import TestCase
 from squad.core.models import Group, TestRun
 
@@ -29,22 +27,23 @@ class TestRunTest(TestCase):
         self.assertEqual({"foo": "bar", "baz": "qux"}, t.metadata)
 
     def test_storage_fields(self):
-        testrun = TestRun.objects.create(build=self.build, environment=self.env)
+        tests_file_content = 'tests file content'
+        metrics_file_content = 'metrics file content'
+        log_file_content = 'log file content'
+
+        testrun = TestRun.objects.create(
+            build=self.build,
+            environment=self.env,
+            old_tests_file=tests_file_content,
+            old_metrics_file=metrics_file_content,
+            old_log_file=log_file_content)
 
         self.assertFalse(testrun.tests_file_storage)
-        tests_file_contents = StringIO('tests file content')
-        tests_file = File(tests_file_contents)
-        storage_filename = "testrun/%s/tests_file" % (testrun.id)
-        testrun.tests_file_storage.save(storage_filename, tests_file)
-
         self.assertFalse(testrun.metrics_file_storage)
-        metrics_file_contents = StringIO('metrics file content')
-        metrics_file = File(metrics_file_contents)
-        storage_filename = "testrun/%s/metrics_file" % (testrun.id)
-        testrun.metrics_file_storage.save(storage_filename, metrics_file)
-
         self.assertFalse(testrun.log_file_storage)
-        log_file_contents = StringIO('log file content')
-        log_file = File(log_file_contents)
-        storage_filename = "testrun/%s/log_file" % (testrun.id)
-        testrun.log_file_storage.save(storage_filename, log_file)
+
+        testrun.save_files()
+
+        self.assertEqual(tests_file_content, testrun.tests_file_storage.read().decode())
+        self.assertEqual(metrics_file_content, testrun.metrics_file_storage.read().decode())
+        self.assertEqual(log_file_content, testrun.log_file_storage.read().decode())

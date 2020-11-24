@@ -26,7 +26,7 @@ from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as N_
 from simple_history.models import HistoricalRecords
 
-from squad.core.utils import parse_name, join_name, yaml_validator, jinja2_validator
+from squad.core.utils import parse_name, join_name, yaml_validator, jinja2_validator, storage_save
 from squad.core.utils import encrypt, decrypt, split_list
 from squad.core.comparison import TestComparison
 from squad.core.statistics import geomean
@@ -671,6 +671,20 @@ class TestRun(models.Model):
         if self.__metadata__:
             self.metadata_file = json.dumps(self.__metadata__)
         super(TestRun, self).save(*args, **kwargs)
+
+    def save_files(self):
+        if not self.tests_file_storage:
+            storage_save(self, self.tests_file_storage, 'tests_file', self.old_tests_file)
+
+        if not self.metrics_file_storage:
+            storage_save(self, self.metrics_file_storage, 'metrics_file', self.old_metrics_file)
+
+        if not self.log_file_storage:
+            storage_save(self, self.log_file_storage, 'log_file', self.old_log_file)
+
+        for attachment in self.attachments.all():
+            if not attachment.storage:
+                storage_save(attachment, attachment.storage, attachment.filename, attachment.old_data)
 
     __tests_file__ = None
 
