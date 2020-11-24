@@ -268,8 +268,8 @@ class CommonTestCase(TestCase):
         self.testrun = TestRun.objects.create(
             build=self.build,
             environment=self.environment,
-            tests_file='{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
-            metrics_file='{"metric0": {"value": 1, "unit": ""},  "foobar/metric1": {"value": 10, "unit": "kb"}, "foobar/metric2": {"value": "10.5", "unit": "kb"}}',
+            old_tests_file='{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
+            old_metrics_file='{"metric0": {"value": 1, "unit": ""},  "foobar/metric1": {"value": 10, "unit": "kb"}, "foobar/metric2": {"value": "10.5", "unit": "kb"}}',
         )
 
 
@@ -322,8 +322,8 @@ class ParseTestRunDataTest(CommonTestCase):
         testrun = TestRun.objects.create(
             build=self.build,
             environment=self.environment,
-            tests_file='{"' + really_long_name + '": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
-            metrics_file='{"' + really_long_name + '": {"value": 1, "unit": "seconds"}, "foobar/metric1": {"value": 10, "unit": ""}, "foobar/metric2": {"value": "10.5", "unit": "cycles"}}',
+            old_tests_file='{"' + really_long_name + '": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
+            old_metrics_file='{"' + really_long_name + '": {"value": 1, "unit": "seconds"}, "foobar/metric1": {"value": 10, "unit": ""}, "foobar/metric2": {"value": "10.5", "unit": "cycles"}}',
         )
         ParseTestRunData()(testrun)
         self.assertEqual(4, testrun.tests.count())

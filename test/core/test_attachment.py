@@ -15,7 +15,7 @@ class TestAttachment(TestCase):
     def test_basics(self):
 
         attachment = Attachment(
-            test_run=self.test_run, data="abc".encode("utf-8"), length=3, filename="foo.txt"
+            test_run=self.test_run, old_data="abc".encode("utf-8"), length=3, filename="foo.txt"
         )
         attachment.save()
 
@@ -24,7 +24,7 @@ class TestAttachment(TestCase):
 
     def test_storage_fields(self):
         contents = 'attachment file content'
-        attachment = Attachment.objects.create(test_run=self.test_run, filename="foo.txt", length=len(contents))
+        attachment = Attachment.objects.create(test_run=self.test_run, filename="foo.txt", length=len(contents), old_data=contents)
 
         self.assertFalse(attachment.storage)
         contents = BytesIO(contents.encode())

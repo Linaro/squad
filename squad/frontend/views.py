@@ -358,7 +358,7 @@ def build(request, group_slug, project_slug, version):
     if failures_only == 'true':
         queryset = queryset.filter(tests_fail__gt=0)
 
-    prefetch_attachments = Prefetch('attachments', queryset=Attachment.objects.defer('data'))
+    prefetch_attachments = Prefetch('attachments', queryset=Attachment.objects.defer('old_data'))
 
     __statuses__ = queryset.prefetch_related(
         'suite',
@@ -521,7 +521,7 @@ def test_details_log(request, group_slug, project_slug, build_version, testrun, 
     build = get_build(project, build_version)
     test_run = get_object_or_404(build.test_runs, pk=testrun)
 
-    if not test_run.log_file:
+    if not test_run.log_file or len(test_run.log_file) == 0:
         raise Http404("No log file available for this test run")
 
     return HttpResponse(test_run.log_file, content_type="text/plain")
