@@ -1053,7 +1053,7 @@ class TestRunSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = TestRun
-        exclude = ['tests_file_storage', 'metrics_file_storage', 'log_file_storage']
+        exclude = ['tests_file_storage', 'metrics_file_storage', 'log_file_storage', 'old_tests_file', 'old_metrics_file', 'old_log_file']
 
 
 class SuiteSerializer(serializers.HyperlinkedModelSerializer):
