@@ -12,7 +12,7 @@ from django.db.models import Q, Count, Sum, Case, When, F, Value
 from django.db.models.functions import Concat
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import User, AnonymousUser, Group as auth_group
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 
 from django.conf import settings
@@ -739,6 +739,22 @@ class TestRun(models.Model):
 
     def __str__(self):
         return self.job_id and ('#%s' % self.job_id) or ('(%s)' % self.id)
+
+
+@receiver(pre_delete, sender=TestRun)
+def delete_testrun_files(sender, instance, **kwargs):
+    testrun = instance
+    # Pass False so FileField doesn't save the model
+    if testrun.tests_file_storage:
+        testrun.tests_file_storage.delete(False)
+    if testrun.metrics_file_storage:
+        testrun.metrics_file_storage.delete(False)
+    if testrun.log_file_storage:
+        testrun.log_file_storage.delete(False)
+
+    for attachment in testrun.attachments.all():
+        if attachment.storage:
+            attachment.storage.delete(False)
 
 
 class Attachment(models.Model):
