@@ -415,7 +415,9 @@ class SuiteMetadataViewset(viewsets.ModelViewSet):
     filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
     filterset_class = SuiteMetadataFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
-    ordering_fields = ('name', 'suite')
+    ordering_fields = ('name', 'suite', 'id')
+    pagination_class = CursorPaginationWithPageSize
+    ordering = ('id',)
 
     def get_queryset(self):
         request = self.request
@@ -490,7 +492,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                        'name',)
 
     def get_queryset(self):
-        return self.queryset.accessible_to(self.request.user)
+        return self.queryset.accessible_to(self.request.user).prefetch_related('group')
 
     @action(detail=True, methods=['get'], suffix='builds')
     def builds(self, request, pk=None):
@@ -796,7 +798,7 @@ class BuildViewSet(ModelViewSet):
 
         Similar to 'email' but asunchronous
     """
-    queryset = Build.objects.prefetch_related('status', 'test_runs').order_by('-datetime').all()
+    queryset = Build.objects.prefetch_related('status').order_by('-datetime').all()
     project_lookup_key = 'project__in'
     serializer_class = BuildSerializer
     filterset_fields = ('version', 'project')
