@@ -32,7 +32,7 @@ class FrontendTest(TestCase):
         )
         self.test_run = models.TestRun.objects.last()
         attachment_data = "bar".encode()
-        self.test_run.attachments.create(filename="foo", data=attachment_data, length=len(attachment_data))
+        self.test_run.attachments.create(filename="foo", old_data=attachment_data, length=len(attachment_data))
         self.suite, _ = self.project.suites.get_or_create(slug='mysuite')
 
         metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='mytest', kind='test')
@@ -174,7 +174,8 @@ class FrontendTest(TestCase):
 
     def test_attachment(self):
         data = bytes('text file', 'utf-8')
-        self.test_run.attachments.create(filename='foo.txt', data=data, length=len(data), mimetype="text/plain")
+        self.test_run.attachments.create(filename='foo.txt', old_data=data, length=len(data), mimetype="text/plain")
+        self.test_run.save_files()
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/attachments/foo.txt' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('text/plain', response['Content-Type'])
         self.assertEqual(b'text file', response.content)
@@ -185,7 +186,8 @@ class FrontendTest(TestCase):
         self.assertEqual(b'log file contents ...', response.content)
 
     def test_no_log(self):
-        self.test_run.log_file = None
+        self.test_run.old_log_file = None
+        self.test_run.log_file_storage = None
         self.test_run.save()
 
         response = self.client.get('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/log' % (self.test_run.id, self.suite.slug, self.test.name))

@@ -21,7 +21,9 @@ class TestLinuxLogParser(TestCase):
 
     def new_testrun(self, logfile, job_id='999'):
         log = read_sample_file(logfile)
-        return self.build.test_runs.create(environment=self.env, log_file=log, job_id=job_id)
+        testrun = self.build.test_runs.create(environment=self.env, old_log_file=log, job_id=job_id)
+        testrun.save_files()
+        return testrun
 
     def test_detects_oops(self):
         testrun = self.new_testrun('oops.log')
@@ -176,15 +178,16 @@ class TestLinuxLogParser(TestCase):
 
         self.assertIn('WARNING: suspicious RCU usage', test_warning.log)
 
-    def test_non_string(self):
+    def test_no_string(self):
         testrun = self.build.test_runs.create(environment=self.env, job_id='1111')
         self.plugin.postprocess_testrun(testrun)
 
-        tests = testrun.tests
+        tests = testrun.tests.filter(result=False)
         self.assertEqual(0, tests.count())
 
     def test_metadata_creation(self):
-        testrun = self.build.test_runs.create(environment=self.env, log_file='Kernel panic - not syncing', job_id='999')
+        testrun = self.build.test_runs.create(environment=self.env, old_log_file='Kernel panic - not syncing', job_id='999')
+        testrun.save_files()
         self.plugin.postprocess_testrun(testrun)
 
         test = testrun.tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-panic-999')

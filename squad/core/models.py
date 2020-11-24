@@ -12,7 +12,7 @@ from django.db.models import Q, Count, Sum, Case, When, F, Value
 from django.db.models.functions import Concat
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import User, AnonymousUser, Group as auth_group
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 
 from django.conf import settings
@@ -26,7 +26,7 @@ from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as N_
 from simple_history.models import HistoricalRecords
 
-from squad.core.utils import parse_name, join_name, yaml_validator, jinja2_validator
+from squad.core.utils import parse_name, join_name, yaml_validator, jinja2_validator, storage_save
 from squad.core.utils import encrypt, decrypt, split_list
 from squad.core.comparison import TestComparison
 from squad.core.statistics import geomean
@@ -623,9 +623,9 @@ class TestRunManager(models.Manager):
 
     def get_queryset(self, *args, **kwargs):
         return super(TestRunManager, self).get_queryset(*args, **kwargs).defer(
-            "tests_file",
-            "metrics_file",
-            "log_file",
+            "old_tests_file",
+            "old_metrics_file",
+            "old_log_file",
         )
 
 
@@ -638,9 +638,9 @@ class TestRun(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     # these fields are potentially very large
-    tests_file = models.TextField(null=True)
-    metrics_file = models.TextField(null=True)
-    log_file = models.TextField(null=True)
+    old_tests_file = models.TextField(null=True)
+    old_metrics_file = models.TextField(null=True)
+    old_log_file = models.TextField(null=True)
     metadata_file = models.TextField(null=True)
     tests_file_storage = models.FileField(null=True)
     metrics_file_storage = models.FileField(null=True)
@@ -672,6 +672,56 @@ class TestRun(models.Model):
             self.metadata_file = json.dumps(self.__metadata__)
         super(TestRun, self).save(*args, **kwargs)
 
+    def save_files(self):
+        if not self.tests_file_storage:
+            storage_save(self, self.tests_file_storage, 'tests_file', self.old_tests_file)
+
+        if not self.metrics_file_storage:
+            storage_save(self, self.metrics_file_storage, 'metrics_file', self.old_metrics_file)
+
+        if not self.log_file_storage:
+            storage_save(self, self.log_file_storage, 'log_file', self.old_log_file)
+
+        for attachment in self.attachments.all():
+            if not attachment.storage:
+                storage_save(attachment, attachment.storage, attachment.filename, attachment.old_data)
+
+    __tests_file__ = None
+
+    @property
+    def tests_file(self):
+        if self.__tests_file__ is None:
+            if self.tests_file_storage:
+                self.__tests_file__ = self.tests_file_storage.read().decode()
+                self.tests_file_storage.seek(0)
+            else:
+                self.__tests_file__ = ''
+        return self.__tests_file__
+
+    __metrics_file__ = None
+
+    @property
+    def metrics_file(self):
+        if self.__metrics_file__ is None:
+            if self.metrics_file_storage:
+                self.__metrics_file__ = self.metrics_file_storage.read().decode()
+                self.metrics_file_storage.seek(0)
+            else:
+                self.__metrics_file__ = ''
+        return self.__metrics_file__
+
+    __log_file__ = None
+
+    @property
+    def log_file(self):
+        if self.__log_file__ is None:
+            if self.log_file_storage:
+                self.__log_file__ = self.log_file_storage.read().decode()
+                self.log_file_storage.seek(0)
+            else:
+                self.__log_file__ = ''
+        return self.__log_file__
+
     @property
     def project(self):
         return self.build.project
@@ -691,13 +741,41 @@ class TestRun(models.Model):
         return self.job_id and ('#%s' % self.job_id) or ('(%s)' % self.id)
 
 
+@receiver(pre_delete, sender=TestRun)
+def delete_testrun_files(sender, instance, **kwargs):
+    testrun = instance
+    # Pass False so FileField doesn't save the model
+    if testrun.tests_file_storage:
+        testrun.tests_file_storage.delete(False)
+    if testrun.metrics_file_storage:
+        testrun.metrics_file_storage.delete(False)
+    if testrun.log_file_storage:
+        testrun.log_file_storage.delete(False)
+
+    for attachment in testrun.attachments.all():
+        if attachment.storage:
+            attachment.storage.delete(False)
+
+
 class Attachment(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='attachments', on_delete=models.CASCADE)
     filename = models.CharField(null=False, max_length=1024)
     mimetype = models.CharField(null=False, max_length=128, default="application/octet-stream")
-    data = models.BinaryField(default=None, null=True)
+    old_data = models.BinaryField(default=None, null=True)
     storage = models.FileField(null=True)
     length = models.IntegerField(default=None)
+
+    __data__ = None
+
+    @property
+    def data(self):
+        if self.__data__ is None:
+            if self.storage:
+                self.__data__ = self.storage.read()
+                self.storage.seek(0)
+            else:
+                self.__data__ = b''
+        return self.__data__
 
 
 class SuiteMetadata(models.Model):

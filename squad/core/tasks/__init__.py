@@ -155,9 +155,9 @@ class ReceiveTestRun(object):
 
         testrun = build.test_runs.create(
             environment=environment,
-            tests_file=tests_file,
-            metrics_file=metrics_file,
-            log_file=log_file,
+            old_tests_file=tests_file,
+            old_metrics_file=metrics_file,
+            old_log_file=log_file,
             metadata_file=metadata_file,
             completed=completed,
             **metadata_fields
@@ -173,7 +173,7 @@ class ReceiveTestRun(object):
             testrun.log_file_storage.save("testrun/%s/log_file" % testrun.pk, ContentFile(log_file.encode()))
 
         for f, data in attachments.items():
-            attachment = testrun.attachments.create(filename=f, data=data, length=len(data))
+            attachment = testrun.attachments.create(filename=f, old_data=data, length=len(data))
             attachment.storage.save("attachment/%s/%s" % (attachment.pk, f), ContentFile(data))
 
         testrun.refresh_from_db()
