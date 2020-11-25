@@ -1,3 +1,30 @@
+# 1.28
+
+This 1.28 release starts using storage to provide
+TestRun and Attachment files, deprecating the use
+of the same fields in the DB. Future releases will
+completely remove such fields and will help control
+database growth on installations with lots of data.
+
+The release also clears TestJob fetch failures after
+a successful fetch. It also fixes a bug in the bell
+icon in the project page that signals whether or not
+a user is subscribed to that project.
+
+Complete list of changes going in:
+
+* api:
+  * rest: hide deprecated TestRun file fields
+  * rest: make build, project and suitemetadata listings faster
+* ci:
+  * add started_at and ended_at fields to TestJob
+  * models: clear TestJob.falure on successful
+* core:
+  * models: add save_files to TestRun
+  * models: delete files as TestRun and Attachment are deleted
+  * models: deprecate TestRun and Attachment storage database fields
+* frontend: notification bug
+
 # 1.27.1
 
 This is a quick release to hide storage fields
