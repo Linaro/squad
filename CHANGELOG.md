@@ -1,3 +1,12 @@
+# 1.28.1
+
+This is a quick release to add an improvement of the command
+that fixes squadplugins tests.
+
+Complete list of changes going in:
+
+* core: commands, rewrite command to fix tradefed
+
 # 1.28
 
 This 1.28 release starts using storage to provide
