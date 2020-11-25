@@ -309,7 +309,26 @@ class ModelViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
+class DynamicFieldsModelSerializer(serializers.ModelSerializer):
+    """
+    A ModelSerializer that takes an additional `fields` argument that
+    controls which fields should be displayed.
+    """
+    def __init__(self, *args, **kwargs):
+        # Instantiate the superclass normally
+        super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)
+
+        fields = self.context['request'].query_params.get('fields')
+        if fields:
+            fields = fields.split(',')
+            # Drop any fields that are not specified in the `fields` argument.
+            allowed = set(fields)
+            existing = set(self.fields.keys())
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+
+
+class GroupSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
 
@@ -337,7 +356,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         return self.queryset.accessible_to(self.request.user)
 
 
-class ProjectSerializer(serializers.HyperlinkedModelSerializer):
+class ProjectSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     builds = serializers.HyperlinkedIdentityField(
         view_name='project-builds',
@@ -399,7 +418,7 @@ class LatestTestResultsSerializer(serializers.BaseSerializer):
         return serialized_obj
 
 
-class SuiteMetadataSerializer(serializers.HyperlinkedModelSerializer):
+class SuiteMetadataSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
 
@@ -620,7 +639,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
 
-class ProjectStatusSerializer(serializers.HyperlinkedModelSerializer):
+class ProjectStatusSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -684,7 +703,7 @@ class ProjectStatusViewSet(viewsets.ModelViewSet):
     ordering_fields = ('created_at', 'last_updated')
 
 
-class PatchSourceSerializer(serializers.HyperlinkedModelSerializer):
+class PatchSourceSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -713,7 +732,7 @@ class HyperlinkedProjectStatusField(serializers.HyperlinkedRelatedField):
             return None
 
 
-class DelayedReportSerializer(serializers.HyperlinkedModelSerializer):
+class DelayedReportSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField(read_only=True)
     baseline = HyperlinkedProjectStatusField(
         view_name='build-status',
@@ -746,7 +765,7 @@ class BuildsComparisonSerializer(serializers.BaseSerializer):
         return ret
 
 
-class BuildSerializer(serializers.HyperlinkedModelSerializer):
+class BuildSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField(read_only=True)
     testruns = serializers.HyperlinkedIdentityField(view_name='build-testruns')
     testjobs = serializers.HyperlinkedIdentityField(view_name='build-testjobs')
@@ -968,7 +987,7 @@ class BuildViewSet(ModelViewSet):
         return Response(data, status=status.HTTP_202_ACCEPTED)
 
 
-class EnvironmentSerializer(serializers.HyperlinkedModelSerializer):
+class EnvironmentSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -1030,7 +1049,7 @@ class StatusFilter(filters.FilterSet):
                   'has_metrics': ['exact'], }
 
 
-class StatusSerializer(serializers.ModelSerializer):
+class StatusSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
     class Meta:
         model = Status
         exclude = ('test_run',)
@@ -1043,7 +1062,7 @@ class StatusViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
 
 
-class TestRunSerializer(serializers.HyperlinkedModelSerializer):
+class TestRunSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
     tests_file = HyperlinkedTestsIdentityField(view_name='testrun-tests-file')
@@ -1058,7 +1077,7 @@ class TestRunSerializer(serializers.HyperlinkedModelSerializer):
         exclude = ['tests_file_storage', 'metrics_file_storage', 'log_file_storage', 'old_tests_file', 'old_metrics_file', 'old_log_file']
 
 
-class SuiteSerializer(serializers.HyperlinkedModelSerializer):
+class SuiteSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
 
@@ -1095,7 +1114,7 @@ class SuiteViewSet(viewsets.ModelViewSet):
         return paginator.get_paginated_response(serializer.data)
 
 
-class TestSerializer(serializers.HyperlinkedModelSerializer):
+class TestSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
 
@@ -1127,7 +1146,7 @@ class TestViewSet(ModelViewSet):
     ordering = ('id',)
 
 
-class MetricSerializer(serializers.HyperlinkedModelSerializer):
+class MetricSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
 
@@ -1257,7 +1276,7 @@ class TestRunViewSet(ModelViewSet):
         return paginator.get_paginated_response(serializer.data)
 
 
-class BackendSerializer(serializers.HyperlinkedModelSerializer):
+class BackendSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
 
@@ -1281,7 +1300,7 @@ class BackendViewSet(viewsets.ModelViewSet):
     ordering_fields = ('id', 'implementation_type', 'name', 'url')
 
 
-class TestJobSerializer(serializers.HyperlinkedModelSerializer):
+class TestJobSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField(read_only=True)
     url = serializers.HyperlinkedIdentityField(view_name='testjob-detail')
     external_url = serializers.CharField(source='url', read_only=True)
@@ -1383,7 +1402,7 @@ class TestJobViewSet(ModelViewSet):
         return Response({'job_id': testjob.job_id, 'status': testjob.job_status}, status=status.HTTP_200_OK)
 
 
-class EmailTemplateSerializer(serializers.HyperlinkedModelSerializer):
+class EmailTemplateSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
 
@@ -1403,7 +1422,7 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
     ordering_fields = ('name', 'id')
 
 
-class KnownIssueSerializer(serializers.HyperlinkedModelSerializer):
+class KnownIssueSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
 
@@ -1423,7 +1442,7 @@ class KnownIssueViewSet(viewsets.ModelViewSet):
     ordering_fields = ('title', 'id')
 
 
-class AnnotationSerializer(serializers.HyperlinkedModelSerializer):
+class AnnotationSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
 
@@ -1441,7 +1460,7 @@ class AnnotationViewSet(viewsets.ModelViewSet):
     ordering_fields = ('id', 'build')
 
 
-class MetricThresholdSerializer(serializers.HyperlinkedModelSerializer):
+class MetricThresholdSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
 
