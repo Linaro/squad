@@ -1,9 +1,10 @@
 import logging
 
-from django.db.models import Q, F
+from django.db.models import Q
 from django.core.management.base import BaseCommand
 
 from squad.core.models import Test, SuiteMetadata
+from squad.core.utils import split_list
 
 
 logger = logging.getLogger()
@@ -13,39 +14,39 @@ class Command(BaseCommand):
 
     help = """fix suite in SuiteMetadata for cts/vts tests"""
 
-    def add_arguments(self, parser):
-        parser.add_argument('--batch-size', type=int, help='How many tests to process at once. Use this to prevent OOM errors')
-        parser.add_argument('--show-progress', action='store_true', help='Prints out one dot every 1000 (one thousand) tests processed')
-
     def handle(self, *args, **options):
-        show_progress = options['show_progress']
-        batch_size = options['batch_size']
         android_suites = ['cts', 'vts']
-        condition = Q(suite__slug__icontains=android_suites[0])
-        condition |= Q(suite__slug__icontains=android_suites[1])
-        logger.info("fetching %s tests" % (batch_size if batch_size else 'all'))
-        tests = Test.objects.filter(condition).exclude(metadata__suite=F('suite__slug')).prefetch_related('suite', 'metadata').defer('log')
-        if batch_size:
-            tests = tests[:batch_size]
-        count_processed = 0
+        condition = Q(suite__icontains=android_suites[0])
+        condition |= Q(suite__icontains=android_suites[1])
+        cts_and_vts_metadata = SuiteMetadata.objects.filter(condition, kind='test').order_by('-id')
+        buggy_metadata = []
+        for s in cts_and_vts_metadata:
+            print("Processing SuiteMetedata with suite %s and test %s" % (s.suite, s.name), flush=True)
+            first_test = Test.objects.filter(metadata=s).first()
+            if first_test is None:
+                buggy_metadata.append(s.id)
+                print("# of orphan bad metadata found: %s" % len(buggy_metadata), flush=True)
+                continue
+            print("Found Test for above Suitemetadata. Test.suite is %s " % first_test.suite, flush=True)
+            correct_suite = first_test.suite.slug
+            if correct_suite != s.suite:
+                correct_metadata = SuiteMetadata.objects.filter(kind='test', suite=correct_suite, name=s.name).first()
+                if correct_metadata:
+                    print("Found existing SuiteMetadata with correct suite: %s. Will use it to update all affected tests" % correct_metadata, flush=True)
+                    print("correct_metadata: %s" % correct_metadata.id, flush=True)
+                    print("Updating tests", flush=True)
+                    all_affected_tests = Test.objects.filter(metadata=s)
+                    print("# of affected tests: %s" % all_affected_tests.update(metadata=correct_metadata))
+                else:
+                    print('No existing correct metadata. Updating the corrupt SuiteMetadata and saving it in place ', flush=True)
+                    s.suite = first_test.suite.slug
+                    s.save()
+            print('Done', flush=True)
 
-        buggy_metadata = set()
-
-        for test in tests:
-            if test.metadata.suite != test.suite.slug:
-                metadata, _ = SuiteMetadata.objects.get_or_create(kind='test', suite=test.suite.slug, name=test.name)
-                buggy_metadata.add(metadata)
-                test.metadata = metadata
-                test.save()
-            count_processed += 1
-            if count_processed % 1000 == 0 and show_progress:
-                print('.', end='', flush=True)
-
-        deleted_metadata_count = 0
-        for metadata in buggy_metadata:
-            test_count = Test.objects.filter(metadata=metadata).count()
-            if test_count == 0:
-                metadata.delete()
-                deleted_metadata_count += 1
-
-        print('Deleted %d buggy metadata objects' % deleted_metadata_count)
+        print("Completed Fixing all SuiteMetadata")
+        print("Total number of orphan bad metadata found is: %s" % len(buggy_metadata))
+        print("Starting to delete it in chunks")
+        for chunk in split_list(buggy_metadata, 1000):
+            SuiteMetadata.objects.filter(id__in=chunk).delete()
+            print("Deleted 1000 bad metadata. Remaining: %s" % len(buggy_metadata))
+        print("Cleaning All bad metadata concluded")
