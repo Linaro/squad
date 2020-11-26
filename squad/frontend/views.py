@@ -135,7 +135,11 @@ def __get_builds_with_status__(project, limit=None):
 @auth
 def project_home(request, group_slug, project_slug):
     project = request.project
-    project.user_subscriptions = project.subscriptions.filter(user=request.user)
+    project.user_subscriptions = None
+
+    if request.user.is_authenticated:
+        project.user_subscriptions = project.subscriptions.filter(user=request.user)
+
     builds = [b for b in __get_builds_with_status__(project, 11)]
     last_build = len(builds) and builds[0] or None
 

@@ -207,3 +207,23 @@ class FrontendTest(TestCase):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metadata' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])
         self.assertEqual(b'{ "job_id" : "1" }', response.content)
+
+
+class FrontendTestAnonymousUser(TestCase):
+
+    def setUp(self):
+        self.group = models.Group.objects.create(slug='mygroup')
+        self.project = self.group.projects.create(slug='myproject')
+        self.other_project = self.group.projects.create(slug='yourproject')
+        self.user = User.objects.create(username='theuser')
+
+        self.client = Client()
+
+    def hit(self, url, expected_status=200):
+        with count_queries('url:' + url):
+            response = self.client.get(url)
+        self.assertEqual(expected_status, response.status_code)
+        return response
+
+    def test_project(self):
+        self.hit('/mygroup/myproject/')
