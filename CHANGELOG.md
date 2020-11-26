@@ -1,3 +1,12 @@
+# 1.28.2
+
+This is a hotfix when unauthenticated users try to
+access project home.
+
+Complete list of changes going in:
+
+* squad: frontend: check whether user is logged when displaying subscriptions
+
 # 1.28.1
 
 This is a quick release to add an improvement of the command
