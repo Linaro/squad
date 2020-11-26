@@ -38,11 +38,13 @@ def submit(self, job_id):
             test_job.failure = None
             test_job.save()
         except SubmissionIssue as issue:
-            logger.error("submitting job %s to %s: %s" % (test_job.id, test_job.backend.name, str(issue)))
             test_job.failure = str(issue)
             test_job.save()
+
             if issue.retry:
                 raise self.retry(exc=issue, countdown=3600)  # retry in 1 hour
+
+            logger.warning("submitting job %s to %s: %s" % (test_job.id, test_job.backend.name, str(issue)))
 
 
 @celery.task
