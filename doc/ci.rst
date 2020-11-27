@@ -149,6 +149,9 @@ LAVA backend supports the following settings:
  - CI_LAVA_WORK_AROUND_INFRA_ERRORS
    boolean flag that allows to accept test results from 'Incomplete' jobs if the
    failure was caused by infrastracture. **NOTE**: Use with caution!
+ - CI_LAVA_JOB_ERROR_STATUS
+   string that coincides with the LAVA job health. Used when sending email
+   notifications for the ON_ERROR notification strategy
 
 Example LAVA backend settings:
 

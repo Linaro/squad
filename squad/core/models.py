@@ -1268,11 +1268,13 @@ class Subscription(models.Model):
     NOTIFY_ALL_BUILDS = 'all'
     NOTIFY_ON_CHANGE = 'change'
     NOTIFY_ON_REGRESSION = 'regression'
+    NOTIFY_ON_ERROR = 'error'
 
     STRATEGY_CHOICES = (
         (NOTIFY_ALL_BUILDS, N_("All builds")),
         (NOTIFY_ON_CHANGE, N_("Only on change")),
         (NOTIFY_ON_REGRESSION, N_("Only on regression")),
+        (NOTIFY_ON_ERROR, N_("Only on infrastructure error")),
     )
 
     notification_strategy = models.CharField(
