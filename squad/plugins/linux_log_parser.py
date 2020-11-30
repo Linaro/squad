@@ -62,6 +62,8 @@ class Plugin(BasePlugin):
             result=(len(lines) == 0),
             log='\n'.join(lines),
             metadata=metadata,
+            build=testrun.build,
+            environment=testrun.environment,
         )
 
     def postprocess_testrun(self, testrun):

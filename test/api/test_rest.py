@@ -127,7 +127,7 @@ class RestApiTest(APITestCase):
                     r = {'pass': True, 'fail': False}[result]
                     suite, _ = self.project.suites.get_or_create(slug=s)
                     metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=s, name=t, kind='test')
-                    testrun.tests.create(suite=suite, result=r, metadata=metadata)
+                    testrun.tests.create(suite=suite, result=r, metadata=metadata, build=testrun.build, environment=testrun.environment)
 
         self.emailtemplate = models.EmailTemplate.objects.create(
             name="fooTemplate",

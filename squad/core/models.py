@@ -839,6 +839,8 @@ class Test(models.Model):
 
     __test__ = False
 
+    build = models.ForeignKey(Build, related_name='tests', on_delete=models.CASCADE, null=True)
+    environment = models.ForeignKey(Environment, related_name='tests', on_delete=models.CASCADE, null=True)
     test_run = models.ForeignKey(TestRun, related_name='tests', on_delete=models.CASCADE)
     suite = models.ForeignKey(Suite, on_delete=models.CASCADE)
     metadata = models.ForeignKey(
