@@ -123,6 +123,7 @@ class Backend(BaseBackend):
                         end_time = None
                 test_job.started_at = start_time
                 test_job.ended_at = end_time
+                test_job.failure = None
                 test_job.save()
                 data['results'] = self.__get_testjob_results_yaml__(test_job.job_id)
 
