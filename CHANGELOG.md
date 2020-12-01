@@ -1,3 +1,15 @@
+# 1.29
+
+This 1.29 release stops logging backends faults as errors
+and log as warnings instead. The intention is to error-log
+only squad-related errors.
+
+Complete list of changes going in:
+
+* ci:
+  * lava: clear TestJob.failure in backend implementation
+  * tasks: submit: log message as warning instead of error
+
 # 1.28.2
 
 This is a hotfix when unauthenticated users try to
