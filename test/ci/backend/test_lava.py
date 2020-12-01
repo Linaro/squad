@@ -896,6 +896,7 @@ class LavaTest(TestCase):
             target=self.project)
         status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
         self.assertFalse(completed)
+        self.assertEqual(TEST_RESULTS_INFRA_FAILURE_STR[0]['metadata'], testjob.failure)
 
     @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_CANCELED)

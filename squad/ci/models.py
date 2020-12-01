@@ -93,7 +93,6 @@ class Backend(models.Model):
 
             test_job.fetched = True
             test_job.fetched_at = timezone.now()
-            test_job.failure = None
             test_job.save()
 
         status, completed, metadata, tests, metrics, logs = results

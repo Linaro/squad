@@ -67,6 +67,8 @@ class FetchTest(TestCase):
         tests = {}
         metrics = {}
         logs = ''
+        test_job.failure = None
+        test_job.save()
         return status, completed, metadata, tests, metrics, logs
 
     @patch('squad.ci.models.Backend.fetch')
