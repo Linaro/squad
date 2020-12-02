@@ -6,6 +6,8 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
+    atomic = False
+
     dependencies = [
         ('core', '0146_deprecate_testrun_and_attachment_data_fields'),
     ]
