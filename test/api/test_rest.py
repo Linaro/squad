@@ -798,6 +798,15 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/backends/')
         self.assertEqual('foobar', data['results'][0]['name'])
 
+    def test_backends_id_field_only(self):
+        data = self.hit('/api/backends/?fields=id')
+        self.assertNotIn('implementation_type', data['results'][0].keys())
+
+    def test_backends_only_four_fields(self):
+        data = self.hit('/api/backends/?fields=name,implementation_type,poll_interval,max_fetch_attempts')
+        self.assertListEqual(['name', 'implementation_type', 'poll_interval', 'max_fetch_attempts'], list(data['results'][0].keys()))
+        self.assertNotIn('id', data['results'][0].keys())
+
     def test_environments(self):
         data = self.hit('/api/environments/')
         self.assertEqual(['env-a', 'myenv'], sorted([item['slug'] for item in data['results']]))
@@ -809,6 +818,11 @@ class RestApiTest(APITestCase):
     def test_groups(self):
         data = self.hit('/api/groups/')
         self.assertEqual('mygroup', data['results'][0]['slug'])
+
+    def test_groups_slug_field_only(self):
+        data = self.hit('/api/groups/?fields=slug')
+        self.assertEqual('mygroup', data['results'][0]['slug'])
+        self.assertNotIn('id', data['results'][0].keys())
 
     def test_patch_source(self):
         data = self.hit('/api/patchsources/')
