@@ -36,7 +36,7 @@ class FrontendTest(TestCase):
         self.suite, _ = self.project.suites.get_or_create(slug='mysuite')
 
         metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='mytest', kind='test')
-        self.test_run.tests.create(suite=self.suite, result=True, metadata=metadata)
+        self.test_run.tests.create(suite=self.suite, result=True, metadata=metadata, build=self.test_run.build, environment=self.test_run.environment)
         self.test = self.test_run.tests.first()
 
         backend = Backend.objects.create(

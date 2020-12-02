@@ -13,7 +13,7 @@ def create_test(**kwargs):
     environment = project.environments.create(slug='myenv')
     test_run = build.test_runs.create(environment=environment)
     suite = Suite.objects.create(slug='the-suite', project=project)
-    opts = {'test_run': test_run, 'suite': suite}
+    opts = {'test_run': test_run, 'suite': suite, 'build': build, 'environment': environment}
     opts.update(kwargs)
     return Test.objects.create(**opts)
 
@@ -60,7 +60,7 @@ class TestFailureHistoryTest(TestCase):
         )
         test_run = build.test_runs.create(environment=environment)
         metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name=test, kind='test')
-        test = test_run.tests.create(suite=self.suite, result=result, metadata=metadata)
+        test = test_run.tests.create(suite=self.suite, result=result, metadata=metadata, build=test_run.build, environment=test_run.environment)
 
         self.date = self.date + relativedelta(days=1)
         return test

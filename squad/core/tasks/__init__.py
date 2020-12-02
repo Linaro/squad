@@ -239,6 +239,8 @@ class ParseTestRunData(object):
                 result=test['pass'],
                 log=test['log'],
                 has_known_issues=bool(test_issues),
+                build=test_run.build,
+                environment=test_run.environment,
             )
             for issue in test_issues:
                 test_obj.known_issues.add(issue)

@@ -224,14 +224,14 @@ class BuildTest(TestCase):
         foo_pla_metadata, _ = SuiteMetadata.objects.get_or_create(suite=foo.slug, name='pla', kind='test')
         bar_test1_metadata, _ = SuiteMetadata.objects.get_or_create(suite=bar.slug, name='test1', kind='test')
 
-        testrun1.tests.create(suite=foo, metadata=foo_test1_metadata, result=True)
-        testrun1.tests.create(suite=foo, metadata=foo_pla_metadata, result=True)
-        testrun1.tests.create(suite=bar, metadata=bar_test1_metadata, result=False)
-        testrun2.tests.create(suite=foo, metadata=foo_test1_metadata, result=True)
+        testrun1.tests.create(build=testrun1.build, environment=testrun1.environment, suite=foo, metadata=foo_test1_metadata, result=True)
+        testrun1.tests.create(build=testrun1.build, environment=testrun1.environment, suite=foo, metadata=foo_pla_metadata, result=True)
+        testrun1.tests.create(build=testrun1.build, environment=testrun1.environment, suite=bar, metadata=bar_test1_metadata, result=False)
+        testrun2.tests.create(build=testrun2.build, environment=testrun2.environment, suite=foo, metadata=foo_test1_metadata, result=True)
 
         # make sure 'xfail' is covered by test
         issue = KnownIssue.objects.create(title='pla is broken', test_name='qux')
-        xfail_test = testrun2.tests.create(suite=foo, metadata=foo_pla_metadata, result=False)
+        xfail_test = testrun2.tests.create(build=testrun2.build, environment=testrun2.environment, suite=foo, metadata=foo_pla_metadata, result=False)
         xfail_test.known_issues.add(issue)
 
         test_suites = build.test_suites_by_environment

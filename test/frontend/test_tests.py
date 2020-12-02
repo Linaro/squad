@@ -72,7 +72,7 @@ class AllTestResultsTest(TestCase):
     def test_no_metadata(self):
         suite, _ = self.test_run.build.project.suites.get_or_create(slug='a-suite')
         metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=suite.slug, name='no_metadata_test', kind='test')
-        self.test_run.tests.create(metadata=metadata, result=False, suite=suite)
+        self.test_run.tests.create(metadata=metadata, result=False, suite=suite, build=self.test_run.build, environment=self.test_run.environment)
 
         response = self.client.get('/mygroup/myproject/build/1/tests/?page=2')
         self.assertEqual(200, response.status_code)
