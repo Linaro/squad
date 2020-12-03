@@ -1,3 +1,19 @@
+# 1.30
+
+This 1.30 release adds Build and Environment references to
+the Test model as it would make a lot of SQUAD queries run
+much faster and simpler, going around TestRuns. The latter
+is still very needed for storing test run files and metadata.
+
+This release also enables selecting which fields from api endpoints
+to be serialized.
+
+Complete list of changes going in:
+
+* core: migrations: make transaction non-atomic
+* core: test: add Build and Environment reference to Test
+* api, rest: enable filtering specific fields
+
 # 1.29
 
 This 1.29 release stops logging backends faults as errors
