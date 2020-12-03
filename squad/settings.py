@@ -397,6 +397,9 @@ if SENTRY_DSN:
     except ImportError:
         pass
 
+# Django's default is 2.5MB, which is a bit low
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
+
 try:
     from squad.local_settings import *  # noqa: F401,F403
 except ImportError:
