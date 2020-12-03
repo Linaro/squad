@@ -658,6 +658,36 @@ class RestApiTest(APITestCase):
         self.assertEqual(list, type(data['results']))
         self.assertEqual(0, len(data['results']))
 
+    def test_tests_filter_by_metadata_name(self):
+        data = self.hit('/api/tests/?metadata__name=test1')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(12, len(data['results']))
+
+    def test_tests_filter_by_metadata_name_not_found(self):
+        data = self.hit('/api/tests/?metadata__name=test-that-does-not-exist')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(0, len(data['results']))
+
+    def test_tests_filter_by_environment(self):
+        data = self.hit('/api/tests/?environment__slug=myenv')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(50, len(data['results']))
+
+    def test_tests_filter_by_environment_not_found(self):
+        data = self.hit('/api/tests/?environment__slug=mycrazyenvslug')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(0, len(data['results']))
+
+    def test_tests_filter_by_build(self):
+        data = self.hit('/api/tests/?build__version=1')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(36, len(data['results']))
+
+    def test_tests_filter_by_build_not_found(self):
+        data = self.hit('/api/tests/?build__version=this-build-should-not-exist-really')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(0, len(data['results']))
+
     def test_tests_with_page_size(self):
         data = self.hit('/api/tests/?limit=2')
         self.assertEqual(list, type(data['results']))
