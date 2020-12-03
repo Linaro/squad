@@ -806,6 +806,10 @@ class BuildViewSet(ModelViewSet):
 
         List of test jobs in the build (if any)
 
+     * `api/builds/<id>/tests` GET
+
+        Returns list of Test objects belonging to this build. List is paginated
+
      * `api/builds/<id>/email` GET
 
         This method produces the body of email notification for the build.
@@ -1140,7 +1144,7 @@ class TestSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelS
         exclude = ['metadata']
 
 
-class TestViewSet(ModelViewSet):
+class TestViewSet(NestedViewSetMixin, ModelViewSet):
 
     queryset = Test.objects.prefetch_related('suite', 'known_issues', 'metadata').all()
     project_lookup_key = 'test_run__build__project__in'
@@ -1148,7 +1152,7 @@ class TestViewSet(ModelViewSet):
     filterset_class = TestFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     pagination_class = CursorPaginationWithPageSize
-    ordering = ('id',)
+    ordering = ('build_id',)
 
 
 class MetricSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
@@ -1488,7 +1492,12 @@ class MetricThresholdViewSet(viewsets.ModelViewSet):
 router = APIRouter()
 router.register(r'groups', GroupViewSet)
 router.register(r'projects', ProjectViewSet)
-router.register(r'builds', BuildViewSet)
+router.register(r'builds', BuildViewSet).register(
+    r'tests',
+    TestViewSet,
+    parents_query_lookups=['build_id'],
+    **drf_basename('build-tests')
+)
 router.register(r'testjobs', TestJobViewSet)
 router.register(r'testruns', TestRunViewSet).register(
     r'status',

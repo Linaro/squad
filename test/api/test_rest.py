@@ -630,6 +630,36 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/builds/%d/testjobs/' % self.build.id)
         self.assertEqual(1, len(data['results']))
 
+    def test_build_tests(self):
+        data = self.hit('/api/builds/%d/tests/' % self.build.id)
+        self.assertEqual(36, len(data['results']))
+
+    def test_build_tests_per_environment(self):
+        data = self.hit('/api/builds/%d/tests/?environment__slug=myenv' % self.build.id)
+        self.assertEqual(18, len(data['results']))
+
+    def test_build_tests_per_environment_not_found(self):
+        data = self.hit('/api/builds/%d/tests/?environment__slug=mycrazynonexistenenv' % self.build.id)
+        self.assertEqual(0, len(data['results']))
+
+    def test_build_tests_per_suite(self):
+        data = self.hit('/api/builds/%d/tests/?suite__slug=foo' % self.build.id)
+        self.assertEqual(18, len(data['results']))
+
+    def test_build_tests_per_suite_not_found(self):
+        data = self.hit('/api/builds/%d/tests/?suite__slug=fooooooodoesreallyexist' % self.build.id)
+        self.assertEqual(0, len(data['results']))
+
+    def test_build_tests_per_suite_and_environment(self):
+        data = self.hit('/api/builds/%d/tests/?environment__slug=myenv&suite__slug=foo' % self.build.id)
+        self.assertEqual(9, len(data['results']))
+
+        data = self.hit('/api/builds/%d/tests/?environment__slug=mycraaaaazyenv&suite__slug=foo' % self.build.id)
+        self.assertEqual(0, len(data['results']))
+
+        data = self.hit('/api/builds/%d/tests/?environment__slug=myenv&suite__slug=foooooooosuitedoestexist' % self.build.id)
+        self.assertEqual(0, len(data['results']))
+
     def test_build_filter(self):
         created_at = str(self.build3.created_at.isoformat()).replace('+00:00', 'Z')
         data = self.hit('/api/builds/?created_at=%s' % created_at)
