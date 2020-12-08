@@ -12,23 +12,25 @@ class TestAttachment(TestCase):
 
     def test_basics(self):
 
+        data = 'abc'.encode('utf-8')
+        filename = 'foo.txt'
         attachment = Attachment(
-            test_run=self.test_run, old_data="abc".encode("utf-8"), length=3, filename="foo.txt"
+            test_run=self.test_run, length=3, filename=filename
         )
         attachment.save()
-
-        self.test_run.save_files()
+        attachment.save_file(filename, data)
 
         fromdb = Attachment.objects.get(pk=attachment.pk)
         self.assertEqual(b"abc", fromdb.data)
 
     def test_storage_fields(self):
+        filename = 'foo.txt'
         contents = b'attachment file content'
-        attachment = Attachment.objects.create(test_run=self.test_run, filename="foo.txt", length=len(contents), old_data=contents)
+        attachment = Attachment.objects.create(test_run=self.test_run, filename=filename, length=len(contents))
 
         self.assertFalse(attachment.storage)
 
-        self.test_run.save_files()
+        attachment.save_file(filename, contents)
 
         attachment.refresh_from_db()
 

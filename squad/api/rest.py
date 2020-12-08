@@ -1083,7 +1083,7 @@ class TestRunSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedMod
 
     class Meta:
         model = TestRun
-        exclude = ['tests_file_storage', 'metrics_file_storage', 'log_file_storage', 'old_tests_file', 'old_metrics_file', 'old_log_file']
+        exclude = ['tests_file_storage', 'metrics_file_storage', 'log_file_storage']
 
 
 class SuiteSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):

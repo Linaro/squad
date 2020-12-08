@@ -268,10 +268,12 @@ class CommonTestCase(TestCase):
         self.testrun = TestRun.objects.create(
             build=self.build,
             environment=self.environment,
-            old_tests_file='{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
-            old_metrics_file='{"metric0": {"value": 1, "unit": ""},  "foobar/metric1": {"value": 10, "unit": "kb"}, "foobar/metric2": {"value": "10.5", "unit": "kb"}}',
         )
-        self.testrun.save_files()
+        tests_file = '{"test0": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}'
+        metrics_file = '{"metric0": {"value": 1, "unit": ""},  "foobar/metric1": {"value": 10, "unit": "kb"}, "foobar/metric2": {"value": "10.5", "unit": "kb"}}'
+
+        self.testrun.save_tests_file(tests_file)
+        self.testrun.save_metrics_file(metrics_file)
 
 
 class ParseTestRunDataTest(CommonTestCase):
@@ -323,10 +325,13 @@ class ParseTestRunDataTest(CommonTestCase):
         testrun = TestRun.objects.create(
             build=self.build,
             environment=self.environment,
-            old_tests_file='{"' + really_long_name + '": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}',
-            old_metrics_file='{"' + really_long_name + '": {"value": 1, "unit": "seconds"}, "foobar/metric1": {"value": 10, "unit": ""}, "foobar/metric2": {"value": "10.5", "unit": "cycles"}}',
         )
-        testrun.save_files()
+
+        tests_file = '{"' + really_long_name + '": "fail", "foobar/test1": "pass", "onlytests/test1": "pass", "missing/mytest": "skip", "special/case.for[result/variants]": "pass"}'
+        metrics_file = '{"' + really_long_name + '": {"value": 1, "unit": "seconds"}, "foobar/metric1": {"value": 10, "unit": ""}, "foobar/metric2": {"value": "10.5", "unit": "cycles"}}'
+        testrun.save_tests_file(tests_file)
+        testrun.save_metrics_file(metrics_file)
+
         ParseTestRunData()(testrun)
         self.assertEqual(4, testrun.tests.count())
         self.assertEqual(2, testrun.metrics.count())
@@ -382,10 +387,12 @@ class RecordTestRunStatusTest(CommonTestCase):
         )
         issue.environments.add(self.environment)
         new_testrun = TestRun.objects.create(
-            old_tests_file=re.sub('"pass"', '"fail"', self.testrun.tests_file),
             build=self.testrun.build,
             environment=self.testrun.environment)
-        new_testrun.save_files()
+
+        tests_file = re.sub('"pass"', '"fail"', self.testrun.tests_file)
+        new_testrun.save_tests_file(tests_file)
+
         ParseTestRunData()(new_testrun)
         RecordTestRunStatus()(new_testrun)
 

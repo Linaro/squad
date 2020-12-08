@@ -1,5 +1,4 @@
 from django.core.exceptions import MultipleObjectsReturned
-from django.core.files.base import ContentFile
 from django.utils import timezone
 from collections import defaultdict
 import json
@@ -155,26 +154,23 @@ class ReceiveTestRun(object):
 
         testrun = build.test_runs.create(
             environment=environment,
-            old_tests_file=tests_file,
-            old_metrics_file=metrics_file,
-            old_log_file=log_file,
             metadata_file=metadata_file,
             completed=completed,
             **metadata_fields
         )
 
         if tests_file is not None:
-            testrun.tests_file_storage.save("testrun/%s/tests_file" % testrun.pk, ContentFile(tests_file.encode()))
+            testrun.save_tests_file(tests_file)
 
         if metrics_file is not None:
-            testrun.metrics_file_storage.save("testrun/%s/metrics_file" % testrun.pk, ContentFile(metrics_file.encode()))
+            testrun.save_metrics_file(metrics_file)
 
         if log_file is not None:
-            testrun.log_file_storage.save("testrun/%s/log_file" % testrun.pk, ContentFile(log_file.encode()))
+            testrun.save_log_file(log_file)
 
-        for f, data in attachments.items():
-            attachment = testrun.attachments.create(filename=f, old_data=data, length=len(data))
-            attachment.storage.save("attachment/%s/%s" % (attachment.pk, f), ContentFile(data))
+        for filename, data in attachments.items():
+            attachment = testrun.attachments.create(filename=filename, length=len(data))
+            attachment.save_file(filename, data)
 
         testrun.refresh_from_db()
 

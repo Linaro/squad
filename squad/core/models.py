@@ -617,18 +617,6 @@ class Environment(models.Model):
         return self.name or self.slug
 
 
-class TestRunManager(models.Manager):
-
-    __test__ = False
-
-    def get_queryset(self, *args, **kwargs):
-        return super(TestRunManager, self).get_queryset(*args, **kwargs).defer(
-            "old_tests_file",
-            "old_metrics_file",
-            "old_log_file",
-        )
-
-
 class TestRun(models.Model):
 
     __test__ = False
@@ -637,17 +625,10 @@ class TestRun(models.Model):
     environment = models.ForeignKey(Environment, related_name='test_runs', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # these fields are potentially very large
-    old_tests_file = models.TextField(null=True)
-    old_metrics_file = models.TextField(null=True)
-    old_log_file = models.TextField(null=True)
     metadata_file = models.TextField(null=True)
     tests_file_storage = models.FileField(null=True)
     metrics_file_storage = models.FileField(null=True)
     log_file_storage = models.FileField(null=True)
-
-    # custom manager to skip potentially large fields by default
-    objects = TestRunManager()
 
     completed = models.BooleanField(default=True)
 
@@ -672,19 +653,14 @@ class TestRun(models.Model):
             self.metadata_file = json.dumps(self.__metadata__)
         super(TestRun, self).save(*args, **kwargs)
 
-    def save_files(self):
-        if not self.tests_file_storage:
-            storage_save(self, self.tests_file_storage, 'tests_file', self.old_tests_file)
+    def save_tests_file(self, tests_file):
+        storage_save(self, self.tests_file_storage, 'tests_file', tests_file)
 
-        if not self.metrics_file_storage:
-            storage_save(self, self.metrics_file_storage, 'metrics_file', self.old_metrics_file)
+    def save_metrics_file(self, metrics_file):
+        storage_save(self, self.metrics_file_storage, 'metrics_file', metrics_file)
 
-        if not self.log_file_storage:
-            storage_save(self, self.log_file_storage, 'log_file', self.old_log_file)
-
-        for attachment in self.attachments.all():
-            if not attachment.storage:
-                storage_save(attachment, attachment.storage, attachment.filename, attachment.old_data)
+    def save_log_file(self, log_file):
+        storage_save(self, self.log_file_storage, 'log_file', log_file)
 
     __tests_file__ = None
 
@@ -761,7 +737,6 @@ class Attachment(models.Model):
     test_run = models.ForeignKey(TestRun, related_name='attachments', on_delete=models.CASCADE)
     filename = models.CharField(null=False, max_length=1024)
     mimetype = models.CharField(null=False, max_length=128, default="application/octet-stream")
-    old_data = models.BinaryField(default=None, null=True)
     storage = models.FileField(null=True)
     length = models.IntegerField(default=None)
 
@@ -776,6 +751,9 @@ class Attachment(models.Model):
             else:
                 self.__data__ = b''
         return self.__data__
+
+    def save_file(self, filename, contents):
+        storage_save(self, self.storage, filename, contents)
 
 
 class SuiteMetadata(models.Model):

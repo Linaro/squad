@@ -34,16 +34,15 @@ class TestRunTest(TestCase):
 
         testrun = TestRun.objects.create(
             build=self.build,
-            environment=self.env,
-            old_tests_file=tests_file_content,
-            old_metrics_file=metrics_file_content,
-            old_log_file=log_file_content)
+            environment=self.env)
 
         self.assertFalse(testrun.tests_file_storage)
         self.assertFalse(testrun.metrics_file_storage)
         self.assertFalse(testrun.log_file_storage)
 
-        testrun.save_files()
+        testrun.save_tests_file(tests_file_content)
+        testrun.save_metrics_file(metrics_file_content)
+        testrun.save_log_file(log_file_content)
 
         self.assertEqual(tests_file_content, testrun.tests_file_storage.read().decode())
         self.assertEqual(metrics_file_content, testrun.metrics_file_storage.read().decode())
@@ -58,12 +57,9 @@ class TestRunTest(TestCase):
 
         testrun = TestRun.objects.create(
             build=self.build,
-            environment=self.env,
-            old_tests_file=tests_file_content,
-            old_metrics_file=metrics_file_content,
-            old_log_file=log_file_content)
+            environment=self.env)
 
-        attachment = testrun.attachments.create(filename=attachment_filename, length=len(attachment_content), old_data=attachment_content)
+        attachment = testrun.attachments.create(filename=attachment_filename, length=len(attachment_content))
 
         self.assertFalse(testrun.tests_file_storage)
         self.assertFalse(testrun.metrics_file_storage)
@@ -71,7 +67,10 @@ class TestRunTest(TestCase):
         self.assertFalse(attachment.storage)
 
         testrun.refresh_from_db()
-        testrun.save_files()
+        testrun.save_tests_file(tests_file_content)
+        testrun.save_metrics_file(metrics_file_content)
+        testrun.save_log_file(log_file_content)
+        attachment.save_file(attachment_filename, attachment_content)
         attachment.refresh_from_db()
 
         self.assertEqual(tests_file_content, testrun.tests_file_storage.read().decode())
