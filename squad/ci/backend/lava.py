@@ -221,8 +221,9 @@ class Backend(BaseBackend):
         except xmlrpc.client.ProtocolError as error:
             raise TemporarySubmissionIssue(self.url_remove_token(str(error)))
         except xmlrpc.client.Fault as fault:
-            if fault.faultCode // 100 == 5:
+            if fault.faultCode // 100 == 5 or fault.faultCode == 408:
                 # assume HTTP errors 5xx are temporary issues
+                # consider 408 as TemporarySubmissionIssue, as it's considered as timeout
                 raise TemporarySubmissionIssue(self.url_remove_token(str(fault)))
             else:
                 raise SubmissionIssue(self.url_remove_token(str(fault)))
