@@ -12,7 +12,7 @@ from squad.core.history import TestHistory
 class TestHistoryTest(TestCase):
 
     def receive_test_run(self, project, version, env, tests):
-        receive = ReceiveTestRun(project)
+        receive = ReceiveTestRun(project, update_project_status=False)
         receive(version, env, tests_file=json.dumps(tests))
 
     def setUp(self):

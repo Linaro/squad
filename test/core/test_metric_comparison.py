@@ -19,7 +19,7 @@ def compare(b1, b2):
 class MetricComparisonTest(TestCase):
 
     def receive_test_run(self, project, version, env, metrics):
-        receive = ReceiveTestRun(project)
+        receive = ReceiveTestRun(project, update_project_status=False)
         receive(version, env, metrics_file=json.dumps(metrics))
 
     def setUp(self):
