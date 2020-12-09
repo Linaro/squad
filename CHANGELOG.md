@@ -1,3 +1,22 @@
+# 1.31
+
+This 1.31 release adds a long-wanted feature in SQUAD which
+is the ability of fetching Build's tests without having to
+go through TestRun table. Some queries are going to be
+optimized and large installations will feel the difference
+almost right away.
+
+This release also fills up all environment columns when checking
+a test's history.
+
+Complete list of changes going in:
+
+* api: rest: add tests endpoint to build
+* api: rest: add build, environment and metadata filters
+* ci: backend: lava: handle HTTP 408 as TemporarySubmissionIssue
+* core, history: add None to all builds
+* settings: increase max upload size to 10MB
+
 # 1.30
 
 This 1.30 release adds Build and Environment references to
