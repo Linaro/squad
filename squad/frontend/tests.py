@@ -188,6 +188,7 @@ def test_history(request, group_slug, project_slug, build_version=None, testrun=
         suite_slug = suite_slug.replace('$', '/')
         suite = get_object_or_404(project.suites, slug=suite_slug)
         status = get_object_or_404(test_run.status, suite=suite)
+        test_name = test_name.replace('$', '/')
         full_test_name = "/".join([suite_slug, test_name])
         context.update({"build": build, "status": status, "test": test_name})
     else:
