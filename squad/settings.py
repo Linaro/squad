@@ -339,6 +339,7 @@ CELERY_TASK_ROUTES = {
     'squad.core.tasks.cleanup_old_builds': {'queue': 'core_quick'},
     'squad.core.tasks.remove_delayed_reports': {'queue': 'core_quick'},
     'squad.core.tasks.cleanup_build': {'queue': 'core_quick'},
+    'squad.core.tasks.update_build_patch_url': {'queue': 'core_quick'},
     'squad.core.tasks.notification.*': {'queue': 'core_notification'},
     'squad.ci.tasks.poll': {'queue': 'ci_poll'},
     'squad.ci.tasks.fetch': {'queue': 'ci_fetch'},

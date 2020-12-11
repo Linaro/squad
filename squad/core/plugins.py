@@ -147,6 +147,12 @@ class Plugin(object):
         """
         pass
 
+    def get_url(self, object_id):
+        """
+        This method might return service specific URL with given object_id
+        """
+        pass
+
 
 class PluginField(models.CharField):
 

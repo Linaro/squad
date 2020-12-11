@@ -695,12 +695,23 @@ class CreateBuildTest(TestCase):
         self.assertEqual(build.patch_source, self.patch_source)
         self.assertEqual(build.patch_id, '111')
         self.assertEqual(build.patch_baseline, baseline)
+        self.assertEqual(build.patch_url, self.patch_source.get_url(build))
 
     @patch('squad.core.tasks.notify_patch_build_created')
     def test_notify_patch_source(self, notify_patch_build_created):
         create_build = CreateBuild(self.project)
         build, created = create_build('1.0', patch_source=self.patch_source, patch_id='111')
         notify_patch_build_created.delay.assert_called_with(build.id)
+
+    @patch('squad.core.tasks.notify_patch_build_created')
+    def test_dont_notify_patch_source_existing_build(self, notify_patch_build_created):
+        create_build = CreateBuild(self.project)
+        build, created = create_build('1.0', patch_source=self.patch_source, patch_id='111')
+        notify_patch_build_created.delay.assert_called_with(build.id)
+        notify_patch_build_created.reset_mock()
+        build, created = create_build('1.0', patch_source=self.patch_source, patch_id='111')
+        notify_patch_build_created.delay.assert_not_called()
+        self.assertEqual(False, created)
 
     @patch('squad.core.tasks.notify_patch_build_created')
     def test_dont_notify_without_patch_source(self, notify_patch_build_created):
