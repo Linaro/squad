@@ -10,7 +10,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
 from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold, KnownIssue
-from squad.core.models import Build, Subscription, TestRun, Project, SuiteMetadata, Attachment
+from squad.core.models import Build, Subscription, TestRun, Project, SuiteMetadata
 from squad.core.queries import get_metric_data
 from squad.frontend.queries import get_metrics_list
 from squad.frontend.utils import file_type, alphanum_sort
@@ -363,11 +363,9 @@ def build(request, group_slug, project_slug, version):
     if failures_only == 'true':
         queryset = queryset.filter(tests_fail__gt=0)
 
-    prefetch_attachments = Prefetch('attachments', queryset=Attachment.objects.defer('old_data'))
-
     __statuses__ = queryset.prefetch_related(
         'suite',
-        Prefetch('test_run', queryset=TestRun.objects.prefetch_related('environment', prefetch_attachments).all())
+        Prefetch('test_run', queryset=TestRun.objects.prefetch_related('environment', 'attachments').all())
     ).order_by('-tests_fail', 'suite__slug', '-test_run__environment__slug')
 
     test_results = TestResultTable()

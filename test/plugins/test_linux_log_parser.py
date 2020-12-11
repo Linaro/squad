@@ -21,8 +21,8 @@ class TestLinuxLogParser(TestCase):
 
     def new_testrun(self, logfile, job_id='999'):
         log = read_sample_file(logfile)
-        testrun = self.build.test_runs.create(environment=self.env, old_log_file=log, job_id=job_id)
-        testrun.save_files()
+        testrun = self.build.test_runs.create(environment=self.env, job_id=job_id)
+        testrun.save_log_file(log)
         return testrun
 
     def test_detects_oops(self):
@@ -186,8 +186,9 @@ class TestLinuxLogParser(TestCase):
         self.assertEqual(0, tests.count())
 
     def test_metadata_creation(self):
-        testrun = self.build.test_runs.create(environment=self.env, old_log_file='Kernel panic - not syncing', job_id='999')
-        testrun.save_files()
+        log = 'Kernel panic - not syncing'
+        testrun = self.build.test_runs.create(environment=self.env, job_id='999')
+        testrun.save_log_file(log)
         self.plugin.postprocess_testrun(testrun)
 
         test = testrun.tests.get(suite__slug='linux-log-parser', metadata__name='check-kernel-panic-999')
