@@ -64,7 +64,7 @@ except ImportError:
 
 django_toolbar = None
 django_toolbar_middleware = None
-if DEBUG:
+if DEBUG and False:
     try:
 
         DEBUG_TOOLBAR_CONFIG = {

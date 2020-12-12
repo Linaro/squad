@@ -1,8 +1,9 @@
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from django.db.models import F
 from itertools import groupby
 from functools import reduce
 import statistics
+import time
 
 
 from squad.core.utils import parse_name, join_name, split_dict
@@ -43,11 +44,14 @@ class BaseComparison(object):
     (name, env)
     """
 
-    def __init__(self, *builds):
+    def __init__(self, *builds, suites=None, offset=0, per_page=50):
         self.builds = list(builds)
         self.environments = OrderedDict()
         self.all_environments = set()
         self.results = OrderedDict()
+        self.suites = suites
+        self.offset = offset
+        self.per_page = per_page
 
         for build in self.builds:
             self.environments[build] = set()
@@ -164,13 +168,43 @@ class TestComparison(BaseComparison):
 
     __test__ = False
 
-    def __init__(self, *builds):
+    def __init__(self, *builds, suites=None, offset=0, per_page=50):
         self.__intermittent__ = {}
         self.tests_with_issues = {}
         self.__failures__ = OrderedDict()
-        BaseComparison.__init__(self, *builds)
+        BaseComparison.__init__(self, *builds, suites=suites, offset=offset, per_page=per_page)
 
     def __extract_results__(self):
+
+        """
+        
+        problem:
+        - comparing takes a huge amount of memory and time
+        - it does this because it blindly takes all tests from
+          the first build and try to find a matching test in the
+          second/target build
+        - after tests match, transitions are applied (pass to fail, fail to pass, n/a to pass, etc)
+        - after transitions are applied we paginate the whole thing just
+          to display a really small portion of it
+
+        idea:
+        - i think i can improve it by running smaller comparisons by
+          comparing by suite, and then paginate tests in database
+        - compare results by suite means reducing number of testruns
+          and also reducing number of returned tests since we'd be using
+          suite.id
+        - if filtering tests by suite.id and a very small number of testruns
+          we'll be dealing with only a few million tests, which DB handles just fine
+          so I think it's ok to apply order by, offset and limit :)
+        - results look weird, but promising :)
+        - keep trying tomorrow!
+
+
+        """
+
+        start = time.time()
+        print('fetching testruns')
+
         test_runs = models.TestRun.objects.filter(
             build__in=self.builds,
         ).prefetch_related(
@@ -178,8 +212,31 @@ class TestComparison(BaseComparison):
             'environment',
         ).only('build', 'environment')
 
+        statuses = models.Status.objects.filter(test_run__in=test_runs, suite__isnull=False)
+        if self.suites:
+            statuses = statuses.filter(suite__slug__in=self.suites)
+
+        # Group testruns by suite.slug
+        partial_results = defaultdict(lambda: [])
+        test_runs = []
+        for status in statuses.all():
+            partial_results[status.suite.slug].append((status.suite, status.test_run))
+            test_runs.append(status.test_run)
+
+        results = defaultdict(lambda: [])
+        for suite_slug in partial_results.keys():
+            results[suite_slug] = self.__extract_suite_results__(suite_slug, partial_results[suite_slug])
+
+        self.__resolve_intermittent_tests__()
+
+        self.results = OrderedDict(sorted(self.results.items()))
+        for build in self.builds:
+            self.environments[build] = sorted(self.environments[build])
+
+    def __extract_suite_results__(self, suite_slug, suites_and_testruns):
+        
         test_runs_ids = {}
-        for test_run in test_runs:
+        for suite, test_run in suites_and_testruns:
             build = test_run.build
             env = test_run.environment.slug
 
@@ -189,24 +246,29 @@ class TestComparison(BaseComparison):
             if test_runs_ids.get(test_run.id, None) is None:
                 test_runs_ids[test_run.id] = (build, env)
 
-        for ids in split_dict(test_runs_ids, chunk_size=100):
-            self.__extract_test_results__(ids)
+        print('splitting tests')
+        start = time.time()
 
-        self.__resolve_intermittent_tests__()
+        self.__extract_test_results__(test_runs_ids, suite)
 
-        self.results = OrderedDict(sorted(self.results.items()))
-        for build in self.builds:
-            self.environments[build] = sorted(self.environments[build])
+        duration = time.time() - start
+        print('finish splitting tests! took %f' % duration)
 
-    def __extract_test_results__(self, test_runs_ids):
-        tests = models.Test.objects.filter(test_run_id__in=test_runs_ids.keys()).annotate(
-            suite_slug=F('suite__slug'),
-        ).prefetch_related('metadata').defer('log')
+    def __extract_test_results__(self, test_runs_ids, suite):
+        print('\tfetching tests')
+        start = time.time()
+
+        tests = models.Test.objects.filter(test_run_id__in=test_runs_ids.keys(), suite=suite) \
+            .prefetch_related('metadata') \
+            .defer('log') \
+            .order_by('metadata__name') \
+            .all()[self.offset:self.offset+self.per_page]
 
         for test in tests:
+            print('.', end='', flush=True)
             build, env = test_runs_ids.get(test.test_run_id)
 
-            full_name = join_name(test.suite_slug, test.name)
+            full_name = join_name(suite.slug, test.name)
             if full_name not in self.results:
                 self.results[full_name] = OrderedDict()
 
@@ -220,6 +282,9 @@ class TestComparison(BaseComparison):
                 if env not in self.__failures__:
                     self.__failures__[env] = []
                 self.__failures__[env].append(test)
+
+        duration = time.time() - start
+        print('\tfinish fetching tests! took %f' % duration)
 
     def __resolve_intermittent_tests__(self):
         if len(self.tests_with_issues) == 0:
