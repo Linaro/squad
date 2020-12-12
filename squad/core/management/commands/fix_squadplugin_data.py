@@ -37,7 +37,6 @@ class SuiteMetadataFixThread(threading.Thread):
     def run(self):
         count = len(self.suitemetadata_ids)
         logger.info('[thread-%s] processing %d suitemetadata' % (self.thread_id, count))
-        count_updates = 0
         orphan_metadata = []
         for offset in range(0, count, STEP):
             ids = self.suitemetadata_ids[offset:offset + STEP]
@@ -51,8 +50,6 @@ class SuiteMetadataFixThread(threading.Thread):
                             metadata.suite = metadata.correct_suite_slug
                             metadata.save()
                         except IntegrityError:
-                            # 
-                            # 
                             logger.error('There appears to have a fixed suite metadata already')
                             logger.error('This was not supposed to happen though, check these cases carefuly')
                             logger.error('SuiteMetadata (id: %d, kind=test, suite="%s", name="%s")' % (metadata.id, metadata.suite, metadata.name))
@@ -65,7 +62,7 @@ class SuiteMetadataFixThread(threading.Thread):
 
             if self.show_progress:
                 print('.', end='', flush=True)
-        
+
         if len(orphan_metadata) > 0:
             logger.info('Deleting %d orphan metadata objects' % len(orphan_metadata))
             chunks = split_list(orphan_metadata, chunk_size=10000)
