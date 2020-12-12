@@ -1,3 +1,16 @@
+# 1.32
+
+This 1.32 release completely removes TestRun and Attachment file
+fields, leaving it to be saved in storages only.
+
+The release also tweaks the script that fixes buggy squadplugin
+generated SuiteMetadata objects.
+
+Complete list of changes going in
+
+* core, commands: 4th attempt to make faster fix
+* core: delete old storage fields for TestRun and Attachment
+
 # 1.31
 
 This 1.31 release adds a long-wanted feature in SQUAD which
