@@ -826,7 +826,7 @@ class BuildViewSet(ModelViewSet):
 
         Similar to 'email' but asunchronous
     """
-    queryset = Build.objects.prefetch_related('status').order_by('-datetime').all()
+    queryset = Build.objects.order_by('-datetime').all()
     project_lookup_key = 'project__in'
     serializer_class = BuildSerializer
     filterset_fields = ('version', 'project')
@@ -835,6 +835,26 @@ class BuildViewSet(ModelViewSet):
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     search_fields = ('version',)
     ordering_fields = ('id', 'version', 'created_at', 'datetime')
+
+    def get_queryset(self):
+        # Squeeze a few ms from this query if user wants less fields
+        fields = self.request.query_params.get('fields')
+        queryset = super().get_queryset()
+        if fields:
+            fields = fields.split(',')
+
+            basic_fields = ['project', 'version', 'created_at', 'datetime', 'patch_source', 'patch_baseline', 'patch_id', 'keep_data']
+
+            for field in basic_fields:
+                if field not in fields:
+                    queryset = queryset.defer(field)
+
+            if 'finished' in fields:
+                queryset = queryset.prefetch_related('status')
+        else:
+            queryset = queryset.prefetch_related('status')
+
+        return queryset
 
     @action(detail=True, methods=['get'], suffix='metadata')
     def metadata(self, request, pk=None):
