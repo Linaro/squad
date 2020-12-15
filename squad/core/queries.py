@@ -1,4 +1,5 @@
 import datetime
+from collections import Counter
 from itertools import groupby
 from functools import reduce
 
@@ -195,3 +196,30 @@ def get_dynamic_summary(project, environments, metrics, date_start, date_end):
         entry[environment.slug] = sorted(envdata, key=(lambda e: e[0]))
 
     return entry
+
+
+def test_confidence(test):
+    status_priority = ['fail', 'pass', 'xfail', 'skip']
+
+    def most_common(lst):
+        data = Counter(lst)
+        max_count = max(data.values())
+        return {value: count for value, count in data.items() if count == max_count}
+
+    duplicates = models.Test.objects.filter(suite=test.suite, metadata=test.metadata, environment=test.environment, build=test.build).order_by()
+    if len(duplicates) == 1:
+        return test.status, None
+    else:
+        most_frequent_statuses = most_common(
+            [t.status for t in duplicates])
+        if not len(most_frequent_statuses) == 1:
+            for s in status_priority:
+                # Get the most prioritized status based on priority list.
+                if s in most_frequent_statuses.keys():
+                    return_status = s
+                    break
+        else:
+            return_status = list(most_frequent_statuses.keys())[0]
+
+        confidence_score = list(most_frequent_statuses.values())[0] / len(duplicates) * 100
+        return [return_status, confidence_score]

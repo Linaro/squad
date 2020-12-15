@@ -9,9 +9,9 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
-from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold, KnownIssue
+from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold, KnownIssue, Test
 from squad.core.models import Build, Subscription, TestRun, Project, SuiteMetadata
-from squad.core.queries import get_metric_data
+from squad.core.queries import get_metric_data, test_confidence
 from squad.frontend.queries import get_metrics_list
 from squad.frontend.utils import file_type, alphanum_sort
 from squad.http import auth
@@ -476,7 +476,28 @@ def test_run_suite_test_details(request, group_slug, project_slug, build_version
     test_name = test_name.replace("$", "/")
     suite_slug = suite_slug.replace("$", "/")
     metadata = get_object_or_404(SuiteMetadata, kind='test', suite=suite_slug, name=test_name)
-    test = get_object_or_404(context['test_run'].tests, suite=context['suite'], metadata=metadata)
+    tests = Test.objects.filter(suite=context['suite'], metadata=metadata, build=context['build'], environment=context['test_run'].environment)
+    if len(tests) == 0:
+        raise Http404()
+
+    # There's more then one test that meets the criteria, this usually
+    # means resubmitted job.
+    if len(tests) > 1:
+        # Calculate the most common status and confidence score.
+        status, confidence_score = test_confidence(tests.first())
+        # Take the first test with the most common status as the relevant
+        # one.
+        for t in tests:
+            if t.status == status:
+                test = t
+        if not test:
+            # Something went wrong, we're supposed to find a test by now.
+            raise Http404()
+        else:
+            test.confidence_score = confidence_score
+    else:
+        test = tests.first()
+
     attachments = [
         (f['filename'], file_type(f['filename']), f['length'])
         for f in context['test_run'].attachments.values('filename', 'length')

@@ -5,6 +5,7 @@ from functools import reduce
 import statistics
 
 
+from squad.core.queries import test_confidence
 from squad.core.utils import parse_name, join_name, split_dict
 from squad.core import models
 
@@ -82,9 +83,9 @@ class BaseComparison(object):
         for item, results in self.results.items():
             previous = None
             for build in self.builds:
-                current = [results.get((build, e)) for e in self.environments[build]]
+                current = [results.get((build, e))[0] if isinstance(results.get((build, e)), list) else results.get((build, e)) for e in self.environments[build]]
                 if previous and previous != current:
-                    d[item] = results
+                    d[item] = {k: (v[0] if isinstance(v, list) else v) for k, v in results.items()}
                     break
                 previous = current
 
@@ -211,7 +212,12 @@ class TestComparison(BaseComparison):
                 self.results[full_name] = OrderedDict()
 
             key = (build, env)
-            self.results[full_name][key] = test.status
+            if key in self.results[full_name]:  # Duplicate found.
+                if not isinstance(self.results[full_name][key], tuple):
+                    # Test confidence is NOT already caclulated.
+                    self.results[full_name][key] = test_confidence(test)
+            else:
+                self.results[full_name][key] = test.status
 
             if test.has_known_issues:
                 self.tests_with_issues[test.id] = (full_name, env)

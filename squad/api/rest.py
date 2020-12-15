@@ -28,6 +28,7 @@ from squad.core.models import (
 )
 from squad.core.tasks import prepare_report, update_delayed_report
 from squad.core.comparison import TestComparison
+from squad.core.queries import test_confidence
 from squad.core.utils import parse_name, log_addition, log_change, log_deletion
 from squad.ci.models import Backend, TestJob
 from squad.compat import drf_basename
@@ -399,7 +400,13 @@ class LatestTestResultsSerializer(serializers.BaseSerializer):
         for test in tests.all():
             e = test_runs[test.test_run_id]
             test.suite = suite
+            is_duplicate = False
+            if environments[e]['test']['test_run']:
+                # Duplicate found.
+                is_duplicate = True
             environments[e]['test'] = TestSerializer(test, context=self.context, remove_fields=['known_issues']).data
+            if is_duplicate:
+                environments[e]['test']['status'], environments[e]['test']['confidence'] = test_confidence(test)
             environments[e]['test_url_path'] = reverse('test_history', args=[
                 build.project.group.slug,
                 build.project.slug,
