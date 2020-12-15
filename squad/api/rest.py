@@ -1152,7 +1152,7 @@ class TestViewSet(NestedViewSetMixin, ModelViewSet):
     filterset_class = TestFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     pagination_class = CursorPaginationWithPageSize
-    ordering = ('build_id',)
+    ordering = ('-id',)
 
 
 class MetricSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
