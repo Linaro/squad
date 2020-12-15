@@ -661,7 +661,6 @@ class ProjectStatusSerializer(DynamicFieldsModelSerializer, serializers.Hyperlin
             fixes = instance.get_fixes()
             if enriched_details:
                 for env in enriched_details.keys():
-                    print(env)
                     env_fixes = fixes.get(env, None)
                     if env_fixes:
                         enriched_details[env].update({'fixes': env_fixes})
