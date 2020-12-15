@@ -1146,13 +1146,40 @@ class TestSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelS
 
 class TestViewSet(NestedViewSetMixin, ModelViewSet):
 
-    queryset = Test.objects.prefetch_related('suite', 'known_issues', 'metadata').all()
+    queryset = Test.objects.prefetch_related('metadata').all()
     project_lookup_key = 'test_run__build__project__in'
     serializer_class = TestSerializer
     filterset_class = TestFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
     pagination_class = CursorPaginationWithPageSize
     ordering = ('build_id',)
+
+    def get_queryset(self):
+        # Squeeze a few ms from this query if user wants less fields
+        fields = self.request.query_params.get('fields')
+        queryset = super().get_queryset()
+        if fields:
+            fields = fields.split(',')
+
+            basic_fields = ['build', 'environment', 'test_run', 'suite', 'log']
+
+            for field in basic_fields:
+                if field not in fields:
+                    queryset = queryset.defer(field)
+
+            if 'known_issues' in fields:
+                queryset = queryset.prefetch_related('known_issues')
+
+            # 'status' depends on 'result' and 'has_known_issues'
+            if 'status' not in fields:
+                if 'result' not in fields:
+                    queryset = queryset.defer('result')
+                if 'has_known_issues' not in fields:
+                    queryset = queryset.defer('has_known_issues')
+        else:
+            queryset = queryset.prefetch_related('known_issues')
+
+        return queryset
 
 
 class MetricSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
