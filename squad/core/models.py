@@ -856,7 +856,12 @@ class Test(models.Model):
 
     @property
     def full_name(self):
-        return join_name(self.suite.slug, self.name)
+        suite = ''
+        if self.metadata is None:
+            suite = self.suite.slug
+        else:
+            suite = self.metadata.suite
+        return join_name(suite, self.name)
 
     class History(object):
         def __init__(self, since, count, last_different):
