@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 import requests
@@ -156,3 +157,32 @@ class Plugin(BasePlugin):
         }
 
         return self.__gerrit_request__(build, data)
+
+    def get_url(self, build):
+        if build.patch_source and build.patch_id:
+            parsed_url = urlparse(build.patch_source.url)
+            if parsed_url.scheme.startswith("http"):
+                change_id, patchset = re.split(r'%s' % PATCH_SET_DIVIDER_REGEX, build.patch_id)
+                auth = requests.auth.HTTPBasicAuth(build.patch_source.username, build.patch_source.password)
+                url = '{scheme}://{host}/a/changes/{change_id}/'.format(
+                    scheme=parsed_url.scheme,
+                    host=parsed_url.netloc,
+                    change_id=change_id,
+                )
+                result = requests.get(url, auth=auth)
+                if result.status_code == 200:
+                    # 4 leading characters from response has to be removed
+                    # to get valid JSON
+                    # https://gerrit-review.googlesource.com/Documentation/rest-api.html#output
+                    malformed_json = result.text
+                    valid_json = malformed_json[4:]
+                    details = json.loads(valid_json)
+                    project_name = details.get("project")
+                    return "{scheme}://{host}/c/{project_name}/+/{change_id}/{patchset}".format(
+                        scheme=parsed_url.scheme,
+                        host=parsed_url.netloc,
+                        project_name=project_name,
+                        change_id=change_id,
+                        patchset=patchset
+                    )
+        return None

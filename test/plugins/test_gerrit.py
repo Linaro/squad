@@ -17,8 +17,36 @@ plugins:
         Other-Label: "-2"
 """
 
+response_json_text = """)]}'
+{
+  "id": "TF-A%2Ftf-a-tests~master~I115a921c777b7932523d2dff8e8e03377d87bb78",
+  "project": "foo/bar",
+  "branch": "master",
+  "topic": "af/bf",
+  "hashtags": [],
+  "change_id": "I115a921c777b7932523d2dff8e8e03377d87bb78",
+  "subject": "af: bf",
+  "status": "NEW",
+  "created": "2020-12-07 18:17:44.000000000",
+  "updated": "2020-12-10 09:18:10.000000000",
+  "submit_type": "MERGE_ALWAYS",
+  "mergeable": true,
+  "insertions": 27,
+  "deletions": 4,
+  "total_comment_count": 6,
+  "unresolved_comment_count": 3,
+  "has_review_started": true,
+  "_number": 1,
+  "owner": {
+    "_account_id": 1000105
+  },
+  "requirements": []
+}
+"""
+
 
 class FakeObject():
+    text = response_json_text
     pass
 
 
@@ -67,6 +95,17 @@ class FakeRequests():
         user = auth.user
         password = auth.password
         if 'https://the.host' not in url or [user, password] != ['theuser', '1234'] or json['message'] is None:
+            result.status_code = 400
+        return result
+
+    @staticmethod
+    def get(url, auth=None, json=None):
+        FakeRequests.__last_json__ = json
+        result = FakeObject()
+        result.status_code = 200
+        user = auth.user
+        password = auth.password
+        if 'https://the.host' not in url or [user, password] != ['theuser', '1234']:
             result.status_code = 400
         return result
 
@@ -121,6 +160,18 @@ class GerritPluginTest(TestCase):
         plugin = self.build1.patch_source.get_implementation()
         self.assertTrue(plugin.notify_patch_build_created(self.build1))
         self.assertIn('Build created', FakeRequests.given_json()['message'])
+
+    @patch('squad.plugins.gerrit.requests', FakeRequests)
+    def test_get_url(self):
+        self.build1.patch_source.get_implementation()
+        gerrit_url = self.build1.patch_source.get_url(self.build1)
+        self.assertEqual(gerrit_url, "https://the.host/c/foo/bar/+/1/1")
+
+    @patch('squad.plugins.gerrit.requests', FakeRequests)
+    def test_get_url_ssh(self):
+        self.build2.patch_source.get_implementation()
+        gerrit_url = self.build2.patch_source.get_url(self.build2)
+        self.assertEqual(gerrit_url, None)
 
     @patch('squad.plugins.gerrit.requests', FakeRequests)
     def test_http_notify_patch_build_finished(self):

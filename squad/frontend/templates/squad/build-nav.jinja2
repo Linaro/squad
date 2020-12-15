@@ -4,6 +4,20 @@
     » {% include "squad/_unfinished_build.jinja2" %} <a class="h2 text-primary" href="{{build_url(build)}}">{{ _('Build %s') % build.version }}</a>
 </h2>
 
+{% if build.patch_source and build.patch_id %}
+<div class="well">
+    <div class="row">
+      <div id="patchsource_text" class="col-md-11">
+      {% if build.patch_url %}
+        {{ _('Build was started by') }} <a href="{{ build.patch_url }}">{{ build.patch_url }}</a>.
+      {% else %}
+        {{ _('Build was started by') }} {{ _('change') }} {{ build.patch_id }} {{ _('from') }} {{ build.patch_source.url }}.
+      {% endif %}
+      </div>
+    </div>
+</div>
+{% endif %}
+
 {% if project.can_submit_testjobs(user) %}
 <div class="highlight-row">
   <div class="alert alert-info annotation-alert">

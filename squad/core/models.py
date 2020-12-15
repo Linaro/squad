@@ -365,6 +365,9 @@ class PatchSource(models.Model):
     def get_implementation(self):
         return get_plugin_instance(self.implementation)
 
+    def get_url(self, patch_id):
+        return self.get_implementation().get_url(patch_id)
+
     def __str__(self):
         return 'PatchSource %s (%s)' % (self.name, self.implementation)
 
@@ -378,6 +381,7 @@ class Build(models.Model):
     patch_source = models.ForeignKey(PatchSource, null=True, blank=True, on_delete=models.CASCADE)
     patch_baseline = models.ForeignKey('Build', null=True, blank=True, on_delete=models.CASCADE)
     patch_id = models.CharField(max_length=1024, null=True, blank=True)
+    patch_url = models.URLField(null=True, blank=True)
 
     keep_data = models.BooleanField(
         default=False,

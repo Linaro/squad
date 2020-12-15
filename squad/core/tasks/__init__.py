@@ -475,7 +475,8 @@ class CreateBuild(object):
             version=version,
             defaults=defaults,
         )
-        if build.patch_source and build.patch_id:
+        if created and build.patch_source and build.patch_id:
+            update_build_patch_url.delay(build.id)
             notify_patch_build_created.delay(build.id)
         return (build, created)
 
@@ -507,3 +508,11 @@ def cleanup_build(build_id):
     build = Build.objects.get(pk=build_id)
     BuildPlaceholder.objects.create(project=build.project, version=build.version)
     build.delete()
+
+
+@celery.task
+def update_build_patch_url(build_id):
+    build = Build.objects.get(pk=build_id)
+    if build.patch_source and build.patch_id:
+        build.patch_url = build.patch_source.get_url(build)
+        build.save()

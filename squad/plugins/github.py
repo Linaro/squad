@@ -59,3 +59,14 @@ class Plugin(BasePlugin):
         }
         endpoint = '/repos/{owner}/{repository}/statuses/{commit}'
         return Plugin.__github_post__(build, endpoint, payload)
+
+    def get_url(self, build):
+        api_url = build.patch_source.url
+        owner, repository, commit = re.split(r'[:/]', build.patch_id)
+
+        return "{api_url}/{owner}/{repository}/commit/{commit}".format(
+            api_url=api_url,
+            owner=owner,
+            repository=repository,
+            commit=commit
+        )
