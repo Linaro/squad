@@ -723,6 +723,43 @@ class RestApiTest(APITestCase):
         self.assertEqual(list, type(data['results']))
         self.assertEqual(2, len(data['results']))
 
+    def test_tests_minimal_fields(self):
+        data = self.hit('/api/tests/?fields=name,status')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(50, len(data['results']))
+
+        should_not_exist = {'url', 'build', 'environment', 'test_run', 'short_name', 'result', 'log', 'has_known_issues', 'suite', 'known_issues'}
+        for test in data['results']:
+            fields = set(test.keys())
+            self.assertEqual(set(), should_not_exist & fields)
+            self.assertTrue('name' in fields)
+            self.assertTrue('status' in fields)
+            self.assertEqual(2, len(fields))
+
+    def test_tests_with_known_issues_fields(self):
+        data = self.hit('/api/tests/?fields=known_issues')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(50, len(data['results']))
+
+        should_not_exist = {'url', 'build', 'environment', 'test_run', 'short_name', 'result', 'log', 'has_known_issues', 'suite', 'name', 'status'}
+        for test in data['results']:
+            fields = set(test.keys())
+            self.assertEqual(set(), should_not_exist & fields)
+            self.assertTrue('known_issues' in fields)
+            self.assertEqual(1, len(fields))
+
+    def test_tests_no_status_fields(self):
+        data = self.hit('/api/tests/?fields=name')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(50, len(data['results']))
+
+        should_not_exist = {'url', 'build', 'environment', 'test_run', 'short_name', 'result', 'log', 'has_known_issues', 'suite', 'status', 'known_issues'}
+        for test in data['results']:
+            fields = set(test.keys())
+            self.assertEqual(set(), should_not_exist & fields)
+            self.assertTrue('name' in fields)
+            self.assertEqual(1, len(fields))
+
     def test_metrics(self):
         data = self.hit('/api/metrics/')
         self.assertEqual(list, type(data['results']))
