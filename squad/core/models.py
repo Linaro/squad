@@ -1099,7 +1099,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
                 project=build.project,
             ).order_by('datetime').last()
         if previous_build is not None:
-            comparison = TestComparison(previous_build, build)
+            comparison = TestComparison(previous_build, build, regressions_and_fixes_only=True)
             if comparison.regressions:
                 regressions = yaml.dump(comparison.regressions)
             if comparison.fixes:

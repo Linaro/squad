@@ -16,7 +16,7 @@ def compare(b1, b2):
 class TestComparisonTest(TestCase):
 
     def receive_test_run(self, project, version, env, tests):
-        receive = ReceiveTestRun(project)
+        receive = ReceiveTestRun(project, update_project_status=False)
         receive(version, env, tests_file=json.dumps(tests))
 
     def setUp(self):
@@ -119,7 +119,7 @@ class TestComparisonTest(TestCase):
         test data is already prepared in setUp(), but usually regressions is
         only used when comparing subsequent builds from the same project.
         """
-        comparison = TestComparison.compare_builds(self.build1, self.build2)
+        comparison = TestComparison(self.build1, self.build2, regressions_and_fixes_only=True)
         regressions = comparison.regressions
         self.assertEqual(['a'], regressions['myenv'])
         self.assertEqual(['a'], regressions['otherenv'])
@@ -130,7 +130,7 @@ class TestComparisonTest(TestCase):
         test data is already prepared in setUp(), but usually regressions is
         only used when comparing subsequent builds from the same project.
         """
-        comparison = TestComparison.compare_builds(self.build1, self.build2)
+        comparison = TestComparison(self.build1, self.build2, regressions_and_fixes_only=True)
         fixes = comparison.fixes
         self.assertEqual(['c'], fixes['myenv'])
 
@@ -155,12 +155,12 @@ class TestComparisonTest(TestCase):
 
     def test_regressions_no_regressions(self):
         # same build! so no regressions, by definition
-        comparison = TestComparison.compare_builds(self.build1, self.build1)
+        comparison = TestComparison(self.build1, self.build1, regressions_and_fixes_only=True)
         self.assertEqual({}, comparison.regressions)
 
     def test_fixes_no_fixes(self):
         # same build! so no fixes, by definition
-        comparison = TestComparison.compare_builds(self.build1, self.build1)
+        comparison = TestComparison(self.build1, self.build1, regressions_and_fixes_only=True)
         self.assertEqual({}, comparison.fixes)
 
     def test_xfail_fix(self):
@@ -170,7 +170,7 @@ class TestComparisonTest(TestCase):
         only used when comparing subsequent builds from the same project.
         """
         models.Test.objects.filter(test_run__build=self.build1, metadata__name='c').update(has_known_issues=True)
-        comparison = TestComparison.compare_builds(self.build1, self.build2)
+        comparison = TestComparison(self.build1, self.build2, regressions_and_fixes_only=True)
         fixes = comparison.fixes
         self.assertEqual(['c'], fixes['myenv'])
 
@@ -179,6 +179,24 @@ class TestComparisonTest(TestCase):
         This test is using builds from different projects because the relevant
         test data is already prepared in setUp(), but usually fixes is
         only used when comparing subsequent builds from the same project.
+
+        build1 = project1/1 -> baseline build
+        build2 = project2/1 -> target build
+
+               build       |    project1/1    |    project2/1
+        test / environment | myenv | otherenv | myenv | otherenv
+        -------------------+-------+----------+------------------
+                  a        | pass  |   pass   | fail  | fail
+                  b        | pass  |   pass   | pass  | pass
+                  c        | fail  |   fail   | pass  | pass
+                  d/e      | pass  |   pass   | pass  | pass
+
+        Expected results
+        regressions:
+            - test a on environments "myenv" and "otherenv"
+        fixes:
+            - test c would be a fix, but the testing at hand tags that as intermittent and xfail
+              thus TestComparison should *NOT* mark that as a fix
         """
         tests = models.Test.objects.filter(test_run__build=self.build1, metadata__name='c')
         tests.update(has_known_issues=True)
@@ -186,7 +204,7 @@ class TestComparisonTest(TestCase):
         for test in tests:
             test.known_issues.add(issue)
 
-        comparison = TestComparison.compare_builds(self.build1, self.build2)
+        comparison = TestComparison(self.build1, self.build2, regressions_and_fixes_only=True)
         fixes = comparison.fixes
         self.assertEqual({}, fixes)
 

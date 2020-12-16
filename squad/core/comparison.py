@@ -1,5 +1,6 @@
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from django.db.models import F
+from django.db.models import prefetch_related_objects
 from itertools import groupby
 from functools import reduce
 import statistics
@@ -164,13 +165,55 @@ class TestComparison(BaseComparison):
 
     __test__ = False
 
-    def __init__(self, *builds):
+    def __init__(self, *builds, regressions_and_fixes_only=False):
         self.__intermittent__ = {}
         self.tests_with_issues = {}
         self.__failures__ = OrderedDict()
+        self.regressions_and_fixes_only = regressions_and_fixes_only
+
+        # This is ugly, but it's an easy, light-weight way to compare tests
+        # from two builds instead of loading all tests in memory.
+        # Please use Django ORM whenever it starts supporting
+        # queryies using the same table
+        self.base_sql = {
+            'select': [
+                'target.id',
+                'target.build_id',
+                'target.environment_id',
+                'target.test_run_id',
+                'target.suite_id',
+                'target.metadata_id',
+                'target.result',
+                'target.has_known_issues'
+            ],
+            'from': [
+                'core_test baseline',
+                'core_test target'
+            ],
+            'where': [
+                'baseline.build_id = {baseline_id}',
+                'target.build_id = {target_id}',
+                'baseline.metadata_id = target.metadata_id'
+            ],
+            'values': {
+                'baseline_id': '',
+                'target_id': ''
+            }
+        }
+
         BaseComparison.__init__(self, *builds)
 
     def __extract_results__(self):
+
+        # New implementation below is only stable for getting regressions and fixes
+        # that is used for receiving tests and generating ProjectStatus.regressions and fixes
+        # It is still not good for applying transitions and getting a comparison
+        # results table, for that, use legacy code, which is slow and eats up lots
+        # of memory
+        if self.regressions_and_fixes_only:
+            self.__new_extract_results__()
+            return
+
         test_runs = models.TestRun.objects.filter(
             build__in=self.builds,
         ).prefetch_related(
@@ -288,6 +331,9 @@ class TestComparison(BaseComparison):
         before = self.builds[-2]  # second to last
         for env in self.all_environments:
             comparison_list = []
+            # Let's try to avoid using .diff, it's only used here
+            # and in core/notification.py to determine if there is change
+            # between builds
             for test, results in self.diff.items():
                 results_after = results.get((after, env), 'n/a')
                 results_before = results.get((before, env), 'n/a')
@@ -321,3 +367,142 @@ class TestComparison(BaseComparison):
                 this_env[suite].append(testname)
             result[env] = this_env
         return result
+
+    def __render_sql__(self, sql):
+        select = ', '.join(sql['select'])
+        _from = ', '.join(sql['from'])
+        where = ' AND '.join(sql['where'])
+        values = sql['values']
+
+        sql = 'SELECT %s FROM %s WHERE %s' % (select, _from, where)
+        sql = sql.format(**values)
+
+        return sql
+
+    def __new_extract_results__(self):
+
+        sql = self.__get_regressions_and_fixes_sql__()
+        tests = [t for t in models.Test.objects.raw(sql)]
+        prefetch_related_objects(tests, 'metadata', 'suite')
+
+        env_ids = []
+        fixed_tests = defaultdict(set)
+        regressions = defaultdict(set)
+        fixes = defaultdict(set)
+
+        for test in tests:
+            env_id = test.environment_id
+            full_name = test.full_name
+
+            env_ids.append(env_id)
+
+            if test.result is False:
+                regressions[env_id].add(full_name)
+            elif test.result is True:
+                fixes[env_id].add(full_name)
+                fixed_tests[env_id].add(test.metadata_id)
+
+        environments = {e.id: e for e in models.Environment.objects.filter(id__in=env_ids).all()}
+
+        self.__regressions__ = OrderedDict()
+        for env_id in regressions.keys():
+            self.__regressions__[environments[env_id].slug] = list(regressions[env_id])
+
+        # It's not a fix if baseline test is intermittent for a given environment:
+        # - test.has_known_issues == True and
+        # - test.known_issues[env].intermittent == True
+        fixed_tests_environment_slugs = [environments[env_id] for env_id in fixed_tests.keys()]
+        intermittent_fixed_tests = self.__intermittent_fixed_tests__(fixed_tests, fixed_tests_environment_slugs)
+        self.__fixes__ = OrderedDict()
+        for env_id in fixes.keys():
+            env_slug = environments[env_id].slug
+            test_list = [test for test in fixes[env_id] if (test, env_slug) not in intermittent_fixed_tests]
+            if len(test_list):
+                self.__fixes__[env_slug] = test_list
+
+    def __same_projects__(self):
+        if len(self.builds) < 2:
+            return True
+
+        baseline = self.builds[0]
+        target = self.builds[1]
+        return target.project_id == baseline.project_id
+
+    def __get_regressions_and_fixes_sql__(self):
+        """
+            The target build should be the most recent once and the baseline
+            an older build.
+
+            If a test in the target build with result=Fail has a match in the
+            baseline build with result=True, it's considered to be a regression.
+
+            If a test in the target build with result=True has a match in the
+            baseline build with result=False, it's considered to be a fix.
+
+            |   baseline / target  | test.result == False | test.result == True |
+            |----------------------|----------------------|---------------------|
+            | test.result == False |         -            |        fix          |
+            | test.result == True  |      regression      |         -           |
+
+
+            We just added a reference to Build and Environment to the Test model so that
+            we could make regressions and fixes easy and light to run in the database
+        """
+
+        baseline = self.builds[0]
+        target = self.builds[1]
+
+        query = self.base_sql.copy()
+
+        # If builds belong to different projects, environment comparison should
+        # use slug
+        if self.__same_projects__():
+            query['where'].append('target.environment_id = baseline.environment_id')
+        else:
+            query['from'].append('core_environment baseline_environment')
+            query['from'].append('core_environment target_environment')
+            query['where'].append('target.environment_id = target_environment.id')
+            query['where'].append('baseline.environment_id = baseline_environment.id')
+            query['where'].append('target_environment.slug = baseline_environment.slug')
+
+        query['where'].append('target.result IS NOT NULL')
+        query['where'].append('baseline.result IS NOT NULL')
+        query['where'].append('target.result != baseline.result')
+
+        query['values'].update({
+            'baseline_id': baseline.id,
+            'target_id': target.id
+        })
+
+        return self.__render_sql__(query)
+
+    def __intermittent_fixed_tests__(self, fixed_tests, environment_slugs):
+        intermittent_fixed_tests = {}
+        if len(fixed_tests) == 0:
+            return intermittent_fixed_tests
+
+        metadata_ids = []
+        for env_id in fixed_tests.keys():
+            metadata_ids += list(fixed_tests[env_id])
+
+        baseline = self.builds[0]
+        baseline_tests = models.Test.objects.filter(
+            build=baseline,
+            metadata_id__in=metadata_ids,
+            result=False,
+            has_known_issues=True
+        ).prefetch_related('known_issues', 'suite', 'metadata', 'environment').defer('log').order_by()
+
+        if self.__same_projects__():
+            environment_ids = list(fixed_tests.keys())
+            baseline_tests = baseline_tests.filter(environment_id__in=environment_ids)
+        else:
+            baseline_tests = baseline_tests.filter(environment__slug__in=environment_slugs)
+
+        for test in baseline_tests.all():
+            for issue in test.known_issues.all():
+                if issue.intermittent:
+                    key = (test.full_name, test.environment.slug)
+                    intermittent_fixed_tests[key] = True
+
+        return intermittent_fixed_tests

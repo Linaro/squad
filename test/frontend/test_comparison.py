@@ -9,7 +9,7 @@ from squad.core.tasks import ReceiveTestRun
 
 class ProjectComparisonTest(TestCase):
     def receive_test_run(self, project, version, env, tests):
-        receive = ReceiveTestRun(project)
+        receive = ReceiveTestRun(project, update_project_status=False)
         receive(version, env, tests_file=json.dumps(tests))
 
     def setUp(self):
