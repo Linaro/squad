@@ -823,7 +823,7 @@ class BuildViewSet(ModelViewSet):
 
      * `api/builds/<id>/report` GET, POST
 
-        Similar to 'email' but asunchronous
+        Similar to 'email' but asynchronous
     """
     queryset = Build.objects.order_by('-datetime').all()
     project_lookup_key = 'project__in'
