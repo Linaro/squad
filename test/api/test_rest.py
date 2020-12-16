@@ -670,6 +670,16 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/builds/?project__full_name=%s' % project_full_name)
         self.assertEqual(6, len(data['results']))
 
+    def test_build_minimum_fields(self):
+        data = self.hit('/api/builds/%d/?fields=version' % self.build.id)
+
+        should_not_exist = {'url', 'id', 'testruns', 'testjobs', 'status', 'metadata', 'finished', 'created_at', 'datetime', 'patch_id', 'keep_data', 'project', 'patch_source', 'patch_baseline'}
+
+        fields = set(data.keys())
+        self.assertEqual(set(), should_not_exist & fields)
+        self.assertTrue('version' in fields)
+        self.assertEqual(1, len(fields))
+
     def test_testjob(self):
         data = self.hit('/api/testjobs/%d/' % self.testjob.id)
         self.assertEqual('myenv', data['environment'])
