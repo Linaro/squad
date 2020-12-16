@@ -396,9 +396,9 @@ class TestComparison(BaseComparison):
 
             env_ids.append(env_id)
 
-            if test.result is False:
+            if test.status == 'fail':
                 regressions[env_id].add(full_name)
-            elif test.result is True:
+            elif test.status == 'pass':
                 fixes[env_id].add(full_name)
                 fixed_tests[env_id].add(test.metadata_id)
 
@@ -466,7 +466,6 @@ class TestComparison(BaseComparison):
             query['where'].append('target_environment.slug = baseline_environment.slug')
 
         query['where'].append('target.result IS NOT NULL')
-        query['where'].append('target.has_known_issues <> true')
         query['where'].append('baseline.result IS NOT NULL')
         query['where'].append('target.result != baseline.result')
 
