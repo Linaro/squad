@@ -466,6 +466,7 @@ class TestComparison(BaseComparison):
             query['where'].append('target_environment.slug = baseline_environment.slug')
 
         query['where'].append('target.result IS NOT NULL')
+        query['where'].append('target.has_known_issues <> true')
         query['where'].append('baseline.result IS NOT NULL')
         query['where'].append('target.result != baseline.result')
 

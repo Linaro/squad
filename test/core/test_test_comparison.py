@@ -174,6 +174,17 @@ class TestComparisonTest(TestCase):
         fixes = comparison.fixes
         self.assertEqual(['c'], fixes['myenv'])
 
+    def test_pass_to_xfail_not_a_regressions(self):
+        """
+        This test is using builds from different projects because the relevant
+        test data is already prepared in setUp(), but usually fixes is
+        only used when comparing subsequent builds from the same project.
+        """
+        models.Test.objects.filter(test_run__build=self.build2, metadata__name='a').update(has_known_issues=True)
+        comparison = TestComparison(self.build1, self.build2, regressions_and_fixes_only=True)
+        regressions = comparison.regressions
+        self.assertEqual(0, len(regressions))
+
     def test_intermittent_xfail_is_not_a_fix(self):
         """
         This test is using builds from different projects because the relevant
