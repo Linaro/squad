@@ -1,3 +1,33 @@
+# 1.33
+
+This 1.33 release tweaks TestComparison making it much faster
+when only regressions and fixes are needed. It brings these changes
+through a single database query, instead of loading all tests in memory.
+
+The release also saves precious time when fetching lots of builds and
+tests from the API.
+
+Last by not least, this release of SQUAD also comes with a new field
+to Build called `patch_url` which stores the originator url of that build.
+
+Complete list of changes going in:
+
+* api: rest
+  * order tests by id instead of build_id
+  * remove leftover print statement
+  * squeeze in a few extra ms fetching builds
+  * squeeze in a few extra ms fetching tests
+* core:
+  * comparison: fix regression detection
+  * comparison: fix regression detection
+  * comparison: use raw sql to get regressions and fixes
+  * frontend: Display URL from patch source
+  * models: use metadata for retrieving test full name
+* docs: fix a typo in the api docs
+* Dockerfile: freeze importlib-metadata version
+* dev-docker: freeze importlib-metadata version
+* test: core: avoid unnecessary project status update
+
 # 1.32
 
 This 1.32 release completely removes TestRun and Attachment file
