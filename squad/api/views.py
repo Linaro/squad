@@ -22,6 +22,9 @@ from squad.core.utils import log_addition
 from squad.core.utils import log_change
 
 
+from squad.version import __version__
+
+
 logger = logging.getLogger()
 
 
@@ -109,3 +112,8 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
         return HttpResponse(str(e), status=400)
 
     return HttpResponse('', status=201)
+
+
+@csrf_exempt
+def version(request):
+    return HttpResponse(__version__)

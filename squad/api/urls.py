@@ -23,4 +23,5 @@ urlpatterns = [
     url(r'^data/(%s)/(%s)' % (group_slug_pattern, slug_pattern), data.get),
     url(r'^resubmit/([0-9]+)', ci.resubmit_job),
     url(r'^forceresubmit/([0-9]+)', ci.force_resubmit_job),
+    url(r'^version/', views.version),
 ]
