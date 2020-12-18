@@ -948,8 +948,8 @@ class RestApiTest(APITestCase):
     def test_project_compare_builds_with_finished_status_and_regressions(self):
         foo_suite, _ = self.project.suites.get_or_create(slug='foo')
         foo_metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=foo_suite.slug, name='dummy', kind='test')
-        self.testrun4.tests.get_or_create(suite=foo_suite, metadata=foo_metadata, result=True)
-        self.testrun6.tests.get_or_create(suite=foo_suite, metadata=foo_metadata, result=False)
+        self.testrun4.tests.get_or_create(suite=foo_suite, metadata=foo_metadata, result=True, build=self.testrun4.build, environment=self.testrun4.environment)
+        self.testrun6.tests.get_or_create(suite=foo_suite, metadata=foo_metadata, result=False, build=self.testrun6.build, environment=self.testrun6.environment)
         UpdateProjectStatus()(self.testrun4)
         UpdateProjectStatus()(self.testrun6)
         data = self.hit('/api/projects/%d/compare_builds/?baseline=%d&to_compare=%d' % (self.project.id, self.build4.id, self.build6.id))

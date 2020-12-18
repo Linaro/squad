@@ -639,7 +639,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError("Invalid args provided. 'baseline' and 'to_compare' build ids must NOT be empty")
 
         if baseline and to_compare:
-            comparison = TestComparison(baseline, to_compare)
+            comparison = TestComparison(baseline, to_compare, regressions_and_fixes_only=True)
             serializer = BuildsComparisonSerializer(comparison)
             return Response(serializer.data)
 
