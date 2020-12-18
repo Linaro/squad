@@ -103,7 +103,7 @@ class ListenerManager(object):
                 # for a change to happen in the database, but we didn't find a
                 # simple/portable way of doing that yet. Let's just sleep for a
                 # few seconds instead, for now.
-                time.sleep(5)
+                time.sleep(60)
         except KeyboardInterrupt:
             pass  # cleanup() will terminate sub-processes
 
