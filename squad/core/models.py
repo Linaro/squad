@@ -12,6 +12,8 @@ from django.db.models import Q, Count, Sum, Case, When, F, Value
 from django.db.models.functions import Concat
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import User, AnonymousUser, Group as auth_group
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 
@@ -34,12 +36,70 @@ from squad.core.plugins import Plugin
 from squad.core.plugins import PluginListField
 from squad.core.plugins import PluginField
 from squad.core.plugins import get_plugin_instance
+from squad.core.callback import dispatch_callback, callback_methods, callback_events
 
 
 slug_pattern = '[a-zA-Z0-9][a-zA-Z0-9_.-]*'
 slug_validator = RegexValidator(regex='^' + slug_pattern + '$')
 group_slug_pattern = '~?' + slug_pattern
 group_slug_validator = RegexValidator(regex='^' + group_slug_pattern + '$')
+
+
+class CallbackForeignKey(GenericRelation):
+    def __init__(self, **kwargs):
+        super().__init__(
+            Callback,
+            content_type_field='object_reference_type',
+            object_id_field='object_reference_id',
+            **kwargs)
+
+
+class Callback(models.Model):
+    """
+    This is class will be responsible for handling callbacks in SQUAD
+    """
+
+    url = models.URLField(max_length=1024, default=None, null=True, blank=True)
+    method = models.CharField(max_length=10, default=callback_methods.POST, validators=[callback_methods.validator])
+    event = models.CharField(max_length=64, validators=[callback_events.validator])
+
+    headers = models.TextField(
+        default=None,
+        null=True,
+        blank=True,
+        validators=[yaml_validator],
+        verbose_name=N_('HTTP headers (JSON-formatted) to be sent in this callback')
+    )
+
+    payload = models.TextField(
+        default=None,
+        null=True,
+        blank=True,
+        validators=[yaml_validator],
+        verbose_name=N_('Payload (JSON-formatted) to be sent in this callback')
+    )
+    payload_is_json = models.BooleanField(default=True)
+
+    is_sent = models.BooleanField(default=False)
+
+    record_response = models.BooleanField(default=False, verbose_name=N_('Should this callback response be recorded?'))
+    response_code = models.IntegerField(default=None, null=True, blank=True)
+    response_content = models.CharField(max_length=1024, default=None, null=True, blank=True)
+
+    # Callbacks can belong to any model: Build, TestJob, TestRun, etc
+    # so it needs to have a generic foreign key
+    object_reference_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_reference_id = models.PositiveIntegerField()
+    object_reference = GenericForeignKey('object_reference_type', 'object_reference_id')
+
+    def dispatch(self):
+        dispatch_callback(self)
+
+    events = callback_events()
+    methods = callback_methods()
+
+    class Meta:
+        unique_together = ('object_reference_type', 'object_reference_id', 'url', 'event')
 
 
 class GroupManager(models.Manager):
@@ -387,6 +447,8 @@ class Build(models.Model):
         default=False,
         help_text="Keep this build data even after the project data retention period has passed"
     )
+
+    callbacks = CallbackForeignKey()
 
     class Meta:
         unique_together = ('project', 'version',)
