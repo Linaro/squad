@@ -490,3 +490,52 @@ class CreateBuildApiTest(ApiTest):
             }
         )
         self.assertEqual(response.status_code, 400)
+
+    def test_create_callback(self):
+        response = self.client.post(
+            '/api/createbuild/mygroup/myproject/with-callback',
+            {
+                'callback_url': 'http://the-callback.target'
+            }
+        )
+        self.assertEqual(response.status_code, 201)
+
+        build = self.project.builds.get(version='with-callback')
+        self.assertEqual(1, build.callbacks.count())
+
+    def test_create_callback_all_attrs(self):
+        attrs = {
+            'url': 'http://the-callback.target.com',
+            'method': 'post',
+            'event': 'on_build_finished',
+            'headers': '{"Authorization": "123456"}',
+            'payload': '{"data": "value"}',
+            'payload_is_json': 'true',
+            'record_response': 'true',
+        }
+        response = self.client.post(
+            '/api/createbuild/mygroup/myproject/with-callback',
+            {
+                'callback_%s' % attr: attrs[attr] for attr in attrs.keys()
+            }
+        )
+        self.assertEqual(response.status_code, 201)
+
+        build = self.project.builds.get(version='with-callback')
+        self.assertEqual(1, build.callbacks.count())
+
+        callback = build.callbacks.first()
+        attrs['payload_is_json'] = True
+        attrs['record_response'] = True
+        for attr in attrs:
+            self.assertEqual(getattr(callback, attr), attrs[attr])
+
+    def test_malformed_callback(self):
+        response = self.client.post(
+            '/api/createbuild/mygroup/myproject/with-callback',
+            {
+                'callback_url': 'invalid-callback-target-url'
+            }
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(b'Enter a valid URL.', response.content)

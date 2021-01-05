@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
@@ -11,6 +12,7 @@ from squad.http import auth_submit_results
 
 from squad.core.models import Build
 from squad.core.models import PatchSource
+from squad.core.models import Callback
 
 
 from squad.core.tasks import CreateBuild
@@ -59,6 +61,32 @@ def create_build(request, group_slug, project_slug, version):
         log_addition(request, new_build, "Build created")
     else:
         log_change(request, new_build, "Build updated")
+
+    callback_url = request.POST.get('callback_url')
+    if callback_url:
+        args = {
+            'url': callback_url,
+            'event': request.POST.get('callback_event', Callback.events.ON_BUILD_FINISHED),
+            'object_reference': new_build,
+        }
+
+        for extra_field in ['method', 'headers', 'payload', 'payload_is_json', 'record_response']:
+            value = request.POST.get('callback_%s' % extra_field)
+            if value:
+                args[extra_field] = value
+
+        for boolean_field in ['payload_is_json', 'record_response']:
+            if boolean_field in args:
+                current_value = args[boolean_field]
+                args[boolean_field] = False if current_value in ['no', 'false', 'False'] else True
+
+        try:
+            callback = Callback(**args)
+            callback.full_clean()
+            callback.save()
+        except ValidationError as e:
+            return HttpResponse(', '.join(e.messages), status=400)
+
     return HttpResponse('', status=201)
 
 
