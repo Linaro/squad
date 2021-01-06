@@ -81,12 +81,20 @@ def create_callback(build, request):
         'url': callback_url,
         'event': request.POST.get('callback_event', callback_events.ON_BUILD_FINISHED),
         'object_reference': build,
+        'headers': '{}',
     }
 
     for extra_field in ['method', 'headers', 'payload', 'payload_is_json', 'record_response']:
         value = request.POST.get('callback_%s' % extra_field)
         if value:
             args[extra_field] = value
+
+    headers = build.project.get_setting('CALLBACK_HEADERS', {})
+    headers.update(json.loads(args.get('headers')))
+    if len(headers) == 0:
+        args.pop('headers')
+    else:
+        args['headers'] = json.dumps(headers)
 
     for boolean_field in ['payload_is_json', 'record_response']:
         if boolean_field in args:

@@ -14,7 +14,7 @@ class CallbackTest(TestCase):
 
     def setUp(self):
         self.group = Group.objects.create(slug='mygroup')
-        self.project = self.group.projects.create(slug='myproject', project_settings='{"callback_token": "123456"}')
+        self.project = self.group.projects.create(slug='myproject', project_settings='{"CALLBACK_HEADERS": {"Authorization": "token 123456"}}')
         self.build = self.project.builds.create(version='mybuild')
         self.event = Callback.events.ON_BUILD_FINISHED
 
@@ -55,7 +55,7 @@ class CallbackTest(TestCase):
     @patch('requests.post')
     def test_build_callback_with_auth_headers(self, requests_post):
         url = 'http://callback-target.com'
-        headers = {'Authorization': self.project.get_setting('callback_token')}
+        headers = {'Authorization': 'token 654321'}
 
         callback = self.build.callbacks.create(url=url, event=self.event, headers=json.dumps(headers))
         callback.dispatch()
