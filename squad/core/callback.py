@@ -5,6 +5,9 @@ import json
 from django.core.exceptions import ValidationError
 
 
+from squad.core import models
+
+
 def __generic_callback_validator__(value, attr, allowed_values):
     if value is None or len(value) == 0:
         raise ValidationError('Callback %s should not be None' % attr)
@@ -62,3 +65,31 @@ def dispatch_callback(callback_object):
 
     callback_object.is_sent = True
     callback_object.save()
+
+
+def create_callback(build, request):
+    callback_url = request.POST.get('callback_url')
+    if callback_url is None:
+        return None
+
+    args = {
+        'url': callback_url,
+        'event': request.POST.get('callback_event', callback_events.ON_BUILD_FINISHED),
+        'object_reference': build,
+    }
+
+    for extra_field in ['method', 'headers', 'payload', 'payload_is_json', 'record_response']:
+        value = request.POST.get('callback_%s' % extra_field)
+        if value:
+            args[extra_field] = value
+
+    for boolean_field in ['payload_is_json', 'record_response']:
+        if boolean_field in args:
+            current_value = args[boolean_field]
+            args[boolean_field] = False if current_value in ['no', 'false', 'False'] else True
+
+    callback = models.Callback(**args)
+    callback.full_clean()
+    callback.save()
+
+    return callback

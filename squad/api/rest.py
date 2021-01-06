@@ -4,6 +4,7 @@ import yaml
 from django.db.models import Q, F, Value as V, CharField, Prefetch
 from django.db.models.functions import Concat
 from django.core import exceptions as core_exceptions
+from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.contrib.auth.models import User
 from squad.core.models import (
@@ -24,11 +25,13 @@ from squad.core.models import (
     SuiteMetadata,
     DelayedReport,
     Subscription,
-    Status
+    Status,
+    Callback,
 )
 from squad.core.tasks import prepare_report, update_delayed_report
 from squad.core.comparison import TestComparison
 from squad.core.utils import parse_name, log_addition, log_change, log_deletion
+from squad.core.callback import create_callback
 from squad.ci.models import Backend, TestJob
 from squad.compat import drf_basename
 from django.http import HttpResponse
@@ -811,6 +814,10 @@ class BuildViewSet(ModelViewSet):
      * `api/builds/<id>/report` GET, POST
 
         Similar to 'email' but asynchronous
+
+     * `api/builds/<id>/callbacks` GET, POST
+
+        List available callbacks for this build or create one via POST
     """
     queryset = Build.objects.order_by('-datetime').all()
     project_lookup_key = 'project__in'
@@ -1000,6 +1007,24 @@ class BuildViewSet(ModelViewSet):
         delayed_report = self.__return_delayed_report(request)
         data = {"message": "OK", "url": rest_reverse('delayedreport-detail', args=[delayed_report.pk], request=request)}
         return Response(data, status=status.HTTP_202_ACCEPTED)
+
+    @action(detail=True, methods=['get', 'post'], suffix='callbacks')
+    def callbacks(self, request, pk=None):
+        build = self.get_object()
+
+        if request.method == 'GET':
+            callbacks = build.callbacks.order_by('id')
+            serializer = CallbackSerializer(callbacks, many=True, context={'request': request})
+            data = {'results': serializer.data}
+            return Response(data, status=status.HTTP_202_ACCEPTED)
+        else:
+            try:
+                callback = create_callback(build, request)
+                if callback is None:
+                    raise ValidationError('url is required.')
+                return Response({'message': 'OK'}, status=status.HTTP_202_ACCEPTED)
+            except ValidationError as e:
+                return Response({'message': ', '.join(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class EnvironmentSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
@@ -1520,6 +1545,15 @@ class MetricThresholdViewSet(viewsets.ModelViewSet):
     ordering_fields = ('id', 'environment', 'name')
     filterset_class = MetricThresholdFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
+
+
+class CallbackSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
+
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Callback
+        exclude = ('headers', 'object_reference_type', 'object_reference_id')
 
 
 router = APIRouter()

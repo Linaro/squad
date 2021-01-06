@@ -467,6 +467,23 @@ class RestApiTest(APITestCase):
             logentry_queryset.count()
         )
 
+    def test_build_callbacks(self):
+        response = self.get('/api/builds/%d/callbacks/' % self.build.id)
+        self.assertEqual(202, response.status_code)
+        self.assertEqual(0, len(response.json()['results']))
+
+        response = self.post('/api/builds/%d/callbacks/' % self.build.id, {'callback_url': 'http://callback.url'})
+        self.assertEqual(202, response.status_code)
+        self.assertEqual('OK', response.json()['message'])
+
+        response = self.get('/api/builds/%d/callbacks/' % self.build.id)
+        self.assertEqual(202, response.status_code)
+        self.assertEqual(1, len(response.json()['results']))
+
+        response = self.post('/api/builds/%d/callbacks/' % self.build.id, {'callback_url': 'invalid-callback.url'})
+        self.assertEqual(400, response.status_code)
+        self.assertEqual('Enter a valid URL.', response.json()['message'])
+
     @patch('squad.core.tasks.prepare_report.delay')
     def test_zz_build_report_logentry(self, prepare_report_mock):
         response = self.get('/api/builds/%d/report/' % self.build3.id)
