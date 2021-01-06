@@ -539,3 +539,25 @@ class CreateBuildApiTest(ApiTest):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(b'Enter a valid URL.', response.content)
+
+    def test_duplicated_callback(self):
+        callback_url = 'http://the-callback.target'
+        response = self.client.post(
+            '/api/createbuild/mygroup/myproject/with-callback',
+            {
+                'callback_url': callback_url,
+            }
+        )
+        self.assertEqual(response.status_code, 201)
+        build = self.project.builds.get(version='with-callback')
+        self.assertEqual(1, build.callbacks.count())
+
+        response = self.client.post(
+            '/api/createbuild/mygroup/myproject/with-callback',
+            {
+                'callback_url': callback_url,
+            }
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(1, build.callbacks.count())
+        self.assertEqual(b'Callback with this Object reference type, Object reference id, Url and Event already exists.', response.content)

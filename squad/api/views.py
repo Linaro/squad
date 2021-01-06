@@ -1,3 +1,4 @@
+from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -63,7 +64,7 @@ def create_build(request, group_slug, project_slug, version):
 
     try:
         create_callback(new_build, request)
-    except ValidationError as e:
+    except (ValidationError, IntegrityError) as e:
         return HttpResponse(', '.join(e.messages), status=400)
 
     return HttpResponse('', status=201)

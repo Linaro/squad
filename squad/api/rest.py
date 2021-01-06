@@ -3,6 +3,7 @@ import yaml
 
 from django.db.models import Q, F, Value as V, CharField, Prefetch
 from django.db.models.functions import Concat
+from django.db.utils import IntegrityError
 from django.core import exceptions as core_exceptions
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
@@ -1023,7 +1024,7 @@ class BuildViewSet(ModelViewSet):
                 if callback is None:
                     raise ValidationError('url is required.')
                 return Response({'message': 'OK'}, status=status.HTTP_202_ACCEPTED)
-            except ValidationError as e:
+            except (ValidationError, IntegrityError) as e:
                 return Response({'message': ', '.join(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
 
 
