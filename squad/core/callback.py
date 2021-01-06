@@ -67,6 +67,11 @@ def dispatch_callback(callback_object):
     callback_object.save()
 
 
+def dispatch_callbacks_on_build_finished(build):
+    for callback in build.callbacks.filter(event=callback_events.ON_BUILD_FINISHED, is_sent=False).all():
+        callback.dispatch()
+
+
 def create_callback(build, request):
     callback_url = request.POST.get('callback_url')
     if callback_url is None:
