@@ -3,6 +3,7 @@ from squad.mail import Message
 from django.conf import settings
 import django.template
 import logging
+import yaml
 from django.template.loader import render_to_string
 from re import sub
 
@@ -75,7 +76,17 @@ class Notification(object):
                 if not self.previous_build or \
                    len(self.comparison.regressions) == 0:
                     continue
-
+            elif subscription.notification_strategy == Subscription.NOTIFY_ON_ERROR:
+                if not self.project.project_settings:
+                    logger.warn('CI_LAVA_JOB_ERROR_STATUS not set in project settings. Notification will not be sent for project %s, build %s.' % (self.project.full_name, self.build.version))
+                    continue
+                settings = yaml.safe_load(self.project.project_settings) or {}
+                error_status = settings.get('CI_LAVA_JOB_ERROR_STATUS', None)
+                if not error_status:
+                    logger.warn('CI_LAVA_JOB_ERROR_STATUS not set in project settings. Notification will not be sent for project %s, build %s.' % (self.project.full_name, self.build.version))
+                    continue
+                if len(self.build.test_jobs.filter(job_status=error_status)) == 0:
+                    continue
             email = subscription.get_email()
             if email:
                 emails.append(email)

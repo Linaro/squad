@@ -1,3 +1,5 @@
+import yaml
+
 from collections import OrderedDict
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import User
@@ -8,6 +10,7 @@ from unittest.mock import patch, MagicMock, PropertyMock
 
 
 from squad.core.models import Group, ProjectStatus, EmailTemplate, Subscription
+from squad.ci.models import Backend
 from squad.core.notification import Notification, send_status_notification
 
 
@@ -64,6 +67,13 @@ class TestSendNotificationFirstTime(TestCase):
 
     def test_dont_send_if_notifying_on_regression(self):
         self.subscription.notification_strategy = Subscription.NOTIFY_ON_REGRESSION
+        self.subscription.save()
+        status = ProjectStatus.create_or_update(self.build)
+        send_status_notification(status)
+        self.assertEqual(0, len(mail.outbox))
+
+    def test_dont_send_if_notifying_on_error(self):
+        self.subscription.notification_strategy = Subscription.NOTIFY_ON_ERROR
         self.subscription.save()
         status = ProjectStatus.create_or_update(self.build)
         send_status_notification(status)
@@ -127,6 +137,26 @@ class TestSendNotification(TestCase):
         send_status_notification(status)
         self.assertEqual(0, len(mail.outbox))
 
+    def test_send_notification_on_regression_only_with_no_errors(self):
+        backend = Backend.objects.create(
+            url='http://example.com',
+            username='foobar',
+            token='mypassword',
+        )
+        self.build2.test_jobs.create(
+            backend=backend,
+            target=self.project,
+            job_status="Incomplete"
+        )
+        self.project.project_settings = yaml.dump({'CI_LAVA_JOB_ERROR_STATUS': ["Incomplete"]})
+        self.project.save()
+        self.project.subscriptions.create(
+            email='foo@example.com',
+            notification_strategy=Subscription.NOTIFY_ON_ERROR)
+        status = ProjectStatus.create_or_update(self.build2)
+        send_status_notification(status)
+        self.assertEqual(0, len(mail.outbox))
+
     @patch("squad.core.comparison.TestComparison.diff", new_callable=PropertyMock)
     def test_send_notification_on_change_only(self, diff):
         diff.return_value = fake_diff()
@@ -143,6 +173,26 @@ class TestSendNotification(TestCase):
         self.project.subscriptions.create(
             email='foo@example.com',
             notification_strategy=Subscription.NOTIFY_ON_REGRESSION)
+        status = ProjectStatus.create_or_update(self.build2)
+        send_status_notification(status)
+        self.assertEqual(1, len(mail.outbox))
+
+    def test_send_notification_on_errors_only(self):
+        backend = Backend.objects.create(
+            url='http://example.com',
+            username='foobar',
+            token='mypassword',
+        )
+        self.build2.test_jobs.create(
+            backend=backend,
+            target=self.project,
+            job_status="Incomplete"
+        )
+        self.project.project_settings = yaml.dump({'CI_LAVA_JOB_ERROR_STATUS': "Incomplete"})
+        self.project.save()
+        self.project.subscriptions.create(
+            email='foo@example.com',
+            notification_strategy=Subscription.NOTIFY_ON_ERROR)
         status = ProjectStatus.create_or_update(self.build2)
         send_status_notification(status)
         self.assertEqual(1, len(mail.outbox))
