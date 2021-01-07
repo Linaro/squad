@@ -5,6 +5,10 @@ from unittest import TestCase
 from django.core import management
 
 
+import pytest
+
+
+@pytest.mark.django_db
 class TestPendingMigrations(TestCase):
     def test_pending_migrations(self):
         output = StringIO()
