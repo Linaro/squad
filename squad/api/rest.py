@@ -363,9 +363,6 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 class ProjectSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
-    builds = serializers.HyperlinkedIdentityField(
-        view_name='project-builds',
-    )
     id = serializers.IntegerField(read_only=True)
     full_name = serializers.CharField(read_only=True)
     enabled_plugins_list = serializers.ListField(
@@ -517,16 +514,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.queryset.accessible_to(self.request.user).prefetch_related('group')
-
-    @action(detail=True, methods=['get'], suffix='builds')
-    def builds(self, request, pk=None):
-        """
-        List of builds for the current project.
-        """
-        builds = self.get_object().builds.prefetch_related('test_runs').order_by('-datetime')
-        page = self.paginate_queryset(builds)
-        serializer = BuildSerializer(page, many=True, context={'request': request})
-        return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['get'], suffix='suites')
     def suites(self, request, pk=None):
@@ -1537,7 +1524,12 @@ class MetricThresholdViewSet(viewsets.ModelViewSet):
 
 router = APIRouter()
 router.register(r'groups', GroupViewSet)
-router.register(r'projects', ProjectViewSet)
+router.register(r'projects', ProjectViewSet).register(
+    r'builds',
+    BuildViewSet,
+    parents_query_lookups=['project_id'],
+    **drf_basename('project-builds')
+)
 router.register(r'builds', BuildViewSet).register(
     r'tests',
     TestViewSet,
