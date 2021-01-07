@@ -9,6 +9,8 @@ from django.template.defaultfilters import safe
 from hashlib import md5
 from markdown import markdown as to_markdown
 from bootstrap3.templatetags.bootstrap3 import bootstrap_field as b3_field
+from allauth.socialaccount.templatetags import socialaccount
+
 
 from squad import version
 from squad.core.models import Test, Build
@@ -263,3 +265,12 @@ def to_json(d):
     except TypeError:
         json_string = ''
     return json_string
+
+
+@register_global_function(takes_context=True)
+def socialaccount_providers(context):
+    request = context['request']
+    providers = socialaccount.get_providers()
+    if providers:
+        return {p: p.get_login_url(request) for p in providers}
+    return None

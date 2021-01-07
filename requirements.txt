@@ -3,6 +3,7 @@ cryptography
 coreapi
 django_crispy_forms
 Django>=2.2,<3.0
+django-allauth
 django-bootstrap3
 django-celery-results
 django-cors-headers

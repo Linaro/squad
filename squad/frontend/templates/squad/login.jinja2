@@ -23,34 +23,48 @@
       <h3 class="panel-title">{{ _("Log in") }}</h3>
     </div>
     <div class='panel-body'>
-      {% autoescape off %}
-        {{login_message('div', 'alert alert-info')}}
-      {% endautoescape %}
-      <form action="{{ app_path }}" method="post" id="login-form">
-        {{ csrf_input }}
-        <div class="form-group">
-          {{ form.username.errors }}
-          <label for="id_username" class="sr-only">{{ _('Username') }}</label>
-          <input type="text" id="id_username" name="username" class="form-control" placeholder="Username" required autofocus>
-        </div>
-        <div class="form-group">
-          {{ form.password.errors }}
-          <label for="id_password" class="sr-only">{{ _('Password') }}</label>
-          <input type="password" id="id_password" name="password" class="form-control" placeholder="Password" required>
-          <input type="hidden" name="next" value="{{ next }}" />
-        </div>
-        {# We currently do not implement password reset feature. If that's needed, check out link below #}
-        {# https://github.com/django/django/blob/c49ea6f5911296dcb40190c905e38b43cdc7c7a3/docs/ref/contrib/admin/index.txt#L3081 #}
-        {% set password_reset_url = url('admin_password_reset') %}
-        {% if password_reset_url %}
-        <div class="password-reset-link">
-          <a href="{{ password_reset_url }}">{{ _("Forgotten your password or username?") }}</a>
-        </div>
-        {% endif %}
-        <div class="form-group">
-          <input class='btn btn-default' type="submit" value="{{ _("Log in") }}" />
-        </div>
-      </form>
+      <div id='plain-old-login'>
+        {% autoescape off %}
+          {{login_message('div', 'alert alert-info')}}
+        {% endautoescape %}
+        <form action="{{ app_path }}" method="post" id="login-form">
+          {{ csrf_input }}
+          <div class="form-group">
+            {{ form.username.errors }}
+            <label for="id_username" class="sr-only">{{ _('Username') }}</label>
+            <input type="text" id="id_username" name="username" class="form-control" placeholder="Username" required autofocus>
+          </div>
+          <div class="form-group">
+            {{ form.password.errors }}
+            <label for="id_password" class="sr-only">{{ _('Password') }}</label>
+            <input type="password" id="id_password" name="password" class="form-control" placeholder="Password" required>
+            <input type="hidden" name="next" value="{{ next }}" />
+          </div>
+          {# We currently do not implement password reset feature. If that's needed, check out link below #}
+          {# https://github.com/django/django/blob/c49ea6f5911296dcb40190c905e38b43cdc7c7a3/docs/ref/contrib/admin/index.txt#L3081 #}
+          {% set password_reset_url = url('admin_password_reset') %}
+          {% if password_reset_url %}
+          <div class="password-reset-link">
+            <a href="{{ password_reset_url }}">{{ _("Forgotten your password or username?") }}</a>
+          </div>
+          {% endif %}
+          <div class="form-group">
+            <input class='btn btn-default' type="submit" value="{{ _("Log in") }}" />
+          </div>
+        </form>
+      </div>
+      {% set providers = socialaccount_providers() %}
+      {% if providers %}
+          <div id='social-login'>
+          {{ _('Or login with these social accounts') }}:
+            <div style="margin-top: 10px;">
+              {% for provider, login_url in providers.items() %}
+                  <a class='btn btn-default' href='{{ login_url }}'>{{ provider.name }}</a>
+                  &nbsp;
+              {% endfor %}
+            </div>
+          </div>
+      {% endif %}
     </div>
   </div>
 </div>

@@ -87,6 +87,7 @@ __apps__ = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.humanize',
+    'django.contrib.sites',
     'corsheaders',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
@@ -103,7 +104,31 @@ __apps__ = [
     'squad.frontend',
     'squad.ci',
     'django_celery_results',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.github',
+    'allauth.socialaccount.providers.gitlab',
 ]
+
+# SocialLogin setup
+# SQUAD installations should add their own providers and setups if more needed.
+# By default github and gitlab are enabled.
+# ref: https://django-allauth.readthedocs.io/en/latest/installation.html
+ACCOUNT_EMAIL_VERIFICATION = os.getenv('SQUAD_ACCOUNT_EMAIL_VERIFICATION', 'none')
+SOCIALACCOUNT_ADAPTER = 'squad.socialaccount.CustomSocialAccountAdapter'
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_PROVIDERS = {
+    # https://docs.github.com/en/free-pro-team@latest/developers/apps/scopes-for-oauth-apps
+    'github': {
+        'SCOPE': ['read:user', 'user:email'],
+    },
+    'gitlab': {
+        'SCOPE': ['read_user'],
+    }
+}
+
+SITE_ID = 1
 
 INSTALLED_APPS = [app for app in __apps__ if app]
 
@@ -201,6 +226,12 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+]
+
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 

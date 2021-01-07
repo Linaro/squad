@@ -12,6 +12,7 @@ RUN apt-get update -q=2 && \
         python3-dateutil \
         python3-dev \
         python3-django \
+        python3-django-allauth \
         python3-django-auth-ldap \
         python3-django-cors-headers \
         python3-django-celery-results \
