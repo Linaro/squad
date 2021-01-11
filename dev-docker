@@ -11,7 +11,7 @@ mkdir -p "$datadir"
 dockerfile="$datadir"/../Dockerfile.dev
 (
   sed -e '1,/# Prepare the environment/!d' "$basedir"/Dockerfile
-  echo 'RUN apt-get install -q2 snakefood flake8 python3-django-extensions python3-django-debug-toolbar ipython3 rabbitmq-server chromium nodejs ruby-foreman procps && \'
+  echo 'RUN apt-get update -q2 && apt-get install -q2 snakefood flake8 python3-django-extensions python3-django-debug-toolbar python3-pytest ipython3 rabbitmq-server chromium nodejs ruby-foreman procps && \'
   echo "    groupadd -g $(id -g) $(id -gn) && \\"
   echo "    useradd -m -u $(id -u) -g $(id -g) -s /bin/bash ${USER}"
   echo "RUN pip3 install --no-dependencies zipp importlib-metadata==3.1.1 asgiref django-bootstrap3"
