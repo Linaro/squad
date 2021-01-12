@@ -10,7 +10,7 @@ from django.utils import timezone
 from unittest.mock import patch
 
 
-from squad.core.models import Group, TestRun, Status, Build, ProjectStatus, SuiteVersion, PatchSource, KnownIssue, EmailTemplate
+from squad.core.models import Group, TestRun, Status, Build, ProjectStatus, SuiteVersion, PatchSource, KnownIssue, EmailTemplate, Callback
 from squad.core.tasks import ParseTestRunData
 from squad.core.tasks import PostProcessTestRun
 from squad.core.tasks import RecordTestRunStatus
@@ -451,6 +451,19 @@ class UpdateProjectStatusTest(CommonTestCase):
 
         status = ProjectStatus.objects.last()
         maybe_notify_project_status.delay.assert_called_with(status.id)
+
+    @patch('requests.post')
+    def test_dispatch_callback_on_build_finished(self, requests_post):
+        url = 'http://callback-target.com'
+        callback = self.build.callbacks.create(url=url, event=Callback.events.ON_BUILD_FINISHED)
+
+        ParseTestRunData()(self.testrun)
+        RecordTestRunStatus()(self.testrun)
+        UpdateProjectStatus()(self.testrun)
+
+        callback.refresh_from_db()
+        self.assertTrue(callback.is_sent)
+        requests_post.assert_called_with(url)
 
 
 class ProcessTestRunTest(CommonTestCase):

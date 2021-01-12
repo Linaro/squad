@@ -28,6 +28,7 @@ from squad.core.models import (
     Project,
     DelayedReport
 )
+from squad.core.callback import dispatch_callbacks_on_build_finished
 from squad.core.data import JSONTestDataParser, JSONMetricDataParser
 from squad.core.statistics import geomean
 from squad.core.notification import Notification
@@ -428,6 +429,10 @@ class UpdateProjectStatus(object):
     @staticmethod
     def __call__(testrun):
         projectstatus = ProjectStatus.create_or_update(testrun.build)
+
+        if projectstatus.finished:
+            dispatch_callbacks_on_build_finished(testrun.build)
+
         maybe_notify_project_status.delay(projectstatus.id)
 
 

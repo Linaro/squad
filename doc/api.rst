@@ -101,6 +101,13 @@ Creates Build object. Following parameters are accepted:
 - patch_source - string matching PatchSource.name
 - patch_baseline - version string matching Build.version
 - patch_id - string identifying the patched version (for example git commit ID)
+- callback_url - url string to define a callback for the build
+- callback_method - string "post" or "get" defining the callback request method. Defaults to "post"
+- callback_event - string "on_build_finished" defining at which point the callback should be dispatched. Defaults to "on_build_finished"
+- callback_headers - JSON-formatted string defining the callback headers, useful to define auth tokens
+- callback_payload - JSON-formatted string defining the callback payload
+- callback_payload_is_json - string with "true" or "false" indicating whether the payload should be sent as JSON or as form-data. Defaults to "true"
+- callback_record_response - string with "true" or "false" indicating whether or not the callback response should be recorded in SQUAD
 
 submit
 ~~~~~~

@@ -467,6 +467,47 @@ class RestApiTest(APITestCase):
             logentry_queryset.count()
         )
 
+    def test_build_callbacks(self):
+        response = self.get('/api/builds/%d/callbacks/' % self.build.id)
+        self.assertEqual(202, response.status_code)
+        self.assertEqual(0, len(response.json()['results']))
+
+        callback_url = 'http://callback.url'
+        response = self.post('/api/builds/%d/callbacks/' % self.build.id, {'callback_url': callback_url})
+        self.assertEqual(202, response.status_code)
+        self.assertEqual('OK', response.json()['message'])
+
+        response = self.get('/api/builds/%d/callbacks/' % self.build.id)
+        self.assertEqual(202, response.status_code)
+        self.assertEqual(1, len(response.json()['results']))
+
+        response = self.post('/api/builds/%d/callbacks/' % self.build.id, {'callback_url': 'invalid-callback.url'})
+        self.assertEqual(400, response.status_code)
+        self.assertEqual('Enter a valid URL.', response.json()['message'])
+
+        response = self.post('/api/builds/%d/callbacks/' % self.build.id, {'callback_url': callback_url})
+        self.assertEqual(400, response.status_code)
+        self.assertEqual('Callback with this Object reference type, Object reference id, Url and Event already exists.', response.json()['message'])
+
+    def test_build_callback_headers(self):
+        headers = '{"Authorization": "token 123456"}'
+        self.project.project_settings = '{"CALLBACK_HEADERS": %s}' % headers
+        self.project.save()
+
+        callback_url = 'http://callback.url'
+        response = self.post('/api/builds/%d/callbacks/' % self.build.id, {'callback_url': callback_url})
+        self.assertEqual(202, response.status_code)
+        self.assertEqual('OK', response.json()['message'])
+        self.assertEqual(1, self.build.callbacks.filter(url=callback_url, headers=headers).count())
+
+        # Check that headers in project settings gets overwritten if it comes from the user
+        user_headers = '{"Authorization": "token 654321"}'
+        callback_url += '/with-headers'
+        response = self.post('/api/builds/%d/callbacks/' % self.build.id, {'callback_url': callback_url, 'callback_headers': user_headers})
+        self.assertEqual(202, response.status_code)
+        self.assertEqual('OK', response.json()['message'])
+        self.assertEqual(1, self.build.callbacks.filter(url=callback_url, headers=user_headers).count())
+
     @patch('squad.core.tasks.prepare_report.delay')
     def test_zz_build_report_logentry(self, prepare_report_mock):
         response = self.get('/api/builds/%d/report/' % self.build3.id)

@@ -1,3 +1,5 @@
+from django.db.utils import IntegrityError
+from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
@@ -8,7 +10,7 @@ import logging
 from squad.http import read_file_upload
 from squad.http import auth_submit_results
 
-
+from squad.core.callback import create_callback
 from squad.core.models import Build
 from squad.core.models import PatchSource
 
@@ -59,6 +61,12 @@ def create_build(request, group_slug, project_slug, version):
         log_addition(request, new_build, "Build created")
     else:
         log_change(request, new_build, "Build updated")
+
+    try:
+        create_callback(new_build, request)
+    except (ValidationError, IntegrityError) as e:
+        return HttpResponse(', '.join(e.messages), status=400)
+
     return HttpResponse('', status=201)
 
 
