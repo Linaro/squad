@@ -43,7 +43,7 @@
           {% if result %}
             {% with known_issues=result.known_issues %}
               <td class='{{result.status|slugify}}'>
-                <a href="{{testrun_suite_test_details_url(project.group, project, build, result.test_run_status, result.test)}}">{{result.status}}</a>
+                <a href="{{testrun_suite_test_details_url(project.group, project, build, result.test_run_status, result.test)}}">{{result.status}}{% if result.confidence_score %} ({{result.confidence_score}}%){% endif %}</a>
                 {% if result.info['test_description'] or result.info['suite_instructions'] or result.info['test_instructions'] or result.info['test_log'] %}
                   <a href='#' data-toggle="modal" data-target="#info_modal" data-info="{{ to_json(result.info) }}"><span data-toggle="tooltip" data-placement="right" title="{{ _('Show info') }}" class='fa fa-info-circle'></span></a>
                 {% endif %}

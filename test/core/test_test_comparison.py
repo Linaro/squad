@@ -23,6 +23,7 @@ class TestComparisonTest(TestCase):
         self.group = models.Group.objects.create(slug='mygruop')
         self.project1 = self.group.projects.create(slug='project1')
         self.project2 = self.group.projects.create(slug='project2')
+        self.project3 = self.group.projects.create(slug='project3')
 
         self.receive_test_run(self.project1, '0', 'myenv', {
             'z': 'pass',
@@ -61,10 +62,23 @@ class TestComparisonTest(TestCase):
             'c': 'pass',
             'd/e': 'pass',
         })
+        self.receive_test_run(self.project3, '2', 'myenv', {
+            'a': 'pass',
+            'b': 'pass',
+        })
+        self.receive_test_run(self.project3, '2', 'myenv', {
+            'a': 'fail',
+            'b': 'fail',
+        })
+        self.receive_test_run(self.project3, '2', 'myenv', {
+            'a': 'pass',
+            'b': 'fail',
+        })
 
         self.build0 = self.project1.builds.first()
         self.build1 = self.project1.builds.last()
         self.build2 = self.project2.builds.last()
+        self.build3 = self.project3.builds.last()
 
     def test_builds(self):
         comp = compare(self.build1, self.build2)
@@ -158,6 +172,14 @@ class TestComparisonTest(TestCase):
         comparison = TestComparison(self.build1, self.build1, regressions_and_fixes_only=True)
         self.assertEqual({}, comparison.regressions)
 
+    def test_regressions_with_duplicates(self):
+        comparison = TestComparison.compare_builds(self.build1, self.build3)
+        self.assertEqual({'myenv': ['b']}, comparison.regressions)
+
+    def test_fixes_with_duplicates(self):
+        comparison = TestComparison.compare_builds(self.build2, self.build3)
+        self.assertEqual({'myenv': ['a']}, comparison.fixes)
+
     def test_fixes_no_fixes(self):
         # same build! so no fixes, by definition
         comparison = TestComparison(self.build1, self.build1, regressions_and_fixes_only=True)
@@ -234,7 +256,7 @@ class TestComparisonTest(TestCase):
         | testC | pass | pass | pass  | pass | pass | pass  |
         +-------+------+------+-------+------+------+-------+
         """
-        project = self.group.projects.create(slug='project3')
+        project = self.group.projects.create(slug='project4')
         self.receive_test_run(project, 'buildA', 'envA', {'testA': 'pass', 'testB': 'pass', 'testC': 'pass'})
         self.receive_test_run(project, 'buildA', 'envB', {'testA': 'fail', 'testB': 'skip', 'testC': 'pass'})
         self.receive_test_run(project, 'buildA', 'envC', {'testA': 'xfail', 'testB': 'xfail', 'testC': 'pass'})
@@ -254,7 +276,6 @@ class TestComparisonTest(TestCase):
 
         transitions = [('pass', 'fail'), ('skip', 'n/a')]
         comparison.apply_transitions(transitions)
-
         """
         Test results after transitions are applied
                 +-------------+-------------+

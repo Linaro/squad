@@ -7,6 +7,7 @@ from django.http import Http404
 from squad.http import auth
 from squad.core.models import Test, Suite, TestRun
 from squad.core.history import TestHistory
+from squad.core.queries import test_confidence
 from squad.core.utils import split_list
 from squad.frontend.views import get_build
 
@@ -125,7 +126,11 @@ class TestResultTable(list):
         memo = {}
         for test in tests:
             memo.setdefault(test.full_name, {})
-            memo[test.full_name][test.test_run.environment_id] = [test.status]
+            if test.test_run.environment_id in memo[test.full_name]:
+                # Found duplicates.
+                memo[test.full_name][test.test_run.environment_id] = list(test_confidence(test))
+            else:
+                memo[test.full_name][test.test_run.environment_id] = [test.status]
             if 'test_metadata' not in memo[test.full_name].keys():
                 memo[test.full_name]['test_metadata'] = (test.test_run, test.suite, test.name)
 

@@ -38,7 +38,7 @@
                       <br>
                       <i class='fa fa-flag-o'></i>
                       <span class='p-3 mb-2 {{"alert-danger" if test.status == "fail" else "alert-success" if test.status == "pass" else "alert-warning" if test.status == "skip" else "alert-info"}}'>
-                          {{ (_('Result: <strong>%s</strong>') % test.status) | safe }}
+                          {{ (_('Result: <strong>%s</strong>') % test.status) | safe }}{% if test.confidence_score %} ({{ test.confidence_score}} %){% endif %}
                       </span>
                   {% endif %}
                   {% if test.metadata.description or test.known_issues|length > 0 or suite.metadata.description %}

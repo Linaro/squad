@@ -47,11 +47,19 @@
             {% with result=results.get((build, environment)) %}
               {% if result %}
                 {% if comparison_type == 'test' %}
-                  <td class='{{result|slugify}}'>
-                    <a href="{{url('legacy_test_history', args=[build.project.group.slug, build.project.slug, test])}}">
-                      <strong>{{result}}</strong>
-                    </a>
-                  </td>
+                  {% if result is not string %}
+                    <td class='{{result.0|slugify}}'>
+                      <a href="{{url('legacy_test_history', args=[build.project.group.slug, build.project.slug, test])}}">
+                        <strong>{{result.0}}{% if result.1 %} ({{ result.1 }}%){% endif %}</strong>
+                      </a>
+                     </td>
+                  {% else %}
+                    <td class='{{result|slugify}}'>
+                      <a href="{{url('legacy_test_history', args=[build.project.group.slug, build.project.slug, test])}}">
+                        <strong>{{result}}</strong>
+                      </a>
+                    </td>
+                  {% endif %}
                 {% else %}
                   {% set mean = result.0|float %}
                   {% set stddev = result.1|float %}

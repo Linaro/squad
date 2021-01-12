@@ -65,7 +65,7 @@
               <td><a href="{% raw %}{{build.build_url_path}}{% endraw %}" target="_self"><span ng-bind='build.build.version'></span></a></td>
               <td><span ng-bind='build.build.created_at'></span></td>
               <td class="{% raw %}{{ testResult.test.status }}{% endraw %}" ng-repeat='testResult in build.environments'>
-                  <a ng-show="{% raw %}{{ testResult.test.status != undefined }}{% endraw %}" href="{% raw %}{{testResult.test_url_path}}{% endraw %}" target="_self"><span ng-bind='testResult.test.status'></span></a>
+                  <a ng-show="{% raw %}{{ testResult.test.status != undefined }}{% endraw %}" href="{% raw %}{{testResult.test_url_path}}{% endraw %}" target="_self"><span ng-bind='testResult.test.status'></span><span ng-show="{% raw %}{{ testResult.test.confidence != undefined }}{% endraw %}"> (</span><span ng-bind='testResult.test.confidence'></span><span ng-show="{% raw %}{{ testResult.test.confidence != undefined }}{% endraw %}">%)</span></a>
                   <span ng-show="{% raw %}{{ testResult.test.status == undefined }}{% endraw %}">{{ _('n/a') }}</span>
               </td>
           </tr>

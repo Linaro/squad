@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 from django.db.models import Prefetch
 from django.db.models.query import prefetch_related_objects
 
+from squad.core.queries import test_confidence
 from squad.core.utils import parse_name, split_list
 from squad.core.models import Test, SuiteMetadata, TestRun, KnownIssue
 
@@ -16,11 +17,14 @@ class TestResult(object):
             self.test_run = test_run
             self.suite = suite
 
-    def __init__(self, test, suite, metadata, known_issues):
+    def __init__(self, test, suite, metadata, known_issues, is_duplicate=False):
         self.test = test
         self.suite = suite
         self.known_issues = known_issues
-        self.status = test.status
+        if is_duplicate:
+            self.status, self.confidence_score = test_confidence(test)
+        else:
+            self.status, self.confidence_score = (test.status, None)
         self.test_run = test.test_run
         self.test_run_status = self.TestRunStatus(self.test_run, self.suite)
         self.info = {
@@ -83,8 +87,10 @@ class TestHistory(object):
             environment = test.test_run.environment
             environments[environment] = True
             known_issues = issues_by_env.get(environment.id)
-
-            results[build][environment] = TestResult(test, suite, metadata, known_issues)
+            is_duplicate = False
+            if environment in results[build]:
+                is_duplicate = True
+            results[build][environment] = TestResult(test, suite, metadata, known_issues, is_duplicate)
 
         for build in results.keys():
             recorded_envs = set(results[build].keys())
