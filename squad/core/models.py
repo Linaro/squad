@@ -209,7 +209,7 @@ class UserNamespaceManager(models.Manager):
 
     @transaction.atomic
     def create_for(self, user):
-        slug = '~' + user.username
+        slug = '~' + user.username.replace('@', '')
         ns = self.create(slug=slug)
         ns.add_admin(user)
         return ns

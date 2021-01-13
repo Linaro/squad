@@ -71,5 +71,6 @@ urlpatterns = extra_urls + [
     url(r'^api/', include('squad.api.urls')),
     url(r'^login/', auth.LoginView.as_view(template_name='squad/login.jinja2')),
     url(r'^logout/', auth.LogoutView.as_view(next_page='/')),
+    url(r'^accounts/', include('allauth.urls')),
     url(r'', include('squad.frontend.urls'))
 ]
