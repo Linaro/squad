@@ -4,7 +4,7 @@
     <a class="h2 text-primitive" href="{{group_url(project.group)}}">{{project.group.display_name}}</a>
     » <a class="h2 text-primitive" href="{{project_url(project)}}">{{project.display_name}}</a>
     » <a class="h2 text-primitive" href="{{build_url(build)}}"> {{build.version}}</a>
-    » <a class="h2 text-primary" href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{{suite}}</a>
+    » <a class="h2 text-primary" href="{{environment_suite_tests_url(project.group, project, build, suite, environment=environment)}}">{{suite}}</a>
     <br>
     {% include "squad/_env_suite_data.jinja2" %}
     <a name="tests"></a>
@@ -19,9 +19,7 @@
 {% endwith %}
 
 {% for test in tests %}
-  {% with suite=status.suite %}
     {% include "squad/_test_run_test.jinja2" %}
-  {% endwith %}
 {% endfor %}
 
 {% with items=tests %}

@@ -15,7 +15,7 @@
       {% endif %}
     {% endif %}
   </h2>
-  {% if build is defined and status is defined %}
+  {% if build is defined %}
       {% include "squad/tests-details-nav.jinja2" %}
   {% endif %}
   {% with items=history %}
@@ -43,7 +43,18 @@
           {% if result %}
             {% with known_issues=result.known_issues %}
               <td class='{{result.status|slugify}}'>
-                <a href="{{testrun_suite_test_details_url(project.group, project, build, result.test_run_status, result.test)}}">{{result.status}}{% if result.confidence_score %} ({{result.confidence_score}}%){% endif %}</a>
+              {% if test is defined %}
+                {% set test = test %}
+                {% set testrun = test.test_run %}
+                {% set status = None %}
+                {% set suite = suite %}
+              {% else %}
+                {% set test = result.test %}
+                {% set testrun = None %}
+                {% set status = result.test_run_status %}
+                {% set suite = result.test_run_status.suite %}
+              {% endif %}
+                <a href="{{testrun_suite_test_details_url(project.group, project, build, suite, test=test, testrun=testrun, status=status)}}">{{result.status}}{% if result.confidence_score %} ({{result.confidence_score}}%){% endif %}</a>
                 {% if result.info['test_description'] or result.info['suite_instructions'] or result.info['test_instructions'] or result.info['test_log'] %}
                   <a href='#' data-toggle="modal" data-target="#info_modal" data-info="{{ to_json(result.info) }}"><span data-toggle="tooltip" data-placement="right" title="{{ _('Show info') }}" class='fa fa-info-circle'></span></a>
                 {% endif %}

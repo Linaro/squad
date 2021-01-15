@@ -194,7 +194,8 @@ def test_history(request, group_slug, project_slug, build_version=None, testrun=
         suite = get_object_or_404(project.suites, slug=suite_slug)
         status = get_object_or_404(test_run.status, suite=suite)
         full_test_name = "/".join([suite_slug, test_name])
-        context.update({"build": build, "status": status, "test": test_name})
+        test = Test.objects.filter(build=build, test_run=test_run, suite=suite, metadata__name=test_name).first()
+        context.update({"build": build, "status": status, "test": test, "suite": suite})
     else:
         full_test_name = test_name.replace('$', '/')
     try:

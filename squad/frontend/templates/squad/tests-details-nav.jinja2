@@ -2,12 +2,12 @@
     {% with url_name=request.resolver_match.url_name %}
 
     <li role="presentation" {% if url_name == 'testrun_suite_test_details' %}class="active"{% endif %}>
-       <a href="{{testrun_suite_test_details_url(project.group, project, build, status, test)}}">
+       <a href="{{testrun_suite_test_details_url(project.group, project, build, suite, test=test, testrun=test.test_run)}}">
            {{ _('Test Details & Metadata') }}
        </a>
     </li>
     <li role="presentation" {% if url_name == 'test_history' %}class="active"{% endif %}>
-        <a href="{{testrun_suite_test_details_history_url(project.group, project, build, status, test)}}">
+        <a href="{{testrun_suite_test_details_history_url(project.group, project, build, suite, test=test, testrun=test.test_run)}}">
             {{ _('Test History') }}
         </a>
     </li>

@@ -4,7 +4,7 @@
     <a class="h2 text-primitive" href="{{group_url(project.group)}}">{{project.group.display_name}}</a>
     » <a class="h2 text-primitive" href="{{project_url(project)}}">{{project.display_name}}</a>
     » <a class="h2 text-primitive" href="{{build_url(build)}}"> {{build.version}}</a>
-    » <a class="h2 text-primitive" href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{{suite}}</a>
+    » <a class="h2 text-primitive" href="{{environment_suite_tests_url(project.group, project, build, suite, environment=test.environment)}}">{{suite}}</a>
     » <a class="h2 text-primary" href="#">{{test.name}}</a>
     <a name="tests"></a>
 </h2>

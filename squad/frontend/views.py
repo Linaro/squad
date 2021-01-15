@@ -10,7 +10,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
 from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold, KnownIssue, Test
-from squad.core.models import Build, Subscription, TestRun, Project, SuiteMetadata
+from squad.core.models import Build, Subscription, TestRun, Project, SuiteMetadata, Environment
 from squad.core.queries import get_metric_data, test_confidence
 from squad.frontend.queries import get_metrics_list
 from squad.frontend.utils import file_type, alphanum_sort
@@ -286,6 +286,13 @@ class TestResultTable(object):
             self.has_failures = False
             self.has_known_failures = False
             self.statuses = []
+            self.entry_total = Status()
+
+        def update_entry_total(self, status):
+            self.entry_total.tests_fail += status.tests_fail
+            self.entry_total.tests_pass += status.tests_pass
+            self.entry_total.tests_xfail += status.tests_xfail
+            self.entry_total.tests_skip += status.tests_skip
 
         @property
         def has_data(self):
@@ -312,6 +319,7 @@ class TestResultTable(object):
         if status.tests_xfail > 0:
             entry.has_known_failures = True
         entry.statuses.append(status)
+        entry.update_entry_total(status)
         self.test_runs.add(status.test_run)
 
 
@@ -324,12 +332,17 @@ def __rearrange_test_results__(results_layout, test_results):
         for suite, results in test_results.data.items():
             for env in results.keys():
                 statuses = [s for s in results[env].statuses if s.environment.id == env.id]
+                env_totals = Status()
                 for status in statuses:
                     env.status.tests_pass += status.tests_pass
                     env.status.tests_skip += status.tests_skip
                     env.status.tests_fail += status.tests_fail
                     env.status.tests_xfail += status.tests_xfail
-                env.suites.append((suite, statuses))
+                    env_totals.tests_pass += status.tests_pass
+                    env_totals.tests_fail += status.tests_fail
+                    env_totals.tests_skip += status.tests_skip
+                    env_totals.tests_xfail += status.tests_xfail
+                env.suites.append((suite, statuses, env_totals))
 
     if results_layout == 'suitebox':
         test_results.suites = test_results.data.keys()
@@ -337,7 +350,14 @@ def __rearrange_test_results__(results_layout, test_results):
             envs = []
             suite.status = Status()
             for environment, cell in test_results.data[suite].items():
-                envs.append((environment, cell.statuses))
+                env_totals = Status()
+                for st in cell.statuses:
+                    env_totals.tests_pass += st.tests_pass
+                    env_totals.tests_fail += st.tests_fail
+                    env_totals.tests_xfail += st.tests_xfail
+                    env_totals.tests_skip += st.tests_skip
+
+                envs.append((environment, cell.statuses, env_totals))
                 for status in cell.statuses:
                     suite.status.tests_pass += status.tests_pass
                     suite.status.tests_skip += status.tests_skip
@@ -421,57 +441,88 @@ def build_settings(request, group_slug, project_slug, version):
     return render(request, 'squad/build_settings.jinja2', context)
 
 
-def __test_run_suite_context__(request, group_slug, project_slug, build_version, testrun, suite_slug):
+def __testrun_or_env_suite_context__(request, group_slug, project_slug, build_version, suite_slug, **kwargs):
     project = request.project
     build = get_build(project, build_version)
-
-    test_run = get_object_or_404(build.test_runs, pk=testrun)
     suite = get_object_or_404(project.suites, slug=suite_slug.replace('$', '/'))
-    status = get_object_or_404(test_run.status, suite=suite)
     context = {
         'project': project,
         'build': build,
-        'test_run': test_run,
-        'metadata': sorted(test_run.metadata.items()),
         'suite': suite,
-        'status': status,
     }
+    test_run_id = kwargs.get('testrun', None)
+    environment_id = kwargs.get('environment', None)
+    if environment_id:
+        context.update({'environment': Environment.objects.get(id=environment_id)})
+
+    if test_run_id:
+        test_run = get_object_or_404(build.test_runs, pk=test_run_id)
+        status = get_object_or_404(test_run.status, suite=suite)
+        context.update({'test_run': test_run,
+                        'metadata': sorted(test_run.metadata.items()),
+                        'status': status})
     return context
 
 
 @auth
 def test_run_suite_tests(request, group_slug, project_slug, build_version, testrun, suite_slug):
-    context = __test_run_suite_context__(
+    tr = get_object_or_404(TestRun.objects.select_related('environment'), pk=testrun)
+    return environment_suite_tests(request, group_slug, project_slug, build_version, tr.environment.id, suite_slug)
+
+
+@auth
+def environment_suite_tests(request, group_slug, project_slug, build_version, environment_id, suite_slug):
+    context = __testrun_or_env_suite_context__(
         request,
         group_slug,
         project_slug,
         build_version,
-        testrun,
-        suite_slug
+        suite_slug,
+        environment=environment_id,
     )
-
-    all_tests = context['status'].tests.prefetch_related(
-        'metadata',
-        'known_issues',
-        'suite__metadata'
-    ).order_by(Case(When(result=False, then=0), When(result=True, then=2), default=1), 'metadata__name')
-
+    # remove env from prefetch. available from cntxt
+    all_tests = Test.objects.filter(environment_id=environment_id, build=context['build'], suite_id=context['suite'].id).prefetch_related(
+        'environment', 'test_run', 'suite', 'metadata', 'known_issues', 'suite__metadata').order_by(
+            Case(When(result=False, then=0), When(result=True, then=2), default=1), 'metadata__name')
     paginator = Paginator(all_tests, 100)
     page = request.GET.get('page', '1')
-    context['tests'] = paginator.page(page)
+    context.update(tests=paginator.page(page))
 
     return render(request, 'squad/test_run_suite_tests.jinja2', context)
 
 
 @auth
-def test_run_suite_test_details(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
-    context = __test_run_suite_context__(
+def test_run_suite_metrics(request, group_slug, project_slug, build_version, testrun, suite_slug):
+    context = __testrun_or_env_suite_context__(
         request,
         group_slug,
         project_slug,
         build_version,
-        testrun,
-        suite_slug
+        suite_slug,
+        testrun=testrun,
+    )
+    all_metrics = context['status'].metrics.prefetch_related(
+        'suite',
+        'metadata',
+        'suite__metadata'
+    ).order_by('name')
+
+    paginator = Paginator(all_metrics, 100)
+    page = request.GET.get('page', '1')
+    context['metrics'] = paginator.page(page)
+
+    return render(request, 'squad/test_run_suite_metrics.jinja2', context)
+
+
+@auth
+def test_run_suite_test_details(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
+    context = __testrun_or_env_suite_context__(
+        request,
+        group_slug,
+        project_slug,
+        build_version,
+        suite_slug,
+        testrun=testrun,
     )
     test_name = test_name.replace("$", "/")
     suite_slug = suite_slug.replace("$", "/")
@@ -505,29 +556,6 @@ def test_run_suite_test_details(request, group_slug, project_slug, build_version
 
     context.update({'test': test, 'attachments': attachments})
     return render(request, 'squad/test_run_suite_test_details.jinja2', context)
-
-
-@auth
-def test_run_suite_metrics(request, group_slug, project_slug, build_version, testrun, suite_slug):
-    context = __test_run_suite_context__(
-        request,
-        group_slug,
-        project_slug,
-        build_version,
-        testrun,
-        suite_slug
-    )
-    all_metrics = context['status'].metrics.prefetch_related(
-        'suite',
-        'metadata',
-        'suite__metadata'
-    ).order_by('name')
-
-    paginator = Paginator(all_metrics, 100)
-    page = request.GET.get('page', '1')
-    context['metrics'] = paginator.page(page)
-
-    return render(request, 'squad/test_run_suite_metrics.jinja2', context)
 
 
 def __download__(filename, data, content_type=None):

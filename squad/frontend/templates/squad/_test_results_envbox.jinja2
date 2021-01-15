@@ -35,12 +35,16 @@
                     <th>{{ _('Suite') }}</th>
                     <th>{{ _('Test Results') }}</th>
                 </tr>
-                {% for suite, statuses in environment.suites %}
+                {% for suite, statuses, env_totals in environment.suites %}
                 <tr>
                     <td>{{ suite }}</td>
                     <td>
-                    {% for status in statuses %}
-                        <a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{% include "squad/_test_results_summary.jinja2" %}</a>
+                        <a href="{{environment_suite_tests_url(project.group, project, build, suite, environment=environment)}}">
+                       {% with status=env_totals %}
+                          {% include "squad/_test_results_summary.jinja2" %}
+                       {% endwith %}
+                        </a>
+<!--                    {% for status in statuses %}
                         {% if status.test_run.attachments.all()|length > 0  %}
                         {% with tr_id = status.test_run.id%}
                         {% set download_key = '%s-%s-%s' % (suite, environment, tr_id) %}
@@ -88,7 +92,7 @@
                           {% endif %}
                         {% endif %}
 
-                    {% endfor %}
+                    {% endfor %} -->
                     </td>
                 </tr>
                 {% endfor %}

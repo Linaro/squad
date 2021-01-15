@@ -1,6 +1,6 @@
-<div class='row row-bordered {{test.status}} tests-{{status.id}}-{{test.status}}{% if test.has_known_issues %} known-issue{% endif %}'>
+<div class='row row-bordered {{test.status}} {{tests.id}}-{{test.status}}{% if test.has_known_issues %} known-issue{% endif %}'>
     <div class='col-md-7 col-sm-7'>
-        <a href="{{testrun_suite_test_details_url(project.group, project, build, status, test)}}">
+        <a href="{{testrun_suite_test_details_url(project.group, project, build, suite, testrun=test.test_run, test=test)}}">
             <i class='fa fa-{% if test.status == "fail" %}times{% elif test.status == "pass" %}check{% else %}bug{% endif %}'></i>
             {{test.name}} — {{test.status|upper}}
         </a>
@@ -16,10 +16,10 @@
         {% endif %}
     </div>
     <div class='col-md-1 col-sm-1'>
-        <a href="{{testrun_suite_test_details_history_url(project.group, project, build, status, test)}}">{{ _('History') }}</a>
+        <a href="{{testrun_suite_test_details_history_url(project.group, project, build, suite, testrun=test.test_run, test=test)}}">{{ _('History') }}</a>
     </div>
     <div class='col-md-1 col-sm-1'>
-        <a class="pull-right" href="{{ url('test_details_log', args=[test.test_run.build.project.group.slug, test.test_run.build.project.slug, test.test_run.build.version, test.test_run.id, test.suite.slug.replace('/', '_'), test.name.replace('/', '_')]) }}">{{ _('Full log') }}</a>
+        <a class="pull-right" href="{{ url('test_details_log', args=[project.group.slug, project.slug, build.version, test.test_run.id, test.suite.slug.replace('/', '_'), test.name.replace('/', '_')]) }}">{{ _('Full log') }}</a>
     </div>
     <div class='col-md-1 col-sm-1'>
         <a class="pull-right" href="/_/comparetest/?project={{ test.test_run.build.project.pk }}&suite={{ test.suite.slug }}&test={{ test.name }}">{{ _('compare') }}</a>

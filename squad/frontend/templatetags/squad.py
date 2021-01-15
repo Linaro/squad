@@ -60,41 +60,54 @@ def project_url(the_object):
 
 
 @register_global_function
-def testrun_suite_tests_url(group, project, build, status):
-    return testrun_suite_or_test_url(group, project, build, status, 'testrun_suite_tests')
+def testrun_suite_tests_url(group, project, build, environment, suite):
+    return testrun_suite_or_test_url(group, project, build, environment, suite, 'testrun_suite_tests')
 
 
 @register_global_function
-def testrun_suite_metrics_url(group, project, build, status):
-    return testrun_suite_or_test_url(group, project, build, status, 'testrun_suite_metrics')
+def environment_suite_tests_url(group, project, build, suite, **kwargs):
+    return testrun_suite_or_test_url(group, project, build, suite, 'environment_suite_tests', **kwargs)
 
 
 @register_global_function
-def testrun_suite_test_details_url(group, project, build, status, test):
-    return testrun_suite_or_test_url(group, project, build, status, 'testrun_suite_test_details', test)
+def testrun_suite_metrics_url(group, project, build, suite, **kwargs):
+    return testrun_suite_or_test_url(group, project, build, suite, 'testrun_suite_metrics', **kwargs)
 
 
 @register_global_function
-def testrun_suite_test_details_history_url(group, project, build, status, test):
-    return testrun_suite_or_test_url(group, project, build, status, 'test_history', test)
+def testrun_suite_test_details_url(group, project, build, suite, **kwargs):
+    return testrun_suite_or_test_url(group, project, build, suite, 'testrun_suite_test_details', **kwargs)
 
 
-def testrun_suite_or_test_url(group, project, build, status, kind, test=None):
-    testrun = status.test_run.id
-    suite = status.suite
+@register_global_function
+def testrun_suite_test_details_history_url(group, project, build, suite, **kwargs):
+    return testrun_suite_or_test_url(group, project, build, suite, 'test_history', **kwargs)
+
+
+def testrun_suite_or_test_url(group, project, build, suite, kind, **kwargs):
+    testrun = kwargs.get('testrun', None)
+    environment = kwargs.get('environment', None)
+    status = kwargs.get('status', None)
+    if status:
+        env_or_testrun = status.test_run
+    elif environment:
+        env_or_testrun = environment
+    else:
+        env_or_testrun = testrun
+
     args = (
         group.slug,
         project.slug,
         build.version,
-        testrun,
+        env_or_testrun.id,
         suite.slug.replace('/', '$'),
     )
+    test = kwargs.get('test', None)
     if test:
         if isinstance(test, Test):
             args = args + (test.name.replace('/', '$'),)
         else:
             args = args + (test.replace('/', '$'),)
-
     return reverse(kind, args=args)
 
 

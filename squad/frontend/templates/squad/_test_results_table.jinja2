@@ -46,16 +46,19 @@
 				            </th>
                         </tr>
                         {% for entry in entries %}
-                            {% for status in entry.statuses %}
-                                <tr id='details-row-{{status.id}}' ng-show='details_visible["details-{{suite.id}}"]'>
+                            {% set env =  entry.statuses[0].environment %}
+                                <tr id='details-row-{{entry.statuses[0].id}}' ng-show='details_visible["details-{{suite.id}}"]'>
                                     <td>
-                                        <a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{{status.environment}}</a>
+                                        <a href="{{environment_suite_tests_url(project.group, project, build, suite, environment=env)}}">{{env}}</a>
                                     </td>
                                     <td>
-                                        <a href="{{testrun_suite_tests_url(project.group, project, build, status)}}">{% include "squad/_test_results_summary.jinja2" %}</a>
+                                        <a href="{{environment_suite_tests_url(project.group, project, build, suite, environment=env)}}">
+                                          {% with status=entry.entry_total%}
+                                            {% include "squad/_test_results_summary.jinja2" %}
+                                          {% endwith %}
+                                        </a>
                                     </td>
                                 </tr>
-                            {% endfor %}
                         {% endfor %}
                     </table>
                     {% endwith %}
