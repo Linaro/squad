@@ -376,7 +376,7 @@ class ProjectSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedMod
 
     class Meta:
         model = Project
-        fields = '__all__'
+        exclude = ('project_settings',)
 
 
 class LatestTestResultsSerializer(serializers.BaseSerializer):
