@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM debian:buster-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -6,8 +6,6 @@ RUN apt-get update -q=2 && \
     apt-get install -q=2 --no-install-recommends iproute2 auto-apt-proxy && \
     apt-get install -q=2 --no-install-recommends \
         python3 \
-        python3-asgiref \
-        python3-boto3 \
         python3-celery \
         python3-coreapi  \
         python3-cryptography \
@@ -26,7 +24,6 @@ RUN apt-get update -q=2 && \
         python3-djangorestframework-extensions \
         python3-future \
         python3-gunicorn \
-        python3-importlib-metadata \
         python3-jinja2 \
         python3-markdown \
         python3-msgpack \
@@ -40,7 +37,6 @@ RUN apt-get update -q=2 && \
         python3-whitenoise \
         python3-yaml \
         python3-zmq \
-        python3-zipp \
         fail2ban \
         gettext \
         git \
@@ -64,13 +60,18 @@ RUN cd /squad-build && ./scripts/git-build && \
         ./dist/squad*.whl \
         squad-linaro-plugins \
         sentry-sdk==0.14.3 \
+        zipp \
+        importlib-metadata==3.1.1 \
+        asgiref \
         django-bootstrap3 \
         django-storages==1.9 && \
+    pip3 install boto3==1.15 && \
     cd / && rm -rf /squad-build && \
     mkdir -p /app/static && \
     useradd -d /app squad && \
     python3 -m squad.frontend && \
     squad-admin collectstatic --noinput --verbosity 0 && \
+    squad-admin compilemessages && \
     chown -R squad:squad /app
 
 # TODO: use --ignore for `squad-admin compilemessages` to save time compiling
