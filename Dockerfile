@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM debian:buster-backports
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -11,17 +11,6 @@ RUN apt-get update -q=2 && \
         python3-cryptography \
         python3-dateutil \
         python3-dev \
-        python3-django \
-        python3-django-allauth \
-        python3-django-auth-ldap \
-        python3-django-cors-headers \
-        python3-django-celery-results \
-        python3-django-crispy-forms \
-        python3-django-filters \
-        python3-django-simple-history \
-        python3-djangorestframework \
-        python3-djangorestframework-filters \
-        python3-djangorestframework-extensions \
         python3-future \
         python3-gunicorn \
         python3-jinja2 \
@@ -47,8 +36,28 @@ RUN apt-get update -q=2 && \
         moreutils \
         postgresql-client \
         unzip \
-        tmux \
-        openssh-client
+        openssh-client && \
+    apt-get -t buster-backports install -q=2 --no-install-recommends \
+        python3-django \
+        python3-django-auth-ldap \
+        python3-django-cors-headers \
+        python3-django-celery-results \
+        python3-django-crispy-forms \
+        python3-django-simple-history \
+        python3-djangorestframework \
+        python3-djangorestframework-extensions && \
+    pip3 install --no-dependencies \
+        squad-linaro-plugins \
+        sentry-sdk==0.14.3 \
+        zipp \
+        importlib-metadata==3.1.1 \
+        asgiref \
+        django-bootstrap3 \
+        django-filter==2.0.0 \
+        djangorestframework-filters==1.0.0.dev0 \
+        django-storages==1.9 \
+        django-allauth==0.44.0 && \
+    pip3 install boto3==1.15
 
 # Prepare the environment
 COPY . /squad-build/
@@ -56,25 +65,14 @@ COPY . /squad-build/
 ENV SQUAD_STATIC_DIR=/app/static
 
 RUN cd /squad-build && ./scripts/git-build && \
-    pip3 install --no-dependencies \
-        ./dist/squad*.whl \
-        squad-linaro-plugins \
-        sentry-sdk==0.14.3 \
-        zipp \
-        importlib-metadata==3.1.1 \
-        asgiref \
-        django-bootstrap3 \
-        django-storages==1.9 && \
-    pip3 install boto3==1.15 && \
-    cd / && rm -rf /squad-build && \
+    pip3 install --no-dependencies ./dist/squad*.whl && \
+    cd / && rm -rf /squad-build && apt-get remove -y git && apt-get autoremove -y && \
     mkdir -p /app/static && \
     useradd -d /app squad && \
     python3 -m squad.frontend && \
     squad-admin collectstatic --noinput --verbosity 0 && \
-    squad-admin compilemessages && \
-    chown -R squad:squad /app
-
-# TODO: use --ignore for `squad-admin compilemessages` to save time compiling
-# messages from all installed packages: https://docs.djangoproject.com/en/3.0/ref/django-admin/#cmdoption-compilemessages-ignore
+    chown -R squad:squad /app && \
+    cd `python3 -c 'import squad; print(squad.__path__[0])'` && squad-admin compilemessages && \
+    cd /app
 
 USER squad
