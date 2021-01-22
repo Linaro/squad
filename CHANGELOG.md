@@ -1,3 +1,43 @@
+# 1.34
+
+This 1.34 release adds several nice features:
+
+1. Social login: now users will be able to login using their Github or Gitlab accounts
+2. New notification strategy (ON_ERROR)
+3. Adds implementation of test confidence score, when tests are run
+   for the save build/suite/environment
+4. Callbacks: for now only callbacks to finished builds are implemented
+   extending it should be simple though
+
+Among other minor bug fixes and performance improvements.
+
+Complete list of changes going in:
+
+* api:
+  * add version endpoint
+  * rest/views: handle callback duplicates
+  * rest: create build callbacks via nested endpoint
+  * rest: enhance builds nested endpoint in projects endpoint
+  * rest: fix /api/projects/<id>/builds/
+  * rest: hide project_settings
+  * rest: use lighter version of TestComparison
+  * views: create callback for build via createbuild
+* ci: listen: increase backend check poll to 1 min
+* core:
+  * callback: accept default headers from project settings
+  * migrations: add missing migration when adding new notification strategy
+  * models: add Callback class
+  * tasks: dispatch callback when build is finished
+* dev-docker: add pytest dependency
+* doc: api: document callback creation on createbuild api endpoint
+* socialaccount: add Github and Gitlab social account login
+* socialaccount: prevent Github/Gitlab login to pre-existing users
+* test: add test to check for pending migrations
+* test: fix pytest
+* Dockerfile: use debian buster-backports as base image
+* Handle multiple test results.
+* Introduce new notification strategy ON_ERROR.
+
 # 1.33
 
 This 1.33 release tweaks TestComparison making it much faster
