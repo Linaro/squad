@@ -780,7 +780,7 @@ class BuildSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModel
         fields = '__all__'
 
 
-class BuildViewSet(ModelViewSet):
+class BuildViewSet(NestedViewSetMixin, ModelViewSet):
     """
     List of all builds in the system. Only builds belonging to public projects
     and to projects you have access to are available.
