@@ -174,6 +174,8 @@ class Notification(object):
     def send(self):
         recipients = self.recipients
         if not recipients:
+            # No email is sent, but don't try to send it again
+            self.mark_as_notified()
             return
 
         sender = "%s <%s>" % (settings.SITE_NAME, settings.EMAIL_FROM)

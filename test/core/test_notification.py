@@ -205,6 +205,15 @@ class TestSendNotification(TestCase):
         self.assertEqual(0, len(mail.outbox))
 
     @patch("squad.core.comparison.TestComparison.diff", new_callable=PropertyMock)
+    def test_no_recipients_no_email_mark_as_notified(self, diff):
+        diff.return_value = fake_diff()
+        status = ProjectStatus.create_or_update(self.build2)
+        send_status_notification(status)
+        self.assertEqual(0, len(mail.outbox))
+        status.refresh_from_db()
+        self.assertTrue(status.notified)
+
+    @patch("squad.core.comparison.TestComparison.diff", new_callable=PropertyMock)
     def test_send_notification_to_user(self, diff):
         self.project.subscriptions.create(user=self.user)
         diff.return_value = fake_diff()
