@@ -442,6 +442,7 @@ class Build(models.Model):
     patch_baseline = models.ForeignKey('Build', null=True, blank=True, on_delete=models.CASCADE)
     patch_id = models.CharField(max_length=1024, null=True, blank=True)
     patch_url = models.URLField(null=True, blank=True)
+    patch_notified = models.BooleanField(default=False)
 
     keep_data = models.BooleanField(
         default=False,

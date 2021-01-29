@@ -245,6 +245,30 @@ class TestNotificationTasksRaceCondition(TransactionTestCase):
 
         self.assertEqual(1, notification_timeout_apply_async.call_count)
 
+    @patch("squad.core.tasks.notification.notify_patch_build_finished.delay")
+    def test_maybe_notify_project_status_notify_patch_build_finished_do_not_send_dup_race_condition(self, notify_patch_build_finished):
+        group = Group.objects.create(slug='mygroup')
+        project = group.projects.create(slug='myproject1')
+        build = project.builds.create(datetime=timezone.now())
+        environment = project.environments.create(slug='env')
+        build.test_runs.create(environment=environment)
+        status = ProjectStatus.create_or_update(build)
+
+        def thread(status_id):
+            maybe_notify_project_status(status_id)
+            connection.close()
+
+        parallel_task_1 = threading.Thread(target=thread, args=(status.id,))
+        parallel_task_2 = threading.Thread(target=thread, args=(status.id,))
+
+        parallel_task_1.start()
+        parallel_task_2.start()
+
+        parallel_task_1.join()
+        parallel_task_2.join()
+
+        self.assertEqual(1, notify_patch_build_finished.call_count)
+
 
 class TestPatchNotificationTasks(TestCase):
 
