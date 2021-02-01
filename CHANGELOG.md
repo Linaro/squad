@@ -1,3 +1,18 @@
+# 1.34.1
+
+This 1.34.1 release fixes Plugins notifications when the project has no
+recipients subscribed to it or when there's a race condition.
+
+The release also fixes a scenario where a TestJob might get canceled
+before getting a job_id from the backend, therefore entering a limbo state
+where it can't be resubmitted.
+
+Complete list of changes going in:
+
+* core: tasks: notification: prevent duplicate patch_source notification
+* ci: lava: fix resubmit on testjobs with empty job_id
+* core: notification: mark as notified even if no recipients available
+
 # 1.34
 
 This 1.34 release adds several nice features:
