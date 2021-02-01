@@ -277,7 +277,8 @@ class Backend(BaseBackend):
 
     def resubmit(self, test_job):
         if test_job.job_id is None:
-            return None
+            # job_id == None means the job never got actually submitted to LAVA, so just submit it
+            return self.submit(test_job)
 
         with self.handle_job_submission():
             new_job_id_list = self.__resubmit__(test_job.job_id)
