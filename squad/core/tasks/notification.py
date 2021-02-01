@@ -52,8 +52,15 @@ def maybe_notify_project_status(status_id):
     if projectstatus.finished and not projectstatus.notified:
         # check if there are any outstanding PluginScratch objects
         if not projectstatus.build.pluginscratch_set.all():
-            notify_patch_build_finished.delay(projectstatus.build_id)
             send_status_notification(projectstatus)
+
+            build_id = build.id
+            with transaction.atomic():
+                atomic_build = Build.objects.select_for_update().get(pk=build_id)
+                if atomic_build.patch_notified is False:
+                    notify_patch_build_finished.delay(build_id)
+                    atomic_build.patch_notified = True
+                    atomic_build.save()
 
 
 @celery.task
