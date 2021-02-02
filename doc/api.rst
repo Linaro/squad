@@ -265,6 +265,19 @@ following additional routes:
   - keep - number of days to keep the cached reports in the database
   - force - if set to true invalidates cached object. Default is false
 
+- callbacks (/api/builds/<id>/callbacks/)
+
+  This API accepts both GET and POST requests. On GET requests, a list of callbacks is retrieved.
+  A POST request will create a callback and attach to this build. The following parameters are accepted:
+
+  - callback_url - url string to define a callback for the build (the only *mandatory* field)
+  - callback_method - string "post" or "get" defining the callback request method. Defaults to "post"
+  - callback_event - string "on_build_finished" defining at which point the callback should be dispatched. Defaults to "on_build_finished"
+  - callback_headers - JSON-formatted string defining the callback headers, useful to define auth tokens
+  - callback_payload - JSON-formatted string defining the callback payload
+  - callback_payload_is_json - string with "true" or "false" indicating whether the payload should be sent as JSON or as form-data. Defaults to "true"
+  - callback_record_response - string with "true" or "false" indicating whether or not the callback response should be recorded in SQUAD
+
 With enough privileges Builds can also be created, modified and deleted
 using REST API with POST, PUT and DELETE HTTP requests respectively. This is
 however not recommended.

@@ -187,4 +187,60 @@ a few limitations with this setup:
    distinguishing between identically named tests from different parts of
    multinode job.
 
+Callbacks
+---------
+
+In SQUAD, callbacks can be attached to Builds. They are triggered once the given build finishes fetching all test jobs from the backend.
+
+There's currently two ways of attaching a callback to a build:
+
+* `POST /api/createbuild/<group_slug>/<project_slug>/<build_version>` (when creating a build)
+* `POST /api/build/<build_id>/callbacks/` (attach to an existing build)
+
+And the following parameters are accepted for both endpoints:
+
+.. code-block:: bash
+
+   $ curl -X POST /api/build/<build_id>/callbacks/ \
+          -F "callback_url=https://your-callback-url.com"
+
+The following attributes are optional:
+
+* callback_method - string ``post`` or ``get`` defining the callback request method. Defaults to ``post``
+* callback_event - string ``on_build_finished`` defining at which point the callback should be dispatched. Defaults to ``on_build_finished``
+* callback_headers - JSON-formatted string defining the callback headers, useful to define auth tokens
+* callback_payload - JSON-formatted string defining the callback payload
+* callback_payload_is_json - string with ``true`` or ``false`` indicating whether the payload should be sent as JSON or as form-data. Defaults to ``true``
+* callback_record_response - string with ``true`` or ``false`` indicating whether or not the callback response should be recorded in SQUAD
+
+Authentication
+~~~~~~~~~~~~~~~
+
+Callbacks usually require some sort of authentication. In SQUAD this can be accomplished in two forms:
+
+* via ``callback_headers``, where a JSON-formatted string is expected and will be used in the callback headers when it triggers. Ex: 
+
+.. code-block:: bash
+
+   $ curl -X POST /api/build/<build_id>/callbacks/ \
+          -F "callback_url=https://your-callback-url.com" \
+          -F "callback_headers='{\"Auth-Token\": \"your-really-safe-token\"}'"
+
+* via project settings ``/<group_slug>/<project_slug>/settings/advanced/`` (YAML-formatted):
+
+.. code-block:: yaml
+
+   CALLBACK_HEADERS:
+     Auth-Token: your-really-safe-token
+
+Notes
+~~~~~~
+
+It's important to point out that:
+
+* Multiple callbacks are allowed for a build, given that they point to different urls
+* Attaching the same callback twice to the same build results in noop
+* The callback headers will be merged with the build's project settings if available. If header names collide, project settings will get overwritten
+* Callbacks are available in read-only mode at ``GET /api/builds/<id>/callbacks/``
+
 .. vim: ts=4 sw=4 et=1
