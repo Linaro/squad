@@ -8,7 +8,6 @@ from squad.http import auth
 from squad.core.models import Test, Suite, TestRun
 from squad.core.history import TestHistory
 from squad.core.queries import test_confidence
-from squad.core.utils import split_list
 from squad.frontend.views import get_build
 
 
@@ -54,15 +53,11 @@ class TestResultTable(list):
 
     def __get_all_tests__(self, build, search):
 
-        test_runs = TestRun.objects.filter(build=build).values('id')
-        test_runs_ids = [test_run['id'] for test_run in test_runs]
-        for chunk in split_list(test_runs_ids, chunk_size=100):
-            query_set = Test.objects.filter(test_run_id__in=chunk)
-            if search:
-                query_set = query_set.filter(metadata__name__icontains=search)
+        queryset = Test.objects.filter(build=build)
+        if search:
+            queryset = queryset.filter(metadata__name__icontains=search)
 
-            tests = query_set.only('result', 'has_known_issues', 'suite_id', 'metadata_id').order_by()
-            self.all_tests += tests
+        self.all_tests = queryset.only('result', 'has_known_issues', 'suite_id', 'metadata_id').order_by()
 
     # count how many unique tests are represented in the given build, and sets
     # pagination data
@@ -126,23 +121,35 @@ class TestResultTable(list):
         memo = {}
         for test in tests:
             memo.setdefault(test.full_name, {})
-            if test.test_run.environment_id in memo[test.full_name]:
-                # Found duplicates.
-                memo[test.full_name][test.test_run.environment_id] = list(test_confidence(test))
-            else:
-                memo[test.full_name][test.test_run.environment_id] = [test.status]
-            if 'test_metadata' not in memo[test.full_name].keys():
-                memo[test.full_name]['test_metadata'] = (test.test_run, test.suite, test.name)
+            if test.environment_id not in memo[test.full_name]:
+                memo[test.full_name][test.environment_id] = []
+            memo[test.full_name][test.environment_id].append(test)
 
-            error_info = {
-                "test_description": test.metadata.description if test.metadata else '',
-                "suite_instructions": test.suite.metadata.instructions_to_reproduce if test.suite.metadata else '',
-                "test_instructions": test.metadata.instructions_to_reproduce if test.metadata else '',
-                "test_log": test.log or '',
-            }
-            info = json.dumps(error_info) if any(error_info.values()) else None
+        # handle duplicates
+        for full_name in memo.keys():
+            env_ids = memo[full_name].keys()
+            for env_id in env_ids:
 
-            memo[test.full_name][test.test_run.environment_id].append(info)
+                test = memo[full_name][env_id][0]
+
+                if len(memo[full_name][env_id]) == 1:
+                    memo[full_name][env_id] = [test.status, None]
+                else:
+                    duplicates = memo[full_name][env_id]
+                    memo[full_name][env_id] = list(test_confidence(None, list_of_duplicates=duplicates))
+
+                error_info = {
+                    "test_description": test.metadata.description if test.metadata else '',
+                    "suite_instructions": test.suite.metadata.instructions_to_reproduce if test.suite.metadata else '',
+                    "test_instructions": test.metadata.instructions_to_reproduce if test.metadata else '',
+                    "test_log": test.log or '',
+                }
+                info = json.dumps(error_info) if any(error_info.values()) else None
+
+                memo[full_name][env_id].append(info)
+
+            if 'test_metadata' not in memo[full_name].keys():
+                memo[full_name]['test_metadata'] = (test.test_run, test.suite, test.name)
 
         for test_full_name, results in memo.items():
             test_result = TestResult(test_full_name)
