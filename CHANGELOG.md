@@ -1,3 +1,12 @@
+# 1.35
+
+This 1.35 release fixes a small issue when viewing all test results in Build page
+
+Complete list of changes going in:
+
+* frontend: tests: improve performance loading all test results
+* doc: document how callbacks work
+
 # 1.34.1
 
 This 1.34.1 release fixes Plugins notifications when the project has no
