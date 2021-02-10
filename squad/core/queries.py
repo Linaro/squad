@@ -198,7 +198,7 @@ def get_dynamic_summary(project, environments, metrics, date_start, date_end):
     return entry
 
 
-def test_confidence(test):
+def test_confidence(test, list_of_duplicates=None):
     status_priority = ['fail', 'pass', 'xfail', 'skip']
 
     def most_common(lst):
@@ -206,7 +206,11 @@ def test_confidence(test):
         max_count = max(data.values())
         return {value: count for value, count in data.items() if count == max_count}
 
-    duplicates = models.Test.objects.filter(suite=test.suite, metadata=test.metadata, environment=test.environment, build=test.build).order_by()
+    if test:
+        duplicates = models.Test.objects.filter(suite=test.suite, metadata=test.metadata, environment_id=test.environment_id, build_id=test.build_id).order_by()
+    else:
+        duplicates = list_of_duplicates
+
     if len(duplicates) == 1:
         return test.status, None
     else:
