@@ -1000,6 +1000,10 @@ class RestApiTest(APITestCase):
         response = self.client.get('/api/projects/%d/compare_builds/?baseline=%d&to_compare=%d' % (self.project.id, self.build2.id, self.build3.id))
         self.assertEqual(400, response.status_code)
 
+    def test_project_compare_builds_with_non_finished_status_force_unfinished(self):
+        response = self.client.get('/api/projects/%d/compare_builds/?baseline=%d&to_compare=%d&force=1' % (self.project.id, self.build2.id, self.build3.id))
+        self.assertEqual(200, response.status_code)
+
     def test_project_compare_builds_with_finished_status_with_verions_as_args(self):
         response = self.client.get('/api/projects/%s/compare_builds/?baseline=%s&to_compare=%s' % (self.project.id, self.build4.version, self.build6.version))
         self.assertEqual(400, response.status_code)

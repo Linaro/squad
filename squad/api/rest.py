@@ -621,13 +621,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get', 'post'], suffix='compare_builds')
     def compare_builds(self, request, pk=None):
         builds_to_compare = {f: request.GET.get(f, request.POST.get(f, None)) for f in ['baseline', 'to_compare']}
+        force_unfinished = request.GET.get('force', None)
         if all(builds_to_compare.values()):
             try:
                 int(builds_to_compare['baseline'])
                 int(builds_to_compare['to_compare'])
                 baseline = self.get_object().builds.get(pk=builds_to_compare['baseline'])
                 to_compare = self.get_object().builds.get(pk=builds_to_compare['to_compare'])
-                if not baseline.status.finished or not to_compare.status.finished:
+                if force_unfinished is None and (not baseline.status.finished or not to_compare.status.finished):
                     raise serializers.ValidationError("Cannot report regressions/fixes on a non-finished builds")
             except Build.DoesNotExist:
                 raise NotFound()
