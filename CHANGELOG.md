@@ -1,3 +1,7 @@
+# 1.36
+
+This 1.36 release allow running build comparison against unfinished builds
+
 # 1.35
 
 This 1.35 release fixes a small issue when viewing all test results in Build page
