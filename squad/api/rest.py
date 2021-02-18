@@ -373,10 +373,11 @@ class ProjectSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedMod
     enabled_plugins_list = serializers.ListField(
         child=serializers.CharField()
     )
+    project_settings = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = Project
-        exclude = ('project_settings',)
+        fields = '__all__'
 
 
 class LatestTestResultsSerializer(serializers.BaseSerializer):
