@@ -1,3 +1,12 @@
+# 1.36.1
+
+This 1.36.1 release fixes a bug when api clients tried to save project_settings
+but got their data discarted by the rest framework.
+
+Complete list of changes going in:
+
+* api: rest: make project_settings write only
+
 # 1.36
 
 This 1.36 release allow running build comparison against unfinished builds
