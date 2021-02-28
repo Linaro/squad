@@ -9,13 +9,16 @@ msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-08-26 15:45-0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2021-03-01 13:50+0000\n"
+"Last-Translator: HelaBasa <R45XvezA@protonmail.ch>\n"
+"Language-Team: Sinhala <https://hosted.weblate.org/projects/squad/frontend/"
+"si/>\n"
 "Language: si\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 4.5\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/frontend/project_settings.py:59
@@ -65,14 +68,14 @@ msgstr ""
 #: squad/frontend/templates/squad/compare.jinja2:61
 #: squad/frontend/templates/squad/test_history.jinja2:29
 msgid "Date"
-msgstr ""
+msgstr "දිනය"
 
 #: squad/frontend/templates/squad/_test_run_metric.jinja2:16
 #: squad/frontend/templates/squad/_test_run_test.jinja2:26
 #: squad/frontend/templates/squad/test_history.jinja2:46
 #: squad/frontend/templates/squad/tests.jinja2:37
 msgid "Show info"
-msgstr ""
+msgstr "තොරතුරු පෙන්වන්න"
 
 #: squad/frontend/templates/squad/test_history.jinja2:50
 msgid "Known issue"
