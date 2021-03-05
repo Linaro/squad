@@ -122,3 +122,11 @@ class CallbackTest(TestCase):
         self.build.callbacks.create(url='http://callback.url')
         with self.assertRaises(IntegrityError):
             self.build.callbacks.create(url='http://callback.url')
+
+    def test_long_response_content(self):
+        # Make sure callback won't raise errors when saving
+        # response content of a callback
+        response_content = 'content' * 1000
+        callback = self.build.callbacks.create(url='http://callback.url', response_content=response_content)
+        callback.refresh_from_db()
+        self.assertEqual(callback.response_content, response_content)

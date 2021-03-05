@@ -84,7 +84,7 @@ class Callback(models.Model):
 
     record_response = models.BooleanField(default=False, verbose_name=N_('Should this callback response be recorded?'))
     response_code = models.IntegerField(default=None, null=True, blank=True)
-    response_content = models.CharField(max_length=1024, default=None, null=True, blank=True)
+    response_content = models.TextField(default=None, null=True, blank=True)
 
     # Callbacks can belong to any model: Build, TestJob, TestRun, etc
     # so it needs to have a generic foreign key
