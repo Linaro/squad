@@ -34,9 +34,10 @@ class Notification(object):
     @property
     def comparison(self):
         if self.__comparison__ is None:
-            self.__comparison__ = TestComparison.compare_builds(
+            self.__comparison__ = TestComparison(
                 self.previous_build,
                 self.build,
+                regressions_and_fixes_only=True,
             )
         return self.__comparison__
 
