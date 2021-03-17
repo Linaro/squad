@@ -169,7 +169,7 @@ class TestComparison(BaseComparison):
     def __init__(self, *builds, regressions_and_fixes_only=False):
         self.__intermittent__ = {}
         self.tests_with_issues = {}
-        self.__failures__ = OrderedDict()
+        self.__failures__ = None
         self.regressions_and_fixes_only = regressions_and_fixes_only
 
         # This is ugly, but it's an easy, light-weight way to compare tests
@@ -243,6 +243,8 @@ class TestComparison(BaseComparison):
             self.environments[build] = sorted(self.environments[build])
 
     def __extract_test_results__(self, test_runs_ids):
+        self.__failures__ = OrderedDict()
+
         tests = models.Test.objects.filter(test_run_id__in=test_runs_ids.keys()).annotate(
             suite_slug=F('suite__slug'),
         ).prefetch_related('metadata').defer('log')
@@ -305,6 +307,17 @@ class TestComparison(BaseComparison):
 
     @property
     def failures(self):
+        if self.__failures__ is None:
+            self.__failures__ = OrderedDict()
+            build = self.builds[-1]
+
+            failures = build.tests.filter(result=False, has_known_issues=False).prefetch_related('environment')
+            for failure in failures.all():
+                env = failure.environment.slug
+                if env not in self.__failures__:
+                    self.__failures__[env] = []
+                self.__failures__[env].append(failure)
+
         return self.__failures__
 
     def apply_transitions(self, transitions):
@@ -386,6 +399,13 @@ class TestComparison(BaseComparison):
         return sql
 
     def __new_extract_results__(self):
+        self.__diff__ = defaultdict(lambda: defaultdict(lambda: defaultdict()))
+        self.__regressions__ = OrderedDict()
+        self.__fixes__ = OrderedDict()
+
+        if self.builds[0] is None:
+            # No baseline is present, then no comparison is needed
+            return
 
         sql = self.__get_regressions_and_fixes_sql__()
         tests = [t for t in models.Test.objects.raw(sql)]
@@ -410,7 +430,6 @@ class TestComparison(BaseComparison):
 
         environments = {e.id: e for e in models.Environment.objects.filter(id__in=env_ids).all()}
 
-        self.__regressions__ = OrderedDict()
         for env_id in regressions.keys():
             self.__regressions__[environments[env_id].slug] = list(regressions[env_id])
 
@@ -419,20 +438,34 @@ class TestComparison(BaseComparison):
         # - test.known_issues[env].intermittent == True
         fixed_tests_environment_slugs = [environments[env_id] for env_id in fixed_tests.keys()]
         intermittent_fixed_tests = self.__intermittent_fixed_tests__(fixed_tests, fixed_tests_environment_slugs)
-        self.__fixes__ = OrderedDict()
         for env_id in fixes.keys():
             env_slug = environments[env_id].slug
             test_list = [test for test in fixes[env_id] if (test, env_slug) not in intermittent_fixed_tests]
             if len(test_list):
                 self.__fixes__[env_slug] = test_list
 
+        baseline = self.builds[0]
+        target = self.builds[1]
+        for env in environments.values():
+            if env.slug in self.__regressions__:
+                for test in self.__regressions__[env.slug]:
+                    self.__diff__[test][target][env.slug] = False
+                    self.__diff__[test][baseline][env.slug] = True
+
+            if env.slug in self.__fixes__:
+                for test in self.__fixes__[env.slug]:
+                    self.__diff__[test][target][env.slug] = True
+                    self.__diff__[test][baseline][env.slug] = False
+
     def __same_projects__(self):
-        if len(self.builds) < 2:
+        if len(self.builds) < 2 or self.builds[0] is None:
             return True
 
         baseline = self.builds[0]
         target = self.builds[1]
-        return target.project_id == baseline.project_id
+        baseline_project_id = baseline.project_id
+        target_project_id = target.project_id
+        return target_project_id == baseline_project_id
 
     def __get_regressions_and_fixes_sql__(self):
         """
