@@ -41,6 +41,7 @@ urlpatterns = [
     url(r'^(%s)/(%s)/build/([^/]+)/tests/$' % group_and_project, tests.tests, name='tests'),
     url(r'^(%s)/(%s)/build/([^/]+)/testjobs/$' % group_and_project, ci.testjobs, name='testjobs'),
     url(r'^(%s)/(%s)/build/([^/]+)/metadata/$' % group_and_project, views.build_metadata, name='build_metadata'),
+    url(r'^(%s)/(%s)/build/([^/]+)/callbacks/$' % group_and_project, views.build_callbacks, name='build_callbacks'),
     url(r'^(%s)/(%s)/build/([^/]+)/settings/$' % group_and_project, build_settings.BuildSettingsView.as_view(), name='build_settings'),
     url(r'^(%s)/(%s)/build/([^/]+)/attachments/testrun/([^/]+)/([^/]+)$' % group_and_project, views.build_attachment, name='build_attachments'),
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/suite/([^/]+)/tests/$' % group_and_project, views.test_run_suite_tests, name='testrun_suite_tests'),

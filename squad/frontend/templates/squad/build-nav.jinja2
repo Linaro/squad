@@ -66,6 +66,13 @@
         </a>
     </li>
     {% endif %}
+    {% if project.writable_by(user) and build.callbacks %} <!-- REMEMBER TO ADD .count() after callbacks -->
+    <li role="presentation" {% if url_name == 'build_callbacks' %}class="active"{% endif %}>
+        <a href="{{build_section_url(build, 'build_callbacks')}}">
+            {{ _('Callbacks') }}
+        </a>
+    </li>
+    {% endif %}
     {% if project.writable_by(user) %}
     <li role="presentation" {% if url_name == 'build_settings' %}class="active"{% endif %}>
         <a href="{{build_section_url(build, 'build_settings')}}">

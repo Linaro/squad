@@ -1,0 +1,68 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+    <div ng-app='Build'>
+        {% include "squad/build-nav.jinja2" %}
+    </div>
+
+    <h2>{{ _('Callbacks') }}</h2>
+    <ul class='callbacks'>
+        {% for callback in build.callbacks.all() %}
+        <li class="callback" style="border-bottom: 1px solid #DDD; padding-bottom: 15px;">
+            <h4>{{ callback.method|upper }} / {{ callback.url }}</h4>
+            <div class='row row-bordered'>
+                <div class='col-md-3 col-sm-3'>
+                    <strong>{{ _('Dispatched') }}</strong>
+                </div>
+                <div class='col-md-9 col-sm-9'>
+                    {{ callback.is_sent }}
+                </div>
+            </div>
+            <div class='row row-bordered'>
+                <div class='col-md-3 col-sm-3'>
+                    <strong>{{ _('Event') }}</strong>
+                </div>
+                <div class='col-md-9 col-sm-9'>
+                    {{ callback.event }}
+                </div>
+            </div>
+            <div class='row row-bordered'>
+                <div class='col-md-3 col-sm-3'>
+                    <strong>{{ _('Payload') }}</strong>
+                </div>
+                <div class='col-md-9 col-sm-9'>
+                    {{ callback.payload or _("N/A") }}
+                </div>
+            </div>
+            <div class='row row-bordered'>
+                <div class='col-md-3 col-sm-3'>
+                    <strong>{{ _('Record response') }}</strong>
+                </div>
+                <div class='col-md-9 col-sm-9'>
+                    {{ callback.record_response }}
+                </div>
+            </div>
+            <div class='row row-bordered'>
+                <div class='col-md-3 col-sm-3'>
+                    <strong>{{ _('Response code') }}</strong>
+                </div>
+                <div class='col-md-9 col-sm-9'>
+                    {{ callback.response_code or _("N/A") }}
+                </div>
+            </div>
+            <div class='row row-bordered'>
+                <div class='col-md-3 col-sm-3'>
+                    <strong>{{ _('Response content') }}</strong>
+                </div>
+                <div class='col-md-9 col-sm-9'>
+                    <pre>{{ callback.response_content or _("N/A") }}</pre>
+                </div>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+{% block javascript %}
+    <script type="module" src='{{static("squad/build.js")}}'></script>
+{% endblock %}

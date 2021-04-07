@@ -408,6 +408,20 @@ def build_metadata(request, group_slug, project_slug, version):
 
 
 @auth
+def build_callbacks(request, group_slug, project_slug, version):
+    group = Group.objects.get(slug=group_slug)
+    project = group.projects.get(slug=project_slug)
+
+    build = get_build(project, version)
+
+    context = {
+        'project': project,
+        'build': build,
+    }
+    return render(request, 'squad/build_callbacks.jinja2', context)
+
+
+@auth
 def build_settings(request, group_slug, project_slug, version):
     group = Group.objects.get(slug=group_slug)
     project = group.projects.get(slug=project_slug)
