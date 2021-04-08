@@ -75,6 +75,8 @@ class DeleteGroupView(GroupViewMixin, FormView):
         return {'deletable': self.group}
 
     def form_valid(self, form):
+        for project in self.group.projects.all():
+            project.delete()
         self.group.delete()
         return redirect(reverse('home'))
 
