@@ -28,6 +28,11 @@ def submit_job(request, group_slug, project_slug, version, environment_slug):
     if project is None:
         return HttpResponseBadRequest("malformed request")
 
+    # `Environment.expected_test_runs == -1` means that environment will stop receiving submissions
+    environment, created = project.environments.get_or_create(slug=environment_slug)
+    if environment.expected_test_runs == -1:
+        return HttpResponseBadRequest("environment '%s' is disabled and squad will not accept new submissions to it" % environment_slug)
+
     # create Build object
     build, _ = project.builds.get_or_create(version=version)
 
