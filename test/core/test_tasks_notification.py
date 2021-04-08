@@ -245,6 +245,7 @@ class TestNotificationTasksRaceCondition(TransactionTestCase):
 
         self.assertEqual(1, notification_timeout_apply_async.call_count)
 
+    @tag('skip_sqlite')
     @patch("squad.core.tasks.notification.notify_patch_build_finished.delay")
     def test_maybe_notify_project_status_notify_patch_build_finished_do_not_send_dup_race_condition(self, notify_patch_build_finished):
         group = Group.objects.create(slug='mygroup')
