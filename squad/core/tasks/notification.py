@@ -75,6 +75,10 @@ def notification_timeout(status_id):
     if not projectstatus.notified and not projectstatus.notified_on_timeout:
         send_status_notification(projectstatus)
         projectstatus.notified_on_timeout = True
+
+        if projectstatus.build.project.force_finishing_builds_on_timeout:
+            projectstatus.finished = True
+
         projectstatus.save()
 
 

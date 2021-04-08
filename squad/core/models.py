@@ -319,6 +319,11 @@ class Project(models.Model, DisplayName):
         verbose_name=N_('Is archived'),
     )
 
+    force_finishing_builds_on_timeout = models.BooleanField(
+        default=False,
+        help_text=N_('Forces builds to finish when "Notification timeout" is reached'),
+    )
+
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
         self.__status__ = None

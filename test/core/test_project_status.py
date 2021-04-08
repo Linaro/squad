@@ -3,7 +3,7 @@ from django.test import TestCase
 from dateutil.relativedelta import relativedelta
 
 from squad.core.models import Group, ProjectStatus, MetricThreshold, SuiteMetadata
-from squad.core.tasks import ReceiveTestRun
+from squad.core.tasks import ReceiveTestRun, notification
 
 
 def h(n):
@@ -68,6 +68,30 @@ class ProjectStatusTest(TestCase):
         build = self.create_build('2', datetime=h(4), create_test_run=False)
         status = ProjectStatus.create_or_update(build)
         self.assertFalse(status.finished)
+
+    def test_force_finishing_build_on_notification_timeout_disabled(self):
+        build = self.create_build('2', datetime=h(4), create_test_run=False)
+        status = ProjectStatus.create_or_update(build)
+        self.assertFalse(status.finished)
+
+        build.project.force_finishing_builds_on_timeout = False
+        build.project.save()
+
+        notification.notification_timeout(status.id)
+        status.refresh_from_db()
+        self.assertFalse(status.finished)
+
+    def test_force_finishing_build_on_notification_timeout_enabled(self):
+        build = self.create_build('2', datetime=h(4), create_test_run=False)
+        status = ProjectStatus.create_or_update(build)
+        self.assertFalse(status.finished)
+
+        build.project.force_finishing_builds_on_timeout = True
+        build.project.save()
+
+        notification.notification_timeout(status.id)
+        status.refresh_from_db()
+        self.assertTrue(status.finished)
 
     def test_test_summary(self):
         build = self.create_build('1', datetime=h(10), create_test_run=False)
