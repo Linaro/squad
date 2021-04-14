@@ -1,3 +1,28 @@
+# 1.37
+
+This 1.37 release adds a couple of new features:
+- an option to allow builds to finish on notification timeout
+- allow disabling environments, by setting -1 to the "expected number of testruns"
+- attempts to make notifications not timeout
+- add 'important metadata keys'
+- display build callbacks, if any
+
+Complete list of changes going in:
+
+* api: ci: disable and environment for receiving new submissions
+* core:
+  * models: add flag to allow forcing builds to finish
+  * models: make callback response_content larger than 1024
+  * notification: use fase TestComparison
+* frontent:
+  * build_callbacks: add callbacks to the Build view
+  * group_settings: avoid timeout deleting groups
+  * project_settings: add important-metadata-keys
+  * project_settings: add option to force finishing builds
+  * project_settings: add help text disabling environment
+* doc: conf: update copyrights year
+* test: core: test_tasks_notification: skip test for sqlite
+
 # 1.36.1
 
 This 1.36.1 release fixes a bug when api clients tried to save project_settings
