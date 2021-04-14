@@ -146,6 +146,27 @@ class CiApiTest(TestCase):
         r = self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
         self.assertEqual(400, r.status_code)
 
+    def test_disabled_environment(self):
+        args = {
+            'backend': 'lava',
+            'definition': 'foo: 1',
+        }
+        r = self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
+        self.assertEqual(201, r.status_code)
+        testjob_queryset = models.TestJob.objects.filter(
+            target=self.project,
+            environment='myenv',
+            target_build=self.build,
+            backend=self.backend,
+            definition='foo: 1',
+        )
+        self.assertEqual(1, testjob_queryset.count())
+
+        disabled_env = self.project.environments.create(slug='disabled-env', expected_test_runs=-1)
+        r = self.client.post('/api/submitjob/mygroup/myproject/1/%s' % disabled_env.slug, args)
+        self.assertEqual(400, r.status_code)
+        self.assertEqual(r.content.decode(), "environment '%s' is disabled and squad will not accept new submissions to it" % disabled_env.slug)
+
     def test_accepts_definition_as_file_upload(self):
         args = {
             'backend': 'lava',
