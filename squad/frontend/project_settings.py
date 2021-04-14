@@ -15,7 +15,7 @@ class ProjectForm(forms.ModelForm):
         fields = ['name', 'is_public', 'is_archived', 'description',
                   'enabled_plugins_list', 'wait_before_notification',
                   'notification_timeout', 'data_retention_days',
-                  'important_metadata_keys']
+                  'important_metadata_keys', 'force_finishing_builds_on_timeout']
 
 
 class ProjectFormAdvanced(forms.ModelForm):
