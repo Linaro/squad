@@ -100,6 +100,28 @@ class TestListenerManager(TestCase):
         manager.stop.assert_called_with(backend.id)
         manager.start.assert_called_with(backend)
 
+    @patch('squad.ci.management.commands.listen.subprocess.Popen')
+    def test_keep_listeners_running_restart_dead_process(self, Popen):
+        manager = ListenerManager()
+        backend = Backend.objects.create(name="foo")
+
+        # start existing backends
+        manager.keep_listeners_running()
+
+        self.assertEqual(1, len(manager.__processes__))
+        Popen.assert_called()
+
+        # "kill" the process
+        Popen.return_value.poll.return_value = -15  # SIGKILL
+        manager.stop = MagicMock()
+        manager.start = MagicMock()
+
+        # Give it another go
+        manager.keep_listeners_running()
+
+        manager.stop.assert_called_with(backend.id)
+        manager.start.assert_called_with(backend)
+
 
 class TestListener(TestCase):
 

@@ -74,8 +74,8 @@ class ListenerManager(object):
                 # listen disabled; stop
                 if not backend.listen_enabled:
                     self.stop(backend.id)
-                # already running: restart if needed
-                elif fields(backend) != self.__fields__[backend.id]:
+                # already running: restart if needed; or if process is dead: restart
+                elif fields(backend) != self.__fields__[backend.id] or process.poll() is not None:
                     self.stop(backend.id)
                     self.start(backend)
             else:
