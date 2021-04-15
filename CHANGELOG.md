@@ -1,3 +1,14 @@
+# 1.37.1
+
+This 1.37.1 release is a bug fix release. It fixes a bug that shows
+the "Callbacks" tab in builds with no callbacks and also fixes
+a bug in the listener process that wasn't restarting dead processes.
+
+Complete list of changes going in:
+
+* frontend: build-nav: fix callbacks count check
+* ci: listen: restart dead processes
+
 # 1.37
 
 This 1.37 release adds a couple of new features:
