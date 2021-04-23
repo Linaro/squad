@@ -66,6 +66,13 @@ if settings.DEBUG:
         pass
 
 
+if 'health_check' in settings.INSTALLED_APPS:
+    try:
+        import health_check  # noqa
+        extra_urls.append(url(r'^ht/', include('health_check.urls')))
+    except ImportError:
+        pass
+
 urlpatterns = extra_urls + [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include('squad.api.urls')),
