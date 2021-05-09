@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: squad.frontend VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-08-26 15:45-0300\n"
-"PO-Revision-Date: 2020-08-30 18:33+0000\n"
+"PO-Revision-Date: 2021-05-10 09:32+0000\n"
 "Last-Translator: ssantos <ssantos@web.de>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/squad/"
 "frontend/pt/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.2.1-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 "Generated-By: Babel 2.6.0\n"
 
 #: squad/frontend/project_settings.py:59
@@ -739,7 +739,7 @@ msgstr "meta-dados de execução de testes"
 
 #: squad/frontend/templates/squad/test_run.jinja2:26
 msgid "Related downloads"
-msgstr "Downloads relacionados"
+msgstr "Descarregas relacionados"
 
 #: squad/frontend/templates/squad/test_run.jinja2:31
 msgid "Log file"
