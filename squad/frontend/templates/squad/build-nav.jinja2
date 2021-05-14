@@ -2,6 +2,11 @@
     <a class="h2 text-primitive" href="{{group_url(project.group)}}">{{project.group.display_name}}</a>
     » <a class="h2 text-primitive" href="{{project_url(project)}}">{{project.display_name}}</a>
     » {% include "squad/_unfinished_build.jinja2" %} <a class="h2 text-primary" href="{{build_url(build)}}">{{ _('Build %s') % build.version }}</a>
+    {% with status=build.status %}
+        {% if status.has_tests %}
+            » {% include "squad/_test_results_summary.jinja2" %}
+        {% endif %}
+    {% endwith %}
 </h2>
 
 {% if build.patch_source and build.patch_id %}
