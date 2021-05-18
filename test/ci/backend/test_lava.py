@@ -10,7 +10,7 @@ import xmlrpc
 
 from squad.ci.models import Backend, TestJob
 from squad.ci.backend.lava import Backend as LAVABackend
-from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue
+from squad.ci.exceptions import SubmissionIssue, TemporarySubmissionIssue, TemporaryFetchIssue
 from squad.core.models import Group, Project
 
 
@@ -563,6 +563,19 @@ class LavaTest(TestCase):
         lava.fetch(testjob)
 
         get_results.assert_not_called()
+
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", side_effect=requests.exceptions.Timeout)
+    def test_fetch_timeout(self, get_details):
+        lava = LAVABackend(None)
+        testjob = TestJob(
+            job_id='9999',
+            target=self.project,
+            backend=self.backend)
+
+        # Make sure lava.fetch() raises fetch issue,
+        # backend.fetch() will increase testjob.fetch_attempt accordingly
+        with self.assertRaises(TemporaryFetchIssue):
+            lava.fetch(testjob)
 
     @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
