@@ -15,6 +15,9 @@
         {% if user.is_staff %}
           <li role="separator" class="divider"></li>
           <li><a href="/admin/">{{ _('Administration') }}</a></li>
+          {% if url('health_check') %}
+              <li><a href="/ht/">{{ _('System status') }}</a></li>
+          {% endif %}
         {% endif %}
         <li role="separator" class="divider"></li>
         <li><a href="{{url('settings-home')}}">{{ _('Settings')}}</a></li>

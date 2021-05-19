@@ -17,7 +17,7 @@ from django.conf.urls import include, url
 from django.conf import settings
 from django.shortcuts import render
 from django.contrib import admin
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, HttpResponseForbidden
 
 import django.contrib.auth.views as auth
 
@@ -68,8 +68,16 @@ if settings.DEBUG:
 
 if 'health_check' in settings.INSTALLED_APPS:
     try:
-        import health_check  # noqa
-        extra_urls.append(url(r'^ht/', include('health_check.urls')))
+        from health_check.views import MainView as MainHealthCheckView
+        from squad.http import auth_user_from_request
+
+        def health_check_view(request):
+            user = auth_user_from_request(request, request.user)
+            if user and user.is_staff:
+                return MainHealthCheckView.as_view()(request)
+            return HttpResponseForbidden()
+
+        extra_urls.append(url(r'^ht/', health_check_view, name='health_check'))
     except ImportError:
         pass
 
