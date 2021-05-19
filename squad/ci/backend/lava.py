@@ -144,6 +144,12 @@ class Backend(BaseBackend):
                 raise FetchIssue(self.url_remove_token(str(fault)))
         except ssl.SSLError as fault:
             raise FetchIssue(self.url_remove_token(str(fault)))
+        except requests.exceptions.RequestException as fault:
+            if isinstance(fault, requests.exceptions.Timeout):
+                # assume HTTP errors 5xx are temporary issues
+                raise TemporaryFetchIssue(self.url_remove_token(str(fault)))
+            else:
+                raise FetchIssue(self.url_remove_token(str(fault)))
 
     def listen(self):
         listener_url = self.get_listener_url()
