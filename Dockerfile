@@ -56,7 +56,8 @@ RUN apt-get update -q=2 && \
         django-filter==2.0.0 \
         djangorestframework-filters==1.0.0.dev0 \
         django-storages==1.9 \
-        django-allauth==0.44.0 && \
+        django-allauth==0.44.0 \
+        django-health-check==3.16.4 && \
     pip3 install boto3==1.15
 
 # Prepare the environment
