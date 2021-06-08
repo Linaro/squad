@@ -671,7 +671,8 @@ class Backend(BaseBackend):
                 self.log_debug("'%s' is not a valid regex" % message_re)
 
         for regex in infra_messages_re_list:
-            if regex.search(metadata['error_msg']) is not None and \
+            error_msg = metadata.get('error_msg')
+            if error_msg and regex.search(error_msg) is not None and \
                     test_job.resubmitted_count < 3:
                 resubmitted_job = self.resubmit(test_job)
                 if project_settings.get('CI_LAVA_SEND_ADMIN_EMAIL', True):
