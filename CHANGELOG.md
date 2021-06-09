@@ -1,3 +1,30 @@
+# 1.38
+
+This 1.38 release fixes two major bugs in SQUAD when communicating
+with LAVA backends:
+
+  1. When a testjob fails to fetch, and LAVA lab is out,
+     SQUAD should handle the outage an give up trying to
+     fetch such jobs.
+  2. When LAVA jobs fail due to "metadata is too large",
+     the results api won't return a valid metadata field,
+     thus causing SQUAD to break on that too
+
+Also this release includes a health-check endpoint that
+shows the availability of most of SQUAD's services.
+
+Complete list of changes going in: 
+
+* Dockerfile: add suport to django-health-check
+* Dockerfile: fix django-storage error on closing s3 file
+* ci: backend: lava: handle null error_msg
+* ci: backend: lava: raise TemporaryFetchIssue on fetch timeout
+* frontend: build-nav: add test summary to build header
+* frontend: project_settings: gather local options
+* health_check: allow health-check endpoint to staff user only
+* setup.cfg: ignore "C101 Coding magic comment not found" flake8 errors
+* travis: disable testing on real LAVA
+
 # 1.37.1
 
 This 1.37.1 release is a bug fix release. It fixes a bug that shows
