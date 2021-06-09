@@ -213,6 +213,15 @@ TEST_RESULTS_INFRA_FAILURE_STR = [
     },
 ]
 
+TEST_RESULTS_INFRA_FAILURE_STR_NO_MESSAGE = [
+    {
+        'suite': 'lava',
+        'name': 'job',
+        'result': 'fail',
+        'metadata': "{'error_type': 'Infrastructure'}",
+    },
+]
+
 TEST_RESULT_FAILURE_CUSTOM = "Testing, testing... 123"
 TEST_RESULTS_INFRA_FAILURE_CUSTOM = [
     {
@@ -910,6 +919,22 @@ class LavaTest(TestCase):
         status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
         self.assertFalse(completed)
         self.assertEqual(TEST_RESULTS_INFRA_FAILURE_STR[0]['metadata'], testjob.failure)
+
+    @patch("squad.ci.backend.lava.Backend.__resubmit__")
+    @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
+    @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
+    @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS_INFRA_FAILURE_STR_NO_MESSAGE)
+    def test_incomplete_string_results_metadata_null_error_msg(self, get_results, get_details, get_logs, resubmit):
+        self.project.project_settings = '{"CI_LAVA_INFRA_ERROR_MESSAGES": "not-really-important"}'
+        self.project.save()
+        lava = LAVABackend(None)
+        testjob = TestJob(
+            job_id='1234',
+            backend=self.backend,
+            target=self.project)
+        status, completed, metadata, results, metrics, logs = lava.fetch(testjob)
+        self.assertFalse(completed)
+        resubmit.assert_not_called()
 
     @patch("squad.ci.backend.lava.Backend.__download_full_log__", return_value=LOG_DATA)
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_CANCELED)
