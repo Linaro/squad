@@ -1,8 +1,10 @@
 from django.core.exceptions import MultipleObjectsReturned
 from django.utils import timezone
 from collections import defaultdict
+import itertools
 import json
 import logging
+import re
 import traceback
 import uuid
 import yaml
@@ -218,6 +220,15 @@ class ParseTestRunData(object):
             issues.setdefault(issue.test_name, [])
             issues[issue.test_name].append(issue)
 
+        # Issues' test_name should be interpreted as regexes
+        # so compile them prior to matching against test names
+        # The * character should be replaced by .*?, which is regex for "everything"
+        issues_regex = {}
+        for test_name_regex in issues.keys():
+            pattern = re.escape(test_name_regex).replace('\\*', '.*?')
+            regex = re.compile(pattern)
+            issues_regex[regex] = issues[test_name_regex]
+
         for test in test_parser()(test_run.tests_file):
             # TODO: remove check below when test_name size changes in the schema
             if len(test['test_name']) > 256:
@@ -228,7 +239,9 @@ class ParseTestRunData(object):
             )
             metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=test['test_name'], kind='test')
             full_name = join_name(suite.slug, test['test_name'])
-            test_issues = issues.get(full_name, [])
+
+            test_issues = list(itertools.chain(*[issue for regex, issue in issues_regex.items() if regex.match(full_name)]))
+
             test_obj = Test.objects.create(
                 test_run=test_run,
                 suite=suite,

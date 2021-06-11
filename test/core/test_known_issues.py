@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from squad.core.models import Group, KnownIssue, SuiteMetadata
+from squad.core.tasks import ParseTestRunData
 
 
 class KnownIssueTest(TestCase):
@@ -11,6 +12,7 @@ class KnownIssueTest(TestCase):
         self.project = self.group.projects.create(slug='myproject')
         self.env1 = self.project.environments.create(slug='env1')
         self.suite1 = self.project.suites.create(slug="suite1")
+        self.suite2 = self.project.suites.create(slug="suite2")
         self.date = timezone.now()
 
     def test_active_known_issue(self):
@@ -86,3 +88,28 @@ class KnownIssueTest(TestCase):
         known_issue.save()
 
         self.assertEqual(0, len(KnownIssue.active_by_project_and_test(self.project, test.full_name)))
+
+    def test_pattern_as_test_name(self):
+        build = self.project.builds.create(
+            datetime=self.date,
+            version=self.date.strftime("%Y%m%d"),
+        )
+        testrun = build.test_runs.create(environment=self.env1)
+
+        known_issue = KnownIssue.objects.create(
+            title="foo",
+            test_name="suite*/foo"
+        )
+        known_issue.save()
+        known_issue.environments.add(testrun.environment)
+        known_issue.save()
+
+        tests_file = '{"suite1/foo": "pass", "suite2/foo": "pass", "notinpattern/foo": "pass"}'
+        testrun.save_tests_file(tests_file)
+
+        ParseTestRunData()(testrun)
+        self.assertEqual(3, testrun.tests.count())
+
+        for test in testrun.tests.filter(suite__slug__in="suite1,suite2").all():
+            self.assertTrue(test.has_known_issues)
+            self.assertIn(known_issue, test.known_issues.all())
