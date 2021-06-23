@@ -1,3 +1,14 @@
+# 1.39
+
+This 1.39 release makes known issues test names be parsed as
+regular expressions so that users can specify known issues
+as "ltp-*/flawed-test*name", instead of specifying each
+as a separate known issue.
+
+Complete list of changes going in:
+
+* core: tasks: add support for patterns in known issue test_name
+
 # 1.38
 
 This 1.38 release fixes two major bugs in SQUAD when communicating
