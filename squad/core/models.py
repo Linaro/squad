@@ -248,7 +248,7 @@ class ProjectManager(models.Manager):
         if user.is_superuser or user.is_staff:
             return self.all()
         else:
-            groups = Group.objects.filter(members__id=user.id).only('id')
+            groups = Group.objects.filter(members__id=user.id).only('id') if user.id else []
             return self.filter(Q(group__in=groups) | Q(is_public=True))
 
 

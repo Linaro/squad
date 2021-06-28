@@ -116,6 +116,9 @@ def group_home(request, group_slug):
     for build in Build.objects.filter(id__in=latest_build_ids.keys()).prefetch_related('status').only('id'):
         latest_build_ids[build.id].latest_build = build
 
+    if len(projects) == 0 and not group.can_submit_results(request.user):
+        raise Http404()
+
     context = {
         'group': group,
         'projects': alphanum_sort(projects, 'name'),

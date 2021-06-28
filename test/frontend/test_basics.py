@@ -18,6 +18,7 @@ class FrontendTest(TestCase):
         self.project = self.group.projects.create(slug='myproject')
         self.other_project = self.group.projects.create(slug='yourproject')
         self.user = User.objects.create(username='theuser')
+        self.group.add_admin(self.user)
 
         self.client = Client()
         self.client.force_login(self.user)
@@ -214,9 +215,11 @@ class FrontendTestAnonymousUser(TestCase):
 
     def setUp(self):
         self.group = models.Group.objects.create(slug='mygroup')
+        self.group_without_project = models.Group.objects.create(slug='mygroup2')
+        self.group_with_private_projects = models.Group.objects.create(slug='myprivategroup')
         self.project = self.group.projects.create(slug='myproject')
+        self.private_project = self.group_with_private_projects.projects.create(slug='myprivateproject', is_public=False)
         self.other_project = self.group.projects.create(slug='yourproject')
-        self.user = User.objects.create(username='theuser')
 
         self.client = Client()
 
@@ -228,3 +231,9 @@ class FrontendTestAnonymousUser(TestCase):
 
     def test_project(self):
         self.hit('/mygroup/myproject/')
+
+    def test_group_without_projects(self):
+        self.hit('/mygroup2/', 404)
+
+    def test_group_with_private_projects(self):
+        self.hit('/myprivategroup/', 404)
