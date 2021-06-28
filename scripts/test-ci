@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+python3 -m squad.frontend
+
+rc=0
+(./manage.py test --noinput -v 2 2>&1 | tee .tests) || rc="$?"
+
+echo "{
+  \"job_id\": \"$GITHUB_JOB\",
+  \"job_url\": \"https://github.com/linaro/squad/actions/runs/$GITHUB_JOB\",
+  \"build_url\": \"https://github.com/linaro/squad/actions/runs/$GITHUB_RUN_ID\"
+}" | jq '' > .metadata.json
+
+SUBMIT_TO=${SUBMIT_TO:-https://qa-reports.linaro.org/api}
+
+if [ -z $GITHUB_HEAD_REF ] && [ "${GITHUB_REF#refs/heads/}" = "master" ]; then
+  ./scripts/dogfood "${SUBMIT_TO}" qa/squad "$TESTENV" "${GITHUB_SHA:0:7}"
+fi
+
+exit "$rc"
