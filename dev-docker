@@ -29,6 +29,12 @@ for v in $HOME/.gitconfig $HOME/.config/git; do
   fi
 done
 
+TTY="-i"
+if [ -t 1 ];
+then
+  TTY="-it"
+fi
+
 exec docker run \
   --env=XDG_DATA_HOME=/app/tmp/data \
   --env=SQUAD_EXCLUDE_TEST_TAGS=skip_sqlite \
@@ -38,4 +44,4 @@ exec docker run \
   --hostname=squad-dev-docker \
   $extra_volumes \
   --rm \
-  -it squad/dev "$@"
+  $TTY squad/dev "$@"

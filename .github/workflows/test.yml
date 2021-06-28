@@ -1,0 +1,100 @@
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+
+  lint:
+    name: Lint with flake8 and reuse
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Run Flake8
+        run: |
+          python -m pip install flake8
+          flake8
+      - name: REUSE Compliance Check
+        uses: fsfe/reuse-action@v1
+
+  i18n:
+    name: Make sure localization messages compile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          sudo apt-get install gettext
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip freeze
+      - name: Compile messages
+        run: ./manage.py compilemessages
+
+  unittest:
+    name: Unittest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        python: [3.6, 3.7]
+        database: [sqlite, postgres]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: squad
+          POSTGRES_PASSWORD: squad
+          POSTGRES_USER: postgres
+          TZ: UTC
+          PGTZ: UTC
+        ports:
+          - 5432:5432
+    env:
+      DATABASE: "ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:USER=postgres:PASSWORD=squad:HOST=127.0.0.1:PORT=5432"
+      SQUAD_TOKEN: ${{ secrets.SQUAD_TOKEN }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install Dependencies
+        run: |
+          sudo apt install -y bc chromium-browser software-properties-common nodejs npm
+          npm install
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install --no-binary :all: psycopg2==2.8.6
+          pip freeze
+      - name: Run tests using unittest
+        run: |
+          if [ "${{ matrix.database }}" = "sqlite" ];
+          then
+            export DATABASE=
+            export SQUAD_EXCLUDE_TEST_TAGS=skip_sqlite
+          fi
+          ./scripts/test-ci
+        env:
+          TESTENV: ${{ matrix.database }}-python${{ matrix.python }}
+      - name: Run tests using pytest
+        if: ${{ matrix.database == 'postgres' }}
+        run: ./scripts/pytest
+
+  docker-test:
+    name: Run tests in docker and build release image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Build docker image
+        run: |
+          git fetch --unshallow
+          ./scripts/test-docker
+      - name: Run tests within docker
+        run: ./dev-docker ./manage.py test -v 3 
