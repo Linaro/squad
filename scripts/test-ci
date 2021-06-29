@@ -17,7 +17,7 @@ echo "{
 SUBMIT_TO=${SUBMIT_TO:-https://qa-reports.linaro.org/api}
 
 if [ -z $GITHUB_HEAD_REF ] && [ "${GITHUB_REF#refs/heads/}" = "master" ]; then
-  ./scripts/dogfood "${SUBMIT_TO}" qa/squad "$TESTENV" "${GITHUB_SHA:0:7}"
+  ./scripts/dogfood "${SUBMIT_TO}" qa/squad "$TESTENV" "${GITHUB_SHA:0:7}" || echo "Failed to submit data to qa-reports"
 fi
 
 exit "$rc"
