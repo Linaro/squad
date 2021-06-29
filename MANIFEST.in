@@ -18,7 +18,6 @@ include .ctags
 include .dockerignore
 include .gitignore
 include .mailmap
-include .travis.yml
 include .readthedocs.yml
 include .coveragerc
 include squad.svg
@@ -31,6 +30,7 @@ recursive-include scripts/ *
 recursive-include doc/ *
 recursive-include LICENSES/ *
 recursive-include .reuse/ *
+recursive-include .github/ *
 
 include babel.cfg
 recursive-include squad/ *.mo *.po *.pot
