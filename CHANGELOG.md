@@ -1,3 +1,16 @@
+# 1.39.1
+
+This 1.39.1 release fixes a bug that allowed unauthenticated users
+to see groups with none or private-only projects.
+
+Complete list of changes going in:
+
+* README: update copyright year and add test badge
+* scripts: test-ci: don't crash if not able to submit to qa-reports
+* frontend: group_home: raise 404 on private groups
+* test: mock: use stdlib's mock on python > 3.3
+* travis: move to github actions
+
 # 1.39
 
 This 1.39 release makes known issues test names be parsed as
