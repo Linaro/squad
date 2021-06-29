@@ -4,6 +4,9 @@
 SQUAD - Software Quality Dashboard
 ==================================
 
+.. |tests| image:: https://github.com/Linaro/squad/actions/workflows/test.yml/badge.svg?branch=master
+
+
 SQUAD is a Software Quality Dashboard written in Python 3. It uses
 Django.
 
@@ -16,7 +19,7 @@ documentation online`_
 License
 -------
 
-Copyright © 2016-2020 Linaro Limited
+Copyright © 2016-2021 Linaro Limited
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
