@@ -96,6 +96,7 @@
                 <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-definition-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-definition-{{testjob.pk}}" title="{{ _('Job definition') }}"><span class="glyphicon glyphicon-list-alt" aria-hidden="true" title="{{ _('Job definition') }}"></span></button>
                 {% endif %}
                 {% if project.can_submit_testjobs(user) %}
+                    {% if not testjob.fetched %}
                     <div class='pull-right' ng-controller='CancelController' title="{{ _('Cancel job') }}">
                         <a
                             class="btn"
@@ -109,6 +110,7 @@
                             {{ _('%s - cancel')  % testjob.job_id }}
                         </a>
                     </div>
+                    {% endif %}
                     <div class='pull-right' ng-controller='ResubmitController'>
                         <a
                             class="btn"
