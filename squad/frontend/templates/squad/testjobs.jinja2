@@ -111,16 +111,18 @@
                         </a>
                     </div>
                     {% endif %}
+                    {% set num_resubmitted_jobs = testjob.resubmitted_jobs.count() %}
                     <div class='pull-right' ng-controller='ResubmitController'>
                         <a
                             class="btn"
                             ng-click="resubmit({{testjob.id}}, true)"
                             ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}"
-                            ng-disabled="done"
+                            ng-disabled="{{ num_resubmitted_jobs }} > 0"
                             title="{{ _('Resubmit job no matter the status') }}">
                             <span
                                 ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}"
-                                ng-disabled="done"title="{{ _('Resubmit job no matter the status') }}">
+                                ng-disabled="done"
+                                title="{{ _('Resubmit job no matter the status') }}">
                             </span>
                             {{ _('%s - force resubmit') % testjob.job_id }}
                         </a>
@@ -129,7 +131,7 @@
                             class="btn"
                             ng-click="resubmit({{testjob.id}}, false)"
                             ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}"
-                            ng-disabled="done"
+                            ng-disabled="{{ num_resubmitted_jobs }} > 0"
                             title="{{ _('Resubmit job') }}">
                             <span
                                 ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}"
