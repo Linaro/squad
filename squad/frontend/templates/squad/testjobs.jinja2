@@ -99,8 +99,6 @@
                 <div class='pull-right' ng-controller='CancelController' title="{{ _('Cancel job') }}">
                     <a class="btn" ng-click="cancel({{testjob.id}})" ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}" ng-disabled="done" ><span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}" ng-disabled="done"></span> {{ _('%s - cancel')  % testjob.job_id }}</a>
                 </div>
-                {% if testjob.submitted %}
-                {% endif %}
                 <div class='pull-right' ng-controller='ResubmitController'>
                     <a class="btn" ng-click="resubmit({{testjob.id}}, true)" ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}" ng-disabled="done" title="{{ _('Resubmit job no matter the status') }}"><span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}" ng-disabled="done" title="{{ _('Resubmit job no matter the status') }}"></span> {{ _('%s - force resubmit') % testjob.job_id }}</a>
                 {% if testjob.can_resubmit %}
