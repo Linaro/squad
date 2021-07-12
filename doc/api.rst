@@ -132,6 +132,10 @@ resubmit
 This API is only available to superusers at the moment. It allows to resubmit
 CI test jobs using Backend's implementation.
 
+By default, the original test job object's results are kept in, but there's
+a project setting named `CI_DELETE_RESULTS_RESUBMITTED_JOBS` that tells SQUAD
+to remove all results from the resubmitted job. 
+
 forceresubmit
 ~~~~~~~~~~~~~
 

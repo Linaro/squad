@@ -252,7 +252,18 @@ class TestJob(models.Model):
         # resubmit test job not respecting any restrictions
         self.backend.get_implementation().resubmit(self)
         self.resubmitted_count += 1
-        self.save()
+
+        # Delete testrun, if any
+        if self.target.get_setting('CI_DELETE_RESULTS_RESUBMITTED_JOBS', False) and self.testrun:
+            testrun = self.testrun
+
+            self.testrun = None
+            self.save()
+
+            testrun.delete()
+        else:
+            self.save()
+
         return True
 
     def cancel(self):
