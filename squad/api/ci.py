@@ -5,7 +5,7 @@ from django.views.decorators.http import require_http_methods
 
 from squad.http import auth_privileged, read_file_upload, auth_user_from_request
 from squad.ci.exceptions import SubmissionIssue
-from squad.ci.tasks import submit
+from squad.ci.tasks import submit, fetch
 from squad.ci.models import Backend, TestJob
 from squad.core.utils import log_addition
 
@@ -99,6 +99,9 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
         job_id=testjob_id
     )
     log_addition(request, test_job, "Watch Job submission")
+
+    # schedule a fetch task on this job right away
+    fetch.delay(test_job.id)
 
     # return ID of test job
     return HttpResponse(test_job.id, status=201)
