@@ -84,7 +84,7 @@ that some other service submitted the test job for execution and SQUAD is
 requested to track the progress. After test job is finished SQUAD will retrieve
 the results and do post processing. The API is following:
 
-**POST** /api/submitjob/:group/:project/:build/:environment
+**POST** /api/watchjob/:group/:project/:build/:environment
 
 * ``group``, ``project``, ``build`` and ``environment`` are used to
   identify which project/build/environment will be used to record the
