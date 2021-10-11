@@ -1,3 +1,8 @@
+# 1.40
+
+This 1.40 release updates squad-plugins so that the subtasks in
+the tradefed plugin won't clog up non-ci_fetch queues.
+
 # 1.39.1
 
 This 1.39.1 release fixes a bug that allowed unauthenticated users
