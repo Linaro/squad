@@ -50,6 +50,16 @@
     </div>
 
     <div>
+    {% if project.can_submit_testjobs(user) and testjobs|length %}
+    <div class='pull-right clearfix' ng-controller='CancelController' title="{{ _('Cancel all jobs') }}">
+        <a class="btn" ng-click="cancel_all({{ build.id }})" ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}" ng-disabled="done" >
+	    <span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}" ng-disabled="done"></span>
+	    {{ _('Cancell all jobs') }}
+	</a>
+    </div>
+    <br />
+    <br />
+    {% endif %}
 
     {% with items=testjobs %}
       {% include "squad/_pagination.jinja2" %}

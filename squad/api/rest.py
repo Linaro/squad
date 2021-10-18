@@ -35,6 +35,7 @@ from squad.core.queries import test_confidence
 from squad.core.utils import parse_name, log_addition, log_change, log_deletion
 from squad.core.callback import create_callback
 from squad.ci.models import Backend, TestJob
+from squad.ci.tasks import cancel
 from squad.compat import drf_basename
 from django.http import HttpResponse
 from django.urls import reverse
@@ -805,6 +806,10 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
 
         List of test jobs in the build (if any)
 
+     * `api/builds/<id>/cancel` POST
+
+        Cancel all test jobs of the build (if any)
+
      * `api/builds/<id>/tests` GET
 
         Returns list of Test objects belonging to this build. List is paginated
@@ -913,6 +918,15 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
         page = self.paginate_queryset(testjobs)
         serializer = TestJobSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
+
+    @action(detail=True, methods=['post'], suffix='cancel')
+    def cancel(self, request, pk=None):
+        to_cancel = 0
+        for testjob in self.get_object().test_jobs.filter(~Q(job_status='Canceled'), submitted=True, fetched=False):
+            cancel.apply_async(args=[testjob.id])
+            to_cancel += 1
+        log_change(request, self.get_object(), "Build canceled")
+        return Response({"status": "canceling %d jobs" % to_cancel, "count": to_cancel})
 
     def __return_delayed_report(self, request, wait=False):
         force = request.query_params.get("force", False)
@@ -1475,7 +1489,7 @@ class TestJobViewSet(ModelViewSet):
     def cancel(self, request, **kwargs):
         testjob = self.get_object()
         testjob.cancel()
-        log_change(request, testjob, "Testjob cancelled")
+        log_change(request, testjob, "Testjob canceled")
         return Response({'job_id': testjob.job_id, 'status': testjob.job_status}, status=status.HTTP_200_OK)
 
 
