@@ -29,6 +29,13 @@ def fetch(job_id):
     backend.fetch(job_id)
 
 
+@celery.task
+def cancel(job_id):
+    logger.info("canceling %s" % job_id)
+    testjob = TestJob.objects.get(pk=job_id)
+    testjob.cancel()
+
+
 @celery.task(bind=True)
 def submit(self, job_id):
     test_job = TestJob.objects.get(pk=job_id)

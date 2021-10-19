@@ -721,6 +721,16 @@ class RestApiTest(APITestCase):
         self.assertTrue('version' in fields)
         self.assertEqual(1, len(fields))
 
+    def test_build_cancel(self):
+        testjob = self.build.test_jobs.first()
+        testjob.submitted = True
+        testjob.save()
+        self.assertEqual(self.build.test_jobs.filter(job_status='Canceled').count(), 0)
+        data = self.post('/api/builds/%d/cancel/' % self.build.id, {})
+        self.assertEqual(data.status_code, 200)
+        self.assertEqual(data.json()['count'], 1)
+        self.assertEqual(self.build.test_jobs.filter(job_status='Canceled').count(), 1)
+
     def test_testjob(self):
         data = self.hit('/api/testjobs/%d/' % self.testjob.id)
         self.assertEqual('myenv', data['environment'])

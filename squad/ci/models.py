@@ -256,15 +256,18 @@ class TestJob(models.Model):
         return True
 
     def cancel(self):
+        if self.job_status == "Canceled":
+            return False
+
         if self.job_id is not None:
             return self.backend.get_implementation().cancel(self)
-        else:
-            self.fetched = True
-            self.submitted = True
-            self.job_status = "Canceled"
-            self.failure = "Cancelled before submission"
-            self.save()
-        return self.fetched
+
+        self.fetched = True
+        self.submitted = True
+        self.job_status = "Canceled"
+        self.failure = "Canceled before submission"
+        self.save()
+        return True
 
     def __str__(self):
         return "%s/%s" % (self.backend.name, self.job_id)
