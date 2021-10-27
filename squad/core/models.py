@@ -976,7 +976,7 @@ class MetricManager(models.Manager):
 
     def by_full_name(self, name):
         (suite, metric) = parse_name(name)
-        return self.filter(suite__slug=suite, name=metric)
+        return self.filter(suite__slug=suite, metadata__name=metric)
 
 
 class Metric(models.Model):
@@ -991,7 +991,7 @@ class Metric(models.Model):
         limit_choices_to={'kind': 'metric'},
         on_delete=models.CASCADE,
     )
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=256, null=True, default=None, blank=True)
     result = models.FloatField()
     unit = models.CharField(null=True, max_length=30)
     measurements = models.TextField()  # comma-separated float numbers
@@ -1009,6 +1009,12 @@ class Metric(models.Model):
     @property
     def full_name(self):
         return join_name(self.suite.slug, self.name)
+
+    @property
+    def name(self):
+        if self.metadata is None:
+            return 'missing metric name'
+        return self.metadata.name
 
     def __str__(self):
         return '%s: %f' % (self.name, self.result)
@@ -1251,7 +1257,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
         # Return a list of all (threshold, metric) objects for those
         # thresholds that were exceeded by corresponding metrics.
         thresholds_exceeded = []
-        fullname = Concat(F('suite__slug'), Value('/'), F('name'))
+        fullname = Concat(F('suite__slug'), Value('/'), F('metadata__name'))
         if self.has_metrics:
             test_runs = self.build.test_runs.all()
             suites = Suite.objects.filter(test__test_run__build=self.build)

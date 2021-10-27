@@ -46,10 +46,10 @@ def get(request, group_slug, project_slug):
     if not metrics:
         metric_set = models.Metric.objects.filter(
             environment__project=project
-        ).values('suite__slug', 'name').order_by('suite__slug', 'name').distinct()
+        ).values('suite__slug', 'metadata__name').order_by('suite__slug', 'metadata__name').distinct()
 
         metrics = [":tests:"]
-        metrics += [join_name(m['suite__slug'], m['name']) for m in metric_set]
+        metrics += [join_name(m['suite__slug'], m['metadata__name']) for m in metric_set]
 
     environments = request.GET.getlist('environment')
 

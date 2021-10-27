@@ -217,11 +217,11 @@ class TestFilter(filters.FilterSet):
 class MetricFilter(filters.FilterSet):
     test_run = filters.RelatedFilter(TestRunFilter, field_name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
     suite = filters.RelatedFilter(SuiteFilter, field_name="suite", queryset=Suite.objects.all(), widget=forms.TextInput)
+    name = filters.CharFilter(lookup_expr='icontains', field_name='metadata__name')
 
     class Meta:
         model = Metric
-        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
-                  'result': ['exact', 'in'],
+        fields = {'result': ['exact', 'in'],
                   'test_run': ['exact', 'in'],
                   'is_outlier': ['exact', 'in'],
                   'suite': ['exact', 'in'],

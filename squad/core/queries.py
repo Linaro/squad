@@ -159,7 +159,7 @@ def get_dynamic_summary(project, environments, metrics, date_start, date_end):
         return entry
     for m in metrics:
         suite, metric = parse_name(m)
-        filters.append(Q(suite__slug=suite) & Q(name=metric))
+        filters.append(Q(suite__slug=suite) & Q(metadata__name=metric))
     metric_filter = reduce(lambda x, y: x | y, filters)
 
     data = models.Metric.objects.filter(
