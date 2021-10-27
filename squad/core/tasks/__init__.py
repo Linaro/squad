@@ -268,7 +268,6 @@ class ParseTestRunData(object):
                 test_run=test_run,
                 suite=suite,
                 metadata=metadata,
-                name=metric['name'],
                 result=metric['result'],
                 measurements=','.join([str(m) for m in metric['measurements']]),
                 unit=metric['unit'],

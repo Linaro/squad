@@ -56,26 +56,26 @@ def get_metric_series(project, metric, environments, date_start, date_end):
     entry = {}
     for environment in environments:
         series = models.Metric.objects.by_full_name(metric).filter(
-            test_run__build__project=project,
-            test_run__environment__slug=environment,
+            build__project=project,
+            environment__slug=environment,
             test_run__created_at__range=(date_start, date_end)
         ).order_by(
             'test_run__datetime',
         ).values(
             'id',
-            'test_run__build__datetime',
-            'test_run__build__version',
+            'build__datetime',
+            'build__version',
             'result',
-            'test_run__build__annotation__description',
+            'build__annotation__description',
             'is_outlier',
             'measurements',
         )
         entry[environment] = [
             [
-                int(p['test_run__build__datetime'].timestamp()),
+                int(p['build__datetime'].timestamp()),
                 p['result'],
-                p['test_run__build__version'],
-                p['test_run__build__annotation__description'] or "",
+                p['build__version'],
+                p['build__annotation__description'] or "",
                 p['id'],
                 str(p['is_outlier']),
                 get_min(p['measurements']),
@@ -159,25 +159,23 @@ def get_dynamic_summary(project, environments, metrics, date_start, date_end):
         return entry
     for m in metrics:
         suite, metric = parse_name(m)
-        filters.append(Q(suite__slug=suite) & Q(name=metric))
+        filters.append(Q(suite__slug=suite) & Q(metadata__name=metric))
     metric_filter = reduce(lambda x, y: x | y, filters)
 
     data = models.Metric.objects.filter(
-        test_run__build__project=project,
-        test_run__environment__slug__in=environments,
+        build__project=project,
+        environment__slug__in=environments,
         test_run__created_at__range=(date_start, date_end),
     ).filter(
         metric_filter
     ).prefetch_related(
-        'test_run',
-        'test_run__environment',
-        'test_run__build',
-        'test_run__build__annotation',
-    ).order_by('test_run__environment__id', 'test_run__build__id')
+        'environment',
+        'build__annotation',
+    ).order_by('environment_id', 'build_id')
 
-    for environment, metrics_by_environment in groupby(data, lambda m: m.test_run.environment):
+    for environment, metrics_by_environment in groupby(data, lambda m: m.environment):
         envdata = []
-        metrics_by_build = groupby(metrics_by_environment, lambda m: m.test_run.build)
+        metrics_by_build = groupby(metrics_by_environment, lambda m: m.build)
         for build, metric_list in metrics_by_build:
             values = []
             for metric in metric_list:

@@ -108,7 +108,7 @@ class MetricComparison(BaseComparison):
         for environment_slug, builds in groupby(query, lambda x: x['environment__slug']):
             for build_id, suites in groupby(builds, lambda x: x['build_id']):
                 for suite_slug, metrics in groupby(suites, lambda x: x['suite__slug']):
-                    for metric_name, measurements in groupby(metrics, lambda x: x['name']):
+                    for metric_name, measurements in groupby(metrics, lambda x: x['metadata__name']):
                         values = []
                         for m in measurements:
                             values += [float(v) for v in m['measurements'].split(',')]
@@ -131,13 +131,13 @@ class MetricComparison(BaseComparison):
             'environment__slug',
             'build_id',
             'suite__slug',
-            'name',
+            'metadata__name',
             'measurements'
         ).order_by(
             'environment__slug',
             'build_id',
             'suite__slug',
-            'name'
+            'metadata__name'
         )
 
         results = self.__extract_stats__(metrics)

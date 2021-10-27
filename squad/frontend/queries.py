@@ -6,9 +6,9 @@ from squad.core.utils import join_name
 def get_metrics_list(project):
     unique_names = set()
 
-    metric_set = Metric.objects.filter(environment__project=project).values('suite__slug', 'name')
+    metric_set = Metric.objects.filter(environment__project=project).values('suite__slug', 'metadata__name')
     for m in metric_set:
-        unique_names.add(join_name(m['suite__slug'], m['name']))
+        unique_names.add(join_name(m['suite__slug'], m['metadata__name']))
 
     metric_names = [{"name": name} for name in sorted(unique_names)]
 

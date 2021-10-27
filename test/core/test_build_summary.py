@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 
-from squad.core.models import Group, BuildSummary, KnownIssue
+from squad.core.models import Group, BuildSummary, KnownIssue, SuiteMetadata
 from squad.core.statistics import geomean
 from squad.core.tasks import ReceiveTestRun
 
@@ -25,17 +25,22 @@ class BuildSummaryTest(TestCase):
         self.suite1 = self.project.suites.create(slug='suite1')
         self.suite2 = self.project.suites.create(slug='suite2')
 
+        foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite1.slug, name='foo', kind='metric')
+        bar_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite1.slug, name='bar', kind='metric')
+        baz_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite2.slug, name='baz', kind='metric')
+        qux_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite2.slug, name='qux', kind='metric')
+
         test_run1 = self.build1.test_runs.create(environment=self.env1)
-        test_run1.metrics.create(name='foo', suite=self.suite1, result=1, build=test_run1.build, environment=test_run1.environment)
-        test_run1.metrics.create(name='bar', suite=self.suite1, result=2, build=test_run1.build, environment=test_run1.environment)
-        test_run1.metrics.create(name='baz', suite=self.suite2, result=3, build=test_run1.build, environment=test_run1.environment)
-        test_run1.metrics.create(name='qux', suite=self.suite2, result=4, build=test_run1.build, environment=test_run1.environment)
+        test_run1.metrics.create(metadata=foo_metadata, suite=self.suite1, result=1, build=test_run1.build, environment=test_run1.environment)
+        test_run1.metrics.create(metadata=bar_metadata, suite=self.suite1, result=2, build=test_run1.build, environment=test_run1.environment)
+        test_run1.metrics.create(metadata=baz_metadata, suite=self.suite2, result=3, build=test_run1.build, environment=test_run1.environment)
+        test_run1.metrics.create(metadata=qux_metadata, suite=self.suite2, result=4, build=test_run1.build, environment=test_run1.environment)
 
         test_run2 = self.build1.test_runs.create(environment=self.env2)
-        test_run2.metrics.create(name='foo', suite=self.suite1, result=2, build=test_run2.build, environment=test_run2.environment)
-        test_run2.metrics.create(name='bar', suite=self.suite1, result=4, build=test_run2.build, environment=test_run2.environment)
-        test_run2.metrics.create(name='baz', suite=self.suite2, result=6, build=test_run2.build, environment=test_run2.environment)
-        test_run2.metrics.create(name='qux', suite=self.suite2, result=8, build=test_run2.build, environment=test_run2.environment)
+        test_run2.metrics.create(metadata=foo_metadata, suite=self.suite1, result=2, build=test_run2.build, environment=test_run2.environment)
+        test_run2.metrics.create(metadata=bar_metadata, suite=self.suite1, result=4, build=test_run2.build, environment=test_run2.environment)
+        test_run2.metrics.create(metadata=baz_metadata, suite=self.suite2, result=6, build=test_run2.build, environment=test_run2.environment)
+        test_run2.metrics.create(metadata=qux_metadata, suite=self.suite2, result=8, build=test_run2.build, environment=test_run2.environment)
 
         known_issue = KnownIssue.objects.create(title='dummy_issue', test_name='suite2/qux')
         known_issue.environments.add(self.env1)
@@ -92,7 +97,8 @@ class BuildSummaryTest(TestCase):
         values1 = [1, 2, 3, 4, 5]
         values2 = [2, 4, 6, 8]
         new_test_run = self.build1.test_runs.create(environment=self.env1)
-        new_test_run.metrics.create(name='new_foo', suite=self.suite1, result=5, build=new_test_run.build, environment=new_test_run.environment)
+        new_foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite1.slug, name='new_foo', kind='metric')
+        new_test_run.metrics.create(metadata=new_foo_metadata, suite=self.suite1, result=5, build=new_test_run.build, environment=new_test_run.environment)
 
         self.receive_testrun(self.build1.version, self.env1.slug, tests_file='{"suite1/new_foo": "pass"}')
 

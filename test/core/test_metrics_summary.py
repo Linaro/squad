@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 
-from squad.core.models import Group, MetricsSummary
+from squad.core.models import Group, MetricsSummary, SuiteMetadata
 from squad.core.statistics import geomean
 
 
@@ -24,17 +24,22 @@ class MetricsSummaryTest(TestCase):
         suite1 = self.project.suites.create(slug='suite1')
         suite2 = self.project.suites.create(slug='suite2')
 
+        foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite1.slug, name='foo', kind='metric')
+        bar_metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite1.slug, name='bar', kind='metric')
+        baz_metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite2.slug, name='baz', kind='metric')
+        qux_metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite2.slug, name='qux', kind='metric')
+
         test_run1 = self.build1.test_runs.create(environment=self.env1)
-        test_run1.metrics.create(name='foo', suite=suite1, result=1, build=test_run1.build, environment=test_run1.environment)
-        test_run1.metrics.create(name='bar', suite=suite1, result=2, build=test_run1.build, environment=test_run1.environment)
-        test_run1.metrics.create(name='baz', suite=suite2, result=3, build=test_run1.build, environment=test_run1.environment)
-        test_run1.metrics.create(name='qux', suite=suite2, result=4, build=test_run1.build, environment=test_run1.environment)
+        test_run1.metrics.create(metadata=foo_metadata, suite=suite1, result=1, build=test_run1.build, environment=test_run1.environment)
+        test_run1.metrics.create(metadata=bar_metadata, suite=suite1, result=2, build=test_run1.build, environment=test_run1.environment)
+        test_run1.metrics.create(metadata=baz_metadata, suite=suite2, result=3, build=test_run1.build, environment=test_run1.environment)
+        test_run1.metrics.create(metadata=qux_metadata, suite=suite2, result=4, build=test_run1.build, environment=test_run1.environment)
 
         test_run2 = self.build1.test_runs.create(environment=self.env2)
-        test_run2.metrics.create(name='foo', suite=suite1, result=2, build=test_run2.build, environment=test_run2.environment)
-        test_run2.metrics.create(name='bar', suite=suite1, result=4, build=test_run2.build, environment=test_run2.environment)
-        test_run2.metrics.create(name='baz', suite=suite2, result=6, build=test_run2.build, environment=test_run2.environment)
-        test_run2.metrics.create(name='qux', suite=suite2, result=8, build=test_run2.build, environment=test_run2.environment)
+        test_run2.metrics.create(metadata=foo_metadata, suite=suite1, result=2, build=test_run2.build, environment=test_run2.environment)
+        test_run2.metrics.create(metadata=bar_metadata, suite=suite1, result=4, build=test_run2.build, environment=test_run2.environment)
+        test_run2.metrics.create(metadata=baz_metadata, suite=suite2, result=6, build=test_run2.build, environment=test_run2.environment)
+        test_run2.metrics.create(metadata=qux_metadata, suite=suite2, result=8, build=test_run2.build, environment=test_run2.environment)
 
     def test_empty_metrics(self):
         summary = MetricsSummary(self.build2)

@@ -113,8 +113,10 @@ class ProjectStatusTest(TestCase):
     def test_metrics_summary(self):
         build = self.create_build('1', datetime=h(10))
         test_run = build.test_runs.first()
-        test_run.metrics.create(name='foo', suite=self.suite, result=2, build=test_run.build, environment=test_run.environment)
-        test_run.metrics.create(name='bar', suite=self.suite, result=2, build=test_run.build, environment=test_run.environment)
+        foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='foo', kind='metric')
+        test_run.metrics.create(metadata=foo_metadata, suite=self.suite, result=2, build=test_run.build, environment=test_run.environment)
+        bar_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='bar', kind='metric')
+        test_run.metrics.create(metadata=bar_metadata, suite=self.suite, result=2, build=test_run.build, environment=test_run.environment)
 
         status = ProjectStatus.create_or_update(build)
         self.assertEqual(2.0, status.metrics_summary)
@@ -140,7 +142,8 @@ class ProjectStatusTest(TestCase):
         self.receive_testrun(build.version, self.environment.slug, tests_file=tests_json)
         test_run2 = build.test_runs.create(environment=self.environment)
 
-        test_run2.metrics.create(name='v1', suite=self.suite, result=5.0, build=test_run2.build, environment=test_run2.environment)
+        metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='v1', kind='metric')
+        test_run2.metrics.create(metadata=metadata, suite=self.suite, result=5.0, build=test_run2.build, environment=test_run2.environment)
         status = ProjectStatus.create_or_update(build)
         build.refresh_from_db()
         status.refresh_from_db()
@@ -317,15 +320,21 @@ class ProjectStatusTest(TestCase):
     def test_get_exceeded_thresholds(self):
         build = self.create_build('1')
         testrun = build.test_runs.create(environment=self.environment)
-        testrun.metrics.create(name='metric1', suite=self.suite, result=3, build=testrun.build, environment=testrun.environment)
-        testrun.metrics.create(name='metric2', suite=self.suite, result=8, build=testrun.build, environment=testrun.environment)
-        testrun.metrics.create(name='metric3', suite=self.suite, result=5, build=testrun.build, environment=testrun.environment)
+        metric1_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='metric1', kind='metric')
+        metric2_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='metric2', kind='metric')
+        metric3_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='metric3', kind='metric')
+        testrun.metrics.create(metadata=metric1_metadata, suite=self.suite, result=3, build=testrun.build, environment=testrun.environment)
+        testrun.metrics.create(metadata=metric2_metadata, suite=self.suite, result=8, build=testrun.build, environment=testrun.environment)
+        testrun.metrics.create(metadata=metric3_metadata, suite=self.suite, result=5, build=testrun.build, environment=testrun.environment)
 
         build_a = self.create_build('2')
         testrun_a = build_a.test_runs.create(environment=self.environment_a)
-        testrun_a.metrics.create(name='metric4', suite=self.suite_a, result=3, build=testrun_a.build, environment=testrun_a.environment)
-        testrun_a.metrics.create(name='metric5', suite=self.suite_a, result=2, build=testrun_a.build, environment=testrun_a.environment)
-        testrun_a.metrics.create(name='metric6', suite=self.suite_a, result=7, build=testrun_a.build, environment=testrun_a.environment)
+        metric4_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='metric4', kind='metric')
+        metric5_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='metric5', kind='metric')
+        metric6_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='metric6', kind='metric')
+        testrun_a.metrics.create(metadata=metric4_metadata, suite=self.suite_a, result=3, build=testrun_a.build, environment=testrun_a.environment)
+        testrun_a.metrics.create(metadata=metric5_metadata, suite=self.suite_a, result=2, build=testrun_a.build, environment=testrun_a.environment)
+        testrun_a.metrics.create(metadata=metric6_metadata, suite=self.suite_a, result=7, build=testrun_a.build, environment=testrun_a.environment)
 
         status = ProjectStatus.create_or_update(build)
         MetricThreshold.objects.create(environment=self.environment,

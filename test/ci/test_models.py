@@ -154,7 +154,7 @@ class BackendFetchTest(BackendTestBase):
             1,
             core_models.Metric.objects.filter(
                 test_run=test_run,
-                name="bar",
+                metadata__name="bar",
                 result=1,
             ).count()
         )

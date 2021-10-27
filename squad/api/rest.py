@@ -217,11 +217,11 @@ class TestFilter(filters.FilterSet):
 class MetricFilter(filters.FilterSet):
     test_run = filters.RelatedFilter(TestRunFilter, field_name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
     suite = filters.RelatedFilter(SuiteFilter, field_name="suite", queryset=Suite.objects.all(), widget=forms.TextInput)
+    name = filters.CharFilter(lookup_expr='icontains', field_name='metadata__name')
 
     class Meta:
         model = Metric
-        fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
-                  'result': ['exact', 'in'],
+        fields = {'result': ['exact', 'in'],
                   'test_run': ['exact', 'in'],
                   'is_outlier': ['exact', 'in'],
                   'suite': ['exact', 'in'],
@@ -1202,7 +1202,7 @@ class TestSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelS
 class TestViewSet(NestedViewSetMixin, ModelViewSet):
 
     queryset = Test.objects.prefetch_related('metadata').all()
-    project_lookup_key = 'test_run__build__project__in'
+    project_lookup_key = 'build__project__in'
     serializer_class = TestSerializer
     filterset_class = TestFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
@@ -1261,7 +1261,7 @@ class MetricSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedMode
 class MetricViewSet(ModelViewSet):
 
     queryset = Metric.objects.prefetch_related('suite').all()
-    project_lookup_key = 'test_run__build__project__in'
+    project_lookup_key = 'build__project__in'
     serializer_class = MetricSerializer
     filterset_class = MetricFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
