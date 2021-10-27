@@ -1262,7 +1262,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
                     Q(test_run__in=test_runs) | Q(suite__in=suites),
                     fullname__in=thresholds_names):
                 for threshold in thresholds:
-                    if metric.test_run.environment_id != threshold.environment_id:
+                    if metric.environment_id != threshold.environment_id:
                         continue
                     if threshold.is_higher_better:
                         if metric.result < threshold.value:
@@ -1326,9 +1326,9 @@ class TestSummary(TestSummaryBase):
 class MetricsSummary(object):
 
     def __init__(self, build, environment=None):
-        queryset = Metric.objects.filter(test_run__build_id=build.id)
+        queryset = Metric.objects.filter(build=build)
         if environment:
-            queryset = queryset.filter(test_run__environment_id=environment.id)
+            queryset = queryset.filter(environment=environment)
         metrics = queryset.all()
         values = [m.result for m in metrics]
         self.value = geomean(values)

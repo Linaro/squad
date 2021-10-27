@@ -1,6 +1,6 @@
 from django.utils.translation import ugettext as _
-from squad.core.models import Metric, TestRun
-from squad.core.utils import join_name, split_list
+from squad.core.models import Metric
+from squad.core.utils import join_name
 
 
 def get_metrics_list(project):

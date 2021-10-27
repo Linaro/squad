@@ -683,7 +683,7 @@ def known_issues(request, group_slug, project_slug):
 def toggle_outlier_metric(request, group_slug, project_slug, metric_id):
 
     try:
-        metric = Metric.objects.select_related("test_run__environment").get(
+        metric = Metric.objects.select_related("environment").get(
             pk=metric_id)
     except Metric.DoesNotExist:
         raise Http404("Metric does not exist")
@@ -693,7 +693,7 @@ def toggle_outlier_metric(request, group_slug, project_slug, metric_id):
     return HttpResponse(
         json.dumps(
             {"id": metric.id,
-             "environment": metric.test_run.environment.slug}),
+             "environment": metric.environment.slug}),
         content_type='application/json')
 
 
