@@ -103,7 +103,7 @@ class Notification(object):
 
     @property
     def metrics(self):
-        return Metric.objects.filter(test_run__build_id=self.build.id).all()
+        return Metric.objects.filter(build=self.build).all()
 
     @property
     def subject(self):

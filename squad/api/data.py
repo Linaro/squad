@@ -45,7 +45,7 @@ def get(request, group_slug, project_slug):
     # If the metrics parameter is not present, return data for all metrics.
     if not metrics:
         metric_set = models.Metric.objects.filter(
-            test_run__environment__project=project
+            environment__project=project
         ).values('suite__slug', 'name').order_by('suite__slug', 'name').distinct()
 
         metrics = [":tests:"]
