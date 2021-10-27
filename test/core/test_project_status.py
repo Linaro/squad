@@ -113,8 +113,8 @@ class ProjectStatusTest(TestCase):
     def test_metrics_summary(self):
         build = self.create_build('1', datetime=h(10))
         test_run = build.test_runs.first()
-        test_run.metrics.create(name='foo', suite=self.suite, result=2)
-        test_run.metrics.create(name='bar', suite=self.suite, result=2)
+        test_run.metrics.create(name='foo', suite=self.suite, result=2, build=test_run.build, environment=test_run.environment)
+        test_run.metrics.create(name='bar', suite=self.suite, result=2, build=test_run.build, environment=test_run.environment)
 
         status = ProjectStatus.create_or_update(build)
         self.assertEqual(2.0, status.metrics_summary)
@@ -140,7 +140,7 @@ class ProjectStatusTest(TestCase):
         self.receive_testrun(build.version, self.environment.slug, tests_file=tests_json)
         test_run2 = build.test_runs.create(environment=self.environment)
 
-        test_run2.metrics.create(name='v1', suite=self.suite, result=5.0)
+        test_run2.metrics.create(name='v1', suite=self.suite, result=5.0, build=test_run2.build, environment=test_run2.environment)
         status = ProjectStatus.create_or_update(build)
         build.refresh_from_db()
         status.refresh_from_db()
@@ -317,15 +317,15 @@ class ProjectStatusTest(TestCase):
     def test_get_exceeded_thresholds(self):
         build = self.create_build('1')
         testrun = build.test_runs.create(environment=self.environment)
-        testrun.metrics.create(name='metric1', suite=self.suite, result=3)
-        testrun.metrics.create(name='metric2', suite=self.suite, result=8)
-        testrun.metrics.create(name='metric3', suite=self.suite, result=5)
+        testrun.metrics.create(name='metric1', suite=self.suite, result=3, build=testrun.build, environment=testrun.environment)
+        testrun.metrics.create(name='metric2', suite=self.suite, result=8, build=testrun.build, environment=testrun.environment)
+        testrun.metrics.create(name='metric3', suite=self.suite, result=5, build=testrun.build, environment=testrun.environment)
 
         build_a = self.create_build('2')
         testrun_a = build_a.test_runs.create(environment=self.environment_a)
-        testrun_a.metrics.create(name='metric4', suite=self.suite_a, result=3)
-        testrun_a.metrics.create(name='metric5', suite=self.suite_a, result=2)
-        testrun_a.metrics.create(name='metric6', suite=self.suite_a, result=7)
+        testrun_a.metrics.create(name='metric4', suite=self.suite_a, result=3, build=testrun_a.build, environment=testrun_a.environment)
+        testrun_a.metrics.create(name='metric5', suite=self.suite_a, result=2, build=testrun_a.build, environment=testrun_a.environment)
+        testrun_a.metrics.create(name='metric6', suite=self.suite_a, result=7, build=testrun_a.build, environment=testrun_a.environment)
 
         status = ProjectStatus.create_or_update(build)
         MetricThreshold.objects.create(environment=self.environment,
