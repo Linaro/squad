@@ -1,3 +1,22 @@
+# 1.41
+
+This 1.41 release adds '/api/builds/<id>/cancel/' endpoint so that
+users can cancel all running test jobs of a build.
+
+The release also implements the same denormalization pattern used
+in the test model last year. It's important that if you are running
+a older squad instance that after this release you run the following
+command:
+
+`./manage populate_metric_build_and_environment`
+
+This will ensure that all new metrics will have the correct data migrated.
+
+Complete list of changes going in:
+
+* core: metric: add Build and Environment reference to Metric
+* api: rest: add cancel endpoint to builds
+
 # 1.40
 
 This 1.40 release updates squad-plugins so that the subtasks in
