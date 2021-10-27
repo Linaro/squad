@@ -1202,7 +1202,7 @@ class TestSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelS
 class TestViewSet(NestedViewSetMixin, ModelViewSet):
 
     queryset = Test.objects.prefetch_related('metadata').all()
-    project_lookup_key = 'test_run__build__project__in'
+    project_lookup_key = 'build__project__in'
     serializer_class = TestSerializer
     filterset_class = TestFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
