@@ -25,16 +25,16 @@ class MetricsSummaryTest(TestCase):
         suite2 = self.project.suites.create(slug='suite2')
 
         test_run1 = self.build1.test_runs.create(environment=self.env1)
-        test_run1.metrics.create(name='foo', suite=suite1, result=1)
-        test_run1.metrics.create(name='bar', suite=suite1, result=2)
-        test_run1.metrics.create(name='baz', suite=suite2, result=3)
-        test_run1.metrics.create(name='qux', suite=suite2, result=4)
+        test_run1.metrics.create(name='foo', suite=suite1, result=1, build=test_run1.build, environment=test_run1.environment)
+        test_run1.metrics.create(name='bar', suite=suite1, result=2, build=test_run1.build, environment=test_run1.environment)
+        test_run1.metrics.create(name='baz', suite=suite2, result=3, build=test_run1.build, environment=test_run1.environment)
+        test_run1.metrics.create(name='qux', suite=suite2, result=4, build=test_run1.build, environment=test_run1.environment)
 
         test_run2 = self.build1.test_runs.create(environment=self.env2)
-        test_run2.metrics.create(name='foo', suite=suite1, result=2)
-        test_run2.metrics.create(name='bar', suite=suite1, result=4)
-        test_run2.metrics.create(name='baz', suite=suite2, result=6)
-        test_run2.metrics.create(name='qux', suite=suite2, result=8)
+        test_run2.metrics.create(name='foo', suite=suite1, result=2, build=test_run2.build, environment=test_run2.environment)
+        test_run2.metrics.create(name='bar', suite=suite1, result=4, build=test_run2.build, environment=test_run2.environment)
+        test_run2.metrics.create(name='baz', suite=suite2, result=6, build=test_run2.build, environment=test_run2.environment)
+        test_run2.metrics.create(name='qux', suite=suite2, result=8, build=test_run2.build, environment=test_run2.environment)
 
     def test_empty_metrics(self):
         summary = MetricsSummary(self.build2)

@@ -272,6 +272,8 @@ class ParseTestRunData(object):
                 result=metric['result'],
                 measurements=','.join([str(m) for m in metric['measurements']]),
                 unit=metric['unit'],
+                build=test_run.build,
+                environment=test_run.environment,
             )
 
         test_run.data_processed = True

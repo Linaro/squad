@@ -980,6 +980,8 @@ class MetricManager(models.Manager):
 
 
 class Metric(models.Model):
+    build = models.ForeignKey(Build, related_name='metrics', on_delete=models.CASCADE, null=True)
+    environment = models.ForeignKey(Environment, related_name='metrics', on_delete=models.CASCADE, null=True)
     test_run = models.ForeignKey(TestRun, related_name='metrics', on_delete=models.CASCADE)
     suite = models.ForeignKey(Suite, on_delete=models.CASCADE)
     metadata = models.ForeignKey(
