@@ -28,7 +28,7 @@ class FrontendTest(TestCase):
             environment_slug='myenv',
             log_file='log file contents ...',
             tests_file='{}',
-            metrics_file='{}',
+            metrics_file='{"mysuite/mymetric": 1}',
             metadata_file='{ "job_id" : "1" }',
         )
         self.test_run = models.TestRun.objects.last()
@@ -167,6 +167,9 @@ class FrontendTest(TestCase):
         self.group.projects.create(slug='otherproject')
         self.hit('/mygroup/otherproject/')
         self.hit('/mygroup/otherproject/build/latest-finished/', 404)
+
+    def test_build_metrics(self):
+        self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/metrics/' % (self.test_run.id, self.suite.slug))
 
     def test_test_run_build_404(self):
         self.hit('/mygroup/myproject/build/2.0.missing/testrun/999/', 404)

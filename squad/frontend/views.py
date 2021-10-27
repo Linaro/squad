@@ -535,10 +535,9 @@ def test_run_suite_metrics(request, group_slug, project_slug, build_version, tes
         suite_slug
     )
     all_metrics = context['status'].metrics.prefetch_related(
-        'suite',
         'metadata',
         'suite__metadata'
-    ).order_by('name')
+    ).order_by('metadata__name')
 
     paginator = Paginator(all_metrics, 100)
     page = request.GET.get('page', '1')
