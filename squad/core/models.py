@@ -991,7 +991,6 @@ class Metric(models.Model):
         limit_choices_to={'kind': 'metric'},
         on_delete=models.CASCADE,
     )
-    name = models.CharField(max_length=256, null=True, default=None, blank=True)
     result = models.FloatField()
     unit = models.CharField(null=True, max_length=30)
     measurements = models.TextField()  # comma-separated float numbers
