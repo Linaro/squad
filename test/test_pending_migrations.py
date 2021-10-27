@@ -15,7 +15,7 @@ class TestPendingMigrations(TestCase):
         management.call_command('makemigrations', '--dry-run', stdout=output)
 
         expected_output = 'No changes detected\n'
-        pending_migrations = expected_output  # output.getvalue()
+        pending_migrations = output.getvalue()
         if expected_output != pending_migrations:
             print('There are pending migrations:')
             print(pending_migrations)
