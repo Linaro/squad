@@ -1261,7 +1261,7 @@ class MetricSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedMode
 class MetricViewSet(ModelViewSet):
 
     queryset = Metric.objects.prefetch_related('suite').all()
-    project_lookup_key = 'test_run__build__project__in'
+    project_lookup_key = 'build__project__in'
     serializer_class = MetricSerializer
     filterset_class = MetricFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
