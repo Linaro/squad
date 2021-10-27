@@ -1,3 +1,21 @@
+# 1.42
+
+This 1.42 release continues improvements on metrics
+pages and queries that make use of the new references
+to build and environment in the metric table.
+
+Complete list of changes going in:
+
+* api, core, frontend, test: use suitemetadata.name in favor of metric.name
+* api, core, frontend: avoid testrun joins
+* api: rest: remove testrun reference in project lookup for metric viewset
+* api: rest: remove testrun reference in project lookup for test viewset
+* core: history: avoid using testrun to fetch tests
+* core: queries: avoid using testrun to fetch metric build/environment
+* frontend: queries: fetch metrics faster
+* test: fix flake8 complain
+* test_pending_migrations: temporarily disable this test
+
 # 1.41
 
 This 1.41 release adds '/api/builds/<id>/cancel/' endpoint so that
