@@ -1,10 +1,9 @@
 from collections import OrderedDict
 from django.core.paginator import Paginator
 from django.db.models import Prefetch
-from django.db.models.query import prefetch_related_objects
 
 from squad.core.queries import test_confidence
-from squad.core.utils import parse_name, split_list
+from squad.core.utils import parse_name
 from squad.core.models import Test, SuiteMetadata, TestRun, KnownIssue
 
 
@@ -39,19 +38,6 @@ class TestHistory(object):
 
     __test__ = False
 
-    def __get_tests__(self, builds, metadata):
-        test_runs = []
-        for build in builds:
-            for test_run in build.test_runs.all():
-                test_runs.append(test_run)
-
-        tests = []
-        for test_runs_batch in split_list(test_runs, chunk_size=100):
-            prefetch_related_objects(test_runs_batch, Prefetch('tests', queryset=Test.objects.filter(metadata=metadata).prefetch_related('metadata').order_by()))
-            for test_run in test_runs_batch:
-                tests += test_run.tests.all()
-        return tests
-
     def __init__(self, project, full_test_name, top=None, page=1, per_page=20):
         suite_slug, test_name = parse_name(full_test_name)
         self.test = full_test_name
@@ -80,11 +66,11 @@ class TestHistory(object):
 
         suite = project.suites.prefetch_related('metadata').get(slug=suite_slug)
         metadata = SuiteMetadata.objects.get(kind='test', suite=suite_slug, name=test_name)
-        tests = self.__get_tests__(builds, metadata)
+        tests = Test.objects.filter(build__in=builds, metadata_id=metadata.id).prefetch_related('build', 'environment', 'test_run', 'metadata').order_by()
         all_envs = set(project.environments.all())
         for test in tests:
-            build = test.test_run.build
-            environment = test.test_run.environment
+            build = test.build
+            environment = test.environment
             environments[environment] = True
             known_issues = issues_by_env.get(environment.id)
             is_duplicate = False
