@@ -1099,12 +1099,52 @@ class Status(models.Model, TestSummaryBase):
 class MetricThreshold(models.Model):
 
     class Meta:
-        unique_together = ('environment', 'name',)
+        unique_together = ('project', 'environment', 'name',)
 
-    environment = models.ForeignKey(Environment, null=False, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, related_name='thresholds', on_delete=models.CASCADE)
+    environment = models.ForeignKey(Environment, null=True, blank=True, default=None, on_delete=models.CASCADE)
     name = models.CharField(max_length=1024)
-    value = models.FloatField()
+    value = models.FloatField(null=True, blank=True)
     is_higher_better = models.BooleanField(default=False)
+
+    def _check_duplicates(self):
+        """
+        We have to make sure of the following
+        - a project-wide threshold CANNOT colide to an environment-specific one
+          We need to check if there's any environment that matches the thresold
+
+        - an environment-specific threshold CANNOT colide to a project-wide one
+          We meed tp check if there's already a project-wide threshold
+        """
+        project_wide = self.environment is None
+        existingThresholds = MetricThreshold.objects.filter(
+            name=self.name,
+            value=self.value,
+            is_higher_better=self.is_higher_better,
+            project=self.project,
+            environment__isnull=not project_wide)
+        if existingThresholds.count() > 0:
+            threshold = existingThresholds.first()
+            if threshold.environment is not None:
+                raise ValidationError("Found a threshold for environment '%s' with the exact same attributes" % threshold.environment)
+            else:
+                raise ValidationError("Found a threshold that already applies to the whole project")
+
+    def save(self, *args, **kwargs):
+        self._check_duplicates()
+        super().save(*args, **kwargs)
+
+    __regex__ = None
+
+    @property
+    def name_regex(self):
+        return r'^%s$' % re.escape(self.name).replace('\\*', '.*?')
+
+    def match(self, metric_fullname):
+        if self.__regex__ is None:
+            self.__regex__ = re.compile(self.name_regex)
+
+        return self.__regex__.match(metric_fullname)
 
 
 class ProjectStatus(models.Model, TestSummaryBase):
