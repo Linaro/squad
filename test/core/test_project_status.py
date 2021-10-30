@@ -243,18 +243,24 @@ class ProjectStatusTest(TestCase):
 
     def test_cache_regressions(self):
         build1 = self.create_build('1', datetime=h(10))
+        build1.project.thresholds.create(name='%s/foo-metric' % self.suite.slug)
         test_run1 = build1.test_runs.first()
         foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='foo', kind='test')
+        foo_metadata_metric, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='foo-metric', kind='metric')
         test_run1.tests.create(build=test_run1.build, environment=test_run1.environment, metadata=foo_metadata, suite=self.suite, result=True)
+        test_run1.metrics.create(build=test_run1.build, environment=test_run1.environment, metadata=foo_metadata_metric, suite=self.suite, result=1)
         ProjectStatus.create_or_update(build1)
 
         build2 = self.create_build('2', datetime=h(9))
         test_run2 = build2.test_runs.first()
         test_run2.tests.create(build=test_run2.build, environment=test_run2.environment, metadata=foo_metadata, suite=self.suite, result=False)
+        test_run2.metrics.create(build=test_run2.build, environment=test_run2.environment, metadata=foo_metadata_metric, suite=self.suite, result=2)
         status = ProjectStatus.create_or_update(build2)
 
         self.assertIsNotNone(status.regressions)
         self.assertIsNone(status.fixes)
+        self.assertIsNotNone(status.metric_regressions)
+        self.assertIsNone(status.metric_fixes)
 
     def test_cache_regressions_update(self):
         build1 = self.create_build('1', datetime=h(10))
@@ -281,18 +287,25 @@ class ProjectStatusTest(TestCase):
 
     def test_cache_fixes(self):
         build1 = self.create_build('1', datetime=h(10))
+        build1.project.thresholds.create(name='%s/foo-metric' % self.suite.slug)
         test_run1 = build1.test_runs.first()
         foo_metadata, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='foo', kind='test')
+        foo_metadata_metric, _ = SuiteMetadata.objects.get_or_create(suite=self.suite.slug, name='foo-metric', kind='metric')
         test_run1.tests.create(build=test_run1.build, environment=test_run1.environment, metadata=foo_metadata, suite=self.suite, result=False)
+        test_run1.metrics.create(build=test_run1.build, environment=test_run1.environment, metadata=foo_metadata_metric, suite=self.suite, result=2)
         ProjectStatus.create_or_update(build1)
 
         build2 = self.create_build('2', datetime=h(9))
         test_run2 = build2.test_runs.first()
         test_run2.tests.create(build=test_run2.build, environment=test_run2.environment, metadata=foo_metadata, suite=self.suite, result=True)
+        test_run2.metrics.create(build=test_run2.build, environment=test_run2.environment, metadata=foo_metadata_metric, suite=self.suite, result=1)
         status = ProjectStatus.create_or_update(build2)
 
         self.assertIsNotNone(status.fixes)
         self.assertIsNone(status.regressions)
+
+        self.assertIsNotNone(status.metric_fixes)
+        self.assertIsNone(status.metric_regressions)
 
     def test_cache_fixes_update(self):
         build1 = self.create_build('1', datetime=h(10))

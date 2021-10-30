@@ -667,6 +667,23 @@ class ProjectStatusSerializer(DynamicFieldsModelSerializer, serializers.Hyperlin
                     if env_fixes:
                         enriched_details[env].update({'fixes': env_fixes})
             ret['fixes'] = json.dumps(instance.get_fixes())
+
+        if instance.metric_regressions is not None:
+            metric_regressions = instance.get_metric_regressions()
+            if enriched_details:
+                for env in enriched_details.keys():
+                    env_regressions = metric_regressions.get(env, None)
+                    if env_regressions:
+                        enriched_details[env].update({'metric_regressions': env_regressions})
+            ret['metric_regressions'] = json.dumps(metric_regressions)
+        if instance.metric_fixes is not None:
+            metric_fixes = instance.get_metric_fixes()
+            if enriched_details:
+                for env in enriched_details.keys():
+                    env_fixes = metric_fixes.get(env, None)
+                    if env_fixes:
+                        enriched_details[env].update({'metric_fixes': env_fixes})
+            ret['metric_fixes'] = json.dumps(metric_fixes)
         ret['details'] = enriched_details
         return ret
 
@@ -695,7 +712,9 @@ class ProjectStatusSerializer(DynamicFieldsModelSerializer, serializers.Hyperlin
                   'baseline',
                   'created_at',
                   'regressions',
-                  'fixes')
+                  'fixes',
+                  'metric_regressions',
+                  'metric_fixes')
 
 
 class ProjectStatusViewSet(viewsets.ModelViewSet):

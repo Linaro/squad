@@ -30,7 +30,7 @@ from simple_history.models import HistoricalRecords
 
 from squad.core.utils import parse_name, join_name, yaml_validator, jinja2_validator, storage_save
 from squad.core.utils import encrypt, decrypt, split_list
-from squad.core.comparison import TestComparison
+from squad.core.comparison import TestComparison, MetricComparison
 from squad.core.statistics import geomean
 from squad.core.plugins import Plugin
 from squad.core.plugins import PluginListField
@@ -1185,6 +1185,17 @@ class ProjectStatus(models.Model, TestSummaryBase):
         validators=[yaml_validator]
     )
 
+    metric_regressions = models.TextField(
+        null=True,
+        blank=True,
+        validators=[yaml_validator]
+    )
+    metric_fixes = models.TextField(
+        null=True,
+        blank=True,
+        validators=[yaml_validator]
+    )
+
     class Meta:
         verbose_name_plural = "Project statuses"
 
@@ -1203,6 +1214,8 @@ class ProjectStatus(models.Model, TestSummaryBase):
         test_runs_incomplete = build.test_runs.filter(completed=False).count()
         regressions = None
         fixes = None
+        metric_regressions = None
+        metric_fixes = None
 
         previous_build = None
         if build.status is not None and build.status.baseline is not None:
@@ -1220,6 +1233,12 @@ class ProjectStatus(models.Model, TestSummaryBase):
             if comparison.fixes:
                 fixes = yaml.dump(comparison.fixes)
 
+            metric_comparison = MetricComparison(previous_build, build, regressions_and_fixes_only=True)
+            if metric_comparison.regressions:
+                metric_regressions = yaml.dump(metric_comparison.regressions)
+            if metric_comparison.fixes:
+                metric_fixes = yaml.dump(metric_comparison.fixes)
+
         finished, _ = build.finished
         data = {
             'tests_pass': test_summary.tests_pass,
@@ -1235,6 +1254,8 @@ class ProjectStatus(models.Model, TestSummaryBase):
             'test_runs_incomplete': test_runs_incomplete,
             'regressions': regressions,
             'fixes': fixes,
+            'metric_regressions': metric_regressions,
+            'metric_fixes': metric_fixes,
             'baseline': previous_build,
         }
 
@@ -1261,6 +1282,8 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.test_runs_incomplete = test_runs_incomplete
             status.regressions = regressions
             status.fixes = fixes
+            status.metric_regressions = metric_regressions
+            status.metric_fixes = metric_fixes
             status.save()
         return status
 
@@ -1291,6 +1314,12 @@ class ProjectStatus(models.Model, TestSummaryBase):
 
     def get_fixes(self):
         return self.__get_yaml_field__(self.fixes)
+
+    def get_metric_regressions(self):
+        return self.__get_yaml_field__(self.metric_regressions)
+
+    def get_metric_fixes(self):
+        return self.__get_yaml_field__(self.metric_fixes)
 
     def get_exceeded_thresholds(self):
         # Return a list of all (threshold, metric) objects for those
