@@ -1324,26 +1324,23 @@ class ProjectStatus(models.Model, TestSummaryBase):
     def get_exceeded_thresholds(self):
         # Return a list of all (threshold, metric) objects for those
         # thresholds that were exceeded by corresponding metrics.
+        if not self.has_metrics:
+            return []
+
         thresholds_exceeded = []
-        fullname = Concat(F('suite__slug'), Value('/'), F('metadata__name'))
-        if self.has_metrics:
-            test_runs = self.build.test_runs.all()
-            suites = Suite.objects.filter(test__test_run__build=self.build)
-            thresholds = MetricThreshold.objects.filter(
-                environment__in=self.build.project.environments.all())
-            thresholds_names = thresholds.values_list('name', flat=True)
-            for metric in Metric.objects.annotate(fullname=fullname).filter(
-                    Q(test_run__in=test_runs) | Q(suite__in=suites),
-                    fullname__in=thresholds_names):
-                for threshold in thresholds:
-                    if metric.environment_id != threshold.environment_id:
-                        continue
-                    if threshold.is_higher_better:
-                        if metric.result < threshold.value:
-                            thresholds_exceeded.append((threshold, metric))
-                    else:
-                        if metric.result > threshold.value:
-                            thresholds_exceeded.append((threshold, metric))
+
+        thresholds = MetricThreshold.objects.filter(project=self.build.project, value__isnull=False).prefetch_related('project')
+        for threshold in thresholds:
+            environments = threshold.project.environments.all() if threshold.environment is None else [threshold.environment]
+            queryset = Metric.objects.annotate(fullname=Concat(F('metadata__suite'), Value('/'), F('metadata__name'))).filter(
+                fullname__regex=threshold.name_regex,
+                environment__in=environments,
+                build=self.build)
+            queryset = queryset.filter(result__lt=threshold.value) if threshold.is_higher_better else queryset.filter(result__gt=threshold.value)
+
+            metrics = queryset.prefetch_related('metadata').distinct()
+            thresholds_exceeded += [(threshold, m) for m in metrics]
+
         return thresholds_exceeded
 
 
