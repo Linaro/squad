@@ -1,3 +1,32 @@
+# 1.43
+
+This 1.43 release does a handful of this. It:
+
+1. Completely removes the metric.name field in favor of suitemetadata.name, this saves up lots of space in DB
+2. Adds project reference to metric threshold model, thus allowing thresholds for all environments in a project
+3. Adds regressions and fixes to metric comparison class
+
+Overall, it improves metrics handling a little bit in SQUAD.
+
+Complete list of changes going in:
+* api: rest:
+  * properly use project in metric thresholds endpoint
+  * support metric comparison between project builds
+* core:
+  * comparison: make lighter/faster MetricComparison
+  * templates: notification: display metric name in exceeded thresholds
+  * models:
+    * add metric regressions and fixes to ProjectStatus
+    * add project to MetricThreshold
+    * improve function finding exceeded metrics thresholds
+* frontend:
+  * thresholds: allow metrics name patterns and select all environments
+  * views: use metadata__name in metrics.name
+* models: remove name column from Metric
+* tests:
+  * test_basics: fix missing test
+  * test_project_status: add project when creating thresholds
+
 # 1.42
 
 This 1.42 release continues improvements on metrics
