@@ -30,7 +30,7 @@ from simple_history.models import HistoricalRecords
 
 from squad.core.utils import parse_name, join_name, yaml_validator, jinja2_validator, storage_save
 from squad.core.utils import encrypt, decrypt, split_list
-from squad.core.comparison import TestComparison
+from squad.core.comparison import TestComparison, MetricComparison
 from squad.core.statistics import geomean
 from squad.core.plugins import Plugin
 from squad.core.plugins import PluginListField
@@ -991,7 +991,6 @@ class Metric(models.Model):
         limit_choices_to={'kind': 'metric'},
         on_delete=models.CASCADE,
     )
-    name = models.CharField(max_length=256, null=True, default=None, blank=True)
     result = models.FloatField()
     unit = models.CharField(null=True, max_length=30)
     measurements = models.TextField()  # comma-separated float numbers
@@ -1100,12 +1099,52 @@ class Status(models.Model, TestSummaryBase):
 class MetricThreshold(models.Model):
 
     class Meta:
-        unique_together = ('environment', 'name',)
+        unique_together = ('project', 'environment', 'name',)
 
-    environment = models.ForeignKey(Environment, null=False, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, related_name='thresholds', on_delete=models.CASCADE)
+    environment = models.ForeignKey(Environment, null=True, blank=True, default=None, on_delete=models.CASCADE)
     name = models.CharField(max_length=1024)
-    value = models.FloatField()
+    value = models.FloatField(null=True, blank=True)
     is_higher_better = models.BooleanField(default=False)
+
+    def _check_duplicates(self):
+        """
+        We have to make sure of the following
+        - a project-wide threshold CANNOT colide to an environment-specific one
+          We need to check if there's any environment that matches the thresold
+
+        - an environment-specific threshold CANNOT colide to a project-wide one
+          We meed tp check if there's already a project-wide threshold
+        """
+        project_wide = self.environment is None
+        existingThresholds = MetricThreshold.objects.filter(
+            name=self.name,
+            value=self.value,
+            is_higher_better=self.is_higher_better,
+            project=self.project,
+            environment__isnull=not project_wide)
+        if existingThresholds.count() > 0:
+            threshold = existingThresholds.first()
+            if threshold.environment is not None:
+                raise ValidationError("Found a threshold for environment '%s' with the exact same attributes" % threshold.environment)
+            else:
+                raise ValidationError("Found a threshold that already applies to the whole project")
+
+    def save(self, *args, **kwargs):
+        self._check_duplicates()
+        super().save(*args, **kwargs)
+
+    __regex__ = None
+
+    @property
+    def name_regex(self):
+        return r'^%s$' % re.escape(self.name).replace('\\*', '.*?')
+
+    def match(self, metric_fullname):
+        if self.__regex__ is None:
+            self.__regex__ = re.compile(self.name_regex)
+
+        return self.__regex__.match(metric_fullname)
 
 
 class ProjectStatus(models.Model, TestSummaryBase):
@@ -1146,6 +1185,17 @@ class ProjectStatus(models.Model, TestSummaryBase):
         validators=[yaml_validator]
     )
 
+    metric_regressions = models.TextField(
+        null=True,
+        blank=True,
+        validators=[yaml_validator]
+    )
+    metric_fixes = models.TextField(
+        null=True,
+        blank=True,
+        validators=[yaml_validator]
+    )
+
     class Meta:
         verbose_name_plural = "Project statuses"
 
@@ -1164,6 +1214,8 @@ class ProjectStatus(models.Model, TestSummaryBase):
         test_runs_incomplete = build.test_runs.filter(completed=False).count()
         regressions = None
         fixes = None
+        metric_regressions = None
+        metric_fixes = None
 
         previous_build = None
         if build.status is not None and build.status.baseline is not None:
@@ -1181,6 +1233,12 @@ class ProjectStatus(models.Model, TestSummaryBase):
             if comparison.fixes:
                 fixes = yaml.dump(comparison.fixes)
 
+            metric_comparison = MetricComparison(previous_build, build, regressions_and_fixes_only=True)
+            if metric_comparison.regressions:
+                metric_regressions = yaml.dump(metric_comparison.regressions)
+            if metric_comparison.fixes:
+                metric_fixes = yaml.dump(metric_comparison.fixes)
+
         finished, _ = build.finished
         data = {
             'tests_pass': test_summary.tests_pass,
@@ -1196,6 +1254,8 @@ class ProjectStatus(models.Model, TestSummaryBase):
             'test_runs_incomplete': test_runs_incomplete,
             'regressions': regressions,
             'fixes': fixes,
+            'metric_regressions': metric_regressions,
+            'metric_fixes': metric_fixes,
             'baseline': previous_build,
         }
 
@@ -1222,6 +1282,8 @@ class ProjectStatus(models.Model, TestSummaryBase):
             status.test_runs_incomplete = test_runs_incomplete
             status.regressions = regressions
             status.fixes = fixes
+            status.metric_regressions = metric_regressions
+            status.metric_fixes = metric_fixes
             status.save()
         return status
 
@@ -1253,29 +1315,32 @@ class ProjectStatus(models.Model, TestSummaryBase):
     def get_fixes(self):
         return self.__get_yaml_field__(self.fixes)
 
+    def get_metric_regressions(self):
+        return self.__get_yaml_field__(self.metric_regressions)
+
+    def get_metric_fixes(self):
+        return self.__get_yaml_field__(self.metric_fixes)
+
     def get_exceeded_thresholds(self):
         # Return a list of all (threshold, metric) objects for those
         # thresholds that were exceeded by corresponding metrics.
+        if not self.has_metrics:
+            return []
+
         thresholds_exceeded = []
-        fullname = Concat(F('suite__slug'), Value('/'), F('metadata__name'))
-        if self.has_metrics:
-            test_runs = self.build.test_runs.all()
-            suites = Suite.objects.filter(test__test_run__build=self.build)
-            thresholds = MetricThreshold.objects.filter(
-                environment__in=self.build.project.environments.all())
-            thresholds_names = thresholds.values_list('name', flat=True)
-            for metric in Metric.objects.annotate(fullname=fullname).filter(
-                    Q(test_run__in=test_runs) | Q(suite__in=suites),
-                    fullname__in=thresholds_names):
-                for threshold in thresholds:
-                    if metric.environment_id != threshold.environment_id:
-                        continue
-                    if threshold.is_higher_better:
-                        if metric.result < threshold.value:
-                            thresholds_exceeded.append((threshold, metric))
-                    else:
-                        if metric.result > threshold.value:
-                            thresholds_exceeded.append((threshold, metric))
+
+        thresholds = MetricThreshold.objects.filter(project=self.build.project, value__isnull=False).prefetch_related('project')
+        for threshold in thresholds:
+            environments = threshold.project.environments.all() if threshold.environment is None else [threshold.environment]
+            queryset = Metric.objects.annotate(fullname=Concat(F('metadata__suite'), Value('/'), F('metadata__name'))).filter(
+                fullname__regex=threshold.name_regex,
+                environment__in=environments,
+                build=self.build)
+            queryset = queryset.filter(result__lt=threshold.value) if threshold.is_higher_better else queryset.filter(result__gt=threshold.value)
+
+            metrics = queryset.prefetch_related('metadata').distinct()
+            thresholds_exceeded += [(threshold, m) for m in metrics]
+
         return thresholds_exceeded
 
 

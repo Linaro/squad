@@ -2,8 +2,6 @@ import json
 
 
 from math import sqrt
-
-
 from django.test import TestCase
 
 
@@ -76,6 +74,31 @@ class MetricComparisonTest(TestCase):
         self.build2 = self.project2.builds.first()
         self.build3 = self.project2.builds.last()
 
+        # Data for testing regressions and fixes
+        self.project = self.group.projects.create(slug='project')
+        self.environment_a = self.project.environments.create(slug='env_a')
+        self.environment_b = self.project.environments.create(slug='env_b')
+        self.build_a = self.project.builds.create(version='build_a')
+        self.build_b = self.project.builds.create(version='build_b')
+
+        # Create a few thresholds to trigger comparison
+        self.project.thresholds.create(name='suite_a/regressing-metric-higher-better', is_higher_better=True)
+        self.project.thresholds.create(name='suite_a/regressing-metric-lower-better', is_higher_better=False)
+        self.project.thresholds.create(name='suite_a/improved-metric-higher-better', is_higher_better=True)
+        self.project.thresholds.create(name='suite_a/improved-metric-lower-better', is_higher_better=False)
+        self.project.thresholds.create(name='suite_a/stable-metric')
+
+        # Thresholds with value WILL NOT trigger regressions/fixes
+        self.project.thresholds.create(name='suite_a/valueness-threshold-metric', value=1)
+
+        # Thresholds from different environments SHOULD NOT interact
+        self.project.thresholds.create(name='suite_a/different-env-metric', environment=self.environment_a)
+        self.project.thresholds.create(name='suite_a/different-env-metric', environment=self.environment_b)
+
+        # Thresholds from different suites SHOULD NOT interact
+        self.project.thresholds.create(name='suite_a/different-suite-metric')
+        self.project.thresholds.create(name='suite_b/different-suite-metric')
+
     def test_builds(self):
         comp = compare(self.build1, self.build3)
         self.assertEqual([self.build1, self.build3], comp.builds)
@@ -134,3 +157,79 @@ class MetricComparisonTest(TestCase):
         self.assertAlmostEqual(true_mean, mean)
         self.assertAlmostEqual(true_stddev, stddev)
         self.assertEqual(2, count)
+
+    def test_basic(self):
+
+        #   metric full name            | build1 result | build2 result | expected result
+        # False -> the metric has regressed, True -> the metric has been fixed, None -> not a regression nor fix
+        test_cases = {
+            'suite_a/improved-metric-higher-better': (1, 2, True),
+            'suite_a/improved-metric-lower-better': (2, 1, True),
+            'suite_a/regressing-metric-higher-better': (2, 1, False),
+            'suite_a/regressing-metric-lower-better': (1, 2, False),
+            'suite_a/stable-metric': (1, 1, None),
+            'suite_a/thresholdless-metric': (1, 2, None),
+            'suite_a/valueness-threshold-metric': (1, 2, None),
+        }
+
+        for metric_name in test_cases.keys():
+            build_a_result = test_cases[metric_name][0]
+            build_b_result = test_cases[metric_name][1]
+            expected = test_cases[metric_name][2]
+
+            # Post build 1 results
+            self.receive_test_run(self.project, self.build_a.version, self.environment_a.slug, {
+                metric_name: build_a_result,
+            })
+
+            # Post build 2 results
+            self.receive_test_run(self.project, self.build_b.version, self.environment_a.slug, {
+                metric_name: build_b_result,
+            })
+
+            comparison = MetricComparison(self.build_a, self.build_b, regressions_and_fixes_only=True)
+            if expected is True:
+                self.assertIn(metric_name, comparison.fixes[self.environment_a.slug])
+            elif expected is False:
+                self.assertIn(metric_name, comparison.regressions[self.environment_a.slug])
+            else:
+                self.assertNotIn(metric_name, comparison.regressions[self.environment_a.slug])
+                self.assertNotIn(metric_name, comparison.fixes[self.environment_a.slug])
+
+    def different_environments(self):
+        metric_name = 'suite_a/different-env-metric'
+        build_a_result = 1
+        build_b_result = 2
+
+        # Post build 1 results
+        self.receive_test_run(self.project, self.build_a.version, self.environment_a.slug, {
+            metric_name: build_a_result,
+        })
+
+        # Post build 2 results
+        self.receive_test_run(self.project, self.build_b.version, self.environment_b.slug, {
+            metric_name: build_b_result,
+        })
+
+        comparison = MetricComparison(self.build_a, self.build_b, regressions_and_fixes_only=True)
+        self.assertEqual(0, len(comparison.regressions))
+        self.assertEqual(0, len(comparison.fixes))
+
+    def different_suites(self):
+        metric_name = 'different-suite-metric'
+        build_a_result = 1
+        build_b_result = 2
+
+        # Post build 1 results
+        self.receive_test_run(self.project, self.build_a.version, self.environment_a.slug, {
+            'suite_a/' + metric_name: build_a_result,
+        })
+
+        # Post build 2 results
+        self.receive_test_run(self.project, self.build_b.version, self.environment_a.slug, {
+            'suite_b/' + metric_name: build_b_result,
+        })
+
+        comparison = MetricComparison(self.build_a, self.build_b, regressions_and_fixes_only=True)
+        self.assertEqual(0, len(comparison.regressions))
+        self.assertEqual(0, len(comparison.fixes))

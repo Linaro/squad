@@ -28,7 +28,7 @@ class FrontendTest(TestCase):
             environment_slug='myenv',
             log_file='log file contents ...',
             tests_file='{}',
-            metrics_file='{}',
+            metrics_file='{"mysuite/mymetric": 1}',
             metadata_file='{ "job_id" : "1" }',
         )
         self.test_run = models.TestRun.objects.last()
@@ -168,6 +168,9 @@ class FrontendTest(TestCase):
         self.hit('/mygroup/otherproject/')
         self.hit('/mygroup/otherproject/build/latest-finished/', 404)
 
+    def test_build_metrics(self):
+        self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/metrics/' % (self.test_run.id, self.suite.slug))
+
     def test_test_run_build_404(self):
         self.hit('/mygroup/myproject/build/2.0.missing/testrun/999/', 404)
 
@@ -203,12 +206,12 @@ class FrontendTest(TestCase):
     def test_metrics(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metrics' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])
-        self.assertEqual(b'{}', response.content)
+        self.assertEqual(b'{"mysuite/mymetric": 1}', response.content)
 
     def test_metadata(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metadata' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])
-        self.assertEqual(b'{ "job_id" : "1" }', response.content)
+        self.assertEqual(b'{"job_id": "1"}', response.content)
 
 
 class FrontendTestAnonymousUser(TestCase):

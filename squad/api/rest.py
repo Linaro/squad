@@ -30,7 +30,7 @@ from squad.core.models import (
     Callback,
 )
 from squad.core.tasks import prepare_report, update_delayed_report
-from squad.core.comparison import TestComparison
+from squad.core.comparison import TestComparison, MetricComparison
 from squad.core.queries import test_confidence
 from squad.core.utils import parse_name, log_addition, log_change, log_deletion
 from squad.core.callback import create_callback
@@ -229,6 +229,7 @@ class MetricFilter(filters.FilterSet):
 
 
 class MetricThresholdFilter(filters.FilterSet):
+    project = filters.RelatedFilter(ProjectFilter, field_name="project", queryset=Project.objects.all(), widget=forms.TextInput)
     environment = filters.RelatedFilter(EnvironmentFilter,
                                         field_name="environment",
                                         queryset=Environment.objects.all(),
@@ -503,7 +504,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     * `api/projects/<id>/compare_builds` POST/GET
 
-        Compares two builds and report regressions/fixes
+        Compares two builds and report regressions/fixes. <br />
+        The required args are: <br />
+        - to_compare: target build id <br />
+        - baseline: baseline build id <br />
+        Optional args are: <br />
+        - by: it can be "metrics" or "tests" (default). Please note that <br />
+          comparing it by metrics will return a list of metrics that regressed <br />
+          or improved (fixes) and that will be decided upon adding metric thresholds <br />
+          in &lt;group&gt;/&lt;project&gt;/settings/thresholds. <br /> <br />
+
+        The comparison will compare to_compare against baseline.
     """
     queryset = Project.objects
     serializer_class = ProjectSerializer
@@ -639,8 +650,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
         else:
             raise serializers.ValidationError("Invalid args provided. 'baseline' and 'to_compare' build ids must NOT be empty")
 
+        by = request.GET.get('by', 'tests')
+        if by not in ['tests', 'metrics']:
+            raise serializers.ValidationError("Invalid args provided. 'by' should be either 'tests' or 'metrics'")
+
         if baseline and to_compare:
-            comparison = TestComparison(baseline, to_compare, regressions_and_fixes_only=True)
+
+            if by == 'tests':
+                comparison = TestComparison(baseline, to_compare, regressions_and_fixes_only=True)
+            else:
+                comparison = MetricComparison(baseline, to_compare, regressions_and_fixes_only=True)
+
             serializer = BuildsComparisonSerializer(comparison)
             return Response(serializer.data)
 
@@ -666,6 +686,23 @@ class ProjectStatusSerializer(DynamicFieldsModelSerializer, serializers.Hyperlin
                     if env_fixes:
                         enriched_details[env].update({'fixes': env_fixes})
             ret['fixes'] = json.dumps(instance.get_fixes())
+
+        if instance.metric_regressions is not None:
+            metric_regressions = instance.get_metric_regressions()
+            if enriched_details:
+                for env in enriched_details.keys():
+                    env_regressions = metric_regressions.get(env, None)
+                    if env_regressions:
+                        enriched_details[env].update({'metric_regressions': env_regressions})
+            ret['metric_regressions'] = json.dumps(metric_regressions)
+        if instance.metric_fixes is not None:
+            metric_fixes = instance.get_metric_fixes()
+            if enriched_details:
+                for env in enriched_details.keys():
+                    env_fixes = metric_fixes.get(env, None)
+                    if env_fixes:
+                        enriched_details[env].update({'metric_fixes': env_fixes})
+            ret['metric_fixes'] = json.dumps(metric_fixes)
         ret['details'] = enriched_details
         return ret
 
@@ -694,7 +731,9 @@ class ProjectStatusSerializer(DynamicFieldsModelSerializer, serializers.Hyperlin
                   'baseline',
                   'created_at',
                   'regressions',
-                  'fixes')
+                  'fixes',
+                  'metric_regressions',
+                  'metric_fixes')
 
 
 class ProjectStatusViewSet(viewsets.ModelViewSet):
@@ -1559,14 +1598,27 @@ class MetricThresholdSerializer(DynamicFieldsModelSerializer, serializers.Hyperl
         model = MetricThreshold
         fields = '__all__'
 
+    def pre_save(self, data):
+        try:
+            threshold, created = MetricThreshold.objects.update_or_create(**data)
+        except Exception as e:
+            raise serializers.ValidationError({'duplicated_thresholds': [e]})
+        return threshold
+
+    def update(self, instance, validated_data):
+        return self.pre_save(validated_data)
+
+    def create(self, validated_data):
+        return self.pre_save(validated_data)
+
 
 class MetricThresholdViewSet(viewsets.ModelViewSet):
 
     queryset = MetricThreshold.objects.all()
     serializer_class = MetricThresholdSerializer
-    filterset_fields = ('name', 'value', 'is_higher_better', 'environment')
+    filterset_fields = ('name', 'value', 'is_higher_better', 'environment', 'project')
     filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
-    ordering_fields = ('id', 'environment', 'name')
+    ordering_fields = ('id', 'environment', 'name', 'project')
     filterset_class = MetricThresholdFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
 
