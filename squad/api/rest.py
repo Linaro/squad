@@ -30,7 +30,7 @@ from squad.core.models import (
     Callback,
 )
 from squad.core.tasks import prepare_report, update_delayed_report
-from squad.core.comparison import TestComparison
+from squad.core.comparison import TestComparison, MetricComparison
 from squad.core.queries import test_confidence
 from squad.core.utils import parse_name, log_addition, log_change, log_deletion
 from squad.core.callback import create_callback
@@ -504,7 +504,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     * `api/projects/<id>/compare_builds` POST/GET
 
-        Compares two builds and report regressions/fixes
+        Compares two builds and report regressions/fixes. <br />
+        The required args are: <br />
+        - to_compare: target build id <br />
+        - baseline: baseline build id <br />
+        Optional args are: <br />
+        - by: it can be "metrics" or "tests" (default). Please note that <br />
+          comparing it by metrics will return a list of metrics that regressed <br />
+          or improved (fixes) and that will be decided upon adding metric thresholds <br />
+          in &lt;group&gt;/&lt;project&gt;/settings/thresholds. <br /> <br />
+
+        The comparison will compare to_compare against baseline.
     """
     queryset = Project.objects
     serializer_class = ProjectSerializer
@@ -640,8 +650,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
         else:
             raise serializers.ValidationError("Invalid args provided. 'baseline' and 'to_compare' build ids must NOT be empty")
 
+        by = request.GET.get('by', 'tests')
+        if by not in ['tests', 'metrics']:
+            raise serializers.ValidationError("Invalid args provided. 'by' should be either 'tests' or 'metrics'")
+
         if baseline and to_compare:
-            comparison = TestComparison(baseline, to_compare, regressions_and_fixes_only=True)
+
+            if by == 'tests':
+                comparison = TestComparison(baseline, to_compare, regressions_and_fixes_only=True)
+            else:
+                comparison = MetricComparison(baseline, to_compare, regressions_and_fixes_only=True)
+
             serializer = BuildsComparisonSerializer(comparison)
             return Response(serializer.data)
 

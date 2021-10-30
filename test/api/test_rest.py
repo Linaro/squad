@@ -1006,6 +1006,25 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/projects/%d/compare_builds/?baseline=%d&to_compare=%d' % (self.project.id, self.build4.id, self.build6.id))
         self.assertEqual(1, len(data['regressions']['myenv']['foo']))
 
+    def test_project_compare_builds_by_metrics(self):
+        receive = ReceiveTestRun(self.project)
+        baseline = self.project.builds.create(version='baseline-metric')
+        target = self.project.builds.create(version='target-metric')
+
+        # Add regression
+        self.project.thresholds.create(name='foo/regressed-metric')
+        receive(baseline.version, 'myenv', metrics_file='{"foo/regressed-metric": 1}')
+        receive(target.version, 'myenv', metrics_file='{"foo/regressed-metric": 2}')
+
+        # Add improvement
+        self.project.thresholds.create(name='bar/improved-metric')
+        receive(baseline.version, 'myenv', metrics_file='{"bar/improved-metric": 2}')
+        receive(target.version, 'myenv', metrics_file='{"bar/improved-metric": 1}')
+
+        data = self.hit('/api/projects/%d/compare_builds/?baseline=%d&to_compare=%d&by=metrics' % (self.project.id, baseline.id, target.id))
+        self.assertEqual(1, len(data['regressions']['myenv']['foo']))
+        self.assertEqual(1, len(data['fixes']['myenv']['bar']))
+
     def test_project_compare_builds_with_non_finished_status(self):
         response = self.client.get('/api/projects/%d/compare_builds/?baseline=%d&to_compare=%d' % (self.project.id, self.build2.id, self.build3.id))
         self.assertEqual(400, response.status_code)
