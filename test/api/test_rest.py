@@ -1026,3 +1026,64 @@ class RestApiTest(APITestCase):
         foo_suite = self.project.suites.get(slug='foo')
         data = self.hit('/api/suites/%d/tests/?limit=1000' % foo_suite.id)
         self.assertEqual(54, len(data['results']))
+
+    def test_metricthresholds_add(self):
+        metric_name = 'the-threshold'
+        response = self.post(
+            '/api/metricthresholds/',
+            {
+                'project': "http://testserver/api/projects/%d/" % self.project.id,
+                'name': metric_name,
+            }
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, self.project.thresholds.filter(name=metric_name).count())
+        self.hit('/api/metricthresholds/%d/' % self.project.thresholds.first().id)
+
+    def test_metricthresholds_duplicates_all_envs(self):
+        metric_name = 'duplicated-threshold-all-envs'
+        response = self.post(
+            '/api/metricthresholds/',
+            {
+                'project': "http://testserver/api/projects/%d/" % self.project.id,
+                'name': metric_name,
+            }
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, self.project.thresholds.filter(name=metric_name).count())
+
+        # already exists project-wide
+        response = self.post(
+            '/api/metricthresholds/',
+            {
+                'project': "http://testserver/api/projects/%d/" % self.project.id,
+                'name': metric_name,
+                'environment': "http://testserver/api/environments/%d/" % self.environment.id
+            }
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(1, self.project.thresholds.filter(name=metric_name).count())
+
+    def test_metricthresholds_duplicates_specific_env(self):
+        metric_name = 'duplicated-threshold-specific-env'
+        response = self.post(
+            '/api/metricthresholds/',
+            {
+                'project': "http://testserver/api/projects/%d/" % self.project.id,
+                'name': metric_name,
+                'environment': "http://testserver/api/environments/%d/" % self.environment.id
+            }
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, self.project.thresholds.filter(name=metric_name).count())
+
+        # already exists an environment-specific one
+        response = self.post(
+            '/api/metricthresholds/',
+            {
+                'project': "http://testserver/api/projects/%d/" % self.project.id,
+                'name': metric_name,
+            }
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(1, self.project.thresholds.filter(name=metric_name).count())

@@ -229,6 +229,7 @@ class MetricFilter(filters.FilterSet):
 
 
 class MetricThresholdFilter(filters.FilterSet):
+    project = filters.RelatedFilter(ProjectFilter, field_name="project", queryset=Project.objects.all(), widget=forms.TextInput)
     environment = filters.RelatedFilter(EnvironmentFilter,
                                         field_name="environment",
                                         queryset=Environment.objects.all(),
@@ -1559,14 +1560,27 @@ class MetricThresholdSerializer(DynamicFieldsModelSerializer, serializers.Hyperl
         model = MetricThreshold
         fields = '__all__'
 
+    def pre_save(self, data):
+        try:
+            threshold, created = MetricThreshold.objects.update_or_create(**data)
+        except Exception as e:
+            raise serializers.ValidationError({'duplicated_thresholds': [e]})
+        return threshold
+
+    def update(self, instance, validated_data):
+        return self.pre_save(validated_data)
+
+    def create(self, validated_data):
+        return self.pre_save(validated_data)
+
 
 class MetricThresholdViewSet(viewsets.ModelViewSet):
 
     queryset = MetricThreshold.objects.all()
     serializer_class = MetricThresholdSerializer
-    filterset_fields = ('name', 'value', 'is_higher_better', 'environment')
+    filterset_fields = ('name', 'value', 'is_higher_better', 'environment', 'project')
     filter_fields = filterset_fields  # TODO: remove when django-filters 1.x is not supported anymore
-    ordering_fields = ('id', 'environment', 'name')
+    ordering_fields = ('id', 'environment', 'name', 'project')
     filterset_class = MetricThresholdFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
 
