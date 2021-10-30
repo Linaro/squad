@@ -4,14 +4,13 @@ function ThresholdResource($resource) {
                          'query': {
                              method: 'GET',
                              url: '/api/metricthresholds/',
-                             params: {environment__project: '@id'},
                              isArray: false
                          },
                          'update': {
                              method: 'PUT',
                              url: '/api/metricthresholds/:id/',
                              params:  {
-                               id:'@id'
+                               id: '@id'
                              }
                          }
                      }, {
@@ -25,17 +24,28 @@ function getKeyByValue(object, value) {
 }
 
 function MetricThresholdController($scope, Threshold) {
+    $scope.openNewThresholdModal = function() {
+        $scope.currentThreshold = new Threshold()
+	$scope.currentThreshold.environment = 'all'
+    }
 
     $scope.initMetricThresholds = function() {
         // Initialize threshold for modal dialog.
         $scope.currentThreshold = new Threshold()
+	$scope.currentThreshold.environment = 'all'
         //  Get thresholds from the backend.
-        Threshold.query({environment__project: $scope.project}).$promise.then(
+        Threshold.query({project: $scope.project}).$promise.then(
             function(data) {
                 $scope.thresholds = data.results
                 for (var i in $scope.thresholds) {
                   var threshold = $scope.thresholds[i]
-                  threshold.environment = $scope.environments[threshold.environment.slice(0,-1).split("/").pop()]
+		  threshold.project = $scope.project
+		  if (threshold.environment == null) {
+                    threshold.environment = 'all'
+		  }
+		  else {
+                    threshold.environment = $scope.environments[threshold.environment.slice(0,-1).split("/").pop()]
+		  }
                 }
             }
         )
@@ -47,8 +57,16 @@ function MetricThresholdController($scope, Threshold) {
         var threshold_index = $scope.currentThreshold.index
         // save env name to reset to name value later in modal
         var env_name = $scope.currentThreshold.environment
+	// Project is always mandatory
+	$scope.currentThreshold.project = "/api/projects/" + $scope.project + "/"
         // get env id/key using its name/value
-        $scope.currentThreshold.environment = "/api/environments/" + getKeyByValue($scope.environments, $scope.currentThreshold.environment) + "/"
+	var currentEnvironment = $scope.currentThreshold.environment
+
+	if ($scope.currentThreshold.environment == "all" || $scope.currentThreshold.environment == null) {
+	    delete $scope.currentThreshold.environment
+	} else {
+            $scope.currentThreshold.environment = "/api/environments/" + getKeyByValue($scope.environments, $scope.currentThreshold.environment) + "/"
+	}
         if ($scope.currentThreshold.id) {
             savedThreshold = $scope.currentThreshold.$update().then(
                 function(response) {
@@ -72,6 +90,7 @@ function MetricThresholdController($scope, Threshold) {
             $("#threshold_modal").modal('hide')
         }, function(error) {
             $scope.errors = error.data
+            $scope.currentThreshold.environment = currentEnvironment
         })
     }
 

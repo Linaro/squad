@@ -6,7 +6,6 @@ from django.utils.translation import ugettext_lazy as N_
 from squad.core.models import Project, Environment
 from squad.http import auth_write
 from squad.frontend.forms import DeleteConfirmationForm
-from squad.frontend.queries import get_metrics_list
 
 
 class ProjectForm(forms.ModelForm):
@@ -72,12 +71,10 @@ def thresholds(request, group_slug, project_slug):
     environments = {}
     for env in project.environments.order_by('id').all():
         environments[env.id] = env.slug
-    metrics = get_metrics_list(project)
 
     context = {
         "project": project,
         "environments": environments,
-        "metrics": metrics,
     }
     return render(request, 'squad/project_settings/thresholds.jinja2', context)
 
