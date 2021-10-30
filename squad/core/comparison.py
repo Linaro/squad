@@ -54,6 +54,49 @@ class BaseComparison(object):
         for build in self.builds:
             self.environments[build] = set()
 
+        if len(self.builds) >= 2 and None not in self.builds:
+            baseline = self.builds[0]
+            target = self.builds[1]
+
+            # This is ugly, but it's an easy, light-weight way to compare tests
+            # from two builds instead of loading all tests in memory.
+            # Please use Django ORM whenever it starts supporting
+            # queryies using the same table
+            self.base_sql = {
+                'select': [
+                    'target.id',
+                    'target.build_id',
+                    'target.environment_id',
+                    'target.test_run_id',
+                    'target.suite_id',
+                    'target.metadata_id',
+                ],
+                'from': [],
+                'where': [
+                    'baseline.build_id = {baseline_id}',
+                    'target.build_id = {target_id}',
+                    'baseline.metadata_id = target.metadata_id',
+                    'target.result IS NOT NULL',
+                    'baseline.result IS NOT NULL',
+                    'target.result != baseline.result',
+                ],
+                'values': {
+                    'baseline_id': baseline.id,
+                    'target_id': target.id
+                }
+            }
+
+            # If builds belong to different projects, environment comparison should
+            # use slug
+            if self.__same_projects__():
+                self.base_sql['where'].append('target.environment_id = baseline.environment_id')
+            else:
+                self.base_sql['from'].append('core_environment baseline_environment')
+                self.base_sql['from'].append('core_environment target_environment')
+                self.base_sql['where'].append('target.environment_id = target_environment.id')
+                self.base_sql['where'].append('baseline.environment_id = baseline_environment.id')
+                self.base_sql['where'].append('target_environment.slug = baseline_environment.slug')
+
         self.__extract_results__()
 
     @classmethod
@@ -93,10 +136,139 @@ class BaseComparison(object):
         self.__diff__ = d
         return self.__diff__
 
+    def __same_projects__(self):
+        if len(self.builds) < 2 or self.builds[0] is None:
+            return True
+
+        baseline = self.builds[0]
+        target = self.builds[1]
+        baseline_project_id = baseline.project_id
+        target_project_id = target.project_id
+        return target_project_id == baseline_project_id
+
+    def __render_sql__(self, sql):
+        select = ', '.join(sql['select'])
+        _from = ', '.join(sql['from'])
+        where = ' AND '.join(sql['where'])
+        values = sql['values']
+
+        sql = 'SELECT %s FROM %s WHERE %s' % (select, _from, where)
+        sql = sql.format(**values)
+
+        return sql
+
+    @property
+    def regressions_grouped_by_suite(self):
+        return self.__status_changes_by_suite__()
+
+    @property
+    def fixes_grouped_by_suite(self):
+        return self.__status_changes_by_suite__(False)
+
+    def __status_changes_by_suite__(self, regression=True):
+        comparisons = self.__regressions__
+        if not regression:
+            comparisons = self.__fixes__
+        result = OrderedDict()
+        for env, items in comparisons.items():
+            this_env = OrderedDict()
+            for item in items:
+                suite, itemname = parse_name(item)
+                if suite not in this_env:
+                    this_env[suite] = []
+                this_env[suite].append(itemname)
+            result[env] = this_env
+        return result
+
 
 class MetricComparison(BaseComparison):
 
     __builds_dict__ = None
+
+    def __init__(self, *builds, regressions_and_fixes_only=False):
+        self.regressions_and_fixes_only = regressions_and_fixes_only
+        self.__regressions__ = None
+        self.__fixes__ = None
+
+        BaseComparison.__init__(self, *builds)
+
+    def __extract_regressions_and_fixes__(self):
+        """
+            The target build should be the most recent once and the baseline
+            an older build.
+
+            If a metric in the target build has a match in the base line build
+            and if their results are different it's considered to be a regression.
+
+            +-----------------------------------------------------------+
+            | metric.result == target.result - baseline.result          |
+            |   -> metric.result > 0 : target.result > baseline.result  |
+            |   -> metric.result < 0 : target.result < baseline.result  |
+            |   -> metric.result = 0 : won't be returned from the query |
+            +-----------------------------------------------------------+
+        """
+
+        if self.builds[0] is None:
+            # No baseline is present, then no comparison is needed
+            return
+        target = self.builds[1]
+
+        query = self.base_sql.copy()
+        query['select'].append('target.result - baseline.result AS result')
+        query['from'].append('core_metric baseline')
+        query['from'].append('core_metric target')
+
+        sql = self.__render_sql__(query)
+        metrics = [m for m in models.Metric.objects.raw(sql)]
+        prefetch_related_objects(metrics, 'metadata', 'suite')
+
+        env_ids = set()
+        metrics_per_env = defaultdict(list)
+        regressions = defaultdict(list)
+        fixes = defaultdict(list)
+        regs_and_fixes = {
+            True: {
+                True: fixes,
+                False: regressions,
+            },
+            False: {
+                True: regressions,
+                False: fixes,
+            },
+        }
+
+        for metric in metrics:
+            env_id = metric.environment_id
+            env_ids.add(env_id)
+            metrics_per_env[env_id].append(metric)
+
+        thresholds = models.MetricThreshold.objects.filter(project=target.project, value__isnull=True)
+        for threshold in thresholds:
+            threshold_envs = threshold.project.environments.all() if threshold.environment is None else [threshold.environment]
+            for env in threshold_envs:
+                if env.id not in metrics_per_env:
+                    continue
+
+                for metric in metrics_per_env[env.id]:
+                    if not threshold.match(metric.full_name):
+                        continue
+                    regs_and_fixes[threshold.is_higher_better][metric.result > 0][env.slug].append(metric.full_name)
+
+        self.__regressions__ = OrderedDict()
+        for env in regressions.keys():
+            self.__regressions__[env] = regressions[env]
+
+        self.__fixes__ = OrderedDict()
+        for env in fixes.keys():
+            self.__fixes__[env] = fixes[env]
+
+    @property
+    def regressions(self):
+        return self.__regressions__
+
+    @property
+    def fixes(self):
+        return self.__fixes__
 
     def __get_build__(self, build_id):
         if self.__builds_dict__ is None:
@@ -124,6 +296,10 @@ class MetricComparison(BaseComparison):
         return stats
 
     def __extract_results__(self):
+        if self.regressions_and_fixes_only:
+            self.__extract_regressions_and_fixes__()
+            return
+
         metrics = models.Metric.objects.filter(
             build__in=self.builds,
             is_outlier=False
@@ -171,36 +347,6 @@ class TestComparison(BaseComparison):
         self.tests_with_issues = {}
         self.__failures__ = None
         self.regressions_and_fixes_only = regressions_and_fixes_only
-
-        # This is ugly, but it's an easy, light-weight way to compare tests
-        # from two builds instead of loading all tests in memory.
-        # Please use Django ORM whenever it starts supporting
-        # queryies using the same table
-        self.base_sql = {
-            'select': [
-                'target.id',
-                'target.build_id',
-                'target.environment_id',
-                'target.test_run_id',
-                'target.suite_id',
-                'target.metadata_id',
-                'target.result',
-                'target.has_known_issues'
-            ],
-            'from': [
-                'core_test baseline',
-                'core_test target'
-            ],
-            'where': [
-                'baseline.build_id = {baseline_id}',
-                'target.build_id = {target_id}',
-                'baseline.metadata_id = target.metadata_id'
-            ],
-            'values': {
-                'baseline_id': '',
-                'target_id': ''
-            }
-        }
 
         BaseComparison.__init__(self, *builds)
 
@@ -364,41 +510,27 @@ class TestComparison(BaseComparison):
 
         return comparisons
 
-    @property
-    def regressions_grouped_by_suite(self):
-        return self.__status_changes_by_suite__()
-
-    @property
-    def fixes_grouped_by_suite(self):
-        return self.__status_changes_by_suite__(False)
-
-    def __status_changes_by_suite__(self, regression=True):
-        comparisons = self.regressions
-        if not regression:
-            comparisons = self.fixes
-        result = OrderedDict()
-        for env, tests in comparisons.items():
-            this_env = OrderedDict()
-            for test in tests:
-                suite, testname = parse_name(test)
-                if suite not in this_env:
-                    this_env[suite] = []
-                this_env[suite].append(testname)
-            result[env] = this_env
-        return result
-
-    def __render_sql__(self, sql):
-        select = ', '.join(sql['select'])
-        _from = ', '.join(sql['from'])
-        where = ' AND '.join(sql['where'])
-        values = sql['values']
-
-        sql = 'SELECT %s FROM %s WHERE %s' % (select, _from, where)
-        sql = sql.format(**values)
-
-        return sql
-
     def __new_extract_results__(self):
+        """
+            The target build should be the most recent once and the baseline
+            an older build.
+
+            If a test in the target build with result=Fail has a match in the
+            baseline build with result=True, it's considered to be a regression.
+
+            If a test in the target build with result=True has a match in the
+            baseline build with result=False, it's considered to be a fix.
+
+            |   baseline / target  | test.result == False | test.result == True |
+            |----------------------|----------------------|---------------------|
+            | test.result == False |         -            |        fix          |
+            | test.result == True  |      regression      |         -           |
+
+
+            We just added a reference to Build and Environment to the Test model so that
+            we could make regressions and fixes easy and light to run in the database
+        """
+
         self.__diff__ = defaultdict(lambda: defaultdict(lambda: defaultdict()))
         self.__regressions__ = OrderedDict()
         self.__fixes__ = OrderedDict()
@@ -407,7 +539,13 @@ class TestComparison(BaseComparison):
             # No baseline is present, then no comparison is needed
             return
 
-        sql = self.__get_regressions_and_fixes_sql__()
+        query = self.base_sql.copy()
+        query['select'].append('target.result')
+        query['select'].append('target.has_known_issues')
+        query['from'].append('core_test baseline')
+        query['from'].append('core_test target')
+        sql = self.__render_sql__(query)
+
         tests = [t for t in models.Test.objects.raw(sql)]
         prefetch_related_objects(tests, 'metadata', 'suite')
 
@@ -456,64 +594,6 @@ class TestComparison(BaseComparison):
                 for test in self.__fixes__[env.slug]:
                     self.__diff__[test][target][env.slug] = True
                     self.__diff__[test][baseline][env.slug] = False
-
-    def __same_projects__(self):
-        if len(self.builds) < 2 or self.builds[0] is None:
-            return True
-
-        baseline = self.builds[0]
-        target = self.builds[1]
-        baseline_project_id = baseline.project_id
-        target_project_id = target.project_id
-        return target_project_id == baseline_project_id
-
-    def __get_regressions_and_fixes_sql__(self):
-        """
-            The target build should be the most recent once and the baseline
-            an older build.
-
-            If a test in the target build with result=Fail has a match in the
-            baseline build with result=True, it's considered to be a regression.
-
-            If a test in the target build with result=True has a match in the
-            baseline build with result=False, it's considered to be a fix.
-
-            |   baseline / target  | test.result == False | test.result == True |
-            |----------------------|----------------------|---------------------|
-            | test.result == False |         -            |        fix          |
-            | test.result == True  |      regression      |         -           |
-
-
-            We just added a reference to Build and Environment to the Test model so that
-            we could make regressions and fixes easy and light to run in the database
-        """
-
-        baseline = self.builds[0]
-        target = self.builds[1]
-
-        query = self.base_sql.copy()
-
-        # If builds belong to different projects, environment comparison should
-        # use slug
-        if self.__same_projects__():
-            query['where'].append('target.environment_id = baseline.environment_id')
-        else:
-            query['from'].append('core_environment baseline_environment')
-            query['from'].append('core_environment target_environment')
-            query['where'].append('target.environment_id = target_environment.id')
-            query['where'].append('baseline.environment_id = baseline_environment.id')
-            query['where'].append('target_environment.slug = baseline_environment.slug')
-
-        query['where'].append('target.result IS NOT NULL')
-        query['where'].append('baseline.result IS NOT NULL')
-        query['where'].append('target.result != baseline.result')
-
-        query['values'].update({
-            'baseline_id': baseline.id,
-            'target_id': target.id
-        })
-
-        return self.__render_sql__(query)
 
     def __intermittent_fixed_tests__(self, fixed_tests, environment_slugs):
         intermittent_fixed_tests = {}
