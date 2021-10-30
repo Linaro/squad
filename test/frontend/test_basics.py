@@ -206,12 +206,12 @@ class FrontendTest(TestCase):
     def test_metrics(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metrics' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])
-        self.assertEqual(b'{}', response.content)
+        self.assertEqual(b'{"mysuite/mymetric": 1}', response.content)
 
     def test_metadata(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metadata' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])
-        self.assertEqual(b'{ "job_id" : "1" }', response.content)
+        self.assertEqual(b'{"job_id": "1"}', response.content)
 
 
 class FrontendTestAnonymousUser(TestCase):
