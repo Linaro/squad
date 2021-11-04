@@ -1,3 +1,11 @@
+# 1.43.1
+
+This 1.43.1 release fixes a bug when trying to update TestJob definition
+via REST api.
+
+Complete list of changes going in:
+* api: Allow to update TestJob definition via API
+
 # 1.43
 
 This 1.43 release does a handful of this. It:
