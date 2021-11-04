@@ -1441,6 +1441,16 @@ class TestJobSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedMod
         fields = '__all__'
 
 
+class TestJobUpdateSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    url = serializers.HyperlinkedIdentityField(view_name='testjob-detail')
+    external_url = serializers.CharField(source='url', read_only=True)
+
+    class Meta:
+        model = TestJob
+        fields = '__all__'
+
+
 class TestJobViewSet(ModelViewSet):
     """
     List of CI test jobs. Only testjobs for public projects, and for projects
@@ -1490,6 +1500,10 @@ class TestJobViewSet(ModelViewSet):
     ordering_fields = ("id", "name", "environment", "last_fetch_attempt")
     pagination_class = CursorPaginationWithPageSize
     ordering = ('id',)
+
+    def update(self, request, pk=None):
+        self.serializer_class = TestJobUpdateSerializer
+        return super().update(request, pk)
 
     @action(detail=True, methods=['get'], suffix='definition')
     def definition(self, request, pk=None):
