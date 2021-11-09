@@ -643,7 +643,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 baseline = self.get_object().builds.get(pk=builds_to_compare['baseline'])
                 to_compare = self.get_object().builds.get(pk=builds_to_compare['to_compare'])
                 if force_unfinished is None and (not baseline.status.finished or not to_compare.status.finished):
-                    raise serializers.ValidationError("Cannot report regressions/fixes on a non-finished builds")
+                    raise serializers.ValidationError("Cannot report regressions/fixes on non-finished builds")
             except Build.DoesNotExist:
                 raise NotFound()
             except ValueError:
