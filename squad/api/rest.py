@@ -513,6 +513,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
           comparing it by metrics will return a list of metrics that regressed <br />
           or improved (fixes) and that will be decided upon adding metric thresholds <br />
           in &lt;group&gt;/&lt;project&gt;/settings/thresholds. <br /> <br />
+        - force: Use "force=true" in order to force comparing builds that aren't finished yet. <br />
 
         The comparison will compare to_compare against baseline.
     """
