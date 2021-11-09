@@ -129,6 +129,11 @@ class RestApiTest(APITestCase):
                     metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=s, name=t, kind='test')
                     testrun.tests.create(suite=suite, result=r, metadata=metadata, build=testrun.build, environment=testrun.environment)
 
+        metric_suite = 'mymetricsuite'
+        suite, _ = self.project.suites.get_or_create(slug=metric_suite)
+        metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=metric_suite, name='mymetric', kind='metric')
+        self.testrun.metrics.create(suite=suite, result=1, metadata=metadata, build=self.build, environment=self.environment)
+
         self.emailtemplate = models.EmailTemplate.objects.create(
             name="fooTemplate",
             subject="abc",
@@ -701,6 +706,10 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/builds/%d/tests/?environment__slug=myenv&suite__slug=foooooooosuitedoestexist' % self.build.id)
         self.assertEqual(0, len(data['results']))
 
+    def test_build_metrics(self):
+        data = self.hit('/api/builds/%d/metrics/' % self.build.id)
+        self.assertEqual(1, len(data['results']))
+
     def test_build_filter(self):
         created_at = str(self.build3.created_at.isoformat()).replace('+00:00', 'Z')
         data = self.hit('/api/builds/?created_at=%s' % created_at)
@@ -1039,7 +1048,7 @@ class RestApiTest(APITestCase):
 
     def test_suites(self):
         data = self.hit('/api/suites/')
-        self.assertEqual(2, data['count'])
+        self.assertEqual(3, data['count'])
 
     def test_suite_tests(self):
         foo_suite = self.project.suites.get(slug='foo')

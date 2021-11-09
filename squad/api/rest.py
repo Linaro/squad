@@ -854,6 +854,10 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
 
         Returns list of Test objects belonging to this build. List is paginated
 
+     * `api/builds/<id>/metrics` GET
+
+        Returns list of Metric objects belonging to this build. List is paginated
+
      * `api/builds/<id>/email` GET
 
         This method produces the body of email notification for the build.
@@ -1298,7 +1302,7 @@ class MetricSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedMode
         exclude = ['measurements']
 
 
-class MetricViewSet(ModelViewSet):
+class MetricViewSet(NestedViewSetMixin, ModelViewSet):
 
     queryset = Metric.objects.prefetch_related('suite').all()
     project_lookup_key = 'build__project__in'
@@ -1660,6 +1664,12 @@ router.register(r'builds', BuildViewSet).register(
     TestViewSet,
     parents_query_lookups=['build_id'],
     **drf_basename('build-tests')
+)
+router.register(r'builds', BuildViewSet).register(
+    r'metrics',
+    MetricViewSet,
+    parents_query_lookups=['build_id'],
+    **drf_basename('build-metrics')
 )
 router.register(r'testjobs', TestJobViewSet)
 router.register(r'testruns', TestRunViewSet).register(
