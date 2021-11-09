@@ -1304,7 +1304,7 @@ class MetricSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedMode
 
 class MetricViewSet(NestedViewSetMixin, ModelViewSet):
 
-    queryset = Metric.objects.prefetch_related('suite').all()
+    queryset = Metric.objects.prefetch_related('suite', 'metadata').all()
     project_lookup_key = 'build__project__in'
     serializer_class = MetricSerializer
     filterset_class = MetricFilter
