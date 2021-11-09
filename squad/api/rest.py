@@ -218,6 +218,9 @@ class MetricFilter(filters.FilterSet):
     test_run = filters.RelatedFilter(TestRunFilter, field_name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
     suite = filters.RelatedFilter(SuiteFilter, field_name="suite", queryset=Suite.objects.all(), widget=forms.TextInput)
     name = filters.CharFilter(lookup_expr='icontains', field_name='metadata__name')
+    build = filters.RelatedFilter(BuildFilter, field_name="build", queryset=Build.objects.all())
+    environment = filters.RelatedFilter(EnvironmentFilter, field_name='environment', queryset=Environment.objects.all())
+    metadata = filters.RelatedFilter(SuiteMetadataFilter, field_name='metadata', queryset=SuiteMetadata.objects.all())
 
     class Meta:
         model = Metric

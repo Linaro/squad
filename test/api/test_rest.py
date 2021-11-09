@@ -840,6 +840,36 @@ class RestApiTest(APITestCase):
         self.assertEqual(list, type(data['results']))
         self.assertEqual(2, len(data['results']))
 
+    def test_metrics_filter_by_metadata_name(self):
+        data = self.hit('/api/metrics/?metadata__name=mymetric')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(1, len(data['results']))
+
+    def test_metrics_filter_by_metadata_name_not_found(self):
+        data = self.hit('/api/metrics/?metadata__name=metric-that-does-not-exist')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(0, len(data['results']))
+
+    def test_metrics_filter_by_environment(self):
+        data = self.hit('/api/metrics/?environment__slug=myenv')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(1, len(data['results']))
+
+    def test_metrics_filter_by_environment_not_found(self):
+        data = self.hit('/api/metrics/?environment__slug=mycrazyenvslug')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(0, len(data['results']))
+
+    def test_metrics_filter_by_build(self):
+        data = self.hit('/api/metrics/?build__version=1')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(1, len(data['results']))
+
+    def test_metrics_filter_by_build_not_found(self):
+        data = self.hit('/api/metrics/?build__version=this-build-should-not-exist-really')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(0, len(data['results']))
+
     def test_testruns(self):
         data = self.hit('/api/testruns/%d/' % self.testrun.id)
         self.assertEqual(self.testrun.id, data['id'])
