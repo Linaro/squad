@@ -1114,7 +1114,7 @@ class MetricThreshold(models.Model):
           We need to check if there's any environment that matches the thresold
 
         - an environment-specific threshold CANNOT colide to a project-wide one
-          We meed tp check if there's already a project-wide threshold
+          We need to check if there's already a project-wide threshold
         """
         project_wide = self.environment is None
         existingThresholds = MetricThreshold.objects.filter(
