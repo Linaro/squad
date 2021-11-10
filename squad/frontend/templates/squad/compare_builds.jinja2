@@ -5,6 +5,9 @@
   <h1>{{ _('Compare builds') }}</h1>
 
   {% if comparison %}
+    <div class="pull-right">
+      <a href="/api/projects/{{ project.id }}/compare_builds/?force=true&to_compare={{ comparison.builds[1].id }}&baseline={{ comparison.builds[0].id }}&by={{ comparison_type }}s">api view of this comparison</a>
+    </div>
     {% with items=comparison.results %}
       {% include "squad/_pagination.jinja2" %}
     {% endwith %}
