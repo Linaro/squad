@@ -1,3 +1,21 @@
+# 1.44
+
+This 1.44 release adds a bit of adjustments to the metrics changes done
+in the previous release, like support for fetchin all build metrics
+via a specific endpoint.
+
+Complete list of changes going in:
+* api: rest:
+  * add metrics endpoint to builds
+  * add note on forcing comparing unfinished builds
+  * filter metrics by build, environment, and metadata
+  * prefetch metadata for metrics endpoint
+* core: models: fix typo in comment
+* frontend:
+  * build: add link to view build as api endpoint
+  * compare_builds: add link the same comparison view in api
+  * metricThreshold.js: fix identation
+
 # 1.43.1
 
 This 1.43.1 release fixes a bug when trying to update TestJob definition
