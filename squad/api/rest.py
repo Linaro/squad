@@ -218,6 +218,9 @@ class MetricFilter(filters.FilterSet):
     test_run = filters.RelatedFilter(TestRunFilter, field_name="test_run", queryset=TestRun.objects.all(), widget=forms.TextInput)
     suite = filters.RelatedFilter(SuiteFilter, field_name="suite", queryset=Suite.objects.all(), widget=forms.TextInput)
     name = filters.CharFilter(lookup_expr='icontains', field_name='metadata__name')
+    build = filters.RelatedFilter(BuildFilter, field_name="build", queryset=Build.objects.all())
+    environment = filters.RelatedFilter(EnvironmentFilter, field_name='environment', queryset=Environment.objects.all())
+    metadata = filters.RelatedFilter(SuiteMetadataFilter, field_name='metadata', queryset=SuiteMetadata.objects.all())
 
     class Meta:
         model = Metric
@@ -513,6 +516,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
           comparing it by metrics will return a list of metrics that regressed <br />
           or improved (fixes) and that will be decided upon adding metric thresholds <br />
           in &lt;group&gt;/&lt;project&gt;/settings/thresholds. <br /> <br />
+        - force: Use "force=true" in order to force comparing builds that aren't finished yet. <br />
 
         The comparison will compare to_compare against baseline.
     """
@@ -642,7 +646,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 baseline = self.get_object().builds.get(pk=builds_to_compare['baseline'])
                 to_compare = self.get_object().builds.get(pk=builds_to_compare['to_compare'])
                 if force_unfinished is None and (not baseline.status.finished or not to_compare.status.finished):
-                    raise serializers.ValidationError("Cannot report regressions/fixes on a non-finished builds")
+                    raise serializers.ValidationError("Cannot report regressions/fixes on non-finished builds")
             except Build.DoesNotExist:
                 raise NotFound()
             except ValueError:
@@ -852,6 +856,10 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
      * `api/builds/<id>/tests` GET
 
         Returns list of Test objects belonging to this build. List is paginated
+
+     * `api/builds/<id>/metrics` GET
+
+        Returns list of Metric objects belonging to this build. List is paginated
 
      * `api/builds/<id>/email` GET
 
@@ -1297,9 +1305,9 @@ class MetricSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedMode
         exclude = ['measurements']
 
 
-class MetricViewSet(ModelViewSet):
+class MetricViewSet(NestedViewSetMixin, ModelViewSet):
 
-    queryset = Metric.objects.prefetch_related('suite').all()
+    queryset = Metric.objects.prefetch_related('suite', 'metadata').all()
     project_lookup_key = 'build__project__in'
     serializer_class = MetricSerializer
     filterset_class = MetricFilter
@@ -1659,6 +1667,12 @@ router.register(r'builds', BuildViewSet).register(
     TestViewSet,
     parents_query_lookups=['build_id'],
     **drf_basename('build-tests')
+)
+router.register(r'builds', BuildViewSet).register(
+    r'metrics',
+    MetricViewSet,
+    parents_query_lookups=['build_id'],
+    **drf_basename('build-metrics')
 )
 router.register(r'testjobs', TestJobViewSet)
 router.register(r'testruns', TestRunViewSet).register(

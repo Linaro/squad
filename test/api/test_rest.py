@@ -129,6 +129,11 @@ class RestApiTest(APITestCase):
                     metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=s, name=t, kind='test')
                     testrun.tests.create(suite=suite, result=r, metadata=metadata, build=testrun.build, environment=testrun.environment)
 
+        metric_suite = 'mymetricsuite'
+        suite, _ = self.project.suites.get_or_create(slug=metric_suite)
+        metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=metric_suite, name='mymetric', kind='metric')
+        self.testrun.metrics.create(suite=suite, result=1, metadata=metadata, build=self.build, environment=self.environment)
+
         self.emailtemplate = models.EmailTemplate.objects.create(
             name="fooTemplate",
             subject="abc",
@@ -701,6 +706,10 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/builds/%d/tests/?environment__slug=myenv&suite__slug=foooooooosuitedoestexist' % self.build.id)
         self.assertEqual(0, len(data['results']))
 
+    def test_build_metrics(self):
+        data = self.hit('/api/builds/%d/metrics/' % self.build.id)
+        self.assertEqual(1, len(data['results']))
+
     def test_build_filter(self):
         created_at = str(self.build3.created_at.isoformat()).replace('+00:00', 'Z')
         data = self.hit('/api/builds/?created_at=%s' % created_at)
@@ -830,6 +839,36 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/metrics/?limit=2')
         self.assertEqual(list, type(data['results']))
         self.assertEqual(2, len(data['results']))
+
+    def test_metrics_filter_by_metadata_name(self):
+        data = self.hit('/api/metrics/?metadata__name=mymetric')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(1, len(data['results']))
+
+    def test_metrics_filter_by_metadata_name_not_found(self):
+        data = self.hit('/api/metrics/?metadata__name=metric-that-does-not-exist')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(0, len(data['results']))
+
+    def test_metrics_filter_by_environment(self):
+        data = self.hit('/api/metrics/?environment__slug=myenv')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(1, len(data['results']))
+
+    def test_metrics_filter_by_environment_not_found(self):
+        data = self.hit('/api/metrics/?environment__slug=mycrazyenvslug')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(0, len(data['results']))
+
+    def test_metrics_filter_by_build(self):
+        data = self.hit('/api/metrics/?build__version=1')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(1, len(data['results']))
+
+    def test_metrics_filter_by_build_not_found(self):
+        data = self.hit('/api/metrics/?build__version=this-build-should-not-exist-really')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(0, len(data['results']))
 
     def test_testruns(self):
         data = self.hit('/api/testruns/%d/' % self.testrun.id)
@@ -1039,7 +1078,7 @@ class RestApiTest(APITestCase):
 
     def test_suites(self):
         data = self.hit('/api/suites/')
-        self.assertEqual(2, data['count'])
+        self.assertEqual(3, data['count'])
 
     def test_suite_tests(self):
         foo_suite = self.project.suites.get(slug='foo')

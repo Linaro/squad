@@ -92,7 +92,9 @@
     <a href="{{previous_build_url(build)}}" class="btn btn-default pull-right" data-toggle="tooltip" data-placement="bottom" title="Previous Build"><i class='fa fa-chevron-left'>&nbsp;</i></a>
 
 </ul>
-
+<div class="pull-right">
+  <a href="/api/builds/{{ build.id }}/">api view of this build</a>
+</div>
 <!-- Modal HTML -->
 <div id="annotation_modal" class="modal fade">
   <div class="modal-dialog">
