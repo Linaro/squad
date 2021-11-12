@@ -96,19 +96,53 @@
                 <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-definition-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-definition-{{testjob.pk}}" title="{{ _('Job definition') }}"><span class="glyphicon glyphicon-list-alt" aria-hidden="true" title="{{ _('Job definition') }}"></span></button>
                 {% endif %}
                 {% if project.can_submit_testjobs(user) %}
-                <div class='pull-right' ng-controller='CancelController' title="{{ _('Cancel job') }}">
-                    <a class="btn" ng-click="cancel({{testjob.id}})" ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}" ng-disabled="done" ><span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}" ng-disabled="done"></span> {{ _('%s - cancel')  % testjob.job_id }}</a>
-                </div>
-                {% if testjob.submitted %}
+                    {% if not testjob.fetched %}
+                    <div class='pull-right' ng-controller='CancelController' title="{{ _('Cancel job') }}">
+                        <a
+                            class="btn"
+                            ng-click="cancel({{testjob.id}})"
+                            ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}"
+                            ng-disabled="done">
+                            <span
+                                ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}"
+                                ng-disabled="done">
+                            </span>
+                            {{ _('%s - cancel')  % testjob.job_id }}
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% set num_resubmitted_jobs = testjob.resubmitted_jobs.count() %}
+                    <div class='pull-right' ng-controller='ResubmitController'>
+                        <a
+                            class="btn"
+                            ng-click="resubmit({{testjob.id}}, true)"
+                            ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}"
+                            ng-disabled="{{ num_resubmitted_jobs }} > 0"
+                            title="{{ _('Resubmit job no matter the status') }}">
+                            <span
+                                ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}"
+                                ng-disabled="done"
+                                title="{{ _('Resubmit job no matter the status') }}">
+                            </span>
+                            {{ _('%s - force resubmit') % testjob.job_id }}
+                        </a>
+                        {% if testjob.can_resubmit %}
+                        <a
+                            class="btn"
+                            ng-click="resubmit({{testjob.id}}, false)"
+                            ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}"
+                            ng-disabled="{{ num_resubmitted_jobs }} > 0"
+                            title="{{ _('Resubmit job') }}">
+                            <span
+                                ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}"
+                                ng-disabled="done"
+                                title="{{ _('Resubmit job') }}">
+                            </span>
+                            {{ _('%s - resubmit') % testjob.job_id }}
+                        </a>
+                        {% endif %}
+                    </div>
                 {% endif %}
-                <div class='pull-right' ng-controller='ResubmitController'>
-                    <a class="btn" ng-click="resubmit({{testjob.id}}, true)" ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}" ng-disabled="done" title="{{ _('Resubmit job no matter the status') }}"><span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}" ng-disabled="done" title="{{ _('Resubmit job no matter the status') }}"></span> {{ _('%s - force resubmit') % testjob.job_id }}</a>
-                {% if testjob.can_resubmit %}
-                    <a class="btn" ng-click="resubmit({{testjob.id}}, false)" ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}" ng-disabled="done" title="{{ _('Resubmit job') }}"><span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}" ng-disabled="done" title="{{ _('Resubmit job') }}"></span> {{ _('%s - resubmit')  % testjob.job_id }}</a>
-                {% endif %}
-                </div>
-                {% endif %}
-
             </div>
             {% if testjob.failure %}
             <div class="collapse" id="collapse-failure-{{testjob.pk}}">
