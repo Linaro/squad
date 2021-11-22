@@ -207,7 +207,7 @@ class CiApiTest(TestCase):
         r = self.client.post('/api/watchjob/mygroup/myproject/1/myenv', args)
         self.assertEqual(403, r.status_code)
 
-    @patch("squad.ci.tasks.fetch.apply_async")
+    @patch("squad.ci.tasks.fetch.delay")
     def test_watch_testjob(self, fetch):
         testjob_id = 1234
         args = {
@@ -228,6 +228,7 @@ class CiApiTest(TestCase):
             1,
             testjob_queryset.count()
         )
+        fetch.assert_called_with(testjob_queryset.first().id)
         logentry_queryset = LogEntry.objects.filter(
             user_id=self.project_privileged_user.pk,
             object_id=testjob_queryset.last().pk
