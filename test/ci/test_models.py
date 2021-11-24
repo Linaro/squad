@@ -538,6 +538,49 @@ class TestJobTest(TestCase):
         testjob.resubmit()
         self.assertEqual(1, testjob.resubmitted_count)
 
+    @patch('squad.ci.backend.null.Backend.resubmit', return_value="1")
+    def test_delete_results_resubmitted_job(self, backend_resubmit):
+        env, _ = self.project.environments.get_or_create(slug='myenv')
+        testrun = self.build.test_runs.create(environment=env)
+        suite, _ = self.project.suites.get_or_create(slug='mysuite')
+        metadata = core_models.SuiteMetadata.objects.create(suite=suite.slug, name='mytest', kind='test')
+        testrun.tests.create(metadata=metadata, suite=suite, result=True, environment=env, build=self.build)
+
+        testjob = models.TestJob.objects.create(
+            target=self.project,
+            target_build=self.build,
+            environment='myenv',
+            backend=self.backend,
+            testrun=testrun,
+            submitted=True,
+            can_resubmit=True,
+        )
+        testjob.resubmit()
+        self.assertEqual(1, testjob.resubmitted_count)
+
+        # Check that the original testrun still exists
+        testrun.refresh_from_db()
+        self.assertEqual(1, self.build.tests.count())
+
+        # Configure project to remove TestJob's results on resubmission
+        self.project.project_settings = '{"CI_DELETE_RESULTS_RESUBMITTED_JOBS": true}'
+        self.project.save()
+
+        testjob.can_resubmit = True
+        testjob.save()
+
+        testjob.refresh_from_db()
+        testjob.resubmit()
+        testjob.refresh_from_db()
+
+        self.assertEqual(2, testjob.resubmitted_count)
+
+        # Check that the original testrun still exists
+        with self.assertRaises(core_models.TestRun.DoesNotExist):
+            testrun.refresh_from_db()
+
+        self.assertEqual(0, self.build.tests.count())
+
     def test_show_definition_hides_secrets(self):
         definition = "foo: bar\nsecrets:\n  baz: qux\n"
         testjob = models.TestJob(
