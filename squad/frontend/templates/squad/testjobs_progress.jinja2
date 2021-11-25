@@ -1,20 +1,43 @@
 {% set testjobs_url = [project.group.slug, project.slug, 'build', build.version, 'testjobs'] | join('/') -%}
+{% set per_environment = request.GET.get('testjobs_progress_per_environments', None) -%}
+{% set attrs = 'data-toggle="tooltip" data-placement="bottom"' -%}
 {% set summary = build.test_jobs_summary() -%}
 {% set progress_complete = summary.get('Complete', 0) -%}
 {% set progress_failed = summary.get('Incomplete', 0) + summary.get('Canceled', 0) -%}
 {% set progress_running = summary.get('Running', 0) -%}
 {% set progress_none = summary.get(None, 0) + summary.get('Submitted', 0) -%}
 {% set total = progress_complete + progress_failed + progress_running + progress_none -%}
-{% set attrs = 'data-toggle="tooltip" data-placement="bottom" class="progress"' -%}
 
-<div class="form-group row">
+<div class="form-group row" ng-controller="TestJobsProgressController" ng-init="init({{ build.id }}, {{ build.status.finished | lower }}, {{ 'true' if per_environment else 'false' }})">
   <div class="col-md-12 col-sm-12">
-    <h2>{{ _('Test jobs progress') }} <span id="progress-percentage">{{ (((progress_complete + progress_failed) / total) * 100)|round|int }}%</span></h2>
-    <div class="progress-container col-md-12 col-sm-12" ng-controller="TestJobsProgressController" ng-init="init({{ build.id }}, {{ build.status.finished | lower }})">
-      <div {{ attrs|safe }} title="{{ progress_complete }}" style="width: {{ ((progress_complete / total) * 100)|round|int }}%;" id="progress-complete" onclick="location.href='/{{ testjobs_url }}/?job_status=Complete'"></div>
-      <div {{ attrs|safe }} title="{{ progress_failed }}" style="width: {{ ((progress_failed / total) * 100)|round|int }}%;" id="progress-failed" onclick="location.href='/{{ testjobs_url }}/?job_status=Incomplete'"></div>
-      <div {{ attrs|safe }} title="{{ progress_running }}" style="width: {{ ((progress_running / total) * 100)|round|int }}%;" id="progress-running" onclick="location.href='/{{ testjobs_url }}/?job_status=Running'"></div>
-      <div {{ attrs|safe }} title="{{ progress_none }}" style="width: {{ ((progress_none / total) * 100)|round|int }}%;" id="progress-none" onclick="location.href='/{{ testjobs_url }}/?submitted=true&fetched=false'"></div>
-    </div>
+    <h2 id="testjobs-progress">{{ _('Test jobs progress') }} <span id="progress-percentage">{{ (((progress_complete + progress_failed) / total) * 100)|round|int }}%</span></h2>
+    {% if per_environment == None %}
+      <div class="progress-container col-md-12 col-sm-12">
+        <div {{ attrs|safe }} title="{{ progress_complete }}" style="width: {{ ((progress_complete / total) * 100)|round|int }}%;" class="progress complete" id="progress-complete" onclick="location.href='/{{ testjobs_url }}/?job_status=Complete'"></div>
+        <div {{ attrs|safe }} title="{{ progress_failed }}" style="width: {{ ((progress_failed / total) * 100)|round|int }}%;" class="progress failed" id="progress-failed" onclick="location.href='/{{ testjobs_url }}/?job_status=Incomplete'"></div>
+        <div {{ attrs|safe }} title="{{ progress_running }}" style="width: {{ ((progress_running / total) * 100)|round|int }}%;" class="progress running" id="progress-running" onclick="location.href='/{{ testjobs_url }}/?job_status=Running'"></div>
+        <div {{ attrs|safe }} title="{{ progress_none }}" style="width: {{ ((progress_none / total) * 100)|round|int }}%;" class="progress none" id="progress-none" onclick="location.href='/{{ testjobs_url }}/?submitted=true&fetched=false'"></div>
+      </div>
+      <a style="cursor: pointer" onclick="window.location = '{{ update_get_parameters({'testjobs_progress_per_environments': 'true'}) }}#testjobs-progress'">{{ _('see progress for each environment') }}</a>
+    {% else %}
+      {% set env_summary = build.test_jobs_summary(per_environment=True) -%}
+      {% for env, summary in env_summary.items() %}
+        {% set env_key = env.replace('-', '_').replace(' ', '_') %}
+        {% set progress_complete = summary.get('Complete', 0) -%}
+        {% set progress_failed = summary.get('Incomplete', 0) + summary.get('Canceled', 0) -%}
+        {% set progress_running = summary.get('Running', 0) -%}
+        {% set progress_none = summary.get(None, 0) + summary.get('Submitted', 0) -%}
+        {% set total = progress_complete + progress_failed + progress_running + progress_none -%}
+	<h4>{{ env }} <span id="progress-percentage-{{ env_key }}">{{ (((progress_complete + progress_failed) / total) * 100)|round|int }}%</span></h4>
+        <div class="progress-container col-md-12 col-sm-12">
+          <div {{ attrs|safe }} title="{{ progress_complete }}" style="width: {{ ((progress_complete / total) * 100)|round|int }}%;" class="progress complete" id="progress-complete-{{ env_key }}" onclick="location.href='/{{ testjobs_url }}/?job_status=Complete&environment={{ env }}'"></div>
+          <div {{ attrs|safe }} title="{{ progress_failed }}" style="width: {{ ((progress_failed / total) * 100)|round|int }}%;" class="progress failed" id="progress-failed-{{ env_key }}" onclick="location.href='/{{ testjobs_url }}/?job_status=Incomplete&environment={{ env }}'"></div>
+          <div {{ attrs|safe }} title="{{ progress_running }}" style="width: {{ ((progress_running / total) * 100)|round|int }}%;" class="progress running" id="progress-running-{{ env_key }}" onclick="location.href='/{{ testjobs_url }}/?job_status=Running&environment={{ env }}'"></div>
+          <div {{ attrs|safe }} title="{{ progress_none }}" style="width: {{ ((progress_none / total) * 100)|round|int }}%;" class="none" id="progress progress-none-{{ env_key }}" onclick="location.href='/{{ testjobs_url }}/?submitted=true&fetched=false&environment={{ env }}'"></div>
+        </div>
+      {% endfor %}
+      <a style="cursor: pointer" onclick="window.location = '{{ update_get_parameters({'testjobs_progress_per_environments': None}) }}#testjobs-progress'">{{ _('see progress across all environments') }}</a>
+    {% endif %}
+
   </div>
 </div>

@@ -117,6 +117,9 @@ class FrontendTest(TestCase):
     def test_build(self):
         self.hit('/mygroup/myproject/build/1.0/')
 
+    def test_build_testjobs_progress_per_environment(self):
+        self.hit('/mygroup/myproject/build/1.0/?testjobs_progress_per_environments=true')
+
     def test_build_badge(self):
         self.hit('/mygroup/myproject/build/1.0/badge')
 

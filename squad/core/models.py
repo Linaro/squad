@@ -636,6 +636,8 @@ class Build(models.Model):
         summary = {}
         if per_environment:
             for env, jobs in groupby(testjobs, lambda tj: tj.environment):
+                if env is None:
+                    continue
                 summary[env] = Counter([tj.job_status for tj in jobs])
         else:
             summary = Counter([tj.job_status for tj in testjobs])

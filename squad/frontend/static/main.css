@@ -406,8 +406,10 @@ div#environment-separator {
 /* test jobs progress bar */
 .progress-container {
   display: flex;
-  padding: 0;
   height: 3rem;
+  padding: 0;
+  margin-bottom: 15px;
+  margin-top: -5px;
 }
 
 .progress-container .progress {
@@ -419,18 +421,18 @@ div#environment-separator {
   cursor: pointer;
 }
 
-.progress-container #progress-complete {
+.progress-container .complete {
   background: #3c763d;
 }
 
-.progress-container #progress-failed {
+.progress-container .failed {
   background: #a94442;
 }
 
-.progress-container #progress-running {
+.progress-container .running {
   background: #f8efc0;
 }
 
-.progress-container #progress-none {
+.progress-container .none {
   background: gray;
 }
