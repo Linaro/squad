@@ -3,6 +3,7 @@ import {BuildCompareController} from './controllers/build_compare.js'
 import {FilterController} from './controllers/filter.js'
 import {ResubmitController} from './controllers/resubmit.js'
 import {CancelController} from './controllers/cancel.js'
+import {TestJobsProgressController} from './controllers/testjobs_progress.js'
 import {Config as appConfig} from './config.js'
 import {attach_select2} from './attach_select2.js'
 
@@ -61,5 +62,14 @@ app.controller(
         '$scope',
         'attach_select2',
         BuildCompareController
+    ]
+);
+
+app.controller(
+    'TestJobsProgressController',
+    [
+        '$scope',
+        '$http',
+        TestJobsProgressController
     ]
 );
