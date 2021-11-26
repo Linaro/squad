@@ -136,6 +136,11 @@ By default, the original test job object's results are kept in, but there's
 a project setting named `CI_DELETE_RESULTS_RESUBMITTED_JOBS` that tells SQUAD
 to remove all results from the resubmitted job. 
 
+Resubmitted jobs on finished builds do not cause events (email/patchsource/callback notifications)
+to be triggered when the job is fetched. But there's an option named `CI_RESET_BUILD_EVENTS_ON_JOB_RESUBMISSION`
+that tells SQUAD to reset all build events on job resubmission so that they
+can be triggered once more next time the build reaches its "finished" state.
+
 forceresubmit
 ~~~~~~~~~~~~~
 

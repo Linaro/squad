@@ -473,6 +473,26 @@ class Build(models.Model):
     def prefetch(self, *related):
         prefetch_related_objects([self], *related)
 
+    def reset_events(self):
+        """
+        It might be useful for some projects to "reset" build events like
+        sending out reports or triggering callbacks.
+        """
+
+        # Reset notifications
+        self.status.finished = False
+        self.status.notified = False
+        self.status.notified_on_timeout = None
+        self.status.approved = False
+        self.status.save()
+
+        # Reset patch notifications
+        self.patch_notified = False
+        self.save()
+
+        # Reset callbacks
+        self.callbacks.filter(event=callback_events.ON_BUILD_FINISHED, is_sent=True).update(is_sent=False)
+
     @property
     def test_summary(self):
         return TestSummary(self)

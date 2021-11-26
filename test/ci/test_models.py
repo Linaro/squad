@@ -581,6 +581,155 @@ class TestJobTest(TestCase):
 
         self.assertEqual(0, self.build.tests.count())
 
+    def mock_backend_fetch(test_job):
+        status = 'Complete'
+        completed = True
+        metadata = {}
+        tests = {'mysuite/mytest': 'pass'}
+        metrics = {}
+        logs = ''
+        return status, completed, metadata, tests, metrics, logs
+
+    @patch('requests.post')
+    @patch('squad.ci.backend.null.Backend.fetch', side_effect=mock_backend_fetch)
+    @patch('squad.ci.backend.null.Backend.resubmit', return_value="1")
+    @patch('squad.ci.backend.null.Backend.submit', return_value=["1"])
+    @patch('squad.ci.backend.null.Backend.job_url', return_value="http://job.url/")
+    @patch('squad.core.tasks.notification.notify_patch_build_finished.delay')
+    def test_resubmitted_job_retriggers_build_events(self, patch_notification, job_url, backend_submit, backend_resubmit, fetch, post):
+        callback_url = 'http://callback.com/'
+        self.build.callbacks.create(url=callback_url, event=core_models.Callback.events.ON_BUILD_FINISHED)
+        testjob = self.build.test_jobs.create(
+            target=self.project,
+            environment='myenv',
+            backend=self.backend,
+            job_id='12345',
+            submitted=True,
+        )
+        self.backend.fetch(testjob.id)
+
+        self.build.refresh_from_db()
+        testjob.refresh_from_db()
+
+        # Ensures build is finished and events are triggered
+        self.assertTrue(self.build.status.finished)
+        self.assertTrue(self.build.status.notified)
+        self.assertTrue(self.build.patch_notified)
+        post.assert_called_with(callback_url)
+        patch_notification.assert_called_with(self.build.id)
+        self.assertEqual(1, self.build.tests.count())
+        self.assertEqual(1, self.build.callbacks.filter(is_sent=True).count())
+
+        # Reset mocks
+        post.reset_mock()
+        patch_notification.reset_mock()
+
+        # Submit a new job, make sure build events are NOT reset by default
+        submit_testjob = self.build.test_jobs.create(
+            target=self.project,
+            environment='myenv',
+            backend=self.backend,
+            job_status='Complete',
+        )
+        self.backend.submit(submit_testjob)
+        self.assertTrue(self.build.status.finished)
+        self.assertTrue(self.build.status.notified)
+        self.assertTrue(self.build.patch_notified)
+        self.assertEqual(1, self.build.callbacks.filter(is_sent=True).count())
+
+        # Now fetch it, and make sure events DID NOT get triggered
+        submit_testjob.job_id = "2"
+        submit_testjob.save()
+        self.backend.fetch(submit_testjob.id)
+        post.assert_not_called()
+        patch_notification.assert_not_called()
+
+        # Repeat steps above, resubmit is used instead of submit
+        resubmit_testjob = self.build.test_jobs.create(
+            target=self.project,
+            environment='myenv',
+            backend=self.backend,
+            job_status='Complete',
+        )
+        resubmit_testjob.resubmit()
+        self.assertTrue(self.build.status.finished)
+        self.assertTrue(self.build.status.notified)
+        self.assertTrue(self.build.patch_notified)
+        self.assertEqual(1, self.build.callbacks.filter(is_sent=True).count())
+
+        # Now fetch it, and make sure events DID NOT get triggered
+        resubmit_testjob.job_id = "3"
+        resubmit_testjob.save()
+        self.backend.fetch(resubmit_testjob.id)
+        post.assert_not_called()
+        patch_notification.assert_not_called()
+
+        # Time for the truth! Configure project settings to allow build events
+        # to get reset on submit/resubmit
+        self.project.project_settings = '{"CI_RESET_BUILD_EVENTS_ON_JOB_RESUBMISSION": true}'
+        self.project.__settings__ = None
+        self.project.save()
+
+        # Submit a new job, make sure build events ARE reset due to project setting
+        submit_testjob = self.build.test_jobs.create(
+            target=self.project,
+            environment='myenv',
+            backend=self.backend,
+            job_status='Complete',
+        )
+        self.backend.submit(submit_testjob)
+        self.assertFalse(self.build.status.finished)
+        self.assertFalse(self.build.status.notified)
+        self.assertFalse(self.build.patch_notified)
+        self.assertEqual(0, self.build.callbacks.filter(is_sent=True).count())
+
+        # Now fetch it, and make sure events GET triggered
+        submit_testjob.job_id = "4"
+        submit_testjob.save()
+        self.backend.fetch(submit_testjob.id)
+        self.build.refresh_from_db()
+        self.build.status.refresh_from_db()
+        submit_testjob.refresh_from_db()
+        self.assertTrue(self.build.status.finished)
+        self.assertTrue(self.build.status.notified)
+        self.assertTrue(self.build.patch_notified)
+        post.assert_called_with(callback_url)
+        patch_notification.assert_called_with(self.build.id)
+        self.assertEqual(4, self.build.tests.count())
+        self.assertEqual(1, self.build.callbacks.filter(is_sent=True).count())
+
+        # Reset mocks
+        post.reset_mock()
+        patch_notification.reset_mock()
+
+        # Resubmit a new job, make sure build events ARE reset due to project setting
+        resubmit_testjob = self.build.test_jobs.create(
+            target=self.project,
+            environment='myenv',
+            backend=self.backend,
+            job_status='Complete',
+        )
+        self.backend.submit(resubmit_testjob)
+        self.assertFalse(self.build.status.finished)
+        self.assertFalse(self.build.status.notified)
+        self.assertFalse(self.build.patch_notified)
+        self.assertEqual(0, self.build.callbacks.filter(is_sent=True).count())
+
+        # Now fetch it, and make sure events GET triggered
+        resubmit_testjob.job_id = "5"
+        resubmit_testjob.save()
+        self.backend.fetch(resubmit_testjob.id)
+        self.build.refresh_from_db()
+        self.build.status.refresh_from_db()
+        resubmit_testjob.refresh_from_db()
+        self.assertTrue(self.build.status.finished)
+        self.assertTrue(self.build.status.notified)
+        self.assertTrue(self.build.patch_notified)
+        post.assert_called_with(callback_url)
+        patch_notification.assert_called_with(self.build.id)
+        self.assertEqual(5, self.build.tests.count())
+        self.assertEqual(1, self.build.callbacks.filter(is_sent=True).count())
+
     def test_show_definition_hides_secrets(self):
         definition = "foo: bar\nsecrets:\n  baz: qux\n"
         testjob = models.TestJob(

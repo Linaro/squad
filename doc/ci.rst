@@ -74,6 +74,11 @@ Example (with test job definition as file upload)::
         --form definition=@/path/to/definition.txt \
         https://squad.example.com/api/submitjob/my-group/my-project/x.y.z/my-ci-env
 
+Submitted jobs on finished builds do not cause events (email/patchsource/callback notifications)
+to be triggered when the job is fetched. But there's an option named `CI_RESET_BUILD_EVENTS_ON_JOB_RESUBMISSION`
+that tells SQUAD to reset all build events on job submission so that they
+can be triggered once more next time the build reaches its "finished" state.
+
 .. _ci_watch_ref_label:
 
 Submitting test job watch requests
