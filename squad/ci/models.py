@@ -145,6 +145,7 @@ class Backend(models.Model):
                 logger.error("Plugin postprocessing error: " + str(e) + "\n" + traceback.format_exc())
 
     def submit(self, test_job):
+        test_job.reset_build_events()
         job_id_list = self.get_implementation().submit(test_job)
         test_job.job_id = job_id_list[0]
         test_job.submitted = True
@@ -248,7 +249,16 @@ class TestJob(models.Model):
                 self.save()
         return ret_value
 
+    def reset_build_events(self):
+        # Retrigger build-finished events
+        if self.target_build is not None \
+           and self.target_build.status is not None \
+           and self.target_build.status.finished \
+           and self.target.get_setting('CI_RESET_BUILD_EVENTS_ON_JOB_RESUBMISSION', False):
+            self.target_build.reset_events()
+
     def force_resubmit(self):
+        self.reset_build_events()
         # resubmit test job not respecting any restrictions
         self.backend.get_implementation().resubmit(self)
         self.resubmitted_count += 1
