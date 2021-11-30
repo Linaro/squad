@@ -1,3 +1,26 @@
+# 1.45
+
+This 1.45 release adds several features around testjobs.
+The first is the ability to remove resubmitted testjobs
+results via a project setting. Also, another setting has
+the capacity of telling SQUAD to reset all build events
+upon testjob resubmission and new job submission. This means
+that build callbacks, email notifications and patch notifications
+can be retriggered automatically.
+
+Complete list of changes going in:
+
+* api: ci: atempt to fetch job as they are watched
+* ci, core: allow resetting build events
+* ci: models: delete results from resubmitted jobs
+* core: migrations: add MetricThreshold to default squad auth group
+* requirements: pin importlib-metadata
+* frontend: testjobs:
+  * disable job resubmission if already resubmitted
+  * hide cancel button if job is already fetched
+  * refactor test job controls buttons
+  * remove dead code
+
 # 1.44
 
 This 1.44 release adds a bit of adjustments to the metrics changes done
