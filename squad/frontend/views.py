@@ -349,6 +349,90 @@ def __rearrange_test_results__(results_layout, test_results):
             suite.environments = sorted(envs, key=lambda e: e[0].slug)
 
 
+def __testjobs_progress__(build, request):
+
+    per_environment = request.GET.get('testjobs_progress_per_environments', None)
+    testjobs_progress = {}
+    if per_environment is None:
+        summary = build.test_jobs_summary()
+
+        progress_complete = summary.get('Complete', 0)
+        progress_failed = summary.get('Incomplete', 0) + summary.get('Canceled', 0)
+        progress_running = summary.get('Running', 0)
+        progress_none = summary.get(None, 0) + summary.get('Submitted', 0)
+        total = progress_complete + progress_failed + progress_running + progress_none
+
+        testjobs_progress['total'] = total
+        testjobs_progress['finished'] = progress_complete + progress_failed
+
+        # Avoid division by zero without interfering with computations
+        if total == 0:
+            total = 1
+
+        testjobs_progress['percentage'] = int(((progress_complete + progress_failed) / total) * 100)
+
+        testjobs_progress['progress'] = {}
+        testjobs_progress['progress']['complete'] = {'total': progress_complete, 'width': (progress_complete / total) * 100, 'query_string': 'job_status=Complete'}
+        testjobs_progress['progress']['failed'] = {'total': progress_failed, 'width': (progress_failed / total) * 100, 'query_string': 'job_status=Incomplete'}
+        testjobs_progress['progress']['running'] = {'total': progress_running, 'width': (progress_running / total) * 100, 'query_string': 'job_status=Running'}
+        testjobs_progress['progress']['none'] = {'total': progress_none, 'width': (progress_none / total) * 100, 'query_string': 'submitted=true&fetched=false'}
+    else:
+        env_summary = build.test_jobs_summary(per_environment=True)
+        testjobs_progress['total'] = 0
+        testjobs_progress['finished'] = 0
+        testjobs_progress['percentage'] = 0
+        testjobs_progress['envs'] = {}
+        max_jobs = -1
+
+        for env, summary in env_summary.items():
+            progress_complete = summary.get('Complete', 0)
+            progress_failed = summary.get('Incomplete', 0) + summary.get('Canceled', 0)
+            progress_running = summary.get('Running', 0)
+            progress_none = summary.get(None, 0) + summary.get('Submitted', 0)
+            total = progress_complete + progress_failed + progress_running + progress_none
+
+            if total > max_jobs:
+                max_jobs = total
+
+            env_querystring = '&environment=%s' % env
+
+            testjobs_progress['envs'][env] = {}
+            testjobs_progress['envs'][env]['total'] = total
+            testjobs_progress['envs'][env]['finished'] = progress_complete + progress_failed
+
+            # Avoid division by zero without interfering with computations
+            if total == 0:
+                total = 1
+
+            testjobs_progress['envs'][env]['percentage'] = int((testjobs_progress['envs'][env]['finished'] / total) * 100)
+
+            testjobs_progress['envs'][env]['progress'] = {}
+            testjobs_progress['envs'][env]['progress']['complete'] = {'total': progress_complete, 'width': (progress_complete / total) * 100, 'query_string': 'job_status=Complete' + env_querystring}
+            testjobs_progress['envs'][env]['progress']['failed'] = {'total': progress_failed, 'width': (progress_failed / total) * 100, 'query_string': 'job_status=Incomplete' + env_querystring}
+            testjobs_progress['envs'][env]['progress']['running'] = {'total': progress_running, 'width': (progress_running / total) * 100, 'query_string': 'job_status=Running' + env_querystring}
+            testjobs_progress['envs'][env]['progress']['none'] = {'total': progress_none, 'width': (progress_none / total) * 100, 'query_string': 'submitted=true&fetched=false' + env_querystring}
+
+            # Compute overall summary
+            testjobs_progress['total'] += testjobs_progress['envs'][env]['total']
+            testjobs_progress['finished'] += testjobs_progress['envs'][env]['finished']
+
+        # Avoid division by zero without interfering with computations
+        if max_jobs == 0:
+            max_jobs = 1
+
+        # Compute shrinking factor for each progress for each environment
+        for env in testjobs_progress['envs'].keys():
+
+            shrink_factor = testjobs_progress['envs'][env]['total'] / max_jobs
+            testjobs_progress['envs'][env]['shrink_factor'] = shrink_factor
+            for progress in ['complete', 'failed', 'running', 'none']:
+                testjobs_progress['envs'][env]['progress'][progress]['width'] *= shrink_factor
+
+        # Compute the overall percentage
+        testjobs_progress['percentage'] = int((testjobs_progress['finished'] / testjobs_progress['total']) * 100) if testjobs_progress['total'] > 0 else 0
+    return testjobs_progress
+
+
 @auth
 def build(request, group_slug, project_slug, version):
     project = request.project
@@ -383,6 +467,8 @@ def build(request, group_slug, project_slug, version):
 
     __rearrange_test_results__(results_layout, test_results)
 
+    testjobs_progress = __testjobs_progress__(build, request)
+
     context = {
         'project': project,
         'build': build,
@@ -391,6 +477,7 @@ def build(request, group_slug, project_slug, version):
         'metadata': sorted(build.important_metadata.items()),
         'has_extra_metadata': build.has_extra_metadata,
         'failures_only': failures_only,
+        'testjobs_progress': testjobs_progress,
     }
     return render(request, 'squad/build.jinja2', context)
 

@@ -25,7 +25,9 @@ export function TestJobsProgressController($scope, $http) {
             $http.get(summary_url).then(function(response) {
                 var summary = response.data.results;
                 var finished = false;
-                var div_percentage= $('#progress-percentage');
+                var span_percentage = $('#progress-percentage');
+                var span_finished = $('#progress-finished');
+                var span_total = $('#progress-total');
                 var total_finished = 0;
                 var total = 0;
 
@@ -47,10 +49,10 @@ export function TestJobsProgressController($scope, $http) {
                     var div_running  = $('#progress-running');
                     var div_none     = $('#progress-none');
 
-                    div_complete.css('width', Math.trunc((progress_complete / total) * 100) + '%');
-                    div_failed.css('width', Math.trunc((progress_failed / total) * 100) + '%');
-                    div_running.css('width', Math.trunc((progress_running / total) * 100) + '%');
-                    div_none.css('width', Math.trunc((progress_none / total) * 100) + '%');
+                    div_complete.css('width', ((progress_complete / total) * 100) + '%');
+                    div_failed.css('width', ((progress_failed / total) * 100) + '%');
+                    div_running.css('width', ((progress_running / total) * 100) + '%');
+                    div_none.css('width', ((progress_none / total) * 100) + '%');
 
                     div_complete.attr('data-original-title', progress_complete);
                     div_failed.attr('data-original-title', progress_failed);
@@ -58,6 +60,8 @@ export function TestJobsProgressController($scope, $http) {
                     div_none.attr('data-original-title', progress_none);
                 } else {
                     var environments = Object.keys(summary);
+                    var env_summaries = {};
+                    var max_jobs = -1;
                     environments.forEach(function(env) {
                         var env_summary = summary[env];
                         var progress_complete = env_summary.Complete || 0;
@@ -65,8 +69,31 @@ export function TestJobsProgressController($scope, $http) {
                         var progress_running = env_summary.Running || 0;
                         var progress_none = (env_summary.null || 0) + (env_summary.Submitted || 0);
                         var env_total = progress_complete + progress_failed + progress_running + progress_none;
+                        var env_finished = progress_complete + progress_failed;
                         total += env_total;
-                        total_finished += progress_complete + progress_failed;
+                        total_finished += env_finished;
+                        env_summaries[env] = {
+                            'complete': progress_complete,
+                            'failed': progress_failed,
+                            'running': progress_running,
+                            'none': progress_none,
+                            'total': env_total,
+                            'finished': env_finished
+                        };
+
+                        if (env_total > max_jobs) {
+                            max_jobs = env_total;
+                        }
+                    });
+
+                    // Resize bars, calculating shrink factor on the fly
+                    environments.forEach(function(env) {
+                        var progress_complete = env_summaries[env]['complete'];
+                        var progress_failed = env_summaries[env]['failed'];
+                        var progress_running = env_summaries[env]['running'];
+                        var progress_none = env_summaries[env]['none'];
+                        var env_total = env_summaries[env]['total'];
+                        var env_finished = env_summaries[env]['finished'];
 
                         // No jobs for this environment, weird but could happen
                         if (env_total == 0) {
@@ -79,10 +106,20 @@ export function TestJobsProgressController($scope, $http) {
                         var div_running  = $('#progress-running-' + env_key);
                         var div_none     = $('#progress-none-' + env_key);
 
-                        div_complete.css('width', Math.trunc((progress_complete / env_total) * 100) + '%');
-                        div_failed.css('width', Math.trunc((progress_failed / env_total) * 100) + '%');
-                        div_running.css('width', Math.trunc((progress_running / env_total) * 100) + '%');
-                        div_none.css('width', Math.trunc((progress_none / env_total) * 100) + '%');
+                        var span_percentage = $('#progress-percentage-' + env_key);
+                        var span_finished   = $('#progress-finished-' + env_key);
+                        var span_total      = $('#progress-total-' + env_key);
+
+                        span_percentage.text(Math.trunc((env_finished / env_total) * 100) + '%');
+                        span_finished.text(env_finished)
+                        span_total.text(env_total)
+
+                        var shrink_factor = env_total / max_jobs;
+
+                        div_complete.css('width', shrink_factor * ((progress_complete / env_total) * 100) + '%');
+                        div_failed.css('width', shrink_factor * ((progress_failed / env_total) * 100) + '%');
+                        div_running.css('width', shrink_factor * ((progress_running / env_total) * 100) + '%');
+                        div_none.css('width', shrink_factor * ((progress_none / env_total) * 100) + '%');
 
                         div_complete.attr('data-original-title', progress_complete);
                         div_failed.attr('data-original-title', progress_failed);
@@ -96,7 +133,9 @@ export function TestJobsProgressController($scope, $http) {
                     return;
                 }
 
-                div_percentage.text(Math.trunc((total_finished / total) * 100) + '%');
+                span_percentage.text(Math.trunc((total_finished / total) * 100) + '%');
+                span_finished.text(total_finished)
+                span_total.text(total)
 
                 finished = (total_finished == total);
 
