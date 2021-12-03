@@ -413,7 +413,7 @@ div#environment-separator {
 }
 
 .progress-container .progress {
-  height: 3rem;
+  height: 2rem;
   display: inline-block;
   padding: 0;
   transition: width 2s ease;
@@ -422,7 +422,7 @@ div#environment-separator {
 }
 
 .progress-container .complete {
-  background: #3c763d;
+  background: #5aaf5b;
 }
 
 .progress-container .failed {
