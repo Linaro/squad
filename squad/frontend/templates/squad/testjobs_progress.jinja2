@@ -1,0 +1,64 @@
+{% set testjobs_url = [project.group.slug, project.slug, 'build', build.version, 'testjobs'] | join('/') -%}
+{% set per_environment = request.GET.get('testjobs_progress_per_environments', None) -%}
+{% set div_attrs = 'data-toggle="tooltip" data-placement="bottom"' -%}
+
+<div
+  class="form-group row"
+  ng-controller="TestJobsProgressController"
+  ng-init="init({{ build.id }}, {{ build.status.finished | lower }}, {{ 'true' if per_environment else 'false' }})">
+  <div class="col-md-12 col-sm-12">
+    <h2 id="testjobs-progress">
+      {{ _('Test jobs progress') }}
+      <span id="progress-finished">{{ testjobs_progress['finished'] }}</span>
+      /
+      <span id="progress-total">{{ testjobs_progress['total'] }}</span>
+      <span id="progress-percentage">({{ testjobs_progress['percentage'] }}%)</span>
+    </h2>
+    {% if per_environment == None %}
+      <div class="progress-container col-md-12 col-sm-12">
+        {% for progress, attrs in testjobs_progress['progress'].items() %}
+        <div {{ div_attrs|safe }}
+	  id="progress-{{ progress }}"
+	  title="{{ attrs['total'] }}"
+	  style="width: {{ attrs['width'] }}%;"
+	  class="progress {{ progress }}"
+	  onclick="location.href='/{{ testjobs_url }}/?{{ attrs['query_string'] }}'">
+	</div>
+	{% endfor %}
+      </div>
+      <a
+        style="cursor: pointer"
+	onclick="window.location = '{{ update_get_parameters({'testjobs_progress_per_environments': 'true'}) }}#testjobs-progress'">
+	{{ _('see progress for each environment') }}
+      </a>
+    {% else %}
+      {% for env, summary in testjobs_progress['envs'].items() %}
+	{% set env_key = env.replace('-', '_').replace(' ', '_') -%}
+	<h4>
+	  {{ env }}:
+	  <span id="progress-finished-{{ env_key }}">{{ summary['finished'] }}</span>
+	  /
+	  <span id="progress-total-{{ env_key }}">{{ summary['total'] }}</span>
+	  <span id="progress-percentage-{{ env_key }}">({{ summary['percentage'] }}%)</span>
+	</h4>
+        <div class="progress-container col-md-12 col-sm-12">
+	  {% for progress, attrs in summary['progress'].items() %}
+          <div {{ div_attrs|safe }}
+	    id="progress-{{ progress }}-{{ env_key }}"
+	    title="{{ attrs['total'] }}"
+	    style="width: {{ attrs['width'] }}%;"
+	    class="progress {{ progress }}"
+	    onclick="location.href='/{{ testjobs_url }}/?{{ attrs['query_string']|safe }}'">
+	  </div>
+	  {% endfor %}
+        </div>
+      {% endfor %}
+      <a
+        style="cursor: pointer"
+	onclick="window.location = '{{ update_get_parameters({'testjobs_progress_per_environments': None}) }}#testjobs-progress'">
+	{{ _('see progress across all environments') }}
+      </a>
+    {% endif %}
+
+  </div>
+</div>

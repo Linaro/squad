@@ -849,6 +849,12 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
 
         List of test jobs in the build (if any)
 
+     * `api/builds/<id>/testjobs_summary` GET
+
+        List of test jobs in the build summarized by job_status.
+        If `per_environment` is specified in the query string, the summary
+        will be split by environments.
+
      * `api/builds/<id>/cancel` POST
 
         Cancel all test jobs of the build (if any)
@@ -965,6 +971,12 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
         page = self.paginate_queryset(testjobs)
         serializer = TestJobSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
+
+    @action(detail=True, methods=['get'], suffix='test jobs summary')
+    def testjobs_summary(self, request, pk=None):
+        per_environment = request.query_params.get("per_environment", None)
+        summary = self.get_object().test_jobs_summary(per_environment is not None)
+        return Response({'results': summary})
 
     @action(detail=True, methods=['post'], suffix='cancel')
     def cancel(self, request, pk=None):

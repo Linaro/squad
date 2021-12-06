@@ -402,3 +402,37 @@ div#environment-separator {
 .panel-heading a.collapsed:after {
     content: "\f054";
 }
+
+/* test jobs progress bar */
+.progress-container {
+  display: flex;
+  height: 3rem;
+  padding: 0;
+  margin-bottom: 15px;
+  margin-top: -5px;
+}
+
+.progress-container .progress {
+  height: 2rem;
+  display: inline-block;
+  padding: 0;
+  transition: width 2s ease;
+  border-radius: 0px;
+  cursor: pointer;
+}
+
+.progress-container .complete {
+  background: #5aaf5b;
+}
+
+.progress-container .failed {
+  background: #a94442;
+}
+
+.progress-container .running {
+  background: #f8efc0;
+}
+
+.progress-container .none {
+  background: gray;
+}

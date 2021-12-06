@@ -13,7 +13,7 @@ from squad.core.models import TestRun
 class TestjobFilter(django_filters.FilterSet):
     has_errors = django_filters.BooleanFilter(field_name='failure', lookup_expr='isnull', label=N_('Success'))
     name = django_filters.CharFilter(field_name='name', lookup_expr='icontains', label=N_('Name'))
-    job_status = django_filters.CharFilter(field_name='job_status', lookup_expr='icontains', label=N_('Job Status'))
+    job_status = django_filters.CharFilter(field_name='job_status', lookup_expr='iexact', label=N_('Job Status'))
     submitted = django_filters.BooleanFilter(field_name='submitted', lookup_expr='exact', label=N_('Is submitted'))
     fetched = django_filters.BooleanFilter(field_name='fetched', lookup_expr='exact', label=N_('Is Fetched'))
     job_id = django_filters.CharFilter(field_name='job_id', lookup_expr='icontains', label=N_('Job ID'))

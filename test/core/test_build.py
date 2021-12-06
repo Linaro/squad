@@ -240,6 +240,31 @@ class BuildTest(TestCase):
         self.assertEqual(["bar", "foo"], [s[0].slug for s in test_suites[env1]])
         self.assertEqual(["foo"], [s[0].slug for s in test_suites[env2]])
 
+    def test_testjobs_summary(self):
+        build = self.project.builds.create(version='build-testjobs')
+        backend = Backend.objects.create(name='foobar', implementation_type='null')
+        for env in ['env1', 'env2']:
+            for status in [None, 'Complete', 'Incomplete', 'Canceled', 'Running']:
+                build.test_jobs.create(
+                    backend=backend,
+                    target=build.project,
+                    environment=env,
+                    job_status=status,
+                    submitted=status is not None,
+                    fetched=status in ['Complete', 'Incomplete'],
+                )
+
+        summary = build.test_jobs_summary()
+        expected_summary = {None: 2, 'Complete': 2, 'Incomplete': 2, 'Canceled': 2, 'Running': 2}
+        self.assertEqual(expected_summary, summary)
+
+        summary = build.test_jobs_summary(per_environment=True)
+        expected_summary = {
+            'env1': {None: 1, 'Complete': 1, 'Incomplete': 1, 'Canceled': 1, 'Running': 1},
+            'env2': {None: 1, 'Complete': 1, 'Incomplete': 1, 'Canceled': 1, 'Running': 1},
+        }
+        self.assertEqual(expected_summary, summary)
+
     def test_important_metadata_default(self):
         project = Project()
         build = Build(project=project)

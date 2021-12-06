@@ -676,6 +676,16 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/builds/%d/testjobs/' % self.build.id)
         self.assertEqual(1, len(data['results']))
 
+    def test_build_testjobs_summary(self):
+        data = self.hit('/api/builds/%d/testjobs_summary/' % self.build.id)
+        self.assertEqual(1, len(data['results']))
+        self.assertEqual({'null': 1}, data['results'])
+
+    def test_build_testjobs_summary_per_environment(self):
+        data = self.hit('/api/builds/%d/testjobs_summary/?per_environment=1' % self.build.id)
+        self.assertEqual(1, len(data['results']))
+        self.assertEqual({'myenv': {'null': 1}}, data['results'])
+
     def test_build_tests(self):
         data = self.hit('/api/builds/%d/tests/' % self.build.id)
         self.assertEqual(36, len(data['results']))

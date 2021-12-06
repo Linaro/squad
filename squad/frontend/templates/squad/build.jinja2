@@ -8,6 +8,10 @@
 <h2>{{ _('Metadata') }}</h2>
 {% include "squad/_metadata.jinja2" %}
 
+{% if build.test_jobs.count() > 0 %}
+    {% include "squad/testjobs_progress.jinja2" %}
+{% endif %}
+
 <div class="form-group row">
     <div class="col-md-12 col-sm-12" ng-controller='BuildCompareController' ng-init="init({{ build.project_id }})">
         <h2>{{ _('Compare builds') }}</h2>

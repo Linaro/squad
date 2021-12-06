@@ -1,8 +1,9 @@
 import json
 import yaml
 import logging
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 from hashlib import sha1
+from itertools import groupby
 import re
 
 
@@ -649,6 +650,19 @@ class Build(models.Model):
                 key=lambda suite_dict: suite_dict[0].slug)
 
         return result
+
+    def test_jobs_summary(self, per_environment=False):
+        testjobs = self.test_jobs.only('environment', 'job_status', 'target_build').order_by('environment')
+        summary = {}
+        if per_environment:
+            for env, jobs in groupby(testjobs, lambda tj: tj.environment):
+                if env is None:
+                    continue
+                summary[env] = Counter([tj.job_status for tj in jobs])
+        else:
+            summary = Counter([tj.job_status for tj in testjobs])
+
+        return summary
 
 
 class BuildPlaceholder(models.Model):
