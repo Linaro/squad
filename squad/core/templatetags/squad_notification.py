@@ -37,4 +37,7 @@ def tabulate_test_comparison(comparison, test_results=None):
 @register_filter
 def metadata_txt(v, key=None):
     separator = ("\n" + " " * (len(key) + 2)) if key else " "
-    return separator.join(v) if type(v) is list else v
+    if type(v) is list:
+        list_of_lists = any(isinstance(item, list) for item in v)
+        return separator.join(v) if not list_of_lists else v
+    return v
