@@ -6,6 +6,7 @@ import threading
 
 
 from celery.exceptions import Retry
+from django.utils import timezone
 
 
 from squad.ci import models
@@ -41,7 +42,7 @@ class PollTest(TestCase):
         group = core_models.Group.objects.create(slug='testgroup')
         project = group.projects.create(slug='testproject')
         backend = models.Backend.objects.create(name='b1')
-        testjob = backend.test_jobs.create(target=project, submitted=True)
+        testjob = backend.test_jobs.create(target=project, submitted=True, submitted_at=timezone.now())
         poll.apply()
         fetch_method.apply_async.assert_called_with(args=(testjob.id,), task_id=task_id(testjob))
 

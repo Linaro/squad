@@ -39,6 +39,7 @@ class BackendTestBase(TestCase):
         self.build = self.project.builds.create(version='1')
 
     def create_test_job(self, **attrs):
+        attrs['submitted_at'] = attrs.get('submitted_at') or timezone.now()
         return self.backend.test_jobs.create(target=self.project, target_build=self.build, **attrs)
 
 
@@ -78,6 +79,15 @@ class BackendPollTest(BackendTestBase):
 
     def test_poll_gives_up_eventually(self):
         self.create_test_job(submitted=True, fetch_attempts=self.backend.max_fetch_attempts + 1)
+        jobs = list(self.backend.poll())
+        self.assertEqual([], jobs)
+
+    def test_poll_gives_up_after_a_week(self):
+        # The test above is when the testjob is ready to be fetched
+        # this tests the case where the job has been submitted but
+        # it was never processed by the backend
+        eight_days_ago = timezone.now() - relativedelta(days=8)
+        self.create_test_job(submitted=True, submitted_at=eight_days_ago, fetched=False)
         jobs = list(self.backend.poll())
         self.assertEqual([], jobs)
 
