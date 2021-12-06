@@ -1,3 +1,21 @@
+# 1.46
+
+This 1.46 release adds a new widget in the build page that
+allows users to follow up overall testjobs progress and
+accross environments.
+
+The release also fixes a bug when metadata has list of lists.
+
+* api: rest: add endpoint testjobs summary of a build
+* core: templatetags: squad_notification: handle list of lists
+* core: models: generate testjobs summary for builds
+* frontend:
+  * testjobs_progress: make green a little lighter
+  * testjobs_progress: make proportional progress bars
+  * build: allow seeing testjobs progress for each environment
+  * ci: filter job_status by exact string
+  * build: add testjob progress bar
+
 # 1.45
 
 This 1.45 release adds several features around testjobs.
