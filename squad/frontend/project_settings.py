@@ -23,6 +23,12 @@ class ProjectFormAdvanced(forms.ModelForm):
         fields = ['project_settings']
 
 
+class ProjectFormBuildConfidence(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ['build_confidence_count', 'build_confidence_threshold']
+
+
 class EnvironmentForm(forms.ModelForm):
     class Meta:
         model = Environment
@@ -63,6 +69,24 @@ def advanced_settings(request, group, project):
         'form': form,
     }
     return render(request, 'squad/project_settings/advanced.jinja2', context)
+
+
+@auth_write
+def build_confidence(request, group, project):
+    if request.method == "POST":
+        form = ProjectFormBuildConfidence(request.POST, instance=request.project)
+        if form.is_valid():
+            form.save()
+            return redirect(request.path)
+    else:
+        form = ProjectFormBuildConfidence(instance=request.project)
+
+    context = {
+        'group': request.group,
+        'project': request.project,
+        'form': form,
+    }
+    return render(request, 'squad/project_settings/build_confidence.jinja2', context)
 
 
 @auth_write
@@ -130,6 +154,7 @@ urls = [
     url('^$', settings, name='project-settings'),
     url(r'^thresholds/$', thresholds, name='project-settings-thresholds'),
     url(r'^environments/$', environments, name='project-settings-environments'),
+    url(r'^build_confidence/$', build_confidence, name='project-settings-build-confidence'),
     url(r'^advanced/$', advanced_settings, name='project-advanced-settings'),
     url(r'^delete/$', delete, name='project-settings-delete'),
 ]

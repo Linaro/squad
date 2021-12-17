@@ -325,6 +325,16 @@ class Project(models.Model, DisplayName):
         help_text=N_('Forces builds to finish when "Notification timeout" is reached'),
     )
 
+    build_confidence_count = models.IntegerField(
+        default=20,
+        help_text=N_('Number of previous builds to compare to'),
+    )
+
+    build_confidence_threshold = models.IntegerField(
+        default=90,
+        help_text=N_('Percentage of previous builds that built successfully'),
+    )
+
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
         self.__status__ = None
