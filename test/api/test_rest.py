@@ -200,6 +200,10 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/projects/')
         self.assertEqual(2, len(data['results']))
 
+    def test_project_settings(self):
+        data = self.hit('/api/projects/%d/justin/' % self.project.id)
+        self.assertEqual(data, {})
+
     def test_project_builds(self):
         data = self.hit('/api/projects/%d/builds/' % self.project.id)
         self.assertEqual(6, len(data['results']))

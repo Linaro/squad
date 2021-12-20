@@ -497,6 +497,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         Test results of the last build
 
+     * `api/projects/<id>/justin` GET
+
+        List of settings for this project
+
      * `api/projects/<id>/subscribe` POST
 
         Subscribe to project notifications
@@ -598,6 +602,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
+    @action(detail=True, methods=['get'], suffix='justin')
+    def justin(self, request, pk=None):
+        """
+        List of settings for this project
+        """
+        project = self.get_object()
+        return Response({}, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['post'], suffix='subscribe')
     def subscribe(self, request, pk=None):
         subscriber_email = request.data.get("email", None)
@@ -667,7 +679,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
             serializer = BuildsComparisonSerializer(comparison)
             return Response(serializer.data)
-
 
 class ProjectStatusSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
