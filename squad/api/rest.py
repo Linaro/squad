@@ -497,6 +497,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         Test results of the last build
 
+     * `api/projects/<id>/basic_settings` GET
+
+        List of the basic settings for this project
+
      * `api/projects/<id>/subscribe` POST
 
         Subscribe to project notifications
@@ -597,6 +601,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
             context={'request': request, 'suite': suite, 'metadata': metadata, 'environments': environments}
         )
         return Response(serializer.data)
+
+    @action(detail=True, methods=['get'], suffix='basic_settings')
+    def basic_settings(self, request, pk=None):
+        """
+        List of the basic settings for this project
+        """
+        project = self.get_object()
+        return Response({
+            "build_confidence_count": project.build_confidence_count,
+            "build_confidence_threshold": project.build_confidence_threshold,
+        }, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], suffix='subscribe')
     def subscribe(self, request, pk=None):
