@@ -200,6 +200,11 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/projects/')
         self.assertEqual(2, len(data['results']))
 
+    def test_project_basic_settings(self):
+        data = self.hit('/api/projects/%d/basic_settings/' % self.project.id)
+        self.assertTrue("build_confidence_count" in data)
+        self.assertTrue("build_confidence_threshold" in data)
+
     def test_project_builds(self):
         data = self.hit('/api/projects/%d/builds/' % self.project.id)
         self.assertEqual(6, len(data['results']))

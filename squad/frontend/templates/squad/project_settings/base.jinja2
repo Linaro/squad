@@ -19,6 +19,7 @@
         <li class="list-group-item {% if url_name == "project-settings" %}active{% endif %}"><a href="{{project_section_url(project, 'project-settings')}}">{{ _('Basics') }}</a></li>
         <li class="list-group-item {% if url_name == "project-settings-environments" %}active{% endif %}"><a href="{{project_section_url(project, 'project-settings-environments')}}">{{ _('Environments') }}</a></li>
         <li class="list-group-item {% if url_name == "project-settings-thresholds" %}active{% endif %}"><a href="{{project_section_url(project, 'project-settings-thresholds')}}">{{ _('Metric thresholds') }}</a></li>
+        <li class="list-group-item {% if url_name == "project-settings-build-confidence" %}active{% endif %}"><a href="{{project_section_url(project, 'project-settings-build-confidence')}}">{{ _('Build confidence') }}</a></li>
         <li class="list-group-item {% if url_name == "project-advanced-settings" %}active{% endif %}"><a href="{{project_section_url(project, 'project-advanced-settings')}}">{{ _('Advanced') }}</a></li>
         <li class="list-group-item {% if url_name == "project-settings-delete" %}active{% endif %}"><a href="{{project_section_url(project, 'project-settings-delete')}}">{{ _('Delete project') }}</a></li>
         {% endwith %}
