@@ -1,3 +1,16 @@
+# 1.47
+
+This 1.47 release adds support to build confidence configuration,
+allowing users to define configs to get test regressions with
+more confidence.
+
+Complete list of changes going in:
+
+* core: migrations: rename migration
+* setup.cfg: ignore the .venv directory when running flake8
+* all: add a project basic_settings api endpoint
+* all: add build confidence project settings
+
 # 1.46
 
 This 1.46 release adds a new widget in the build page that
