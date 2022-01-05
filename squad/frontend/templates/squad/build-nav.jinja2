@@ -56,6 +56,11 @@
             {{ _('All test results') }}
         </a>
     </li>
+    <li role="presentation" {% if url_name == 'build_metrics' %}class="active"{% endif %}>
+        <a href="{{build_section_url(build, 'build_metrics')}}">
+            {{ _('All Metrics') }}
+        </a>
+    </li>
     <li role="presentation" {% if url_name == 'build_metadata' %}class="active"{% endif %}>
         <a href="{{build_section_url(build, 'build_metadata')}}">
         {{ _('Metadata') }}

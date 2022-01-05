@@ -1,0 +1,72 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+
+<div ng-app='Build'>
+{% include "squad/build-nav.jinja2" %}
+</div>
+
+<h2>{{ _('All metrics') }}</h2>
+
+<div>
+    <div class='row row-bordered'>
+        <div class='col-md-12 col-sm-12 filter'>
+          <a id="searchLink"><button type='button' class='btn btn-primary fa fa-search'></button></a>
+          <input name='search' id='search' type='text' placeholder='{{ _('Filter results ...') }}' value='{{search}}' />
+        </div>
+    </div>
+
+    <table class='test-results'>
+        <thead>
+            <th>{{ _('Metric') }}</th>
+            {% for e in environments %}
+            <th>{{ e.slug }}</th>
+            {% endfor %}
+        </thead>
+        {% if not metrics %}
+        <tr>
+            <td colspan="{{environments|length|add(1)}}" class="alert alert-warning">
+                <em>{{ _('This build has no metrics yet.') }}</em>
+            </td>
+        </tr>
+        {% else %}
+            {% for u in umetrics %}
+              <tr>
+                <td>{{ u.full_name }}</td>
+                {% for e in environments %}
+                {% if e.slug in rows and u.full_name in rows[e.slug]: %}
+                  <td>{{ rows[e.slug][u.full_name].result }}</td>
+                {% else %}
+                  <td>&nbsp;</td>
+                {% endif %}
+                {% endfor %}
+              <tr>
+            {% endfor %}
+        {% endif %}
+    </table>
+
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script type="module" src='{{static("squad/build.js")}}'></script>
+<script type="text/javascript" src='{{static("squad/table.js")}}'></script>
+<script type="text/javascript">
+$('[data-toggle="tooltip"]').tooltip();
+function loadSearchURL(pageParam, search) {
+  searchURL = pageParam + "&search=" + search;
+  window.location = searchURL;
+}
+$("#search").keypress(function(e) {
+  if(e.which == 13) {
+    window.location = "?page=1&search=" + $("#search").val();
+    return false;
+  }
+});
+$("#searchLink").click(function(event) {
+  window.location = "?page=1&search=" + $("#search").val();
+  return false;
+});
+</script>
+{% endblock %}
