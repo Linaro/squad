@@ -337,7 +337,7 @@ class Backend(BaseBackend):
                 return False
         else:
             response = requests.post(
-                urljoin(self.api_url_base, "jobs/%s/cancel" % (job_id)),
+                urljoin(self.api_url_base, "jobs/%s/cancel/" % (job_id)),
                 headers=self.authentication,
                 timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
             )
@@ -357,7 +357,7 @@ class Backend(BaseBackend):
         if self.use_xml_rpc:
             return self.proxy.scheduler.resubmit_job(job_id)
         response = requests.post(
-            urljoin(self.api_url_base, "jobs/%s/resubmit" % (job_id)),
+            urljoin(self.api_url_base, "jobs/%s/resubmit/" % (job_id)),
             headers=self.authentication,
             timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
         )

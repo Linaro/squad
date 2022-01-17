@@ -1272,7 +1272,7 @@ class LavaTest(TestCase):
             job_id="1236"
         )
         with requests_mock.Mocker() as m:
-            m.post("http://example.com/api/v0.2/jobs/1236/resubmit",
-                    status_code=405,
-                    text="Method not allowed")
+            m.post("http://example.com/api/v0.2/jobs/1236/resubmit/",
+                   status_code=405,
+                   text="Method not allowed")
             self.assertRaises(TemporarySubmissionIssue, lava.resubmit, testjob)
