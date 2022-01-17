@@ -1243,3 +1243,17 @@ class LavaTest(TestCase):
         )
         job_id = lava.resubmit(testjob)
         self.assertEqual(job_id, ['1235'])
+
+    @patch("squad.ci.backend.lava.Backend.__submit__", return_value=[])
+    def test_resubmit_job_lava_error(self, __resubmit__):
+        lava = self.backend.get_implementation()
+        test_definition = "foo: 1\njob_name: bar"
+        testjob = TestJob(
+            definition=test_definition,
+            backend=self.backend,
+            target=self.project,
+            submitted=True,
+            job_status='Canceled',
+            job_id="1236"
+        )
+        self.assertRaises(TemporarySubmissionIssue, lava.resubmit, testjob)
