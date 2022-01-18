@@ -4,6 +4,7 @@ from io import BytesIO
 from test.mock import patch, MagicMock
 import os
 import requests
+import requests_mock
 import yaml
 import xmlrpc
 
@@ -1243,3 +1244,35 @@ class LavaTest(TestCase):
         )
         job_id = lava.resubmit(testjob)
         self.assertEqual(job_id, ['1235'])
+
+    @patch("squad.ci.backend.lava.Backend.__submit__", return_value=[])
+    def test_resubmit_job_lava_error(self, __resubmit__):
+        lava = self.backend.get_implementation()
+        test_definition = "foo: 1\njob_name: bar"
+        testjob = TestJob(
+            definition=test_definition,
+            backend=self.backend,
+            target=self.project,
+            submitted=True,
+            job_status='Canceled',
+            job_id="1236"
+        )
+        self.assertRaises(TemporarySubmissionIssue, lava.resubmit, testjob)
+
+    def test_resubmit_job_lava_4xx_reply(self):
+        self.backend.url = "http://example.com/api/v0.2/"
+        lava = self.backend.get_implementation()
+        test_definition = "foo: 1\njob_name: bar"
+        testjob = TestJob(
+            definition=test_definition,
+            backend=self.backend,
+            target=self.project,
+            submitted=True,
+            job_status='Canceled',
+            job_id="1236"
+        )
+        with requests_mock.Mocker() as m:
+            m.post("http://example.com/api/v0.2/jobs/1236/resubmit/",
+                   status_code=405,
+                   text="Method not allowed")
+            self.assertRaises(TemporarySubmissionIssue, lava.resubmit, testjob)

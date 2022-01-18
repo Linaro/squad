@@ -9,3 +9,4 @@ django_extensions
 pytest
 pytest-django
 pytest-cov
+requests-mock

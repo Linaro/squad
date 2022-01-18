@@ -237,6 +237,8 @@ class Backend(BaseBackend):
             raise SubmissionIssue(self.url_remove_token(str(fault)))
         except ConnectionRefusedError as fault:
             raise TemporarySubmissionIssue(str(fault))
+        except requests.exceptions.HTTPError as fault:
+            raise TemporarySubmissionIssue(str(fault))
 
     def url_remove_token(self, text):
         if self.data is not None and self.data.token is not None:
@@ -289,6 +291,12 @@ class Backend(BaseBackend):
         with self.handle_job_submission():
             new_job_id_list = self.__resubmit__(test_job.job_id)
 
+        # in case LAVA doesn't respond 201 or any of the error
+        # codes, the job list might be empty. Raise exception
+        # should such condition happen.
+        if not new_job_id_list:
+            raise TemporarySubmissionIssue("LAVA returned empty job ID list")
+
         if isinstance(new_job_id_list, list):
             new_job_id = new_job_id_list[0]
         else:
@@ -329,7 +337,7 @@ class Backend(BaseBackend):
                 return False
         else:
             response = requests.post(
-                urljoin(self.api_url_base, "jobs/%s/cancel" % (job_id)),
+                urljoin(self.api_url_base, "jobs/%s/cancel/" % (job_id)),
                 headers=self.authentication,
                 timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
             )
@@ -349,10 +357,13 @@ class Backend(BaseBackend):
         if self.use_xml_rpc:
             return self.proxy.scheduler.resubmit_job(job_id)
         response = requests.post(
-            urljoin(self.api_url_base, "jobs/%s/resubmit" % (job_id)),
+            urljoin(self.api_url_base, "jobs/%s/resubmit/" % (job_id)),
             headers=self.authentication,
             timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
         )
+        # in case LAVA responds with one of the 4XX or 5XX codes
+        # raise issue with proper message sent to the UI
+        response.raise_for_status()
         if response.status_code == 201:
             return response.json()['job_ids']
         return []
