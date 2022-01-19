@@ -1,3 +1,17 @@
+# 1.48
+
+Happy 2022!
+
+This 1.48 release adds a metrics page per build and also
+fixes a bug catching exceptions for LAVA backends using
+REST API instead of XMLRPC.
+
+Complete list of changes going in:
+* ci: Avoid redirection when cancelling or resubmitting LAVA jobs
+* ci: add tests for 4xx LAVA responses
+* ci: Fix LAVA backend in case or job resubmission
+* all: add a page to view the metrics for a build
+
 # 1.47
 
 This 1.47 release adds support to build confidence configuration,
