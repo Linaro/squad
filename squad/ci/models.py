@@ -12,7 +12,7 @@ from squad.core.tasks import ReceiveTestRun, UpdateProjectStatus
 from squad.core.models import Project, Build, TestRun, slug_validator
 from squad.core.plugins import apply_plugins
 from squad.core.tasks.exceptions import InvalidMetadata, DuplicatedTestJob
-from squad.ci.exceptions import FetchIssue
+from squad.ci.exceptions import FetchIssue, SubmissionIssue
 from squad.core.utils import yaml_validator
 
 
@@ -259,22 +259,26 @@ class TestJob(models.Model):
 
     def force_resubmit(self):
         self.reset_build_events()
-        # resubmit test job not respecting any restrictions
-        self.backend.get_implementation().resubmit(self)
-        self.resubmitted_count += 1
 
-        # Delete testrun, if any
+        # Delete old data if any
         if self.target.get_setting('CI_DELETE_RESULTS_RESUBMITTED_JOBS', False) and self.testrun:
             testrun = self.testrun
-
             self.testrun = None
-            self.save()
-
             testrun.delete()
-        else:
-            self.save()
 
-        return True
+        success = False
+        try:
+            # Resubmit test job not respecting any restrictions
+            self.backend.get_implementation().resubmit(self)
+            self.resubmitted_count += 1
+
+            success = True
+            self.failure = None
+        except SubmissionIssue as issue:
+            self.failure = str(issue)
+
+        self.save()
+        return success
 
     def cancel(self):
         if self.job_status == "Canceled":

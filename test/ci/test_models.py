@@ -10,6 +10,7 @@ from squad.core import models as core_models
 
 from squad.ci import models
 from squad.ci.backend.null import Backend
+from squad.ci.exceptions import SubmissionIssue
 
 
 class BackendTest(TestCase):
@@ -729,6 +730,20 @@ class TestJobTest(TestCase):
         patch_notification.assert_called_with(self.build.id)
         self.assertEqual(5, self.build.tests.count())
         self.assertEqual(1, self.build.callbacks.filter(is_sent=True).count())
+
+    @patch('squad.ci.backend.null.Backend.resubmit', side_effect=SubmissionIssue)
+    def test_force_resubmit_exception(self, backend_resubmit):
+        testjob = models.TestJob.objects.create(
+            target=self.project,
+            target_build=self.build,
+            environment='myenv',
+            backend=self.backend,
+            submitted=True,
+            can_resubmit=True,
+        )
+        testjob.resubmit()
+        self.assertEqual(0, testjob.resubmitted_jobs.count())
+        self.assertEqual(0, testjob.resubmitted_count)
 
     def test_show_definition_hides_secrets(self):
         definition = "foo: bar\nsecrets:\n  baz: qux\n"
