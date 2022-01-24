@@ -264,6 +264,21 @@ class TestSendNotification(TestCase):
         msg = mail.outbox[0]
         self.assertIn("[['list of list value 1'], ['list of list value 2']]", msg.body)
 
+    def test_parse_metadata_list_of_ints(self):
+        self.project.subscriptions.create(email='foo@example.com')
+        self.project.html_mail = False
+        self.project.save()
+        env = self.project.environments.create(slug='myenv')
+        self.build2.test_runs.create(environment=env, metadata_file='{"duration": [11,22,33]}')
+
+        status = ProjectStatus.create_or_update(self.build2)
+        send_status_notification(status)
+
+        msg = mail.outbox[0]
+        self.assertIn("11", msg.body)
+        self.assertIn("22", msg.body)
+        self.assertIn("33", msg.body)
+
     def test_avoid_big_emails(self):
         _1MB = 1024 * 1024
         self.project.subscriptions.create(email='foo@example.com')
