@@ -1,3 +1,14 @@
+# 1.48.1
+
+This 1.48.1 release fixes 2 bugs in SQUAD. First happens when build
+metadata contains a list of integers and the second was a missing
+catch on exceptions when resubmitting jobs.
+
+Complete list of changes going in:
+
+* ci: models: handle resubmission exceptions
+* core: templatetags: stringify any list
+
 # 1.48
 
 Happy 2022!
