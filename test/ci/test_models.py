@@ -535,6 +535,7 @@ class TestJobTest(TestCase):
             backend=self.backend,
             submitted=True,
             can_resubmit=True,
+            job_id="12345",
         )
         testjob.resubmit()
         self.assertEqual(1, testjob.resubmitted_count)
@@ -555,6 +556,7 @@ class TestJobTest(TestCase):
             testrun=testrun,
             submitted=True,
             can_resubmit=True,
+            job_id="12345",
         )
         testjob.resubmit()
         self.assertEqual(1, testjob.resubmitted_count)
@@ -740,10 +742,27 @@ class TestJobTest(TestCase):
             backend=self.backend,
             submitted=True,
             can_resubmit=True,
+            job_id="12345",
         )
-        testjob.resubmit()
+        testjob.force_resubmit()
         self.assertEqual(0, testjob.resubmitted_jobs.count())
         self.assertEqual(0, testjob.resubmitted_count)
+        self.assertEqual("12345", testjob.job_id)
+
+    @patch('squad.ci.backend.null.Backend.submit', return_value=["12345"])
+    def test_force_resubmit_unsubmitted_job(self, backend_resubmit):
+        # By "unsubmitted", maybe a cancelled before submission or a submission that went wrong, and the
+        # user just wants to force_resubmit it
+        testjob = models.TestJob.objects.create(
+            target=self.project,
+            target_build=self.build,
+            environment='myenv',
+            backend=self.backend,
+        )
+        testjob.force_resubmit()
+        self.assertEqual(0, testjob.resubmitted_jobs.count())
+        self.assertEqual(0, testjob.resubmitted_count)
+        self.assertEqual('12345', testjob.job_id)
 
     def test_show_definition_hides_secrets(self):
         definition = "foo: bar\nsecrets:\n  baz: qux\n"

@@ -1551,7 +1551,10 @@ class TestJobViewSet(ModelViewSet):
         if testjob.resubmit():
             # find latest child of this job
             new_testjob = testjob.resubmitted_jobs.last()
-            log_addition(request, new_testjob, "Created testjob as resubmission")
+            if new_testjob is None:
+                new_testjob = testjob
+            else:
+                log_addition(request, new_testjob, "Created testjob as resubmission")
             data = {"message": "OK", "url": rest_reverse('testjob-detail', args=[new_testjob.pk], request=request)}
             return Response(data, status=status.HTTP_200_OK)
         return Response(
@@ -1565,7 +1568,10 @@ class TestJobViewSet(ModelViewSet):
         if testjob.force_resubmit():
             # find latest child of this job
             new_testjob = testjob.resubmitted_jobs.last()
-            log_addition(request, new_testjob, "Created testjob as resubmission")
+            if new_testjob is None:
+                new_testjob = testjob
+            else:
+                log_addition(request, new_testjob, "Created testjob as resubmission")
             data = {"message": "OK", "url": rest_reverse('testjob-detail', args=[new_testjob.pk], request=request)}
             return Response(data, status=status.HTTP_200_OK)
         return Response(

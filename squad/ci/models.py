@@ -258,6 +258,12 @@ class TestJob(models.Model):
             self.target_build.reset_events()
 
     def force_resubmit(self):
+        if self.job_id is None:
+            # Seems like something went wrong while submitting job in the first place
+            # so just try submitting once more
+            self.backend.submit(self)
+            return True
+
         self.reset_build_events()
 
         # Delete old data if any

@@ -292,7 +292,8 @@ class CiApiTest(TestCase):
 
         t = self.backend.test_jobs.create(
             target=self.project,
-            can_resubmit=True
+            can_resubmit=True,
+            job_id="12345",
         )
         r = self.client.post('/api/resubmit/%s' % t.pk)
         self.assertEqual(201, r.status_code)
@@ -324,7 +325,8 @@ class CiApiTest(TestCase):
 
         t = self.backend.test_jobs.create(
             target=self.project,
-            can_resubmit=True
+            can_resubmit=True,
+            job_id="12345",
         )
 
         r = self.restclient.post('/api/resubmit/%s' % t.pk)
@@ -358,7 +360,8 @@ class CiApiTest(TestCase):
 
         t = self.backend.test_jobs.create(
             target=self.project,
-            can_resubmit=True
+            can_resubmit=True,
+            job_id="12345",
         )
 
         r = self.restclient.post('/api/resubmit/%s' % t.pk)
@@ -375,7 +378,8 @@ class CiApiTest(TestCase):
 
         t = self.backend.test_jobs.create(
             target=self.project,
-            can_resubmit=True
+            can_resubmit=True,
+            job_id="12345",
         )
         r = self.adminclient.post('/api/resubmit/%s' % t.pk)
         self.assertEqual(201, r.status_code)
