@@ -49,6 +49,7 @@ def testjobs(request, group_slug, project_slug, build_version):
             "project": project,
             "build": build,
             "testjobs": testjobs_page,
+            "user_can_submit_jobs": project.can_submit_testjobs(request.user),
         }
 
         return render(request, 'squad/testjobs.jinja2', context)

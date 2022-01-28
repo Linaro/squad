@@ -50,7 +50,7 @@
     </div>
 
     <div>
-    {% if project.can_submit_testjobs(user) and testjobs|length %}
+    {% if user_can_submit_jobs and testjobs|length %}
     <div class='pull-right clearfix' ng-controller='CancelController' title="{{ _('Cancel all jobs') }}">
         <a class="btn" ng-click="cancel_all({{ build.id }})" ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}" ng-disabled="done" >
 	    <span ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}" ng-disabled="done"></span>
@@ -95,7 +95,7 @@
                 {% if testjob.definition %}
                 <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-definition-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-definition-{{testjob.pk}}" title="{{ _('Job definition') }}"><span class="glyphicon glyphicon-list-alt" aria-hidden="true" title="{{ _('Job definition') }}"></span></button>
                 {% endif %}
-                {% if project.can_submit_testjobs(user) %}
+                {% if user_can_submit_jobs %}
                     {% if not testjob.fetched %}
                     <div class='pull-right' ng-controller='CancelController' title="{{ _('Cancel job') }}">
                         <a
