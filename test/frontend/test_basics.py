@@ -157,6 +157,10 @@ class FrontendTest(TestCase):
         # assert that all 3 testjobs badges are displayed and have each 1 in it
         self.assertTrue(re.match(r'.*?(?:badge-(Created|Complete|Incomplete)[^>]+title="\1">1.*?){3}.*?', str(response.content)))
 
+    def test_build_testjobs_change_per_page(self):
+        response = self.hit('/mygroup/myproject/build/1.0/testjobs/?per_page=1')
+        self.assertIn('<a href="?per_page=1&amp;page=2"', str(response.content))
+
     def test_build_latest_finished(self):
         self.hit('/mygroup/myproject/build/latest-finished/')
 

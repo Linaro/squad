@@ -33,8 +33,9 @@ def testjobs(request, group_slug, project_slug, build_version):
 
     try:
         testjob_filter = TestjobFilter(request.GET, queryset=testjobs)
-        paginator = Paginator(testjob_filter.qs, 25)
         page = request.GET.get('page', 1)
+        per_page = request.GET.get('per_page', 25)
+        paginator = Paginator(testjob_filter.qs, per_page)
         testjobs_page = paginator.page(page)
         context = {
             'filter': testjob_filter,
