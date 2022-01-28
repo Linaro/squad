@@ -2,7 +2,7 @@ import json
 import mimetypes
 import svgwrite
 
-from django.db.models import Case, When, Prefetch
+from django.db.models import Case, When, Prefetch, Max
 from django.core.paginator import Paginator, EmptyPage
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
@@ -10,7 +10,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from squad.ci.models import TestJob
 from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold, KnownIssue, Test
-from squad.core.models import Build, Subscription, TestRun, Project, SuiteMetadata
+from squad.core.models import Build, Subscription, TestRun, SuiteMetadata
 from squad.core.queries import get_metric_data, test_confidence
 from squad.frontend.queries import get_metrics_list
 from squad.frontend.utils import file_type, alphanum_sort
@@ -59,23 +59,10 @@ def home(request):
         ordering = 'last_updated'
 
     if ordering == 'last_updated':
-        builds_prefetch = Prefetch('builds', queryset=Build.objects.order_by('-datetime').only('id', 'project_id', 'datetime'))
-        project_prefetch = Prefetch('projects', queryset=Project.objects.prefetch_related(builds_prefetch))
-
-        all_groups = list(Group.objects.accessible_to(request.user).prefetch_related(project_prefetch))
-        for group in all_groups:
-            group.most_recent_timestamp = 0
-            for project in group.projects.all():
-                try:
-                    build = project.builds.all()[0]
-                    build_timestamp = build.datetime.timestamp()
-                    if build_timestamp > group.most_recent_timestamp:
-                        group.most_recent_timestamp = build_timestamp
-                except IndexError:
-                    pass
-
-        all_groups.sort(key=lambda g: g.most_recent_timestamp, reverse=True)
-
+        all_groups = list(Group.objects.accessible_to(request.user).annotate(group_datetime=Max('projects__builds__datetime')))
+        for g in all_groups:
+            g.timestamp = g.group_datetime.timestamp() if g.group_datetime else 0
+        all_groups.sort(key=lambda g: g.timestamp, reverse=True)
     else:
         all_groups = Group.objects.accessible_to(request.user)
 
