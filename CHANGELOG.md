@@ -1,3 +1,24 @@
+# 1.48.2
+
+This 1.48.2 release really fixes the bug when re-submitting jobs
+that weren't submitted in first place.
+
+The release also improves testjobs page load times and mainly it improves
+load time of home page.
+
+Complete list of changes going in:
+
+* ci:
+  * backend: lava undo resubmit on unsubmitted job
+  * models: really re-submit unsubmitted jobs
+* frontend:
+  * ci: avoid re-checking if user can submit
+  * ci: lazy-load testjob definition
+  * ci: remove unecessary queries
+  * ci: support changing number of jobs per page
+  * templates: testjobs: avoid query for perent jobs
+  * views: improve home page load time
+
 # 1.48.1
 
 This 1.48.1 release fixes 2 bugs in SQUAD. First happens when build
