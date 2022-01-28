@@ -29,7 +29,7 @@ def testjobs(request, group_slug, project_slug, build_version):
     if build is None:
         raise Http404()
 
-    testjobs = TestJob.objects.filter(target_build=build).prefetch_related('backend', 'parent_job__backend').order_by('id')
+    testjobs = TestJob.objects.filter(target_build=build).prefetch_related('backend', 'parent_job__backend').defer('definition').order_by('id')
 
     try:
         testjob_filter = TestjobFilter(request.GET, queryset=testjobs)

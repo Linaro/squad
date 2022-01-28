@@ -92,9 +92,7 @@
                 {% if testjob.failure %}
                 <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-failure-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-failure-{{testjob.pk}}" title="{{ _('Job failure message') }}"><span class="glyphicon glyphicon-alert" aria-hidden="true" title="{{ _('Job failure message') }}"></span></button>
                 {% endif %}
-                {% if testjob.definition %}
-                <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-definition-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-definition-{{testjob.pk}}" title="{{ _('Job definition') }}"><span class="glyphicon glyphicon-list-alt" aria-hidden="true" title="{{ _('Job definition') }}"></span></button>
-                {% endif %}
+                <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-definition-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-definition-{{testjob.pk}}" title="{{ _('Job definition') }}" onclick="$('#definition-{{ testjob.pk }}').load('/api/testjobs/{{ testjob.pk }}/definition/')"><span class="glyphicon glyphicon-list-alt" aria-hidden="true" title="{{ _('Job definition') }}"></span></button>
                 {% if user_can_submit_jobs %}
                     {% if not testjob.fetched %}
                     <div class='pull-right' ng-controller='CancelController' title="{{ _('Cancel job') }}">
@@ -149,12 +147,10 @@
                 <pre>{{ testjob.failure }}</pre>
             </div>
             {% endif %}
-            {% if testjob.definition %}
             <div class="collapse" id="collapse-definition-{{testjob.pk}}">
                 <h4>{{ _('Definition') }}</h4>
-                <pre>{{ testjob.show_definition }}</pre>
+                <pre id="definition-{{ testjob.pk }}"></pre>
             </div>
-            {% endif %}
         </div>
     </div>
     {% endfor %}
