@@ -1224,27 +1224,6 @@ class LavaTest(TestCase):
         with self.assertRaises(SubmissionIssue):
             lava.resubmit(testjob)
 
-    @patch("squad.ci.backend.lava.Backend.__submit__", return_value="1235")
-    def test_resubmit_canceled_job(self, __resubmit__):
-        """
-            There might be a scenario where a test job got submitted and then canceled
-            and never make it to LAVA to get a job_id from it.
-
-            Because testjob had no job_id, __resubmit__ returns None, which
-            breaks upper functions.
-        """
-        lava = LAVABackend(None)
-        test_definition = "foo: 1\njob_name: bar"
-        testjob = TestJob(
-            definition=test_definition,
-            backend=self.backend,
-            target=self.project,
-            submitted=True,
-            job_status='Canceled',
-        )
-        job_id = lava.resubmit(testjob)
-        self.assertEqual(job_id, ['1235'])
-
     @patch("squad.ci.backend.lava.Backend.__submit__", return_value=[])
     def test_resubmit_job_lava_error(self, __resubmit__):
         lava = self.backend.get_implementation()
