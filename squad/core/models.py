@@ -563,6 +563,32 @@ class Build(models.Model):
             return False
         return True
 
+    __failures__ = None
+
+    @property
+    def failures(self):
+        if self.__failures__ is None:
+            failures = self.tests.filter(result=False).exclude(has_known_issues=True).prefetch_related("metadata", "environment")
+
+            limit = self.project.build_confidence_count
+            builds = self.project.builds.filter(
+                id__lt=self.id,
+            ).order_by("-id").only("id")[:limit]
+
+            history = Test.objects.filter(
+                metadata__in=[f.metadata for f in failures],
+                environment__in=[f.environment for f in failures],
+                build_id__in=list(builds.values_list("id", flat=True)),
+            ).order_by("-build_id").prefetch_related("metadata", "environment").defer("log")
+
+            for f in failures:
+                f_history = [t for t in history if t.metadata == f.metadata and t.environment == f.environment]
+                f.set_confidence(self.project.build_confidence_threshold, f_history)
+
+            self.__failures__ = failures
+
+        return self.__failures__
+
     @property
     def finished(self):
         """
@@ -978,6 +1004,35 @@ class Test(models.Model):
         else:
             suite = self.metadata.suite
         return join_name(suite, self.name)
+
+    class Confidence(object):
+        def __init__(self, threshold, tests):
+            self.threshold = threshold
+            self.tests = tests
+
+        @property
+        def count(self):
+            return len(self.tests)
+
+        @property
+        def passes(self):
+            return sum(1 for t in self.tests if t.status == "pass")
+
+        @property
+        def score(self):
+            return 100 * (self.passes / self.count)
+
+    __confidence__ = None
+
+    def set_confidence(self, threshold, tests):
+        self.__confidence__ = Test.Confidence(
+            threshold=threshold,
+            tests=tests,
+        )
+
+    @property
+    def confidence(self):
+        return self.__confidence__
 
     class History(object):
         def __init__(self, since, count, last_different):
