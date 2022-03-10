@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 
 from . import views
 from . import comparison
+from . import failures
 from . import metrics
 from . import tests
 from . import ci
@@ -40,6 +41,7 @@ urlpatterns = [
     url(r'^(%s)/(%s)/build/([^/]+)/$' % group_and_project, views.build, name='build'),
     url(r'^(%s)/(%s)/build/([^/]+)/badge$' % group_and_project, views.build_badge, name='build_badge'),
     url(r'^(%s)/(%s)/build/([^/]+)/tests/$' % group_and_project, tests.tests, name='tests'),
+    url(r'^(%s)/(%s)/build/([^/]+)/failures/$' % group_and_project, failures.failures, name='failures'),
     url(r'^(%s)/(%s)/build/([^/]+)/metrics/$' % group_and_project, metrics.build_metrics, name='build_metrics'),
     url(r'^(%s)/(%s)/build/([^/]+)/testjobs/$' % group_and_project, ci.testjobs, name='testjobs'),
     url(r'^(%s)/(%s)/build/([^/]+)/metadata/$' % group_and_project, views.build_metadata, name='build_metadata'),

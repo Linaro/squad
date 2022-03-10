@@ -1,0 +1,82 @@
+{% extends "squad/base.jinja2" %}
+
+{% block content %}
+
+<div ng-app='Build'>
+{% include "squad/build-nav.jinja2" %}
+</div>
+
+<h2>{{ _('All test failures') }}</h2>
+
+<div>
+    <div class='row row-bordered'>
+        <div class='col-md-12 col-sm-12 filter'>
+          <a id="searchLink"><button type='button' class='btn btn-primary fa fa-search'></button></a>
+          <input name='search' id='search' type='text' placeholder='{{ _('Filter results ...') }}' value='{{search}}' />
+        </div>
+    </div>
+
+    <table class='test-results'>
+        <thead>
+            <th>{{ _('Test') }}</th>
+            {% for e in environments %}
+            <th>{{ e.slug }}</th>
+            {% endfor %}
+        </thead>
+        {% if not ufailures %}
+        <tr>
+            <td colspan="{{environments|length|add(1)}}" class="alert alert-warning">
+                <em>{{ _('This build has no failures yet.') }}</em>
+            </td>
+        </tr>
+        {% else %}
+            {% for u in ufailures %}
+              <tr>
+                <td>{{ u }}</td>
+                {% for e in environments %}
+                {% if e.slug in rows and u in rows[e.slug]: %}
+                  <td class="{{ rows[e.slug][u].status }}">
+                    {{ rows[e.slug][u].confidence.score }}
+                    <span data-toggle="tooltip" title="{{ _('Click to display confidence info') }}">
+                      <button class="fa fa-info-circle popover-regressions-fixes"></button>
+                      <span title="{{ _('Confidence') }}" class="hidden">
+                        Pass: {{ rows[e.slug][u].confidence.passes }}
+                        Count: {{ rows[e.slug][u].confidence.count }}
+                        Threshold: {{ rows[e.slug][u].confidence.threshold }}
+                      </span>
+                    </span>
+                  </td>
+                {% else %}
+                  <td>&nbsp;</td>
+                {% endif %}
+                {% endfor %}
+              <tr>
+            {% endfor %}
+        {% endif %}
+    </table>
+
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script type="module" src='{{static("squad/build.js")}}'></script>
+<script type="text/javascript" src='{{static("squad/table.js")}}'></script>
+<script type="text/javascript">
+$('[data-toggle="tooltip"]').tooltip();
+function loadSearchURL(pageParam, search) {
+  searchURL = pageParam + "&search=" + search;
+  window.location = searchURL;
+}
+$("#search").keypress(function(e) {
+  if(e.which == 13) {
+    window.location = "?page=1&search=" + $("#search").val();
+    return false;
+  }
+});
+$("#searchLink").click(function(event) {
+  window.location = "?page=1&search=" + $("#search").val();
+  return false;
+});
+</script>
+{% endblock %}

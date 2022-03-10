@@ -42,6 +42,51 @@ class TestTest(TestCase):
         self.assertEqual('xfail', t.status)
 
 
+class TestConfidenceTest(TestCase):
+
+    def setUp(self):
+        self.group = Group.objects.create(slug="group")
+        self.project = self.group.projects.create(slug="project")
+        self.env = self.project.environments.create(slug="env")
+        self.suite = self.project.suites.create(slug="suite")
+        self.test_name = "test"
+        self.metadata, _ = SuiteMetadata.objects.get_or_create(
+            suite=self.suite.slug, name=self.test_name, kind="test"
+        )
+
+    def new_test(self, version, result):
+        build = self.project.builds.create(version=version)
+        self.assertIsNotNone(build)
+
+        test_run = build.test_runs.create(environment=self.env, job_id="999")
+        self.assertIsNotNone(test_run)
+
+        test = test_run.tests.create(
+            suite=self.suite,
+            result=result,
+            metadata=self.metadata,
+            build=test_run.build,
+            environment=test_run.environment,
+        )
+        self.assertIsNotNone(test)
+
+        return test
+
+    def test_confidence(self):
+        t1 = self.new_test("1", True)
+        t2 = self.new_test("2", True)
+        t3 = self.new_test("3", True)
+        t4 = self.new_test("4", True)
+        t5 = self.new_test("5", False)
+
+        t5.set_confidence(self.project.build_confidence_threshold, [t1, t2, t3, t4])
+        self.assertIsNotNone(t5.confidence)
+        self.assertEqual(t5.confidence.passes, 4)
+        self.assertEqual(t5.confidence.count, 4)
+        self.assertEqual(t5.confidence.threshold, self.project.build_confidence_threshold)
+        self.assertEqual(t5.confidence.score, 100)
+
+
 class TestFailureHistoryTest(TestCase):
 
     def setUp(self):
