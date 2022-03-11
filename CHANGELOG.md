@@ -1,3 +1,8 @@
+# 1.49.1
+
+This 1.49.1 release fixes the bug when loading failures with
+zero history.
+
 # 1.49
 
 This 1.49 release adds a new tab to the build page where
