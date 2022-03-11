@@ -1,3 +1,10 @@
+# 1.49
+
+This 1.49 release adds a new tab to the build page where
+one can see all the failures of a build along with a confidence
+score based on pre-defined per-project settings of threshold
+and number of builds in history.
+
 # 1.48.2
 
 This 1.48.2 release really fixes the bug when re-submitting jobs
