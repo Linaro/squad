@@ -240,6 +240,26 @@ class BuildTest(TestCase):
         self.assertEqual(test.confidence.score, 100)
         self.assertEqual(test.confidence.threshold, self.project.build_confidence_threshold)
 
+    def test_failures_no_history(self):
+        env = self.project.environments.create(slug="env")
+        suite = self.project.suites.create(slug="suite")
+        metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name="test", kind="test")
+
+        b1 = Build.objects.create(project=self.project, version='1.1')
+        tr1 = b1.test_runs.create(environment=env)
+        tr1.tests.create(build=tr1.build, environment=tr1.environment, suite=suite, metadata=metadata, result=False)
+
+        self.assertTrue(b1.failures.exists())
+        self.assertEqual(b1.failures.count(), 1)
+
+        test = b1.failures.first()
+        self.assertIsNotNone(test)
+        self.assertIsNotNone(test.confidence)
+        self.assertEqual(test.confidence.passes, 0)
+        self.assertEqual(test.confidence.count, 0)
+        self.assertEqual(test.confidence.score, 0)
+        self.assertEqual(test.confidence.threshold, self.project.build_confidence_threshold)
+
     def test_test_suites_by_environment(self):
         build = Build.objects.create(project=self.project, version='1.1')
         env1 = self.project.environments.create(slug='env1')
