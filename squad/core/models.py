@@ -1020,6 +1020,9 @@ class Test(models.Model):
 
         @property
         def score(self):
+            if not self.count:
+                return 0
+
             return 100 * (self.passes / self.count)
 
     __confidence__ = None
