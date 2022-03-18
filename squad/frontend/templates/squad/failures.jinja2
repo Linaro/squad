@@ -8,6 +8,10 @@
 
 <h2>{{ _('All test failures') }}</h2>
 
+{% with items=failures %}
+{% include "squad/_pagination.jinja2" %}
+{% endwith %}
+
 <div>
     <div class='row row-bordered'>
         <div class='col-md-12 col-sm-12 filter'>
@@ -23,26 +27,26 @@
             <th>{{ e.slug }}</th>
             {% endfor %}
         </thead>
-        {% if not ufailures %}
+        {% if not failures %}
         <tr>
             <td colspan="{{environments|length|add(1)}}" class="alert alert-warning">
                 <em>{{ _('This build has no failures yet.') }}</em>
             </td>
         </tr>
         {% else %}
-            {% for u in ufailures %}
+            {% for f in failures %}
               <tr>
-                <td>{{ u }}</td>
+                <td>{{ f }}</td>
                 {% for e in environments %}
-                {% if e.slug in rows and u in rows[e.slug]: %}
-                  <td class="{{ rows[e.slug][u].status }}">
-                    {{ rows[e.slug][u].confidence.score }}
+                {% if e.slug in rows and f in rows[e.slug]: %}
+                  <td class="{{ rows[e.slug][f].status }}">
+                    {{ rows[e.slug][f].confidence.score }}&nbsp;
                     <span data-toggle="tooltip" title="{{ _('Click to display confidence info') }}">
                       <button class="fa fa-info-circle popover-regressions-fixes"></button>
                       <span title="{{ _('Confidence') }}" class="hidden">
-                        Pass: {{ rows[e.slug][u].confidence.passes }}
-                        Count: {{ rows[e.slug][u].confidence.count }}
-                        Threshold: {{ rows[e.slug][u].confidence.threshold }}
+                        Pass: {{ rows[e.slug][f].confidence.passes }}
+                        Count: {{ rows[e.slug][f].confidence.count }}
+                        Threshold: {{ rows[e.slug][f].confidence.threshold }}
                       </span>
                     </span>
                   </td>
@@ -56,6 +60,10 @@
     </table>
 
 </div>
+
+{% with items=failures %}
+{% include "squad/_pagination.jinja2" %}
+{% endwith %}
 
 {% endblock %}
 

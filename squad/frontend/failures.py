@@ -1,3 +1,5 @@
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import Http404
 from django.shortcuts import render
 
 from squad.http import auth
@@ -8,18 +10,25 @@ from squad.frontend.views import get_build
 def failures(request, group_slug, project_slug, build_version):
     project = request.project
     build = get_build(project, build_version)
-    failures = build.failures
     environments = project.environments.order_by("slug")
 
+    all_failures = build.failures
+
     search = request.GET.get('search', '')
-
     if search:
-        failures = failures.filter(metadata__name__icontains=search)
+        all_failures = all_failures.filter(metadata__name__icontains=search)
 
-    unique_failures = sorted(set([t.full_name for t in failures]))
+    page = request.GET.get('page', 1)
+    unique_failures = sorted(set([t.full_name for t in all_failures]))
+    paginator = Paginator(unique_failures, 25)
+
+    try:
+        failures = paginator.page(page)
+    except (EmptyPage, PageNotAnInteger):
+        raise Http404()
 
     rows = {}
-    for t in build.failures:
+    for t in all_failures:
         if t.environment.slug not in rows:
             rows[t.environment.slug] = {}
 
@@ -29,7 +38,7 @@ def failures(request, group_slug, project_slug, build_version):
         "project": project,
         "build": build,
         "environments": environments,
-        "ufailures": unique_failures,
+        "failures": failures,
         "rows": rows,
         "search": search,
     }
