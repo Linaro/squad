@@ -211,7 +211,7 @@ class BuildTest(TestCase):
         self.project.builds.get_or_create(version='1.0-rc1')
         self.project.builds.get_or_create(version='1.0-rc1')
 
-    def test_failures(self):
+    def test_failures_with_confidence(self):
         env = self.project.environments.create(slug="env")
         suite = self.project.suites.create(slug="suite")
         metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name="test", kind="test")
@@ -228,11 +228,11 @@ class BuildTest(TestCase):
         tr3 = b3.test_runs.create(environment=env)
         tr3.tests.create(build=tr3.build, environment=tr3.environment, suite=suite, metadata=metadata, result=False)
 
-        self.assertFalse(b1.failures().exists())
-        self.assertFalse(b2.failures().exists())
-        self.assertEqual(b3.failures().count(), 1)
+        self.assertFalse(b1.failures_with_confidence().exists())
+        self.assertFalse(b2.failures_with_confidence().exists())
+        self.assertEqual(b3.failures_with_confidence().count(), 1)
 
-        test = b3.failures().first()
+        test = b3.failures_with_confidence().first()
         self.assertIsNotNone(test)
         self.assertIsNotNone(test.confidence)
         self.assertEqual(test.confidence.passes, 2)
@@ -240,7 +240,7 @@ class BuildTest(TestCase):
         self.assertEqual(test.confidence.score, 100)
         self.assertEqual(test.confidence.threshold, self.project.build_confidence_threshold)
 
-    def test_failures_no_history(self):
+    def test_failures_with_confidence_with_no_history(self):
         env = self.project.environments.create(slug="env")
         suite = self.project.suites.create(slug="suite")
         metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name="test", kind="test")
@@ -249,10 +249,10 @@ class BuildTest(TestCase):
         tr1 = b1.test_runs.create(environment=env)
         tr1.tests.create(build=tr1.build, environment=tr1.environment, suite=suite, metadata=metadata, result=False)
 
-        self.assertTrue(b1.failures().exists())
-        self.assertEqual(b1.failures().count(), 1)
+        self.assertTrue(b1.failures_with_confidence().exists())
+        self.assertEqual(b1.failures_with_confidence().count(), 1)
 
-        test = b1.failures().first()
+        test = b1.failures_with_confidence().first()
         self.assertIsNotNone(test)
         self.assertIsNotNone(test.confidence)
         self.assertEqual(test.confidence.passes, 0)

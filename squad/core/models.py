@@ -563,10 +563,10 @@ class Build(models.Model):
             return False
         return True
 
-    __failures__ = None
+    __failures_with_confidence__ = None
 
-    def failures(self):
-        if self.__failures__ is None:
+    def failures_with_confidence(self):
+        if self.__failures_with_confidence__ is None:
             failures = self.tests.filter(result=False).exclude(has_known_issues=True).prefetch_related("metadata", "environment")
 
             limit = self.project.build_confidence_count
@@ -584,9 +584,9 @@ class Build(models.Model):
                 f_history = [t for t in history if t.metadata == f.metadata and t.environment == f.environment]
                 f.set_confidence(self.project.build_confidence_threshold, f_history)
 
-            self.__failures__ = failures
+            self.__failures_with_confidence__ = failures
 
-        return self.__failures__
+        return self.__failures_with_confidence__
 
     @property
     def finished(self):

@@ -8,7 +8,7 @@ from squad.frontend.views import get_build
 def failures(request, group_slug, project_slug, build_version):
     project = request.project
     build = get_build(project, build_version)
-    failures = build.failures()
+    failures = build.failures_with_confidence()
     environments = project.environments.order_by("slug")
 
     search = request.GET.get('search', '')
@@ -19,7 +19,7 @@ def failures(request, group_slug, project_slug, build_version):
     unique_failures = sorted(set([t.full_name for t in failures]))
 
     rows = {}
-    for t in build.failures():
+    for t in build.failures_with_confidence():
         if t.environment.slug not in rows:
             rows[t.environment.slug] = {}
 
