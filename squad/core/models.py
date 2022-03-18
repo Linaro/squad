@@ -565,7 +565,6 @@ class Build(models.Model):
 
     __failures__ = None
 
-    @property
     def failures(self):
         if self.__failures__ is None:
             failures = self.tests.filter(result=False).exclude(has_known_issues=True).prefetch_related("metadata", "environment")

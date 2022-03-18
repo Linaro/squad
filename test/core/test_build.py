@@ -228,11 +228,11 @@ class BuildTest(TestCase):
         tr3 = b3.test_runs.create(environment=env)
         tr3.tests.create(build=tr3.build, environment=tr3.environment, suite=suite, metadata=metadata, result=False)
 
-        self.assertFalse(b1.failures.exists())
-        self.assertFalse(b2.failures.exists())
-        self.assertEqual(b3.failures.count(), 1)
+        self.assertFalse(b1.failures().exists())
+        self.assertFalse(b2.failures().exists())
+        self.assertEqual(b3.failures().count(), 1)
 
-        test = b3.failures.first()
+        test = b3.failures().first()
         self.assertIsNotNone(test)
         self.assertIsNotNone(test.confidence)
         self.assertEqual(test.confidence.passes, 2)
@@ -249,10 +249,10 @@ class BuildTest(TestCase):
         tr1 = b1.test_runs.create(environment=env)
         tr1.tests.create(build=tr1.build, environment=tr1.environment, suite=suite, metadata=metadata, result=False)
 
-        self.assertTrue(b1.failures.exists())
-        self.assertEqual(b1.failures.count(), 1)
+        self.assertTrue(b1.failures().exists())
+        self.assertEqual(b1.failures().count(), 1)
 
-        test = b1.failures.first()
+        test = b1.failures().first()
         self.assertIsNotNone(test)
         self.assertIsNotNone(test.confidence)
         self.assertEqual(test.confidence.passes, 0)
