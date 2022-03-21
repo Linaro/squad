@@ -3,11 +3,12 @@
 set -eu
 
 export SQUAD_RELEASE=1
+EDITOR=${EDITOR-editor}
 
 v=$(python3 -c 'from squad.version import __version__ as v; print(v)')
 if git rev-parse --verify --quiet "${v}" >/dev/null; then
     echo "Version ${v} has already been released. Let's prepare a new one"
-    editor squad/version.py
+    $EDITOR squad/version.py
 fi
 
 v=$(python3 -c 'from squad.version import __version__ as v; print(v)')
@@ -18,7 +19,7 @@ fi
 
 if ! grep -q "^# $v" CHANGELOG.md; then
     echo "Let's now document the changes in CHANGELOG.md"
-    editor CHANGELOG.md
+    $EDITOR CHANGELOG.md
 fi
 
 if ! grep -q "^# $v" CHANGELOG.md; then
@@ -39,51 +40,12 @@ if [ "${TEST:-yes}" != "no" ]; then
     ./dev-docker ./manage.py test
 fi
 
-if ! ./scripts/check-ci; then
-    printf "Are you sure you want to continue? [y/N]"
-    read -r confirm
-    if [ "$confirm" != 'y' ] && [ "$confirm" != 'Y' ]; then
-        exit 1
-    fi
-fi
-
-git commit --message "New release: ${v}" CHANGELOG.md squad/version.py || true
-
-# build
-./dev-docker ./manage.py compilemessages
+# Build squad pip package and docker container
+./scripts/build "$v"
 rm -rf build/ dist/ *.egg-info/
-local_settings=$(ls -1 squad/local_settings.py 2>/dev/null || true)
-if [ -n "$local_settings" ]; then
-    mv "$local_settings" "$local_settings".off
-fi
-python3 setup.py sdist bdist_wheel
 
-# test
-tar=$(mktemp tar.XXXXXXXXX)
-git=$(mktemp git.XXXXXXXXX)
-trap cleanup INT TERM EXIT
-cleanup() {
-    rm -rf "$tar" "$git"
-    if [ -n "$local_settings" ]; then
-        mv "$local_settings".off "$local_settings"
-    fi
-}
-git ls-tree -r --name-only HEAD | grep -v '\.tar$' | sort > "$git"
-
-downloads=$(awk '{ if ($1 && $1 !~ /^#/) { print($1)} }' squad/frontend/static/download.conf | xargs printf '%s\|')
-tar taf dist/squad-${v}.tar.gz | cut -d / -f 2- | grep -v '\(/$\|^$\|PKG-INFO\|egg-info\|static\/\('$downloads'download.status\)\|.mo$\)' | sort > "$tar"
-diff -u "$tar" "$git"
-
-if [ "${UPLOAD:-yes}" = 'no' ]; then
-    echo "I: not uploading packages; they are left in dist/"
-    echo "I: you can run \`./scripts/upload $v\` to make the upload"
-    return
-fi
-
-./scripts/upload "$v"
-
-./scripts/release-docker "$v"
-
-rm -rf build/
-rm -rf dist/
-rm -rf *.egg-info/
+# Commit changes and push the new tag
+git commit --message "New release: ${v}" CHANGELOG.md squad/version.py || true
+git tag -s -m "SQUAD release $v" "v$v"
+git push
+git push --tags

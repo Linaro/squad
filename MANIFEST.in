@@ -21,6 +21,7 @@ include .mailmap
 include .readthedocs.yml
 include .coveragerc
 include squad.svg
+include .github/workflows/*.yml
 
 include           squad/core/management/commands/import_data.rst
 recursive-include squad/frontend/static/ *
@@ -30,7 +31,6 @@ recursive-include scripts/ *
 recursive-include doc/ *
 recursive-include LICENSES/ *
 recursive-include .reuse/ *
-recursive-include .github/ *
 
 include babel.cfg
 recursive-include squad/ *.mo *.po *.pot
