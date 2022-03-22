@@ -3,8 +3,8 @@ FROM debian:buster-backports
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -q=2 && \
-    apt-get install -q=2 --no-install-recommends iproute2 auto-apt-proxy && \
-    apt-get install -q=2 --no-install-recommends \
+    apt-get -qq install --no-install-recommends iproute2 auto-apt-proxy >/dev/null && \
+    apt-get -qq install --no-install-recommends >/dev/null \
         python3 \
         python3-celery \
         python3-coreapi  \
@@ -37,7 +37,7 @@ RUN apt-get update -q=2 && \
         postgresql-client \
         unzip \
         openssh-client && \
-    apt-get -t buster-backports install -q=2 --no-install-recommends \
+    apt-get -qq -t buster-backports install --no-install-recommends >/dev/null \
         python3-django \
         python3-django-auth-ldap \
         python3-django-cors-headers \
