@@ -5,7 +5,7 @@ module.exports = function(config) {
 
         // files to include, ordered by dependencies
         files : [
-            'squad/frontend/static/angularjs/angular.js',
+            'squad/frontend/static/angularjs/angular.min.js',
             'squad/frontend/static/angularjs/angular-mocks.js',
             'squad/frontend/static/jquery.js',
             'squad/frontend/static/lodash.js',
