@@ -3,6 +3,7 @@ import {BuildCompareController} from './controllers/build_compare.js'
 import {FilterController} from './controllers/filter.js'
 import {ResubmitController} from './controllers/resubmit.js'
 import {CancelController} from './controllers/cancel.js'
+import {FetchController} from './controllers/fetch.js'
 import {TestJobsProgressController} from './controllers/testjobs_progress.js'
 import {Config as appConfig} from './config.js'
 import {attach_select2} from './attach_select2.js'
@@ -53,6 +54,16 @@ app.controller(
         '$location',
         '$timeout',
         CancelController
+    ]
+);
+
+app.controller(
+    'FetchController',
+    [
+        '$scope',
+        '$http',
+        '$timeout',
+        FetchController
     ]
 );
 
