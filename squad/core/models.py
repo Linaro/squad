@@ -563,31 +563,6 @@ class Build(models.Model):
             return False
         return True
 
-    __failures_with_confidence__ = None
-
-    def failures_with_confidence(self):
-        if self.__failures_with_confidence__ is None:
-            failures = self.tests.filter(result=False).exclude(has_known_issues=True).prefetch_related("metadata", "environment")
-
-            limit = self.project.build_confidence_count
-            builds = self.project.builds.filter(
-                id__lt=self.id,
-            ).order_by("-id").only("id")[:limit]
-
-            history = Test.objects.filter(
-                metadata__in=[f.metadata for f in failures],
-                environment__in=[f.environment for f in failures],
-                build_id__in=list(builds.values_list("id", flat=True)),
-            ).order_by("-build_id").prefetch_related("metadata", "environment").defer("log")
-
-            for f in failures:
-                f_history = [t for t in history if t.metadata == f.metadata and t.environment == f.environment]
-                f.set_confidence(self.project.build_confidence_threshold, f_history)
-
-            self.__failures_with_confidence__ = failures
-
-        return self.__failures_with_confidence__
-
     @property
     def finished(self):
         """
