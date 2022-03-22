@@ -35,7 +35,7 @@ from squad.core.queries import test_confidence
 from squad.core.utils import parse_name, log_addition, log_change, log_deletion
 from squad.core.callback import create_callback
 from squad.ci.models import Backend, TestJob
-from squad.ci.tasks import cancel
+from squad.ci.tasks import cancel, fetch
 from squad.compat import drf_basename
 from django.http import HttpResponse
 from django.urls import reverse
@@ -1508,6 +1508,10 @@ class TestJobViewSet(ModelViewSet):
      * `api/testjobs/<id>/cancel` POST
 
         Allows to cancel a job
+
+     * `api/testjobs/<id>/fetch` POST
+
+        Allows fetching a job
     """
     queryset = TestJob.objects.prefetch_related('backend').order_by('-id').defer('definition')
     project_lookup_key = 'target_build__project__in'
@@ -1585,6 +1589,16 @@ class TestJobViewSet(ModelViewSet):
         testjob.cancel()
         log_change(request, testjob, "Testjob canceled")
         return Response({'job_id': testjob.job_id, 'status': testjob.job_status}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], suffix='fetch')
+    def fetch(self, request, **kwargs):
+        testjob = self.get_object()
+        testjob.fetched = False
+        testjob.fetch_attempts = 0
+        testjob.save()
+        fetch.delay(testjob.id)
+        log_change(request, testjob, "Testjob queued for fetching")
+        return Response({'job_id': testjob.job_id, 'status': 'Queued for fetching'}, status=status.HTTP_200_OK)
 
 
 class EmailTemplateSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
