@@ -1006,6 +1006,14 @@ class RestApiTest(APITestCase):
         self.assertEqual(data.json()['job_id'], self.testjob2.job_id)
         self.assertEqual(data.json()['status'], 'Canceled')
 
+    @patch('squad.ci.tasks.fetch.delay')
+    def test_testjob_fetch(self, fetch_task):
+        data = self.post('/api/testjobs/%d/fetch/' % self.testjob5.id, {})
+        self.assertEqual(data.status_code, 200)
+        self.assertEqual(data.json()['job_id'], self.testjob5.job_id)
+        self.assertEqual(data.json()['status'], 'Queued for fetching')
+        fetch_task.assert_called_with(self.testjob5.id)
+
     def test_backends(self):
         data = self.hit('/api/backends/')
         self.assertEqual('foobar', data['results'][0]['name'])

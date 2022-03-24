@@ -94,6 +94,21 @@
                 {% endif %}
                 <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-definition-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-definition-{{testjob.pk}}" title="{{ _('Job definition') }}" onclick="$('#definition-{{ testjob.pk }}').load('/api/testjobs/{{ testjob.pk }}/definition/')"><span class="glyphicon glyphicon-list-alt" aria-hidden="true" title="{{ _('Job definition') }}"></span></button>
                 {% if user_can_submit_jobs %}
+                    {% if testjob.fetched %}
+                    <div class='pull-right' ng-controller='FetchController' title="{{ _('Manual-fetch job') }}">
+                        <a
+                            class="btn"
+                            ng-click="fetch({{testjob.id}})"
+                            ng-class="{'btn-info': !done, 'btn-success': done, 'btn-danger': error}"
+                            ng-disabled="done">
+                            <span
+                                ng-class="{'fa':true, 'fa-recycle':!done, 'fa-check': done && !error, 'fa-spin': loading, 'fa-close': error}"
+                                ng-disabled="done">
+                            </span>
+                            {{ _('%s - manual fetch')  % testjob.job_id }}
+                        </a>
+                    </div>
+                    {% endif %}
                     {% if not testjob.fetched %}
                     <div class='pull-right' ng-controller='CancelController' title="{{ _('Cancel job') }}">
                         <a
