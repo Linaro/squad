@@ -6,13 +6,13 @@ export SQUAD_RELEASE=1
 EDITOR=${EDITOR-editor}
 
 v=$(python3 -c 'from squad.version import __version__ as v; print(v)')
-if git rev-parse --verify --quiet "${v}" >/dev/null; then
+if git rev-parse --verify --quiet "v${v}" >/dev/null; then
     echo "Version ${v} has already been released. Let's prepare a new one"
     $EDITOR squad/version.py
 fi
 
 v=$(python3 -c 'from squad.version import __version__ as v; print(v)')
-if git rev-parse --verify --quiet "${v}" >/dev/null; then
+if git rev-parse --verify --quiet "v${v}" >/dev/null; then
     echo "Version ${v} has already been released. Aborting"
     exit 1
 fi
