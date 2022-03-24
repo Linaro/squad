@@ -41,7 +41,7 @@
                 {% for e in environments %}
                 {% if e.slug in rows and fn in rows[e.slug]: %}
                   <td class="{{ rows[e.slug][fn].status }}">
-                    {{ rows[e.slug][fn].confidence.score }}
+                    {{ rows[e.slug][fn].confidence.score }}&nbsp;
                     <span data-toggle="tooltip" title="{{ _('Click to display confidence info') }}">
                       <button class="fa fa-info-circle popover-regressions-fixes"></button>
                       <span title="{{ _('Confidence') }}" class="hidden">
