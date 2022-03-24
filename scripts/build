@@ -6,7 +6,6 @@ tag="$1"
 v="${tag:1}"
 
 # Build pip package
-./dev-docker ./manage.py compilemessages
 rm -rf build/ dist/ *.egg-info/
 local_settings=$(ls -1 squad/local_settings.py 2>/dev/null || true)
 if [ -n "$local_settings" ]; then
