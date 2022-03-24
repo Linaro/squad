@@ -1109,7 +1109,7 @@ class Metric(models.Model):
 
     @property
     def full_name(self):
-        return join_name(self.suite.slug, self.name)
+        return join_name(self.metadata.suite, self.name)
 
     @property
     def name(self):

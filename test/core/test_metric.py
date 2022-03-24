@@ -2,7 +2,7 @@ from django.test import TestCase
 from unittest.mock import patch
 
 
-from squad.core.models import Metric, Suite
+from squad.core.models import Metric, SuiteMetadata
 
 
 class MetricTest(TestCase):
@@ -21,6 +21,6 @@ class MetricTest(TestCase):
 
     @patch("squad.core.models.join_name", lambda x, y: 'woooops')
     def test_full_name(self):
-        s = Suite()
-        m = Metric(suite=s)
+        sm = SuiteMetadata()
+        m = Metric(metadata=sm)
         self.assertEqual('woooops', m.full_name)
