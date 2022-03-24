@@ -41,7 +41,7 @@ if [ "${TEST:-yes}" != "no" ]; then
 fi
 
 # Build squad pip package and docker container
-./scripts/build "$v"
+./scripts/build "v$v"
 rm -rf build/ dist/ *.egg-info/
 
 # Commit changes and push the new tag
