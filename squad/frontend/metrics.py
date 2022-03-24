@@ -10,7 +10,7 @@ def build_metrics(request, group_slug, project_slug, build_version):
     project = request.project
     build = get_build(project, build_version)
     environments = Environment.objects.filter(project=project).order_by("name")
-    metrics = Metric.objects.filter(build=build)
+    metrics = Metric.objects.filter(build=build).prefetch_related("metadata", "environment")
 
     search = request.GET.get('search', '')
 
