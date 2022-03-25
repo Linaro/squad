@@ -1,3 +1,11 @@
+# 1.50
+
+This 1.50 release improves performance of All metrics tab of the
+build page and adds pagination to All failures.
+
+The release also adds a button on testjobs page allowing
+users to manually sending fetch requests to SQUAD.
+
 # 1.49.1
 
 This 1.49.1 release fixes the bug when loading failures with
