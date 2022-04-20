@@ -10,7 +10,6 @@ def failures(request, group_slug, project_slug, build_version):
     project = request.project
     build = get_build(project, build_version)
     environments = project.environments.order_by("slug")
-    fc = FailuresWithConfidence(project, build)
 
     page = request.GET.get('page', 1)
     search = request.GET.get('search', '')
