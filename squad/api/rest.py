@@ -29,6 +29,7 @@ from squad.core.models import (
     Status,
     Callback,
 )
+from squad.core.failures import failures_with_confidence
 from squad.core.tasks import prepare_report, update_delayed_report
 from squad.core.comparison import TestComparison, MetricComparison
 from squad.core.queries import test_confidence
@@ -878,6 +879,10 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
 
         Returns list of Test objects belonging to this build. List is paginated
 
+     * `api/builds/<id>/failures_with_confidence` GET
+
+       List of failing tests with confidence scores. List is paginated
+
      * `api/builds/<id>/metrics` GET
 
         Returns list of Metric objects belonging to this build. List is paginated
@@ -970,6 +975,26 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
             return Response(serializer.data)
         except ProjectStatus.DoesNotExist:
             raise NotFound()
+
+    @action(detail=True, methods=['get'], suffix='failures_with_confidence')
+    def failures_with_confidence(self, request, pk=None):
+        build = self.get_object()
+        failures = build.tests.filter(
+            result=False,
+        ).exclude(
+            has_known_issues=True,
+        ).only(
+            'suite__slug', 'metadata__name', 'metadata__id',
+        ).order_by(
+            'suite__slug', 'metadata__name',
+        ).values_list(
+            'suite__slug', 'metadata__name', 'metadata__id', named=True,
+        )
+
+        page = self.paginate_queryset(failures)
+        fwc = failures_with_confidence(build.project, build, page)
+        serializer = FailuresWithConfidenceSerializer(fwc, many=True, context={'request': request})
+        return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['get'], suffix='test runs')
     def testruns(self, request, pk=None):
@@ -1271,6 +1296,19 @@ class TestSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelS
     class Meta:
         model = Test
         exclude = ['metadata']
+
+
+class ConfidenceSerializer(serializers.BaseSerializer):
+    def to_representation(self, confidence):
+        return {
+            "count" : confidence.count,
+            "passes" : confidence.passes,
+            "score": confidence.score,
+        }
+
+
+class FailuresWithConfidenceSerializer(TestSerializer):
+    confidence = ConfidenceSerializer()
 
 
 class TestViewSet(NestedViewSetMixin, ModelViewSet):
