@@ -1,5 +1,5 @@
 from django.test import TestCase
-from squad.core.failures import FailuresWithConfidence
+from squad.core.failures import failures_with_confidence
 from squad.core.models import Build, Group, SuiteMetadata
 
 

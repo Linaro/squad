@@ -1301,8 +1301,8 @@ class TestSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelS
 class ConfidenceSerializer(serializers.BaseSerializer):
     def to_representation(self, confidence):
         return {
-            "count" : confidence.count,
-            "passes" : confidence.passes,
+            "count": confidence.count,
+            "passes": confidence.passes,
             "score": confidence.score,
         }
 

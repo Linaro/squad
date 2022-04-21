@@ -8,7 +8,7 @@
 
 <h2>{{ _('All test failures') }}</h2>
 
-{% with items=fc %}
+{% with items=page %}
 {% include "squad/_pagination.jinja2" %}
 {% endwith %}
 
@@ -34,7 +34,7 @@
             </td>
         </tr>
         {% else %}
-            {% for i in fc.paginator.page(page) %}
+            {% for i in page %}
                 {% set fn = i.suite__slug + "/" + i.metadata__name %}
               <tr>
                 <td>{{ fn }}</td>
@@ -62,7 +62,7 @@
 
 </div>
 
-{% with items=fc %}
+{% with items=page %}
 {% include "squad/_pagination.jinja2" %}
 {% endwith %}
 
