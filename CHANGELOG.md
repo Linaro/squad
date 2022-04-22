@@ -1,3 +1,10 @@
+# 1.51
+
+This 1.51 release introduces support for TuxSuite backends, allowing
+users to pull test and build results from tuxsuite.com.
+
+It also adds a new API endpoint for querying failures with confidence
+
 # 1.50
 
 This 1.50 release improves performance of All metrics tab of the
