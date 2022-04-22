@@ -90,7 +90,7 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
         return HttpResponseBadRequest("testjob_id is required")
 
     # create TestJob object
-    test_job = TestJob.objects.create(
+    test_job = TestJob(
         backend=backend,
         target=project,
         target_build=build,
@@ -98,6 +98,16 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
         submitted=True,
         job_id=testjob_id
     )
+
+    # sanitize job_url
+    try:
+        backend.get_implementation().job_url(test_job)
+    except Exception as e:
+        return HttpResponseBadRequest(e)
+
+    # save it to db
+    test_job.save()
+
     log_addition(request, test_job, "Watch Job submission")
 
     # schedule a fetch task on this job right away

@@ -284,6 +284,15 @@ class CiApiTest(TestCase):
         r = self.client.post('/api/watchjob/mygroup/myproject/1/myenv', args)
         self.assertEqual(400, r.status_code)
 
+    @patch("squad.ci.tasks.fetch.apply_async")
+    def test_watch_testjob_malformed_id(self, fetch):
+        args = {
+            'backend': 'lava'
+
+        }
+        r = self.client.post('/api/watchjob/mygroup/myproject/1/myenv', args)
+        self.assertEqual(400, r.status_code)
+
     @patch('squad.ci.models.Backend.get_implementation')
     def test_resubmit_submitter(self, get_implementation):
         impl = MagicMock()
