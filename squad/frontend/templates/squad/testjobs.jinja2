@@ -94,7 +94,7 @@
                 {% endif %}
                 <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#collapse-definition-{{testjob.pk}}" aria-expanded="false" aria-controls="collapse-definition-{{testjob.pk}}" title="{{ _('Job definition') }}" onclick="$('#definition-{{ testjob.pk }}').load('/api/testjobs/{{ testjob.pk }}/definition/')"><span class="glyphicon glyphicon-list-alt" aria-hidden="true" title="{{ _('Job definition') }}"></span></button>
                 {% if user_can_submit_jobs %}
-                    {% if testjob.fetched %}
+                    {% if testjob.submitted %}
                     <div class='pull-right' ng-controller='FetchController' title="{{ _('Manual-fetch job') }}">
                         <a
                             class="btn"
