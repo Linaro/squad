@@ -721,6 +721,49 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/builds/%d/tests/?environment__slug=myenv&suite__slug=foooooooosuitedoestexist' % self.build.id)
         self.assertEqual(0, len(data['results']))
 
+    def test_build_failures_with_confidence(self):
+        data = self.hit('/api/builds/%d/failures_with_confidence/' % self.build3.id)
+
+        self.assertEqual(data['count'], 18)
+        self.assertIsNone(data['next'])
+        self.assertIsNone(data['previous'])
+        self.assertEqual(len(data['results']), 18)
+
+        failure = data['results'].pop(0)
+        self.assertEqual(failure['name'], 'bar/test2')
+        self.assertEqual(failure['result'], False)
+        self.assertEqual(failure['status'], 'fail')
+        self.assertEqual(failure['confidence'], {'count': 2, 'passes': 0, 'score': 0.0})
+
+    def test_build_failures_with_confidence_with_first_build(self):
+        """
+        The first build will not have any history, so the confidence scores for those failures should all be zero
+        """
+        data = self.hit('/api/builds/%d/failures_with_confidence/' % self.build.id)
+
+        for f in data['results']:
+            self.assertEqual(f['confidence'], {'count': 0, 'passes': 0, 'score': 0})
+
+    def test_build_failures_with_confidence_with_pagination(self):
+        data = self.hit('/api/builds/%d/failures_with_confidence/?limit=2' % self.build3.id)
+
+        self.assertEqual(data['count'], 18)
+        self.assertIsNotNone(data['next'])
+        self.assertIsNone(data['previous'])
+        self.assertEqual(len(data['results']), 2)
+
+        failure = data['results'][0]
+        self.assertEqual(failure['name'], 'bar/test2')
+        self.assertEqual(failure['result'], False)
+        self.assertEqual(failure['status'], 'fail')
+        self.assertEqual(failure['confidence'], {'count': 2, 'passes': 0, 'score': 0.0})
+
+        failure = data['results'][1]
+        self.assertEqual(failure['name'], 'bar/test2')
+        self.assertEqual(failure['result'], False)
+        self.assertEqual(failure['status'], 'fail')
+        self.assertEqual(failure['confidence'], {'count': 2, 'passes': 0, 'score': 0.0})
+
     def test_build_metrics(self):
         data = self.hit('/api/builds/%d/metrics/' % self.build.id)
         self.assertEqual(1, len(data['results']))
