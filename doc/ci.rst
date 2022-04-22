@@ -122,6 +122,7 @@ Supported backends
 
 Out of the box SQUAD supports following backends:
  - `LAVA <https://validation.linaro.org/static/docs/v2/>`_ 
+ - `TuxSuite <https://tuxsuite.com/>`_ 
 
 LAVA
 ~~~~
@@ -171,6 +172,35 @@ Example LAVA backend settings:
       - 'Unable to fetch git repository'
     CI_LAVA_SEND_ADMIN_EMAIL: False
     CI_LAVA_HANDLE_SUITE: True
+
+TuxSuite
+~~~~
+
+SQUAD supports only LAVA v2. Old version of LAVA was made obsolete with 2017.11
+LAVA release.
+
+LAVA backend supports the following settings:
+ - TEST_METADATA_KEYS
+   a list of strings to extract metadata info from test results
+ - BUILD_METADATA_KEYS
+   a list of strings to extract metadata info from build results
+
+Example TuxSuite backend settings:
+
+.. code-block:: yaml
+
+    BUILD_METADATA_KEYS:
+      - 'build_status'
+      - 'download_url'
+      - 'git_describe'
+      - 'git_ref'
+      - 'git_repo'
+      - 'git_sha'
+      - 'git_short_log'
+      - 'kernel_version'
+      - 'kconfig'
+      - 'target_arch'
+      - 'toolchain'
 
 Multinode
 +++++++++
