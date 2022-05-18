@@ -32,6 +32,18 @@ class Plugin(BasePlugin):
         combined = [r'(%s)' % r[REGEX_BODY] for r in regexes]
         return re.compile(r'|'.join(combined), re.S | re.M)
 
+    def __cutoff_boot_log(self, log):
+        # Attempt to split the log in " login: "
+        logs = log.split(' login: ', 1)
+
+        # 1 string means no split was done, consider all logs as test log
+        if len(logs) == 1:
+            return '', log
+
+        boot_log = logs[0]
+        test_log = logs[1]
+        return boot_log, test_log
+
     def __kernel_msgs_only(self, log):
         kernel_msgs = re.findall(r'(\[[ \d]+\.[ \d]+\] .*?)$', log, re.S | re.M)
         return '\n'.join(kernel_msgs)
@@ -70,27 +82,34 @@ class Plugin(BasePlugin):
         if testrun.log_file is None:
             return
 
-        log = self.__kernel_msgs_only(testrun.log_file)
-        suite, _ = testrun.build.project.suites.get_or_create(slug='linux-log-parser')
-        test_name_suffix = '-%s' % testrun.job_id
+        boot_log, test_log = self.__cutoff_boot_log(testrun.log_file)
+        logs = {
+            'boot': boot_log,
+            'test': test_log,
+        }
 
-        regex = self.__compile_regexes(REGEXES)
-        matches = regex.findall(log)
-        snippets = self.__join_matches(matches, REGEXES)
+        for log_type, log in logs.items():
+            log = self.__kernel_msgs_only(log)
+            suite, _ = testrun.build.project.suites.get_or_create(slug=f'log-parser-{log_type}')
+            test_name_suffix = '-%s' % testrun.job_id
 
-        # search onliners within multiliners
-        multiline_matches = []
-        for regex_id in range(len(MULTILINERS)):
-            multiline_matches += snippets[regex_id]
+            regex = self.__compile_regexes(REGEXES)
+            matches = regex.findall(log)
+            snippets = self.__join_matches(matches, REGEXES)
 
-        regex = self.__compile_regexes(ONELINERS)
-        matches = regex.findall('\n'.join(multiline_matches))
-        onliner_snippets = self.__join_matches(matches, ONELINERS)
+            # search onliners within multiliners
+            multiline_matches = []
+            for regex_id in range(len(MULTILINERS)):
+                multiline_matches += snippets[regex_id]
 
-        regex_id_offset = len(MULTILINERS)
-        for regex_id in range(len(ONELINERS)):
-            snippets[regex_id + regex_id_offset] += onliner_snippets[regex_id]
+            regex = self.__compile_regexes(ONELINERS)
+            matches = regex.findall('\n'.join(multiline_matches))
+            onliner_snippets = self.__join_matches(matches, ONELINERS)
 
-        for regex_id in range(len(REGEXES)):
-            test_name = REGEXES[regex_id][REGEX_NAME] + test_name_suffix
-            self.__create_test(testrun, suite, test_name, snippets[regex_id])
+            regex_id_offset = len(MULTILINERS)
+            for regex_id in range(len(ONELINERS)):
+                snippets[regex_id + regex_id_offset] += onliner_snippets[regex_id]
+
+            for regex_id in range(len(REGEXES)):
+                test_name = REGEXES[regex_id][REGEX_NAME] + test_name_suffix
+                self.__create_test(testrun, suite, test_name, snippets[regex_id])
