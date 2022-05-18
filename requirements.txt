@@ -7,7 +7,7 @@ django-allauth
 django-bootstrap3
 django-celery-results
 django-cors-headers
-django-simple-history
+django-simple-history>3.0
 django_filter>=2.0
 djangorestframework>=3.9.2
 djangorestframework-filters>=1.0.0.dev0
