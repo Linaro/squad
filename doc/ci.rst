@@ -79,6 +79,9 @@ to be triggered when the job is fetched. But there's an option named `CI_RESET_B
 that tells SQUAD to reset all build events on job submission so that they
 can be triggered once more next time the build reaches its "finished" state.
 
+The user owning the SQUAD_TOKEN should be a member of the group and should
+have the "Staff Status" permission.
+
 .. _ci_watch_ref_label:
 
 Submitting test job watch requests
