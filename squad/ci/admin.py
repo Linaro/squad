@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from squad.ci.models import Backend, TestJob
 from squad.ci.tasks import submit, fetch, poll
 from squad.ci.utils import task_id

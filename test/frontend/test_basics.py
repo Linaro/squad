@@ -144,6 +144,14 @@ class FrontendTest(TestCase):
         cleanup_build(self.project.builds.last().id)
 
         response = self.hit('/mygroup/myproject/build/1.0/', 404)
+
+        # Django 3.2 introduced a regression that removed the exception message from
+        # the default 404 template, causing the check below to fail.
+        # Ref: https://code.djangoproject.com/ticket/32637
+        from django import get_version
+        if get_version().startswith('3.2'):
+            return
+
         self.assertIn('after 180 days', str(response.content))
 
     def test_build_tests_404(self):

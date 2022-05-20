@@ -1,4 +1,4 @@
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from squad.core.models import Metric
 from squad.core.utils import join_name
 

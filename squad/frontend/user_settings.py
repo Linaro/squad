@@ -1,7 +1,7 @@
 import logging
 
 from django import forms
-from django.conf.urls import url
+from django.urls import re_path as url
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.db.utils import IntegrityError

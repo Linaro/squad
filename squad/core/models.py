@@ -25,8 +25,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator, URLValidator
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.utils import timezone
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as N_
+from django.utils.translation import gettext_lazy as N_
 from simple_history.models import HistoricalRecords
 
 from squad.core.utils import parse_name, join_name, yaml_validator, jinja2_validator, storage_save
@@ -180,7 +179,7 @@ class Group(models.Model, DisplayName):
         except ValidationError as e:
             errors = e.update_error_dict(errors)
         if self.slug and not re.match(self.valid_slug_pattern, self.slug):
-            errors['slug'] = [_('Enter a valid value.')]
+            errors['slug'] = [N_('Enter a valid value.')]
         if errors:
             raise ValidationError(errors)
 
@@ -944,10 +943,10 @@ class Test(models.Model):
         limit_choices_to={'kind': 'test'},
         on_delete=models.CASCADE,
     )
-    result = models.NullBooleanField()
+    result = models.BooleanField(null=True)
     log = models.TextField(null=True, blank=True)
     known_issues = models.ManyToManyField('KnownIssue')
-    has_known_issues = models.NullBooleanField()
+    has_known_issues = models.BooleanField(null=True)
 
     def __str__(self):
         return self.name
@@ -1235,7 +1234,7 @@ class ProjectStatus(models.Model, TestSummaryBase):
     last_updated = models.DateTimeField(null=True)
     finished = models.BooleanField(default=False)
     notified = models.BooleanField(default=False)
-    notified_on_timeout = models.NullBooleanField(default=None)
+    notified_on_timeout = models.BooleanField(default=None, null=True)
     approved = models.BooleanField(default=False)
 
     metrics_summary = models.FloatField(null=True)

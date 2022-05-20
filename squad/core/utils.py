@@ -13,7 +13,7 @@ from django.template.defaultfilters import safe, escape
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.conf import settings
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str as force_text
 
 
 def random_key(length, chars=string.printable):

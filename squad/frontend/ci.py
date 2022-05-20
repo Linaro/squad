@@ -2,7 +2,7 @@ import django_filters
 from django.core.paginator import Paginator, EmptyPage
 from django.shortcuts import render
 from django.http import Http404
-from django.utils.translation import ugettext_lazy as N_
+from django.utils.translation import gettext_lazy as N_
 
 from squad.http import auth
 from squad.ci.models import TestJob
