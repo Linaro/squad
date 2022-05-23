@@ -1,3 +1,10 @@
+# 1.52
+
+This 1.52 includes a new feature in the linux-log-parser plugin
+that split the linux log in the boot part. The plugin now will
+generate tests in two suites "log-parser-boot" and "log-parser-test"
+which will represent the fault occurencies in both stages.
+
 # 1.51
 
 This 1.51 release introduces support for TuxSuite backends, allowing
