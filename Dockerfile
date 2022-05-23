@@ -43,7 +43,6 @@ RUN apt-get update -q=2 && \
         python3-django-cors-headers \
         python3-django-celery-results \
         python3-django-crispy-forms \
-        python3-django-simple-history \
         python3-djangorestframework \
         python3-djangorestframework-extensions && \
     pip3 install --no-dependencies \
@@ -51,6 +50,7 @@ RUN apt-get update -q=2 && \
         sentry-sdk==0.14.3 \
         zipp \
         importlib-metadata==3.1.1 \
+        "django-simple-history>3.0" \
         asgiref \
         django-bootstrap3 \
         django-filter==2.0.0 \
