@@ -1610,3 +1610,6 @@ auto-login-action exception
 [   39.283317] [<ffffff8008130bec>] cpu_startup_entry+0x364/0x448
 [   39.289392] [<ffffff80080914f4>] secondary_start_kernel+0x15c/0x1b0
 [   39.295907] [<0000000000cd103c>] 0xcd103c
+ login: root
+[   14.461360] Internal error: Oops - BUG: 0 [#1] PREEMPT SMP
+[   15.447835] BUG: spinlock lockup suspected on CPU#3, gdbus/2329
