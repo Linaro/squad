@@ -93,7 +93,7 @@ class Backend(BaseBackend):
 
         return response
 
-    def parse_build_results(self, job_url, results, settings):
+    def parse_build_results(self, test_job, job_url, results, settings):
         required_keys = ['build_status', 'warnings_count', 'download_url', 'tuxmake_metadata']
         self.__check_required_keys__(required_keys, results)
         try:
@@ -110,6 +110,8 @@ class Backend(BaseBackend):
         # Generate generic test/metric name
         test_name = results.get('build_name') or self.generate_test_name(results)
 
+        test_job.name = test_name
+
         # Create tests
         tests = {}
         tests[f'build/{test_name}'] = results['build_status']
@@ -124,7 +126,7 @@ class Backend(BaseBackend):
         logs = self.fetch_url(results['download_url'], 'build.log').text
         return status, completed, metadata, tests, metrics, logs
 
-    def parse_test_results(self, job_url, results, settings):
+    def parse_test_results(self, test_job, job_url, results, settings):
         status = 'Complete'
         completed = True
 
@@ -140,11 +142,13 @@ class Backend(BaseBackend):
         # Really fetch test results
         tests = {}
         tests_results = self.fetch_url(job_url, 'results').json()
+        all_suite_names = []
         for suite, suite_tests in tests_results.items():
             if suite == 'lava':
                 continue
 
             suite_name = re.sub(r'^[0-9]+_', '', suite)
+            all_suite_names.append(suite_name)
             for name, test_data in suite_tests.items():
                 test_name = f'{suite_name}/{name}'
                 result = test_data['result']
@@ -152,6 +156,8 @@ class Backend(BaseBackend):
                 # TODO: Log lines are off coming from TuxRun/LAVA
                 # test_log = self.get_test_log(log_dict, test)
                 tests[test_name] = result
+
+        test_job.name = ','.join(all_suite_names)
 
         metrics = {}
         return status, completed, metadata, tests, metrics, logs
@@ -166,7 +172,7 @@ class Backend(BaseBackend):
 
         result_type = self.parse_job_id(test_job.job_id)[0]
         parse_results = getattr(self, f'parse_{result_type.lower()}_results')
-        return parse_results(url, results, settings)
+        return parse_results(test_job, url, results, settings)
 
     def job_url(self, test_job):
         result_type, tux_project, tux_uid = self.parse_job_id(test_job.job_id)

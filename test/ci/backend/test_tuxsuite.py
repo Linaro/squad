@@ -207,6 +207,8 @@ class TuxSuiteTest(TestCase):
             self.assertEqual(sorted(expected_metrics.items()), sorted(metrics.items()))
             self.assertEqual(build_logs, logs)
 
+        self.assertEqual(build_results['build_name'], testjob.name)
+
     def test_fetch_test_results(self):
         job_id = 'TEST:tuxgroup@tuxproject#123'
         testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
@@ -290,3 +292,5 @@ class TuxSuiteTest(TestCase):
             self.assertEqual(sorted(expected_tests.items()), sorted(tests.items()))
             self.assertEqual(sorted(expected_metrics.items()), sorted(metrics.items()))
             self.assertEqual(test_logs, logs)
+
+        self.assertEqual('ltp-smoke', testjob.name)
