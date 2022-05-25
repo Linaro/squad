@@ -1246,7 +1246,6 @@ class SuiteSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModel
 
     class Meta:
         model = Suite
-        exclude = ('metadata',)
 
 
 class TestNameSerializer(serializers.BaseSerializer):
