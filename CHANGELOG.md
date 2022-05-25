@@ -1,6 +1,11 @@
+# 1.53
+
+This 1.53 release drops Django 2.2 support in SQUAD and
+add support to 3.2 and 4.0.
+
 # 1.52
 
-This 1.52 includes a new feature in the linux-log-parser plugin
+This 1.52 release includes a new feature in the linux-log-parser plugin
 that split the linux log in the boot part. The plugin now will
 generate tests in two suites "log-parser-boot" and "log-parser-test"
 which will represent the fault occurencies in both stages.
