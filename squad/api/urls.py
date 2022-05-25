@@ -1,4 +1,5 @@
-from django.conf.urls import include, url
+from django.conf.urls import include
+from django.urls import re_path as url
 from rest_framework.schemas import get_schema_view
 
 from . import views

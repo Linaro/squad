@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.test import TestCase
 from django.test import Client
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str as force_text
 from test.api import APIClient
 
 

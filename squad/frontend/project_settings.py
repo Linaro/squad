@@ -1,7 +1,7 @@
 from django import forms
-from django.conf.urls import url
+from django.urls import re_path as url
 from django.shortcuts import render, redirect, reverse
-from django.utils.translation import ugettext_lazy as N_
+from django.utils.translation import gettext_lazy as N_
 
 from squad.core.models import Project, Environment
 from squad.http import auth_write

@@ -1,5 +1,5 @@
 from django import forms
-from django.conf.urls import url
+from django.urls import re_path as url
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, reverse
 from django.utils.translation import gettext_lazy as N_

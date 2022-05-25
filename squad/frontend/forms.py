@@ -1,6 +1,5 @@
 from django import forms
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as N_
+from django.utils.translation import gettext_lazy as N_
 
 
 class DeleteConfirmationForm(forms.Form):
@@ -12,12 +11,12 @@ class DeleteConfirmationForm(forms.Form):
         self.deletable = kwargs.pop('deletable')
         super().__init__(*args, **kwargs)
         if self.label:
-            self.fields['confirmation'].label = _(self.label)
+            self.fields['confirmation'].label = N_(self.label)
 
     def clean(self):
         cleaned_data = super().clean()
 
         if cleaned_data['confirmation'] != self.deletable.slug:
-            self.add_error('confirmation', _(self.no_match_message))
+            self.add_error('confirmation', N_(self.no_match_message))
 
         return cleaned_data

@@ -41,7 +41,7 @@ from squad.compat import drf_basename
 from django.http import HttpResponse
 from django.urls import reverse
 from django import forms
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from rest_framework_extensions.routers import ExtendedDefaultRouter
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework import routers, serializers, viewsets, status

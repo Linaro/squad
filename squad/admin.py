@@ -1,5 +1,5 @@
 from django.contrib.admin import ModelAdmin
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 
 class NoDeleteListingModelAdmin(ModelAdmin):
