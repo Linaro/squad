@@ -1295,7 +1295,7 @@ class TestSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelS
 
     class Meta:
         model = Test
-        exclude = ['metadata']
+        fields = '__all__'
 
 
 class ConfidenceSerializer(serializers.BaseSerializer):
