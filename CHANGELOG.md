@@ -1,3 +1,8 @@
+# 1.53.1
+
+This 1.53.1 release includes a missing "metadata" field
+in tests api REST endpoint.
+
 # 1.53
 
 This 1.53 release drops Django 2.2 support in SQUAD and
