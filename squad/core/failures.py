@@ -2,28 +2,31 @@ from squad.core.models import Test
 
 
 def failures_with_confidence(project, build, failures):
-    fwc = build.tests.filter(
-        result=False,
+    limit = project.build_confidence_count
+    threshold = project.build_confidence_threshold
+
+    # First, get a list of failures x environments
+    with_envs = build.tests.filter(
         metadata_id__in=[f.metadata__id for f in failures],
+        result=False,
+    ).exclude(
+        has_known_issues=True
     ).prefetch_related(
-        'metadata', 'environment',
+        "metadata",
+        "environment",
     ).order_by(
-        'suite__slug', 'metadata__name'
+        "metadata__suite",
+        "metadata__name",
     )
 
-    limit = project.build_confidence_count
-    builds = project.builds.filter(
-        id__lt=build.id,
-    ).order_by("-id").only("id")[:limit]
+    # Find previous `limit` tests that contain this test x environment
+    for failure in with_envs:
+        history = Test.objects.filter(
+            build_id__lt=build.id,
+            metadata_id=failure.metadata_id,
+            environment_id=failure.environment_id,
+        ).order_by('-build_id').defer("log")[:limit]
 
-    previous = Test.objects.filter(
-        metadata__in=[f.metadata for f in fwc],
-        environment__in=[f.environment for f in fwc],
-        build_id__in=list(builds.values_list("id", flat=True)),
-    ).order_by("-build_id").prefetch_related("metadata", "environment").defer("log")
+        failure.set_confidence(threshold, history)
 
-    for f in fwc:
-        f_p = [t for t in previous if t.metadata == f.metadata and t.environment == f.environment]
-        f.set_confidence(project.build_confidence_threshold, f_p)
-
-    return fwc
+    return with_envs

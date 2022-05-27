@@ -35,7 +35,7 @@
         </tr>
         {% else %}
             {% for i in page %}
-                {% set fn = i.suite__slug + "/" + i.metadata__name %}
+                {% set fn = i.metadata__suite + "/" + i.metadata__name %}
               <tr>
                 <td>{{ fn }}</td>
                 {% for e in environments %}
