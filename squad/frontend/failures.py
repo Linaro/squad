@@ -3,6 +3,7 @@ from django.http import Http404
 from django.shortcuts import render
 
 from squad.core.failures import failures_with_confidence
+from squad.core.models import Test
 from squad.http import auth
 from squad.frontend.views import get_build
 
@@ -13,25 +14,30 @@ def failures(request, group_slug, project_slug, build_version):
     build = get_build(project, build_version)
     environments = project.environments.order_by("slug")
 
-    failures = build.tests.filter(
+    failures_ids = build.tests.filter(
         result=False,
     ).exclude(
         has_known_issues=True,
     ).only(
-        'suite__slug', 'metadata__name', 'metadata__id',
+        'id'
+    ).distinct('metadata_id').order_by('-metadata_id')
+
+    failures = Test.objects.filter(id__in=failures_ids).only(
+        'metadata__suite', 'metadata__name', 'metadata__id',
     ).order_by(
-        'suite__slug', 'metadata__name',
+        'metadata__suite', 'metadata__name',
     ).distinct().values_list(
-        'suite__slug', 'metadata__name', 'metadata__id', named=True,
+        'metadata__suite', 'metadata__name', 'metadata__id', named=True,
     )
 
     search = request.GET.get('search', '')
     if search:
-        failures = failures.filter(metadata__name__icontains=search)
+        failures = failures.filter(metadata__name__contains=search)
 
     try:
         page_num = request.GET.get('page', 1)
         paginator = Paginator(failures, 25)
+        paginator.count = failures_ids.count()
         page = paginator.page(page_num)
     except InvalidPage as ip:
         raise Http404(('Invalid page (%(page_number)s): %(message)s') % {

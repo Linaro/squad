@@ -3,6 +3,7 @@ import yaml
 
 from django.db.models import Q, F, Value as V, CharField, Prefetch
 from django.db.models.functions import Concat
+from django.db.models.query import prefetch_related_objects
 from django.db.utils import IntegrityError
 from django.core import exceptions as core_exceptions
 from django.core.exceptions import ValidationError
@@ -984,15 +985,16 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
         ).exclude(
             has_known_issues=True,
         ).only(
-            'suite__slug', 'metadata__name', 'metadata__id',
+            'metadata__suite', 'metadata__name', 'metadata__id',
         ).order_by(
-            'suite__slug', 'metadata__name',
+            'metadata__suite', 'metadata__name',
         ).values_list(
-            'suite__slug', 'metadata__name', 'metadata__id', named=True,
+            'metadata__suite', 'metadata__name', 'metadata__id', named=True,
         )
 
         page = self.paginate_queryset(failures)
         fwc = failures_with_confidence(build.project, build, page)
+        prefetch_related_objects(fwc, "known_issues")
         serializer = FailuresWithConfidenceSerializer(fwc, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
