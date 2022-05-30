@@ -145,9 +145,13 @@ class Backend(BaseBackend):
             pass
         test_job.name = ','.join(results['tests'])
 
-        if results['result'] == 'fail':
+        if results['results'] == {}:
             test_job.failure = 'build failed'
         else:
+            # Fetch results even if the job fails, but has results
+            if results['result'] == 'fail':
+                test_job.failure = str(results['results'])
+
             # Retrieve TuxRun log
             job_url += '/'
             logs = self.fetch_url(job_url, 'logs?format=txt').text
