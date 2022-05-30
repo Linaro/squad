@@ -1,3 +1,10 @@
+# 1.53.2
+
+This 1.53.2 release fixes a bug in the TuxSuite backend
+when fetching tests with failed builds. The release also
+fixes the number of tests used when calculating the confidence
+score for a given test.
+
 # 1.53.1
 
 This 1.53.1 release includes a missing "metadata" field
