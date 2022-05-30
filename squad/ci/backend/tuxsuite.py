@@ -129,37 +129,44 @@ class Backend(BaseBackend):
     def parse_test_results(self, test_job, job_url, results, settings):
         status = 'Complete'
         completed = True
+        tests = {}
+        metrics = {}
+        logs = ''
 
         # Pick up some metadata from results
         metadata_keys = settings.get('TEST_METADATA_KEYS', [])
         metadata = {k: results.get(k) for k in metadata_keys}
         metadata['job_url'] = job_url
 
-        # Retrieve TuxRun log
-        job_url += '/'
-        logs = self.fetch_url(job_url, 'logs?format=txt').text
+        # Set job name
+        try:
+            results['tests'].remove('boot')
+        except ValueError:
+            pass
+        test_job.name = ','.join(results['tests'])
 
-        # Really fetch test results
-        tests = {}
-        tests_results = self.fetch_url(job_url, 'results').json()
-        all_suite_names = []
-        for suite, suite_tests in tests_results.items():
-            if suite == 'lava':
-                continue
+        if results['result'] == 'fail':
+            test_job.failure = 'build failed'
+        else:
+            # Retrieve TuxRun log
+            job_url += '/'
+            logs = self.fetch_url(job_url, 'logs?format=txt').text
 
-            suite_name = re.sub(r'^[0-9]+_', '', suite)
-            all_suite_names.append(suite_name)
-            for name, test_data in suite_tests.items():
-                test_name = f'{suite_name}/{name}'
-                result = test_data['result']
+            # Really fetch test results
+            tests_results = self.fetch_url(job_url, 'results').json()
+            for suite, suite_tests in tests_results.items():
+                if suite == 'lava':
+                    continue
 
-                # TODO: Log lines are off coming from TuxRun/LAVA
-                # test_log = self.get_test_log(log_dict, test)
-                tests[test_name] = result
+                suite_name = re.sub(r'^[0-9]+_', '', suite)
+                for name, test_data in suite_tests.items():
+                    test_name = f'{suite_name}/{name}'
+                    result = test_data['result']
 
-        test_job.name = ','.join(all_suite_names)
+                    # TODO: Log lines are off coming from TuxRun/LAVA
+                    # test_log = self.get_test_log(log_dict, test)
+                    tests[test_name] = result
 
-        metrics = {}
         return status, completed, metadata, tests, metrics, logs
 
     def fetch(self, test_job):
