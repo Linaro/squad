@@ -145,10 +145,19 @@ class TestRunFilter(filters.FilterSet):
                   'completed': ['exact']}
 
 
+class BackendFilter(filters.FilterSet):
+    class Meta:
+        model = Backend
+        fields = {'id': ['exact', 'in'],
+                  'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'implementation_type': ['exact']}
+
+
 class TestJobFilter(filters.FilterSet):
     testrun = filters.RelatedFilter(TestRunFilter, field_name="testrun", queryset=TestRun.objects.all(), widget=forms.TextInput)
     target_build = filters.RelatedFilter(BuildFilter, field_name="target_build", queryset=Build.objects.all(), widget=forms.TextInput)
     target = filters.RelatedFilter(ProjectFilter, field_name="target", queryset=Project.objects.all(), widget=forms.TextInput)
+    backend = filters.RelatedFilter(BackendFilter, field_name="backend", queryset=Backend.objects.all(), widget=forms.TextInput)
 
     class Meta:
         model = TestJob
