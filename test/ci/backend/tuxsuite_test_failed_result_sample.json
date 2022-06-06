@@ -1,0 +1,191 @@
+{
+    "lava": {
+        "validate": {
+            "result": "pass"
+        },
+        "file-download": {
+            "duration": "9.95",
+            "extra": {
+                "label": "rootfs",
+                "md5sum": "89e4eea0fecf498dcc97e37b17daad5f",
+                "sha256sum": "d0bd412d3c540d821447e39a94bba91864f7b143b966c80f247857fa708057db",
+                "sha512sum": "c36c5ed44ab8b207e1250c770f6ba4f5f67f4d40d53d450589cd567c070a38ff2f626d0322f18acfcdc29db73774821f181ffb731010c334e2b0ab1c36daa673",
+                "size": 48628967
+            },
+            "level": "1.5.1",
+            "namespace": "common",
+            "result": "pass"
+        },
+        "test-overlay": {
+            "duration": "0.00",
+            "extra": {
+                "from": "url",
+                "name": "ltp-smoke",
+                "path": "automated/linux/ltp/ltp.yaml",
+                "repository": "file:///home/tuxtest/.cache/tuxrun/assets/https___storage.tuxboot.com_test-definitions_2022.01.tar.zst",
+                "uuid": "1_1.1.3.1"
+            },
+            "level": "1.1.3.2",
+            "namespace": "common",
+            "result": "pass"
+        },
+        "test-install-overlay": {
+            "duration": "0.00",
+            "extra": {
+                "from": "url",
+                "name": "ltp-smoke",
+                "path": "automated/linux/ltp/ltp.yaml",
+                "repository": "file:///home/tuxtest/.cache/tuxrun/assets/https___storage.tuxboot.com_test-definitions_2022.01.tar.zst",
+                "skipped test-install-overlay": "1_1.1.3.1",
+                "uuid": "1_1.1.3.1"
+            },
+            "level": "1.1.3.3",
+            "namespace": "common",
+            "result": "pass"
+        },
+        "test-runscript-overlay": {
+            "duration": "0.00",
+            "extra": {
+                "filename": "/var/lib/lava/dispatcher/tmp/tuxrun-20jp20gh-1/lava-overlay-xndh4dyf/lava-1/0/tests/0_ltp-smoke/run.sh",
+                "from": "url",
+                "name": "ltp-smoke",
+                "path": "automated/linux/ltp/ltp.yaml",
+                "repository": "file:///home/tuxtest/.cache/tuxrun/assets/https___storage.tuxboot.com_test-definitions_2022.01.tar.zst",
+                "uuid": "1_1.1.3.1"
+            },
+            "level": "1.1.3.4",
+            "namespace": "common",
+            "result": "pass"
+        },
+        "http-download": {
+            "duration": "0.39",
+            "extra": {
+                "label": "kernel",
+                "md5sum": "de1f1b2693f5a55541359ccd81f1efc5",
+                "sha256sum": "2938da44cc77d89517d481ec5a4b84105c13ba8030712ed7fffe267f2ebb49f4",
+                "sha512sum": "41c75557cdfa85f18fa0cb9d8b82236b19990ae66b422ac5c4cfca2bac146fdab96e3d3d4aa730f2f51e3db23bcdcd609ec8bb58abb86d3eb216ecba18f3ec55",
+                "size": 9892352
+            },
+            "level": "1.4.1",
+            "namespace": "common",
+            "result": "pass"
+        },
+        "execute-qemu": {
+            "duration": "0.15",
+            "extra": {
+                "host_arch": "amd64",
+                "job_arch": "arm",
+                "qemu_version": "1:6.2+dfsg-2~bpo11+1"
+            },
+            "level": "2.1.1",
+            "namespace": "common",
+            "result": "pass"
+        },
+        "kernel-messages": {
+            "duration": "17.02",
+            "extra": {
+                "extra": [
+                    {
+                        "success": "(.*)login:"
+                    }
+                ]
+            },
+            "level": "2.2.1",
+            "namespace": "common",
+            "result": "pass"
+        },
+        "login-action": {
+            "duration": "17.27",
+            "extra": {
+                "success": "(.*)login:"
+            },
+            "level": "2.2.1",
+            "namespace": "common",
+            "result": "fail"
+        },
+        "0_ltp-smoke": {
+            "duration": "9.35",
+            "namespace": "common",
+            "path": "automated/linux/ltp/ltp.yaml",
+            "repository": "file:///home/tuxtest/.cache/tuxrun/assets/https___storage.tuxboot.com_test-definitions_2022.01.tar.zst",
+            "result": "pass",
+            "revision": "unspecified",
+            "uuid": "1_1.1.3.1"
+        },
+        "job": {
+            "result": "fail"
+        }
+    },
+    "0_ltp-smoke": {
+        "access01": {
+            "endtc": 958,
+            "result": "fail",
+            "starttc": 958
+        },
+        "chdir01": {
+            "endtc": 961,
+            "result": "skip",
+            "starttc": 961
+        },
+        "fork01": {
+            "endtc": 964,
+            "result": "pass",
+            "starttc": 964
+        },
+        "time01": {
+            "endtc": 967,
+            "result": "pass",
+            "starttc": 967
+        },
+        "wait02": {
+            "endtc": 970,
+            "result": "pass",
+            "starttc": 970
+        },
+        "write01": {
+            "endtc": 973,
+            "result": "pass",
+            "starttc": 973
+        },
+        "symlink01": {
+            "endtc": 976,
+            "result": "pass",
+            "starttc": 976
+        },
+        "stat04": {
+            "endtc": 979,
+            "result": "pass",
+            "starttc": 979
+        },
+        "utime01A": {
+            "endtc": 982,
+            "result": "pass",
+            "starttc": 982
+        },
+        "rename01A": {
+            "endtc": 985,
+            "result": "pass",
+            "starttc": 985
+        },
+        "splice02": {
+            "endtc": 988,
+            "result": "pass",
+            "starttc": 988
+        },
+        "shell_test01": {
+            "endtc": 991,
+            "result": "pass",
+            "starttc": 991
+        },
+        "ping01": {
+            "endtc": 994,
+            "result": "skip",
+            "starttc": 994
+        },
+        "ping602": {
+            "endtc": 997,
+            "result": "skip",
+            "starttc": 997
+        }
+    }
+}

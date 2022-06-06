@@ -295,6 +295,93 @@ class TuxSuiteTest(TestCase):
 
         self.assertEqual('ltp-smoke', testjob.name)
 
+    def test_fetch_test_failed_results(self):
+        job_id = 'TEST:tuxgroup@tuxproject#125'
+        testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
+        test_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/tests/125')
+
+        # Only fetch when finished
+        with requests_mock.Mocker() as fake_request:
+            fake_request.get(test_url, json={'state': 'running'})
+            results = self.tuxsuite.fetch(testjob)
+            self.assertEqual(None, results)
+
+        test_logs = 'dummy test log'
+        test_results = {
+            'project': 'tuxgroup/tuxproject',
+            'device': 'qemu-armv7',
+            'uid': '125',
+            'kernel': 'https://storage.tuxboot.com/armv7/zImage',
+            'ap_romfw': None,
+            'mcp_fw': None,
+            'mcp_romfw': None,
+            'modules': None,
+            'parameters': {},
+            'rootfs': None,
+            'scp_fw': None,
+            'scp_romfw': None,
+            'fip': None,
+            'tests': ['boot', 'ltp-smoke'],
+            'user': 'tuxbuild@linaro.org',
+            'user_agent': 'tuxsuite/0.43.6',
+            'state': 'finished',
+            'result': 'fail',
+            'results': {'boot': 'fail', 'ltp-smoke': 'fail'},
+            'plan': None,
+            'waiting_for': None,
+            'boot_args': None,
+            'provisioning_time': '2022-03-25T15:49:11.441860',
+            'running_time': '2022-03-25T15:50:11.770607',
+            'finished_time': '2022-03-25T15:52:42.672483',
+            'retries': 0,
+            'retries_messages': [],
+            'duration': 151
+        }
+
+        expected_metadata = {
+            'job_url': test_url,
+            'does_not_exist': None,
+        }
+
+        # Real test results are stored in test/ci/backend/tuxsuite_test_failed_result_sample.json
+        with open('test/ci/backend/tuxsuite_test_failed_result_sample.json') as test_result_file:
+            test_results_json = json.load(test_result_file)
+
+        expected_tests = {
+            'ltp-smoke/access01': 'fail',
+            'ltp-smoke/chdir01': 'skip',
+            'ltp-smoke/fork01': 'pass',
+            'ltp-smoke/time01': 'pass',
+            'ltp-smoke/wait02': 'pass',
+            'ltp-smoke/write01': 'pass',
+            'ltp-smoke/symlink01': 'pass',
+            'ltp-smoke/stat04': 'pass',
+            'ltp-smoke/utime01A': 'pass',
+            'ltp-smoke/rename01A': 'pass',
+            'ltp-smoke/splice02': 'pass',
+            'ltp-smoke/shell_test01': 'pass',
+            'ltp-smoke/ping01': 'skip',
+            'ltp-smoke/ping602': 'skip'
+        }
+
+        expected_metrics = {}
+
+        with requests_mock.Mocker() as fake_request:
+            fake_request.get(test_url, json=test_results)
+            fake_request.get(urljoin(test_url + '/', 'logs'), text=test_logs)
+            fake_request.get(urljoin(test_url + '/', 'results'), json=test_results_json)
+
+            status, completed, metadata, tests, metrics, logs = self.tuxsuite.fetch(testjob)
+            self.assertEqual('Complete', status)
+            self.assertTrue(completed)
+            self.assertEqual(sorted(expected_metadata.items()), sorted(metadata.items()))
+            self.assertEqual(sorted(expected_tests.items()), sorted(tests.items()))
+            self.assertEqual(sorted(expected_metrics.items()), sorted(metrics.items()))
+            self.assertEqual(test_logs, logs)
+
+        self.assertEqual('ltp-smoke', testjob.name)
+        self.assertEqual("{'boot': 'fail', 'ltp-smoke': 'fail'}", testjob.failure)
+
     def test_fetch_test_results_for_test_with_failed_build(self):
         job_id = 'TEST:tuxgroup@tuxproject#124'
         testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
