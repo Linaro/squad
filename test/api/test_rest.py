@@ -1057,6 +1057,12 @@ class RestApiTest(APITestCase):
         self.assertEqual(data.json()['status'], 'Queued for fetching')
         fetch_task.assert_called_with(self.testjob5.id)
 
+    def test_testjob_backend_filter(self):
+        data = self.get('/api/testjobs/?backend__implementation_type=fake')
+        self.assertEqual(data.status_code, 200)
+        for testjob in data.json()['results']:
+            self.assertIn(f'/{self.fake_backend.id}/', testjob['backend'])
+
     def test_backends(self):
         data = self.hit('/api/backends/')
         self.assertEqual('foobar', data['results'][0]['name'])
