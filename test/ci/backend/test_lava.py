@@ -1082,17 +1082,33 @@ class LavaTest(TestCase):
         testjob = TestJob(
             job_id='1234',
             target=self.project,
+            definition='{}',
             backend=self.backend)
         with self.assertRaises(SubmissionIssue):
             lava.submit(testjob)
 
     @patch('squad.ci.backend.lava.Backend.__submit__', side_effect=HTTP_503)
-    def test_submit_503(self, __submit__):
+    def test_submit_xmlrpc_503(self, __submit__):
         lava = LAVABackend(None)
         testjob = TestJob(
             job_id='1234',
             target=self.project,
+            definition='{}',
             backend=self.backend)
+        with self.assertRaises(TemporarySubmissionIssue):
+            lava.submit(testjob)
+
+    @patch('requests.post', side_effect=HTTP_503)
+    def test_submit_http_503(self, __submit__):
+        lava = LAVABackend(None)
+        lava.use_xml_rpc = False
+        lava.api_url_base = 'http://example.com/'
+        testjob = TestJob(
+            job_id='1234',
+            target=self.project,
+            definition='{}',
+            backend=self.backend)
+
         with self.assertRaises(TemporarySubmissionIssue):
             lava.submit(testjob)
 
@@ -1102,6 +1118,7 @@ class LavaTest(TestCase):
         testjob = TestJob(
             job_id='1234',
             target=self.project,
+            definition='{}',
             backend=self.backend)
         with self.assertRaises(TemporarySubmissionIssue):
             lava.submit(testjob)

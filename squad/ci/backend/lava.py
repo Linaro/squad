@@ -88,12 +88,20 @@ class Backend(BaseBackend):
     # API implementation
     # ------------------------------------------------------------------------
     def submit(self, test_job):
+        test_job.name = self.__lava_job_name(test_job.definition)
+
         with self.handle_job_submission():
             job_id = self.__submit__(test_job.definition)
-            test_job.name = self.__lava_job_name(test_job.definition)
-            if isinstance(job_id, list):
-                return job_id
-            return [job_id]
+
+        # in case LAVA doesn't respond 201 or any of the error
+        # codes, the job list might be empty. Raise exception
+        # should such condition happen.
+        if not job_id:
+            raise TemporarySubmissionIssue("LAVA returned empty job ID list")
+
+        if isinstance(job_id, list):
+            return job_id
+        return [job_id]
 
     def cancel(self, test_job):
         if test_job.submitted and test_job.job_id is not None:
