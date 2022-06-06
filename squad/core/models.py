@@ -9,6 +9,7 @@ import re
 
 from django.db import models
 from django.db import transaction
+from django.db.utils import IntegrityError
 from django.db.models import Q, Count, Sum, Case, When, F, Value
 from django.db.models.functions import Concat
 from django.db.models.query import prefetch_related_objects
@@ -1495,6 +1496,9 @@ class BuildSummary(models.Model, TestSummaryBase):
     test_runs_completed = models.IntegerField(default=0)
     test_runs_incomplete = models.IntegerField(default=0)
 
+    class Meta:
+        unique_together = ('build', 'environment',)
+
     @classmethod
     def create_or_update(cls, build, environment):
         """
@@ -1520,7 +1524,17 @@ class BuildSummary(models.Model, TestSummaryBase):
             'test_runs_incomplete': test_runs_incomplete,
         }
 
-        summary, created = cls.objects.get_or_create(build=build, environment=environment, defaults=data)
+        try:
+            # Occasionally, there might be scenarios where multiple threads call the line below,
+            # which isn't thread-safe. Thus allowing multiple invokations of `.get()`, returning
+            # no object, and multiple creations. To solve that, a constraint was created that doesn't
+            # allow creating multiple summaries with the same build/environment combination.
+            # Therefore, when multiple saves are invoked, an IntegrityError will be raised, but
+            # it is OK to ignore it, meaning another thread already got a hold of the object
+            summary, created = cls.objects.get_or_create(build=build, environment=environment, defaults=data)
+        except IntegrityError:
+            return
+
         if not created:
             summary.metrics_summary = metrics_summary.value
             summary.has_metrics = metrics_summary.has_metrics
