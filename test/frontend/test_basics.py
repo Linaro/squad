@@ -98,6 +98,9 @@ class FrontendTest(TestCase):
     def test_project_metrics(self):
         self.hit('/mygroup/myproject/metrics/')
 
+    def test_project_metrics_metric_summary(self):
+        self.hit('/mygroup/myproject/metrics/?environment=myenv&metric=:summary:')
+
     def test_project_test_history_404(self):
         self.hit('/mygroup/myproject/tests/foo', 404)
 

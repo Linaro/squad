@@ -128,8 +128,6 @@ def get_summary_series(project, environments, date_start, date_end):
             build__created_at__range=(date_start, date_end)
         ).filter(
             metrics_summary__gt=0
-        ).order_by(
-            'datetime'
         ).values(
             'metrics_summary',
             'build_id',
