@@ -96,7 +96,8 @@ class FrontendTest(TestCase):
         self.hit('/mygroup/myproject/badge')
 
     def test_project_metrics(self):
-        self.hit('/mygroup/myproject/metrics/')
+        response = self.hit('/mygroup/myproject/metrics/')
+        self.assertNotIn('None', str(response.content))
 
     def test_project_metrics_metric_summary(self):
         self.hit('/mygroup/myproject/metrics/?environment=myenv&metric=:summary:')
