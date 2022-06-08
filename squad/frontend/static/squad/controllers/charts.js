@@ -239,6 +239,9 @@ function ChartPanel($http, DATA) {
             var min = 0
             var max = 0
             _.each(selected_environments, function(env) {
+                if (data[env.name].length == 0) {
+                    return
+                }
                 var line = chartPanel.filterData(data[env.name], minLimit, maxLimit)
                 var low = chartPanel.filterData(data[env.name], minLimit, maxLimit, 6)
                 var high = chartPanel.filterData(data[env.name], minLimit, maxLimit, 7)
