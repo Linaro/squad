@@ -1,3 +1,29 @@
+# 1.54
+
+This 1.54 release bring a handful of bugfixes and improvements:
+
+* Bug fixes
+  * handle LAVA HTTP/500 responses from the api
+  * fix several bug in the metric page and improve overall performance
+  * fix a race-condition bug when processing multiple result submissions
+
+* New features
+  * allow filtering builds by id and testjobs by backends
+
+Complete list of changes going in:
+
+* api: rest: add allow filtering testjobs by backend
+* api: rest: allow filtering builds by id
+* ci: lava: catch submission errors on 500 errors
+* ci: tuxsuite: handle failed jobs
+* core: BuildSummary: add uniqueness constraint
+* core: queries: improve overall query performance
+* core: queries: remove extra order_by
+* frontend: chart.js: avoid drawing charts on empty environments
+* frontend: queries: improve query performance
+* frontend: templatetags: avoid having 'None' rendered
+* frontend: views: avoid None in threshold metric data
+
 # 1.53.2
 
 This 1.53.2 release fixes a bug in the TuxSuite backend
