@@ -698,7 +698,7 @@ def metrics(request, group_slug, project_slug):
     data = get_metric_data(
         project,
         request.GET.getlist('metric'),
-        request.GET.getlist('environment')
+        env_qs.filter(slug__in=request.GET.getlist('environment'))
     )
 
     thresholds = []

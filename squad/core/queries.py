@@ -56,8 +56,7 @@ def get_metric_series(project, metric, environments, date_start, date_end):
     entry = {}
     for environment in environments:
         series = models.Metric.objects.by_full_name(metric).filter(
-            build__project=project,
-            environment__slug=environment,
+            environment=environment,
             test_run__created_at__range=(date_start, date_end)
         ).order_by(
             'test_run__datetime',
@@ -70,7 +69,7 @@ def get_metric_series(project, metric, environments, date_start, date_end):
             'is_outlier',
             'measurements',
         )
-        entry[environment] = [
+        entry[environment.slug] = [
             [
                 int(p['build__datetime'].timestamp()),
                 p['result'],
@@ -90,9 +89,8 @@ def get_tests_series(project, environments, date_start, date_end):
     tests_total = (F('tests_pass') + F('tests_skip') + F('tests_fail') + F('tests_xfail'))
     for environment in environments:
         series = models.Status.objects.filter(
-            test_run__build__project=project,
             suite=None,
-            test_run__environment__slug=environment,
+            test_run__environment=environment,
             test_run__created_at__range=(date_start, date_end)
         ).filter(
             Q(tests_pass__gt=0) | Q(tests_skip__gt=0) | Q(tests_fail__gt=0) | Q(tests_xfail__gt=0)
@@ -107,7 +105,7 @@ def get_tests_series(project, environments, date_start, date_end):
             pass_percentage=100 * Sum('tests_pass') / Sum(tests_total)
         ).order_by('test_run__build__datetime')
 
-        results[environment] = [
+        results[environment.slug] = [
             [
                 int(s['test_run__build__datetime'].timestamp()),
                 s['pass_percentage'],
@@ -123,8 +121,7 @@ def get_summary_series(project, environments, date_start, date_end):
     results = {}
     for environment in environments:
         series = models.BuildSummary.objects.filter(
-            build__project=project,
-            environment__slug=environment,
+            environment=environment,
             build__created_at__range=(date_start, date_end)
         ).filter(
             metrics_summary__gt=0
@@ -136,7 +133,7 @@ def get_summary_series(project, environments, date_start, date_end):
             'build__annotation__description',
         ).order_by('build__datetime')
 
-        results[environment] = [
+        results[environment.slug] = [
             [
                 int(s['build__datetime'].timestamp()),
                 s['metrics_summary'],
@@ -153,7 +150,7 @@ def get_dynamic_summary(project, environments, metrics, date_start, date_end):
     filters = []
     if not metrics:
         for env in environments:
-            entry[env] = []
+            entry[env.slug] = []
         return entry
     for m in metrics:
         suite, metric = parse_name(m)
@@ -161,8 +158,7 @@ def get_dynamic_summary(project, environments, metrics, date_start, date_end):
     metric_filter = reduce(lambda x, y: x | y, filters)
 
     data = models.Metric.objects.filter(
-        build__project=project,
-        environment__slug__in=environments,
+        environment__in=environments,
         test_run__created_at__range=(date_start, date_end),
     ).filter(
         metric_filter
@@ -203,7 +199,7 @@ def test_confidence(test, list_of_duplicates=None):
         return {value: count for value, count in data.items() if count == max_count}
 
     if test:
-        duplicates = models.Test.objects.filter(suite=test.suite, metadata=test.metadata, environment_id=test.environment_id, build_id=test.build_id).order_by()
+        duplicates = models.Test.objects.filter(metadata=test.metadata, environment=test.environment, build=test.build).order_by()
     else:
         duplicates = list_of_duplicates
 
