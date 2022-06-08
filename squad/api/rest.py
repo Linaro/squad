@@ -120,7 +120,7 @@ class BuildFilter(filters.FilterSet):
     class Meta:
         model = Build
         fields = {'version': ['exact', 'in', 'startswith'],
-                  'id': ['exact', 'in'],
+                  'id': ['exact', 'in', 'lt', 'lte', 'gt', 'gte'],
                   'created_at': ['exact', 'lt', 'lte', 'gt', 'gte'],
                   }
 

@@ -394,6 +394,11 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/builds/')
         self.assertEqual(6, len(data['results']))
 
+    def test_builds_id_filter(self):
+        last = self.project.builds.last()
+        data = self.hit(f'/api/builds/?id__lt={last.id}')
+        self.assertEqual(5, len(data['results']))
+
     def test_builds_status(self):
         self.build2.test_jobs.all().delete()
         self.build3.test_jobs.all().delete()
