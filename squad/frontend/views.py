@@ -698,16 +698,18 @@ def metrics(request, group_slug, project_slug):
     data = get_metric_data(
         project,
         request.GET.getlist('metric'),
-        request.GET.getlist('environment')
+        env_qs.filter(slug__in=request.GET.getlist('environment'))
     )
+
+    thresholds = []
+    for t in MetricThreshold.objects.filter(environment__in=env_qs, value__isnull=False).only('name', 'value'):
+        thresholds.append({'name': t.name, 'value': t.value})
 
     context = {
         "project": project,
         "environments": environments,
         "metrics": metrics,
-        "thresholds": list(MetricThreshold.objects.filter(
-            environment__in=env_qs
-        ).values('name', 'value')),
+        "thresholds": thresholds,
         "data": data,
     }
     return render(request, 'squad/metrics.jinja2', context)

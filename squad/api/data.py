@@ -51,7 +51,7 @@ def get(request, group_slug, project_slug):
         metrics = [":tests:"]
         metrics += [join_name(m['suite__slug'], m['metadata__name']) for m in metric_set]
 
-    environments = request.GET.getlist('environment')
+    environments = project.environments.filter(slug__in=request.GET.getlist('environment'))
 
     results = get_metric_data(project, metrics, environments,
                               date_start, date_end)

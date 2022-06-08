@@ -171,7 +171,7 @@ def active(context, name):
     if path == wanted:
         return 'active'
     else:
-        return None
+        return ''
 
 
 @register_global_function(takes_context=True)

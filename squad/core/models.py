@@ -1052,7 +1052,7 @@ class MetricManager(models.Manager):
 
     def by_full_name(self, name):
         (suite, metric) = parse_name(name)
-        return self.filter(suite__slug=suite, metadata__name=metric)
+        return self.filter(metadata__suite=suite, metadata__name=metric)
 
 
 class Metric(models.Model):
