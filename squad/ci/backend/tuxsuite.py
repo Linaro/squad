@@ -152,24 +152,29 @@ class Backend(BaseBackend):
             if results['result'] == 'fail':
                 test_job.failure = str(results['results'])
 
+            # If any result is unkown, a retry is needed
+            if 'unknown' in results['results'].values():
+                return None
+
             # Retrieve TuxRun log
             job_url += '/'
             logs = self.fetch_url(job_url, 'logs?format=txt').text
 
             # Really fetch test results
             tests_results = self.fetch_url(job_url, 'results').json()
-            for suite, suite_tests in tests_results.items():
-                if suite == 'lava':
-                    continue
+            if tests_results.get('error', None) is None:
+                for suite, suite_tests in tests_results.items():
+                    if suite == 'lava':
+                        continue
 
-                suite_name = re.sub(r'^[0-9]+_', '', suite)
-                for name, test_data in suite_tests.items():
-                    test_name = f'{suite_name}/{name}'
-                    result = test_data['result']
+                    suite_name = re.sub(r'^[0-9]+_', '', suite)
+                    for name, test_data in suite_tests.items():
+                        test_name = f'{suite_name}/{name}'
+                        result = test_data['result']
 
-                    # TODO: Log lines are off coming from TuxRun/LAVA
-                    # test_log = self.get_test_log(log_dict, test)
-                    tests[test_name] = result
+                        # TODO: Log lines are off coming from TuxRun/LAVA
+                        # test_log = self.get_test_log(log_dict, test)
+                        tests[test_name] = result
 
         return status, completed, metadata, tests, metrics, logs
 
