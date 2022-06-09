@@ -30,7 +30,7 @@ from django.utils.translation import gettext_lazy as N_
 from simple_history.models import HistoricalRecords
 
 from squad.core.utils import parse_name, join_name, yaml_validator, jinja2_validator, storage_save
-from squad.core.utils import encrypt, decrypt, split_list
+from squad.core.utils import encrypt, decrypt
 from squad.core.comparison import TestComparison, MetricComparison
 from squad.core.statistics import geomean
 from squad.core.plugins import Plugin
@@ -1454,20 +1454,16 @@ class TestSummary(TestSummaryBase):
         self.tests_xfail = 0
         self.tests_skip = 0
 
-        query_set = build.test_runs
+        query_set = Status.objects.filter(suite=None, test_run__build=build)
         if environment:
-            query_set = query_set.filter(environment=environment)
+            query_set = query_set.filter(test_run__environment=environment)
 
-        query_set = query_set.values('id').order_by('id')
-
-        test_runs_ids = [test_run['id'] for test_run in query_set]
-        for chunk in split_list(test_runs_ids, chunk_size=100):
-            status = Status.objects.filter(suite=None, test_run_id__in=chunk)
-            for s in status:
-                self.tests_pass += s.tests_pass
-                self.tests_fail += s.tests_fail
-                self.tests_xfail += s.tests_xfail
-                self.tests_skip += s.tests_skip
+        stats = query_set.values('suite_id').annotate(Sum('tests_pass'), Sum('tests_fail'), Sum('tests_xfail'), Sum('tests_skip'))
+        for s in stats:
+            self.tests_pass = s['tests_pass__sum']
+            self.tests_fail = s['tests_fail__sum']
+            self.tests_xfail = s['tests_xfail__sum']
+            self.tests_skip = s['tests_skip__sum']
 
 
 class MetricsSummary(object):
