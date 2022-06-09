@@ -1,3 +1,11 @@
+# 1.54.1
+
+This 1.54.1 release improves performance of fetch tasks
+by reducing the number of queries when computing tests stats.
+
+The release also fixes a bug when fetching a job in TuxSuite
+that has unknown status.
+
 # 1.54
 
 This 1.54 release bring a handful of bugfixes and improvements:
