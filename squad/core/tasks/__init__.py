@@ -11,6 +11,7 @@ import yaml
 
 
 from django.db import transaction
+from django.db.models import Count
 
 
 from squad.celery import app as celery
@@ -396,21 +397,27 @@ class RecordTestRunStatus(object):
 
         status = defaultdict(lambda: Status(test_run=testrun))
 
-        for test in testrun.tests.all():
-            sid = test.suite_id
-            if test.result is True:
-                status[None].tests_pass += 1
-                status[sid].tests_pass += 1
-            elif test.result is False:
-                if test.known_issues.exists():
-                    status[None].tests_xfail += 1
-                    status[sid].tests_xfail += 1
-                else:
-                    status[None].tests_fail += 1
-                    status[sid].tests_fail += 1
-            else:
-                status[None].tests_skip += 1
-                status[sid].tests_skip += 1
+        # Get number of passing tests per suite
+        passes = testrun.tests.filter(result=True).values('suite_id').annotate(pass_count=Count('suite_id')).order_by()
+        xfails = testrun.tests.filter(result=False, has_known_issues=True).values('suite_id').annotate(xfail_count=Count('suite_id')).order_by()
+        fails = testrun.tests.filter(result=False).exclude(has_known_issues=True).values('suite_id').annotate(fail_count=Count('suite_id')).order_by()
+        skips = testrun.tests.filter(result__isnull=True).values('suite_id').annotate(skip_count=Count('suite_id')).order_by()
+
+        for p in passes:
+            status[None].tests_pass += p['pass_count']
+            status[p['suite_id']].tests_pass += p['pass_count']
+
+        for x in xfails:
+            status[None].tests_xfail += x['xfail_count']
+            status[x['suite_id']].tests_xfail += x['xfail_count']
+
+        for f in fails:
+            status[None].tests_fail += f['fail_count']
+            status[f['suite_id']].tests_fail += f['fail_count']
+
+        for s in skips:
+            status[None].tests_skip += s['skip_count']
+            status[s['suite_id']].tests_skip += s['skip_count']
 
         metrics = defaultdict(lambda: [])
         for metric in testrun.metrics.all():
