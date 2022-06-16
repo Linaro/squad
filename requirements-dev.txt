@@ -10,3 +10,4 @@ pytest
 pytest-django
 pytest-cov
 requests-mock
+squad-linaro-plugins
