@@ -22,6 +22,7 @@ include .readthedocs.yml
 include .coveragerc
 include squad.svg
 include .github/workflows/*.yml
+include test/integration/plugins/tradefed-output-20220608105250.tar.xz
 
 include           squad/core/management/commands/import_data.rst
 recursive-include squad/frontend/static/ *
