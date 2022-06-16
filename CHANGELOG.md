@@ -1,3 +1,9 @@
+# 1.54.2
+
+This 1.54.2 release uses a refactored implementation of
+squad-linaro-plugins/tradefed, consuming much less memory
+when computing CTS/VTS results
+
 # 1.54.1
 
 This 1.54.1 release improves performance of fetch tasks
