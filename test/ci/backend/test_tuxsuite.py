@@ -326,7 +326,7 @@ class TuxSuiteTest(TestCase):
             'user_agent': 'tuxsuite/0.43.6',
             'state': 'finished',
             'result': 'fail',
-            'results': {'boot': 'fail', 'ltp-smoke': 'fail'},
+            'results': {'boot': 'fail', 'ltp-smoke': 'unknown'},
             'plan': None,
             'waiting_for': None,
             'boot_args': None,
@@ -380,7 +380,7 @@ class TuxSuiteTest(TestCase):
             self.assertEqual(test_logs, logs)
 
         self.assertEqual('ltp-smoke', testjob.name)
-        self.assertEqual("{'boot': 'fail', 'ltp-smoke': 'fail'}", testjob.failure)
+        self.assertEqual("{'boot': 'fail', 'ltp-smoke': 'unknown'}", testjob.failure)
 
     def test_fetch_test_results_for_test_with_failed_build(self):
         job_id = 'TEST:tuxgroup@tuxproject#124'

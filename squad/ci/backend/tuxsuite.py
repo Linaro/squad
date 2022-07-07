@@ -152,8 +152,8 @@ class Backend(BaseBackend):
             if results['result'] == 'fail':
                 test_job.failure = str(results['results'])
 
-            # If any result is unkown, a retry is needed
-            if 'unknown' in results['results'].values():
+            # If boot result is unkown, a retry is needed, otherwise, it either passed or failed
+            if 'unknown' == results['results']['boot']:
                 return None
 
             # Retrieve TuxRun log
