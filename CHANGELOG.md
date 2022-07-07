@@ -1,3 +1,12 @@
+# 1.54.3
+
+This 1.54.3 release improves performance of operations
+using TestComparison and MetricComparison with regressions
+and fixes only, by removing duplicated rows from the result
+query.
+
+It also fixes the use case that retries fetching TuxSuite jobs.
+
 # 1.54.2
 
 This 1.54.2 release uses a refactored implementation of
