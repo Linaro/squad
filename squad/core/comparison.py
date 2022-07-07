@@ -152,7 +152,7 @@ class BaseComparison(object):
         where = ' AND '.join(sql['where'])
         values = sql['values']
 
-        sql = 'SELECT %s FROM %s WHERE %s' % (select, _from, where)
+        sql = 'SELECT DISTINCT %s FROM %s WHERE %s' % (select, _from, where)
         sql = sql.format(**values)
 
         return sql
