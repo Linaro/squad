@@ -19,6 +19,7 @@ from squad.core.models import slug_pattern, group_slug_pattern
 
 group_and_project = (group_slug_pattern, slug_pattern)
 
+handler403 = "squad.urls.permission_denied"
 
 urlpatterns = [
     url(r'^favicon.ico$', lambda _: redirect(settings.MEDIA_URL + '/static/favicon.ico')),
