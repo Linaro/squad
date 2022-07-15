@@ -94,12 +94,17 @@ class Backend(BaseBackend):
         return response
 
     def parse_build_results(self, test_job, job_url, results, settings):
-        required_keys = ['build_status', 'warnings_count', 'download_url', 'tuxmake_metadata']
+        required_keys = ['build_status', 'warnings_count', 'download_url', 'retry']
         self.__check_required_keys__(required_keys, results)
-        try:
-            duration = results['tuxmake_metadata']['results']['duration']['build']
-        except KeyError:
-            raise FetchIssue('Missing duration from build results')
+
+        # Generate generic test/metric name
+        test_name = results.get('build_name') or self.generate_test_name(results)
+        test_job.name = test_name
+
+        build_status = results['build_status']
+        if build_status == 'error' and results['retry'] < 2:
+            # SQUAD should retry fetching the build until retry == 2
+            raise TemporaryFetchIssue(results.get('status_message', 'TuxSuite Error'))
 
         # Make metadata
         metadata_keys = settings.get('BUILD_METADATA_KEYS', [])
@@ -107,23 +112,27 @@ class Backend(BaseBackend):
         metadata['job_url'] = job_url
         metadata['config'] = urljoin(results.get('download_url') + '/', 'config')
 
-        # Generate generic test/metric name
-        test_name = results.get('build_name') or self.generate_test_name(results)
-
-        test_job.name = test_name
-
-        # Create tests
+        # Create tests and metrics
         tests = {}
-        tests[f'build/{test_name}'] = results['build_status']
-
-        # Create metrics
         metrics = {}
-        metrics[f'build/{test_name}-duration'] = duration
-        metrics[f'build/{test_name}-warnings'] = results['warnings_count']
 
-        status = 'Complete'
         completed = True
-        logs = self.fetch_url(results['download_url'], 'build.log').text
+        if results['retry'] >= 2:
+            # This indicates that TuxSuite gave up trying to work on this build
+            status = 'Incomplete'
+            tests[f'build/{test_name}'] = 'skip'
+            logs = ''
+        else:
+            status = 'Complete'
+            tests[f'build/{test_name}'] = build_status
+            metrics[f'build/{test_name}-warnings'] = results['warnings_count']
+            logs = self.fetch_url(results['download_url'], 'build.log').text
+
+            try:
+                metrics[f'build/{test_name}-duration'] = results['tuxmake_metadata']['results']['duration']['build']
+            except KeyError:
+                raise FetchIssue('Missing duration from build results')
+
         return status, completed, metadata, tests, metrics, logs
 
     def parse_test_results(self, test_job, job_url, results, settings):
