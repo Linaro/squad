@@ -525,11 +525,11 @@ msgstr ""
 #: squad/frontend/templates/squad/base.jinja2:81
 msgid ""
 "SQUAD is free software, distributed under the terms of <a href=\"https://www."
-"gnu.org/licenses/agpl-3.0.html\">GNU Affero General Public License, version "
+"gnu.org/licenses/gpl-3.0.html\">GNU General Public License, version "
 "3</a> or (at your option) any later version."
 msgstr ""
 "SQUAD jest worlnym oprogramowaniem, rozpowszechnianym na podstawie licensji "
-"<a href=\"https://www.gnu.org/licenses/agpl-3.0.html\">GNU Affero General "
+"<a href=\"https://www.gnu.org/licenses/gpl-3.0.html\">GNU General "
 "Public License, wersja 3</a> lub (według twojego wyboru) późniejszej."
 
 #: squad/frontend/templates/django/rest_framework/api.html:59
