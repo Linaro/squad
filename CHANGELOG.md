@@ -1,3 +1,12 @@
+# 1.55
+
+This 1.55 release fixes a bug when fetching tuxsuite tests when
+build had failed. 
+
+The release also contains a newer version os squad-plugins/tradefed,
+which fixes a bug parsing xml iteratively and parse ASSUMPTION_FAILURE
+tests as expected failure.
+
 # 1.54.3
 
 This 1.54.3 release improves performance of operations
