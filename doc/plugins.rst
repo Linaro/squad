@@ -82,7 +82,7 @@ provides one SQUAD plugin. It is made of only two files: ``setup.py`` and
                 'externalplugin=examplepluginpackage:MyPlugin',
             ]
         },
-        license='AGPLv3+',
+        license='GPLv3+',
         description="An example Plugin pacakge",
         long_description="""
         The Example Plugin package is a sample plugin for SQUAD that

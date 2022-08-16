@@ -44,7 +44,7 @@ setup(
     },
     install_requires=requirements,
     extras_require=extras_require,
-    license='AGPLv3+',
+    license='GPLv3+',
     description="Software Quality Dashboard",
     long_description="Software Quality Dashboard",  # FIXME
     platforms='any',
