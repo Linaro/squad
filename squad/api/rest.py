@@ -122,6 +122,7 @@ class BuildFilter(filters.FilterSet):
         fields = {'version': ['exact', 'in', 'startswith'],
                   'id': ['exact', 'in', 'lt', 'lte', 'gt', 'gte'],
                   'created_at': ['exact', 'lt', 'lte', 'gt', 'gte'],
+                  'is_release': ['exact', 'in']
                   }
 
 
