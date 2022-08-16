@@ -1,3 +1,27 @@
+# 1.56
+
+This 1.56 release marks a very important change to SQUAD: it changes its
+license to GPLv3+.
+
+The release also adds a new feature in builds allowing users to mark releases.
+This will be useful when comparing builds against releases, instead of comparing
+them against latest builds. Thanks Milosz!
+
+Complete list of changes going in:
+
+* Change license to GPLv3+
+* api: add build filtering by is_release field
+* core:
+  * Add is_release and release_label to Build object
+  * fix syntax issue
+  * plugins: fix code style around `yield`
+* frontend:
+  * add UI for setting Build.is_release
+  * fix reverse url for annotations UI
+  * Add release indication in the build list
+* Drop French translations
+* Drop Norwegian translation
+
 # 1.55
 
 This 1.55 release fixes a bug when fetching tuxsuite tests when
