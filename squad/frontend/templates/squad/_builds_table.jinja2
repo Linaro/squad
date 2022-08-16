@@ -24,6 +24,19 @@
         <strong>
             {{build.version}}
         </strong>
+        {% if build.is_release %}
+            {% if build.release_label %}
+            <span data-toggle="tooltip" title="{{ build.release_label | safe }}">
+                <button class="fa fa-tag text-primary popover-regressions-fixes"></button>
+                <span title="{{ _('Release') }}" class="hidden">
+                    <p>{{ build.release_label | safe }}</p>
+                    {% if build.annotation %}
+                    <p>{{ build.annotation.description }}</p>
+                    {% endif %}
+                </span>
+            </span>
+            {% endif %}
+        {% endif %}
     </div>
     <div class='col-md-3 col-sm-3'>
         <div title='Test run status'>
