@@ -113,7 +113,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title">{{ _('Build annotation') }}</h4>
       </div>
-      <form class="well" id="annotation_form" ng-controller="AnnotationController" ng-submit="updateAnnotation('{{ build.id }}')" ng-init="{% if build.annotation%}annotation_id={{ build.annotation.id }}{% endif %}">
+      <form class="well" id="annotation_form" ng-controller="AnnotationController" ng-submit="updateAnnotation('{{ url("build-detail", args=[build.pk]) }}')" ng-init="{% if build.annotation%}annotation_id={{ build.annotation.id }}{% endif %}">
         <div class="modal-body">
           <div class="row">
             <div class="col-md-2">

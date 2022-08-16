@@ -88,7 +88,7 @@ def apply_plugins(plugin_names):
     for p in plugin_names:
         try:
             plugin = get_plugin_instance(p)
-            yield(plugin)
+            yield plugin
         except PluginNotFound:
             pass
 
