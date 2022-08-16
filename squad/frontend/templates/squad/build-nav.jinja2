@@ -7,6 +7,9 @@
             » {% include "squad/_test_results_summary.jinja2" %}
         {% endif %}
     {% endwith %}
+    {% if build.is_release %}
+    <i class="fa fa-tag"></i>
+    {% endif %}
 </h2>
 
 {% if build.patch_source and build.patch_id %}
@@ -36,6 +39,26 @@
       <div class="col-md-1">
         <a href="#" data-toggle="modal" data-target="#annotation_modal">
           <button id="annotation_button" type="submit" class="btn btn-primary">{% if build.annotation %}{{ _('Update') }}{% else %}{{ _('Add annotation') }}{% endif %}</button>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="highlight-row">
+  <div class="alert alert-info annotation-alert">
+    <div class="row">
+      <div id="release_text" class="col-md-11 release-text-col {% if not build.is_release %}hidden{% endif %}">
+        {% if build.is_release %}
+        <i class="fa fa-tag"></i>
+        {% endif %}
+        {% if build.release_label %}
+        <strong>{{ _('Release:') }}</strong>
+        {{ build.release_label | safe }}
+        {% endif %}
+      </div>
+      <div class="col-md-1">
+        <a href="#" data-toggle="modal" data-target="#release_modal">
+          <button id="release_button" type="submit" class="btn btn-primary">{% if build.is_release %}{{ _('Update') }}{% else %}{{ _('Mark release') }}{% endif %}</button>
         </a>
       </div>
     </div>
@@ -116,11 +139,47 @@
       <form class="well" id="annotation_form" ng-controller="AnnotationController" ng-submit="updateAnnotation('{{ build.id }}')" ng-init="{% if build.annotation%}annotation_id={{ build.annotation.id }}{% endif %}">
         <div class="modal-body">
           <div class="row">
-            <div class="col-md-2">
+            <div class="col-md-3">
               <label for="description">{{ _('Description:') }}</label>
             </div>
-            <div class="col-md-10">
+            <div class="col-md-9">
               <input name="description" class="annotation-description" ng-model="description" placeholder="Annotation description" ng-init="description='{% if build.annotation %}{{ build.annotation.description }}{% endif %}'" />
+            </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Close') }}</button>
+        <button class="btn btn-primary">{{ _('Save') }}</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Release window -->
+<div id="release_modal" class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">{{ _('Release') }}</h4>
+      </div>
+      <form class="well" id="build_release_form" ng-controller="BuildReleaseController" ng-submit="updateRelease('{{ url("build-detail", args=[build.pk]) }}')">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-3">
+              <label for="description">{{ _('Is release:') }}</label>
+            </div>
+            <div class="col-md-9">
+              <input type="checkbox" name="is_release" class="build-is-release" ng-model="is_release" ng-init="is_release={{ build.is_release|tojson }}" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-3">
+              <label for="description">{{ _('Release label:') }}</label>
+            </div>
+            <div class="col-md-9">
+              <input name="release_label" class="build-release-label" ng-model="release_label" placeholder="Release label" ng-init="release_label='{% if build.release_label %}{{ build.release_label }}{% endif %}'" />
             </div>
           </div>
       </div>
