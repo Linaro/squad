@@ -1,5 +1,6 @@
 import {AnnotationController} from './controllers/annotation.js'
 import {BuildCompareController} from './controllers/build_compare.js'
+import {BuildReleaseController} from './controllers/build_release.js'
 import {FilterController} from './controllers/filter.js'
 import {ResubmitController} from './controllers/resubmit.js'
 import {CancelController} from './controllers/cancel.js'
@@ -22,6 +23,16 @@ app.controller(
         '$http',
         '$httpParamSerializerJQLike',
         AnnotationController
+    ]
+)
+
+app.controller(
+    'BuildReleaseController',
+    [
+        '$scope',
+        '$http',
+        '$httpParamSerializerJQLike',
+        BuildReleaseController
     ]
 )
 

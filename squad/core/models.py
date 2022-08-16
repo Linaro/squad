@@ -464,6 +464,16 @@ class Build(models.Model):
         default=False,
         help_text="Keep this build data even after the project data retention period has passed"
     )
+    is_release = models.BooleanField(
+        default=False,
+        help_text="Indication whether the build is considered a release"
+    )
+    release_label = models.CharField(
+        max_length=64,
+        null=True,
+        blank=True,
+        help_text="Name or label applied to the release build"
+    )
 
     callbacks = CallbackForeignKey()
 
