@@ -6,7 +6,7 @@ from django.db.models import Case, When, Prefetch, Max
 from django.core.paginator import Paginator, EmptyPage
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, reverse
 
 from squad.ci.models import TestJob
 from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold, KnownIssue, Test
@@ -467,6 +467,13 @@ def build(request, group_slug, project_slug, version):
         'testjobs_progress': testjobs_progress,
     }
     return render(request, 'squad/build.jinja2', context)
+
+
+@auth
+def build_api(request, group_slug, project_slug, version):
+    project = request.project
+    build = get_build(project, version)
+    return redirect(reverse('build-detail', args=[build.id]))
 
 
 @auth

@@ -41,6 +41,7 @@ urlpatterns = [
     url(r'^(%s)/(%s)/knownissues/$' % group_and_project, views.known_issues, name='knownissues'),
     url(r'^(%s)/(%s)/builds/$' % group_and_project, views.builds, name='builds'),
     url(r'^(%s)/(%s)/build/([^/]+)/$' % group_and_project, views.build, name='build'),
+    url(r'^(%s)/(%s)/build/([^/]+)/api/$' % group_and_project, views.build_api, name='build_api'),
     url(r'^(%s)/(%s)/build/([^/]+)/badge$' % group_and_project, views.build_badge, name='build_badge'),
     url(r'^(%s)/(%s)/build/([^/]+)/tests/$' % group_and_project, tests.tests, name='tests'),
     url(r'^(%s)/(%s)/build/([^/]+)/failures/$' % group_and_project, failures.failures, name='failures'),
