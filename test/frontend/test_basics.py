@@ -190,6 +190,10 @@ class FrontendTest(TestCase):
     def test_build_metrics(self):
         self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/metrics/' % (self.test_run.id, self.suite.slug))
 
+    def test_build_api_link(self):
+        response = self.hit('/mygroup/myproject/build/1.0/api/', 302)
+        self.assertRedirects(response, '/api/builds/%d/' % self.build.id, status_code=302)
+
     def test_test_run_build_404(self):
         self.hit('/mygroup/myproject/build/2.0.missing/testrun/999/', 404)
 
