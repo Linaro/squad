@@ -48,10 +48,13 @@ then
   TTY="-it"
 fi
 
+PORT=${PORT:-8000}
+
 exec docker run \
   --env=XDG_DATA_HOME=/app/tmp/data \
   --env=SQUAD_EXCLUDE_TEST_TAGS=skip_sqlite \
-  --publish=8000:8000 \
+  --env=PORT=${PORT} \
+  --publish=${PORT}:${PORT} \
   --volume="$basedir":/app \
   --name=squad-dev-docker \
   --hostname=squad-dev-docker \
