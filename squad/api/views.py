@@ -115,7 +115,7 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
         log_addition(request, testrun, "Test Run created")
         if build:
             log_addition(request, build, "Build created")
-    except (exceptions.invalid_input + (exceptions.DuplicatedTestJob,)) as e:
+    except (exceptions.invalid_input + (exceptions.DuplicatedTestJob, ValidationError)) as e:
         logger.warning(request.get_full_path() + ": " + str(e))
         return HttpResponse(str(e), status=400)
 

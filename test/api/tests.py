@@ -376,6 +376,15 @@ class CreateTestRunApiTest(ApiTest):
         )
         self.assertEqual(400, response.status_code)
 
+    def test_metadata_invalid_date_format(self):
+        response = self.client.post(
+            '/api/submit/mygroup/myproject/1.0.0/myenvironment',
+            {
+                'metadata': '{"job_id": "123", "datetime": "1661282149"}',
+            }
+        )
+        self.assertEqual(400, response.status_code)
+
     def test_reject_submission_without_job_id(self):
         response = self.client.post(
             '/api/submit/mygroup/myproject/1.0.18/myenvironment',
