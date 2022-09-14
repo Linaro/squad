@@ -1,3 +1,19 @@
+# 1.57
+
+This 1.57 release adds a few new changes with regards to api. Now job submissions
+with malformed definitions will be rejected. Also results submissions with bad
+datetime format will be rejected. Lastly, there's a new feature within the build
+page that when appending "/api" to its url, will redirect the request to the
+build api view.
+
+Complete list of changes going in:
+
+* api: add_test_run: signal invalid request on validation errors
+* api: ci: reject job submission with malformed definition
+* dev-docker: install pytest-django
+* dev-docker: take a custom port number via $PORT
+* frontend: build: add redirect URL to get API URL
+
 # 1.56
 
 This 1.56 release marks a very important change to SQUAD: it changes its
