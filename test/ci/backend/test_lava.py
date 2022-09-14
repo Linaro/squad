@@ -442,6 +442,12 @@ class LavaTest(TestCase):
         self.assertEqual('bar', testjob.name)
         __submit__.assert_called_with(test_definition)
 
+    def test_check_job_definition(self):
+        lava = LAVABackend(None)
+        definition = 'bad: "mismatch quotes""'
+        check = lava.check_job_definition(definition)
+        self.assertIn('found unexpected end of stream', check)
+
     @patch("requests.post", side_effect=requests.exceptions.Timeout)
     def test_submit_timeout(self, post):
         test_definition = "foo: 1\njob_name: bar"

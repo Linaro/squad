@@ -46,6 +46,10 @@ def submit_job(request, group_slug, project_slug, version, environment_slug):
     if definition is None:
         return HttpResponseBadRequest("test job definition is required")
 
+    check = backend.check_job_definition(definition)
+    if check is not True:
+        return HttpResponseBadRequest(f"test job definition is not valid: {check}")
+
     # create TestJob object
     test_job = TestJob.objects.create(
         backend=backend,

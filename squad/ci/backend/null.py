@@ -98,6 +98,12 @@ class Backend(object):
         """
         raise NotImplementedError
 
+    def check_job_definition(selt, definition):
+        """
+        Returns True if job definition checks out or an error message
+        """
+        raise NotImplementedError
+
     def format_message(self, msg):
         if self.data and hasattr(self.data, "name"):
             return self.data.name + ': ' + msg

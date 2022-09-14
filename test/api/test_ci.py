@@ -146,6 +146,15 @@ class CiApiTest(TestCase):
         r = self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
         self.assertEqual(400, r.status_code)
 
+    @patch('squad.ci.backend.fake.Backend.check_job_definition', return_value='bad definition')
+    def test_malformed_definition(self, check_job_definition):
+        args = {
+            'backend': 'lava',
+            'definition': 'unmatched double quotes: "a""'
+        }
+        r = self.client.post('/api/submitjob/mygroup/myproject/1/myenv', args)
+        self.assertEqual(400, r.status_code)
+
     def test_disabled_environment(self):
         args = {
             'backend': 'lava',
