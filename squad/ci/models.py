@@ -161,6 +161,9 @@ class Backend(models.Model):
     def get_implementation(self):
         return get_backend_implementation(self)
 
+    def check_job_definition(self, definition):
+        return self.get_implementation().check_job_definition(definition)
+
     def __str__(self):
         return '%s (%s)' % (self.name, self.implementation_type)
 

@@ -730,3 +730,10 @@ class Backend(BaseBackend):
         if job.job_status in self.complete_statuses:
             self.log_info("scheduling fetch for job %s" % job.job_id)
             fetch.apply_async(args=[job.id])
+
+    def check_job_definition(self, definition):
+        try:
+            yaml.safe_load(definition)
+            return True
+        except yaml.YAMLError as e:
+            return str(e)

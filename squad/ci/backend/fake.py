@@ -62,3 +62,6 @@ class Backend(object):
 
     def cancel(self, test_job):
         return True
+
+    def check_job_definition(self, definition):
+        return True
