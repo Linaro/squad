@@ -11,6 +11,7 @@ REGEX_BODY = 1
 
 MULTILINERS = [
     ('check-kernel-exception', r'------------\[ cut here \]------------.*?------------\[ cut here \]------------'),
+    ('check-kernel-exception-trace', r'------------\[ cut here \]------------.*?---\[ end trace \w* \]---'),
     ('check-kernel-trace', r'Stack:.*?---\[ end trace \w* \]---'),
 ]
 
