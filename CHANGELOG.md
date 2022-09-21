@@ -1,3 +1,9 @@
+# 1.57.1
+
+This 1.57.1 release fixes two bugs:
+* wrong project count in the home page
+* proper split log in linux log parser plugin
+
 # 1.57
 
 This 1.57 release adds a few new changes with regards to api. Now job submissions
