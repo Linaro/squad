@@ -33,8 +33,8 @@ class Plugin(BasePlugin):
         return re.compile(r'|'.join(combined), re.S | re.M)
 
     def __cutoff_boot_log(self, log):
-        # Attempt to split the log in " login: "
-        logs = log.split(' login: ', 1)
+        # Attempt to split the log in " login:"
+        logs = log.split(' login:', 1)
 
         # 1 string means no split was done, consider all logs as test log
         if len(logs) == 1:
