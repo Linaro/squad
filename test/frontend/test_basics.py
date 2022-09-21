@@ -18,6 +18,7 @@ class FrontendTest(TestCase):
         self.project = self.group.projects.create(slug='myproject')
         self.other_project = self.group.projects.create(slug='yourproject')
         self.user = User.objects.create(username='theuser')
+        self.another_user = User.objects.create(username='anotheruser')
         self.group.add_admin(self.user)
 
         self.client = Client()
@@ -72,6 +73,25 @@ class FrontendTest(TestCase):
         response = self.hit('/')
         self.assertContains(response, '<strong>mygroup</strong>', html=True, count=1)
         self.assertIsNotNone(re.search(r'2</span>\s*projects', response.content.decode()))
+
+    def test_home_project_count(self):
+        # Test with a logged in user that is not part of the group
+        client = Client()
+        client.force_login(self.another_user)
+        self.project.is_public = False
+        self.project.save()
+        self.other_project.is_public = False
+        self.other_project.save()
+        response = client.get('/')
+        self.assertNotContains(response, '<strong>mygroup</strong>', html=True)
+        self.assertIsNone(re.search(r'2</span>\s*projects', response.content.decode()))
+
+        # Now only one should be visible
+        self.other_project.is_public = True
+        self.other_project.save()
+        response = client.get('/')
+        self.assertContains(response, '<strong>mygroup</strong>', html=True, count=1)
+        self.assertIsNotNone(re.search(r'1</span>\s*projects', response.content.decode()))
 
     def test_compare(self):
         self.hit('/_/compare/')

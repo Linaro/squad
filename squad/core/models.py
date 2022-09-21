@@ -10,7 +10,7 @@ import re
 from django.db import models
 from django.db import transaction
 from django.db.utils import IntegrityError
-from django.db.models import Q, Count, Sum, Case, When, F, Value
+from django.db.models import Q, Count, Sum, F, Value
 from django.db.models.functions import Concat
 from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import User, AnonymousUser, Group as auth_group
@@ -107,7 +107,7 @@ class GroupManager(models.Manager):
 
     def accessible_to(self, user):
         if user.is_superuser:
-            return self.all().order_by('slug').annotate(project_count=Count('projects'))
+            return self.all().order_by('slug').annotate(project_count=Count('projects', distinct=True))
         projects = Project.objects.accessible_to(user)
         project_ids = [p.id for p in projects]
         group_ids = set([p.group_id for p in projects])
@@ -115,13 +115,9 @@ class GroupManager(models.Manager):
             group_ids = group_ids | set([g.id for g in Group.objects.filter(members__in=[user])])
         return self.filter(
             id__in=group_ids
-        ).distinct().order_by('slug').annotate(
-            project_count=Sum(
-                Case(
-                    When(projects__id__in=project_ids, then=1),
-                    default=0,
-                    output_field=models.IntegerField(),
-                )
+        ).order_by('slug').annotate(
+            project_count=Count(
+                'projects', distinct=True, filter=Q(projects__id__in=project_ids)
             )
         )
 
