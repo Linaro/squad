@@ -1,3 +1,9 @@
+# 1.57.2
+
+This 1.57.2 release simply adds support for Google Cloud
+file storage background for django-storages, allowing SQUAD
+to store files in GCP.
+
 # 1.57.1
 
 This 1.57.1 release fixes two bugs:
