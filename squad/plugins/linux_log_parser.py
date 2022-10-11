@@ -1,5 +1,7 @@
+import hashlib
 import logging
 import re
+from collections import defaultdict
 from squad.plugins import Plugin as BasePlugin
 from squad.core.models import SuiteMetadata
 
@@ -68,7 +70,12 @@ class Plugin(BasePlugin):
                     snippets[regex_id].append(match[regex_id])
         return snippets
 
-    def __create_test(self, testrun, suite, test_name, lines):
+    def __create_tests(self, testrun, suite, test_name, lines):
+        """
+        There will be at least one test per regex. If there were any match for a given
+        regex, then a new test will be generated using test_name + shasum. This helps
+        comparing kernel logs accross different builds
+        """
         metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=test_name, kind='test')
         testrun.tests.create(
             suite=suite,
@@ -78,6 +85,32 @@ class Plugin(BasePlugin):
             build=testrun.build,
             environment=testrun.environment,
         )
+
+        # Some lines of the matched regex might be the same, and we don't want to create
+        # multiple tests like test1-sha1, test1-sha1, etc, so we'll create a set of sha1sums
+        # then create only new tests for unique sha's
+        shas = defaultdict(set)
+        for line in lines:
+            sha = self.__create_shasum(line)
+            shas[sha].add(sha)
+
+        for sha, lines in shas.items():
+            name = f'{test_name}-{sha}'
+            metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=name, kind='test')
+            testrun.tests.create(
+                suite=suite,
+                result=False,
+                log='\n---\n'.join(lines),
+                metadata=metadata,
+                build=testrun.build,
+                environment=testrun.environment,
+            )
+
+    def __create_shasum(self, snippet):
+        sha = hashlib.sha256()
+        without_numbers = re.sub(r'(0x[a-f0-9]+|[<\[][0-9a-f]+?[>\]]|\d+)', '', snippet)
+        sha.update(without_numbers.encode())
+        return sha.hexdigest()
 
     def postprocess_testrun(self, testrun):
         if testrun.log_file is None:
@@ -92,7 +125,6 @@ class Plugin(BasePlugin):
         for log_type, log in logs.items():
             log = self.__kernel_msgs_only(log)
             suite, _ = testrun.build.project.suites.get_or_create(slug=f'log-parser-{log_type}')
-            test_name_suffix = '-%s' % testrun.job_id
 
             regex = self.__compile_regexes(REGEXES)
             matches = regex.findall(log)
@@ -112,5 +144,5 @@ class Plugin(BasePlugin):
                 snippets[regex_id + regex_id_offset] += onliner_snippets[regex_id]
 
             for regex_id in range(len(REGEXES)):
-                test_name = REGEXES[regex_id][REGEX_NAME] + test_name_suffix
-                self.__create_test(testrun, suite, test_name, snippets[regex_id])
+                test_name = REGEXES[regex_id][REGEX_NAME]
+                self.__create_tests(testrun, suite, test_name, snippets[regex_id])
