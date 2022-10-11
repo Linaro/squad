@@ -1,3 +1,14 @@
+# 1.58
+
+This 1.58 release changes the linux-log-parser plugin to append
+a shasum of a log instance in the name so that it is easier to compare
+log instances accross multiple builds.
+
+Complete list of changes going in:
+
+* plugins: linux_log_parser: compute contents to generate unique naming
+* plugins: linux_log_parser: make 'except-trace' multi-line regex
+
 # 1.57.2
 
 This 1.57.2 release simply adds support for Google Cloud
