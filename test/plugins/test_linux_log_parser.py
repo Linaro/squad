@@ -232,3 +232,4 @@ class TestLinuxLogParser(TestCase):
         test = testrun.tests.get(suite__slug='log-parser-boot', metadata__name='check-kernel-oops-ed958a6ced291792084f3de4166e5d52676eb6b21f67a1f1585bf7028df50581')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
+        self.assertIn('Internal error: Oops - BUG: 0 [#1] PREEMPT SMP', test.log)

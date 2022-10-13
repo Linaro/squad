@@ -92,7 +92,7 @@ class Plugin(BasePlugin):
         shas = defaultdict(set)
         for line in lines:
             sha = self.__create_shasum(line)
-            shas[sha].add(sha)
+            shas[sha].add(line)
 
         for sha, lines in shas.items():
             name = f'{test_name}-{sha}'
