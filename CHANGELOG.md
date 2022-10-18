@@ -1,3 +1,8 @@
+# 1.58.1
+
+This 1.58.1 release fixes a bug in linux-log-parser when assigning logs
+and hides environment with no results in test history.
+
 # 1.58
 
 This 1.58 release changes the linux-log-parser plugin to append
