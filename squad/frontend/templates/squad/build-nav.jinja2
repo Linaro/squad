@@ -71,22 +71,22 @@
 
     <li role="presentation" {% if url_name == 'build' %}class="active"{% endif %}>
         <a href="{{build_url(build)}}">
-            {{ _('Build summary') }}
+            {{ _('Summary') }}
         </a>
     </li>
     <li role="presentation" {% if url_name == 'tests' or url_name == 'test_history' %}class="active"{% endif %}>
         <a href="{{build_section_url(build, 'tests')}}">
-            {{ _('All test results') }}
+            {{ _('Tests') }}
         </a>
     </li>
     <li role="presentation" {% if url_name == 'failures' %}class="active"{% endif %}>
         <a href="{{build_section_url(build, 'failures')}}">
-            {{ _('All test failures') }}
+            {{ _('Test failures') }}
         </a>
     </li>
     <li role="presentation" {% if url_name == 'build_metrics' %}class="active"{% endif %}>
         <a href="{{build_section_url(build, 'build_metrics')}}">
-            {{ _('All Metrics') }}
+            {{ _('Metrics') }}
         </a>
     </li>
     <li role="presentation" {% if url_name == 'build_metadata' %}class="active"{% endif %}>
@@ -114,7 +114,7 @@
     {% if project.writable_by(user) %}
     <li role="presentation" {% if url_name == 'build_settings' %}class="active"{% endif %}>
         <a href="{{build_section_url(build, 'build_settings')}}">
-            {{ _('Build Settings') }}
+            {{ _('Settings') }}
         </a>
     </li>
     {% endif %}

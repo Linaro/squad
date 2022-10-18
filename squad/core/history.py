@@ -1,10 +1,9 @@
 from collections import OrderedDict
 from django.core.paginator import Paginator
-from django.db.models import Prefetch
 
 from squad.core.queries import test_confidence
 from squad.core.utils import parse_name
-from squad.core.models import Test, SuiteMetadata, TestRun, KnownIssue
+from squad.core.models import Test, SuiteMetadata, KnownIssue
 
 
 class TestResult(object):
@@ -42,7 +41,7 @@ class TestHistory(object):
         suite_slug, test_name = parse_name(full_test_name)
         self.test = full_test_name
 
-        self.paginator = Paginator(project.builds.prefetch_related(Prefetch('test_runs', queryset=TestRun.objects.prefetch_related('environment').all())).reverse(), per_page)
+        self.paginator = Paginator(project.builds.reverse(), per_page)
         if top:
             self.number = 0
             builds = project.builds.filter(datetime__lte=top.datetime).reverse()[0:per_page - 1]
@@ -67,7 +66,6 @@ class TestHistory(object):
         suite = project.suites.prefetch_related('metadata').get(slug=suite_slug)
         metadata = SuiteMetadata.objects.get(kind='test', suite=suite_slug, name=test_name)
         tests = Test.objects.filter(build__in=builds, metadata_id=metadata.id).prefetch_related('build', 'environment', 'test_run', 'metadata').order_by()
-        all_envs = set(project.environments.all())
         for test in tests:
             build = test.build
             environment = test.environment
@@ -77,19 +75,6 @@ class TestHistory(object):
             if environment in results[build]:
                 is_duplicate = True
             results[build][environment] = TestResult(test, suite, metadata, known_issues, is_duplicate)
-
-        for build in results.keys():
-            recorded_envs = set(results[build].keys())
-            remaining_envs = all_envs - recorded_envs
-            for env in remaining_envs:
-                results[build][env] = None
-                environments[env] = True
-        # Make sure all builds that don't have the test have None at least
-        for b in builds:
-            if not results[b]:
-                for env in all_envs:
-                    results[build][env] = None
-                    environments[env] = True
 
         self.environments = sorted(environments.keys(), key=lambda env: env.slug)
         self.results = results
