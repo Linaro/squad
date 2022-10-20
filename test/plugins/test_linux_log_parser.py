@@ -48,16 +48,42 @@ class TestLinuxLogParser(TestCase):
         self.assertIn('Attempted to kill init! exitcode=0x00000009', test.log)
         self.assertNotIn('Internal error: Oops', test.log)
 
-    def test_detects_kernel_exception_trace(self):
+    def test_detects_kernel_exception(self):
         testrun = self.new_testrun('kernelexceptiontrace.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception-trace')
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
         self.assertIn('WARNING: CPU: 0 PID: 1 at kernel/smp.c:912 smp_call_function_many_cond+0x3c4/0x3c8', test.log)
         self.assertIn('5fe0: 0000000b be963e80 b6f142d9 b6f0e648 60000030 ffffffff"}', test.log)
+        self.assertNotIn('Internal error: Oops', test.log)
+
+    def test_detects_kernel_kasan(self):
+        testrun = self.new_testrun('kasan.log')
+        self.plugin.postprocess_testrun(testrun)
+
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-kasan')
+        self.assertFalse(test.result)
+        self.assertIsNotNone(test.log)
+        self.assertNotIn('Booting Linux', test.log)
+        self.assertIn('==================================================================', test.log)
+        self.assertIn('BUG: KASAN: slab-out-of-bounds in kmalloc_oob_right+0x190/0x3b8', test.log)
+        self.assertIn('Write of size 1 at addr c6aaf473 by task kunit_try_catch/191', test.log)
+        self.assertNotIn('Internal error: Oops', test.log)
+
+    def test_detects_kernel_kfence(self):
+        testrun = self.new_testrun('kfence.log')
+        self.plugin.postprocess_testrun(testrun)
+
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-kfence')
+        self.assertFalse(test.result)
+        self.assertIsNotNone(test.log)
+        self.assertNotIn('Booting Linux', test.log)
+        self.assertIn('==================================================================', test.log)
+        self.assertIn('BUG: KFENCE: memory corruption in kfree+0x8c/0x174', test.log)
+        self.assertIn('Corrupted memory at 0x00000000c5d55ff8 [ ! ! ! . . . . . . . . . . . . . ] (in kfence-#214):', test.log)
         self.assertNotIn('Internal error: Oops', test.log)
 
     def test_detects_kernel_bug(self):
@@ -99,15 +125,11 @@ class TestLinuxLogParser(TestCase):
         self.plugin.postprocess_testrun(testrun)
 
         tests = testrun.tests
-        test_trace = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-trace')
         test_panic = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-panic')
         test_exception = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception')
         test_warning = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-warning')
         test_oops = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-oops')
         test_fault = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-fault')
-
-        self.assertTrue(test_trace.result)
-        self.assertEqual('', test_trace.log)
 
         self.assertFalse(test_panic.result)
         self.assertNotIn('Boot CPU', test_panic.log)
@@ -146,14 +168,12 @@ class TestLinuxLogParser(TestCase):
         self.plugin.postprocess_testrun(testrun)
 
         tests = testrun.tests
-        test_trace = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-trace')
         test_panic = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-panic')
         test_exception = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception')
         test_warning = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-warning')
         test_oops = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-oops')
         test_fault = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-fault')
 
-        self.assertTrue(test_trace.result)
         self.assertTrue(test_panic.result)
         self.assertTrue(test_exception.result)
         self.assertTrue(test_warning.result)
@@ -174,14 +194,12 @@ class TestLinuxLogParser(TestCase):
         self.plugin.postprocess_testrun(testrun)
 
         tests = testrun.tests
-        test_trace = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-trace')
         test_panic = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-panic')
         test_exception = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception')
         test_warning = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-warning')
         test_oops = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-oops')
         test_fault = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-fault')
 
-        self.assertTrue(test_trace.result)
         self.assertTrue(test_panic.result)
         self.assertTrue(test_exception.result)
         self.assertTrue(test_oops.result)
