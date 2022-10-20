@@ -13,6 +13,8 @@ REGEX_BODY = 1
 
 MULTILINERS = [
     ('check-kernel-exception', r'-+\[ cut here \]-+.*?-+\[ end trace \w* \]-+'),
+    ('check-kernel-kasan', r'=+\n\[[\s\.\d]+\]\s+BUG: KASAN:.*?=+'),
+    ('check-kernel-kfence', r'=+\nBUG: KFENCE:.*?\n=+'),
 ]
 
 ONELINERS = [

@@ -60,6 +60,19 @@ class TestLinuxLogParser(TestCase):
         self.assertIn('5fe0: 0000000b be963e80 b6f142d9 b6f0e648 60000030 ffffffff"}', test.log)
         self.assertNotIn('Internal error: Oops', test.log)
 
+    def test_detects_kernel_kasan(self):
+        testrun = self.new_testrun('kasan.log')
+        self.plugin.postprocess_testrun(testrun)
+
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-kasan')
+        self.assertFalse(test.result)
+        self.assertIsNotNone(test.log)
+        self.assertNotIn('Booting Linux', test.log)
+        self.assertIn('==================================================================', test.log)
+        self.assertIn('BUG: KASAN: slab-out-of-bounds in kmalloc_oob_right+0x190/0x3b8', test.log)
+        self.assertIn('Write of size 1 at addr c6aaf473 by task kunit_try_catch/191', test.log)
+        self.assertNotIn('Internal error: Oops', test.log)
+
     def test_detects_kernel_bug(self):
         testrun = self.new_testrun('oops.log')
         self.plugin.postprocess_testrun(testrun)
