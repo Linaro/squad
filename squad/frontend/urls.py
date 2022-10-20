@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 
 from . import views
+from . import badges
 from . import comparison
 from . import failures
 from . import metrics
@@ -36,13 +37,13 @@ urlpatterns = [
     url(r'^(%s)/(%s)/settings/' % group_and_project, include(project_settings.urls)),
     url(r'^(%s)/(%s)/tests/(.+)$' % group_and_project, tests.legacy_test_history, name='legacy_test_history'),
     url(r'^(%s)/(%s)/thresholds/' % group_and_project, project_settings.thresholds_legacy),
-    url(r'^(%s)/(%s)/badge$' % group_and_project, views.project_badge, name='project_badge'),
+    url(r'^(%s)/(%s)/badge$' % group_and_project, badges.project_badge, name='project_badge'),
     url(r'^(%s)/(%s)/metrics/$' % group_and_project, views.metrics, name='metrics'),
     url(r'^(%s)/(%s)/knownissues/$' % group_and_project, views.known_issues, name='knownissues'),
     url(r'^(%s)/(%s)/builds/$' % group_and_project, views.builds, name='builds'),
     url(r'^(%s)/(%s)/build/([^/]+)/$' % group_and_project, views.build, name='build'),
     url(r'^(%s)/(%s)/build/([^/]+)/api/$' % group_and_project, views.build_api, name='build_api'),
-    url(r'^(%s)/(%s)/build/([^/]+)/badge$' % group_and_project, views.build_badge, name='build_badge'),
+    url(r'^(%s)/(%s)/build/([^/]+)/badge$' % group_and_project, badges.build_badge, name='build_badge'),
     url(r'^(%s)/(%s)/build/([^/]+)/tests/$' % group_and_project, tests.tests, name='tests'),
     url(r'^(%s)/(%s)/build/([^/]+)/failures/$' % group_and_project, failures.failures, name='failures'),
     url(r'^(%s)/(%s)/build/([^/]+)/metrics/$' % group_and_project, metrics.build_metrics, name='build_metrics'),
