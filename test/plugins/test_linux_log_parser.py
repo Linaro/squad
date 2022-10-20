@@ -73,6 +73,19 @@ class TestLinuxLogParser(TestCase):
         self.assertIn('Write of size 1 at addr c6aaf473 by task kunit_try_catch/191', test.log)
         self.assertNotIn('Internal error: Oops', test.log)
 
+    def test_detects_kernel_kfence(self):
+        testrun = self.new_testrun('kfence.log')
+        self.plugin.postprocess_testrun(testrun)
+
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-kfence')
+        self.assertFalse(test.result)
+        self.assertIsNotNone(test.log)
+        self.assertNotIn('Booting Linux', test.log)
+        self.assertIn('==================================================================', test.log)
+        self.assertIn('BUG: KFENCE: memory corruption in kfree+0x8c/0x174', test.log)
+        self.assertIn('Corrupted memory at 0x00000000c5d55ff8 [ ! ! ! . . . . . . . . . . . . . ] (in kfence-#214):', test.log)
+        self.assertNotIn('Internal error: Oops', test.log)
+
     def test_detects_kernel_bug(self):
         testrun = self.new_testrun('oops.log')
         self.plugin.postprocess_testrun(testrun)
