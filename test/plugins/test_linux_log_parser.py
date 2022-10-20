@@ -87,15 +87,11 @@ class TestLinuxLogParser(TestCase):
         self.plugin.postprocess_testrun(testrun)
 
         tests = testrun.tests
-        test_trace = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-trace')
         test_panic = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-panic')
         test_exception = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception')
         test_warning = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-warning')
         test_oops = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-oops')
         test_fault = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-fault')
-
-        self.assertTrue(test_trace.result)
-        self.assertEqual('', test_trace.log)
 
         self.assertFalse(test_panic.result)
         self.assertNotIn('Boot CPU', test_panic.log)
@@ -134,14 +130,12 @@ class TestLinuxLogParser(TestCase):
         self.plugin.postprocess_testrun(testrun)
 
         tests = testrun.tests
-        test_trace = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-trace')
         test_panic = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-panic')
         test_exception = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception')
         test_warning = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-warning')
         test_oops = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-oops')
         test_fault = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-fault')
 
-        self.assertTrue(test_trace.result)
         self.assertTrue(test_panic.result)
         self.assertTrue(test_exception.result)
         self.assertTrue(test_warning.result)
@@ -162,14 +156,12 @@ class TestLinuxLogParser(TestCase):
         self.plugin.postprocess_testrun(testrun)
 
         tests = testrun.tests
-        test_trace = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-trace')
         test_panic = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-panic')
         test_exception = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception')
         test_warning = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-warning')
         test_oops = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-oops')
         test_fault = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-fault')
 
-        self.assertTrue(test_trace.result)
         self.assertTrue(test_panic.result)
         self.assertTrue(test_exception.result)
         self.assertTrue(test_oops.result)
