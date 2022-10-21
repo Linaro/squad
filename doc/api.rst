@@ -466,6 +466,16 @@ Badge offers customization through following parameters:
   In such case badge colour is set to green. In case both 'metrics' and
   'passrate' keywords are present, 'metrics' is ignored.
 
+- suite/environment (only available in build badges)
+
+  Filter results by specific suite and environment.
+
+- hide_zeros
+
+  When set to 1 or true, avoids printing status with zero as number.
+  Exemple: without "hide_zeros" a badge might be like "pass: 1, fail: 0, xfail: 0",
+  whereas if enabled, it would display the badge like "pass: 1".
+
 Google Data Studio
 ------------------
 
