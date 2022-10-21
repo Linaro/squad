@@ -156,6 +156,18 @@ class FrontendTest(TestCase):
     def test_build_badge_metrics(self):
         self.hit('/mygroup/myproject/build/1.0/badge?metrics')
 
+    def test_build_badge_filter_by_environment(self):
+        self.hit('/mygroup/myproject/build/1.0/badge?environment=myenv')
+
+    def test_build_badge_filter_by_suite(self):
+        self.hit('/mygroup/myproject/build/1.0/badge?suite=mysuite')
+
+    def test_build_badge_filter_by_environment_and_suite(self):
+        self.hit('/mygroup/myproject/build/1.0/badge?suite=mysuite&environment=myenv')
+
+    def test_build_badge_hide_zeros(self):
+        self.hit('/mygroup/myproject/build/1.0/badge?hide_zeros=1')
+
     def test_build_badge_invalid(self):
         self.hit('/mygroup/myproject/build/1.0/badge?foo')
 

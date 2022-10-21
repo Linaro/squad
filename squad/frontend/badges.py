@@ -2,16 +2,29 @@ import svgwrite
 
 from django.http import HttpResponse
 
-from squad.core.models import ProjectStatus
+from squad.core.models import ProjectStatus, Status
 from squad.frontend.views import get_build
 from squad.http import auth
 
 
-def __produce_badge(title_text, status, style=None):
+def __produce_badge(title_text, status, style=None, hide_zeros=False):
     badge_text = "no results found"
     if status:
-        badge_text = "pass: %s, fail: %s, xfail: %s, skip: %s" % \
-            (status.tests_pass, status.tests_fail, status.tests_xfail, status.tests_skip)
+        s = status
+        if not hide_zeros:
+            badge_text = f"pass: {s.tests_pass}, fail: {s.tests_fail}, xfail: {s.tests_xfail}, skip: {s.tests_skip}"
+        else:
+            texts = []
+            if s.tests_pass > 0:
+                texts.append(f"pass: {s.tests_pass}")
+            if s.tests_fail > 0:
+                texts.append(f"fail: {s.tests_fail}")
+            if s.tests_xfail > 0:
+                texts.append(f"xfail: {s.tests_xfail}")
+            if s.tests_skip > 0:
+                texts.append(f"skip: {s.tests_skip}")
+
+            badge_text = ", ".join(texts)
 
     badge_colour = "#999"
 
@@ -105,9 +118,42 @@ def build_badge(request, group_slug, project_slug, version):
     status = build.status
 
     title_text = build.version
+    suite = None
+    environment = None
+    hide_zeros = False
 
-    if request.GET and 'title' in request.GET.keys():
-        title_text = request.GET['title']
+    if request.GET:
+        if 'title' in request.GET:
+            title_text = request.GET.get('title')
+        suite = request.GET.get('suite')
+        environment = request.GET.get('environment')
+        hide_zeros = request.GET.get('hide_zeros') in ["1", "true"]
+
+    if suite or environment:
+        testruns = build.test_runs.all()
+        if environment:
+            testruns = testruns.filter(environment__slug=environment)
+
+        statuses = Status.objects.filter(test_run__in=testruns)
+        if suite:
+            statuses = statuses.filter(suite__slug=suite)
+
+        # Compute status with suite and environment filters
+        has_metrics = []
+        metrics_summary = []
+        status.tests_pass = status.tests_pass = status.tests_fail = status.tests_xfail = status.tests_skip = 0
+        status.metrics_summary = 0.0
+        for s in statuses.all():
+            has_metrics.append(s.has_metrics)
+            status.tests_pass += s.tests_pass
+            status.tests_fail += s.tests_fail
+            status.tests_xfail += s.tests_xfail
+            status.tests_skip += s.tests_skip
+            metrics_summary.append(s.metrics_summary)
+
+        status.has_metrics = all(has_metrics)
+        if status.has_metrics and len(metrics_summary):
+            status.metrics_summary = sum(metrics_summary) / len(metrics_summary)
 
     style = __badge_style(request)
-    return __produce_badge(title_text, status, style)
+    return __produce_badge(title_text, status, style, hide_zeros=hide_zeros)
