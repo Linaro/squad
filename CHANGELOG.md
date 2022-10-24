@@ -1,3 +1,23 @@
+# 1.59
+
+This 1.59 release includes a few multiliner patterns for the linux log parser
+plugin. It also allows filtering badges by suite and environment.
+Finally, it also allow TuxSuite test results to capture the test's build
+metadata information.
+
+Complete list of changes going in:
+
+* ci: backend: tuxsuite: refactor fetch_test_results
+* ci: backend: tuxsuite: support fetching build metadata
+* frontend: badges: allow filtering badges by suite and environment
+* frontend: badges: move badge code to badges.py
+* plugins: linux_log_parser: add kernel-kasan multiline pattern match
+* plugins: linux_log_parser: add kernel-kfence multiline pattern match
+* plugins: linux_log_parser: check-kernel-exception: fix regex
+* plugins: linux_log_parser: drop check-kernel-trace
+* plugins: linux_log_parser: use one check-kernel-exception
+* test: plugins: test_linux_log_parser: add a check-kernel-exception test
+
 # 1.58.1
 
 This 1.58.1 release fixes a bug in linux-log-parser when assigning logs
