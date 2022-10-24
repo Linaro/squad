@@ -156,34 +156,35 @@ class Backend(BaseBackend):
 
         if results['results'] == {}:
             test_job.failure = 'build failed'
-        else:
-            # Fetch results even if the job fails, but has results
-            if results['result'] == 'fail':
-                test_job.failure = str(results['results'])
+            return status, completed, metadata, tests, metrics, logs
 
-            # If boot result is unkown, a retry is needed, otherwise, it either passed or failed
-            if 'unknown' == results['results']['boot']:
-                return None
+        # Fetch results even if the job fails, but has results
+        if results['result'] == 'fail':
+            test_job.failure = str(results['results'])
 
-            # Retrieve TuxRun log
-            job_url += '/'
-            logs = self.fetch_url(job_url, 'logs?format=txt').text
+        # If boot result is unkown, a retry is needed, otherwise, it either passed or failed
+        if 'unknown' == results['results']['boot']:
+            return None
 
-            # Really fetch test results
-            tests_results = self.fetch_url(job_url, 'results').json()
-            if tests_results.get('error', None) is None:
-                for suite, suite_tests in tests_results.items():
-                    if suite == 'lava':
-                        continue
+        # Retrieve TuxRun log
+        job_url += '/'
+        logs = self.fetch_url(job_url, 'logs?format=txt').text
 
-                    suite_name = re.sub(r'^[0-9]+_', '', suite)
-                    for name, test_data in suite_tests.items():
-                        test_name = f'{suite_name}/{name}'
-                        result = test_data['result']
+        # Really fetch test results
+        tests_results = self.fetch_url(job_url, 'results').json()
+        if tests_results.get('error', None) is None:
+            for suite, suite_tests in tests_results.items():
+                if suite == 'lava':
+                    continue
 
-                        # TODO: Log lines are off coming from TuxRun/LAVA
-                        # test_log = self.get_test_log(log_dict, test)
-                        tests[test_name] = result
+                suite_name = re.sub(r'^[0-9]+_', '', suite)
+                for name, test_data in suite_tests.items():
+                    test_name = f'{suite_name}/{name}'
+                    result = test_data['result']
+
+                    # TODO: Log lines are off coming from TuxRun/LAVA
+                    # test_log = self.get_test_log(log_dict, test)
+                    tests[test_name] = result
 
         return status, completed, metadata, tests, metrics, logs
 
