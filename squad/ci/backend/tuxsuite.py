@@ -170,6 +170,16 @@ class Backend(BaseBackend):
         job_url += '/'
         logs = self.fetch_url(job_url, 'logs?format=txt').text
 
+        # Fetch more metadata if available
+        if results['waiting_for'] is not None:
+            _, _, test_id = self.parse_job_id(test_job.job_id)
+            build_id = results['waiting_for']
+            build_url = job_url.replace(test_id, build_id).replace('tests', 'builds')
+            build_metadata = self.fetch_url(build_url).json()
+
+            build_metadata_keys = settings.get('TEST_BUILD_METADATA_KEYS', [])
+            metadata.update({k: build_metadata.get(k) for k in build_metadata_keys})
+
         # Really fetch test results
         tests_results = self.fetch_url(job_url, 'results').json()
         if tests_results.get('error', None) is None:

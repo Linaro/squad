@@ -39,7 +39,10 @@ class TuxSuiteTest(TestCase):
                     ],
                     "TEST_METADATA_KEYS": [
                         "does_not_exist"
-                    ]
+                    ],
+                    "TEST_BUILD_METADATA_KEYS": [
+                        "build_name"
+                    ],
                 }
             """,
         )
@@ -316,6 +319,7 @@ class TuxSuiteTest(TestCase):
         job_id = 'TEST:tuxgroup@tuxproject#123'
         testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
         test_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/tests/123')
+        build_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/builds/456/')
 
         # Only fetch when finished
         with requests_mock.Mocker() as fake_request:
@@ -345,7 +349,7 @@ class TuxSuiteTest(TestCase):
             'result': 'pass',
             'results': {'boot': 'pass', 'ltp-smoke': 'pass'},
             'plan': None,
-            'waiting_for': None,
+            'waiting_for': '456',
             'boot_args': None,
             'provisioning_time': '2022-03-25T15:49:11.441860',
             'running_time': '2022-03-25T15:50:11.770607',
@@ -354,9 +358,13 @@ class TuxSuiteTest(TestCase):
             'retries_messages': [],
             'duration': 151
         }
+        build_results = {
+            'build_name': 'build-456'
+        }
 
         expected_metadata = {
             'job_url': test_url,
+            'build_name': build_results['build_name'],
             'does_not_exist': None,
         }
 
@@ -385,6 +393,7 @@ class TuxSuiteTest(TestCase):
 
         with requests_mock.Mocker() as fake_request:
             fake_request.get(test_url, json=test_results)
+            fake_request.get(build_url, json=build_results)
             fake_request.get(urljoin(test_url + '/', 'logs'), text=test_logs)
             fake_request.get(urljoin(test_url + '/', 'results'), json=test_results_json)
 
