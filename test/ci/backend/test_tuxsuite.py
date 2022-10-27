@@ -319,7 +319,7 @@ class TuxSuiteTest(TestCase):
         job_id = 'TEST:tuxgroup@tuxproject#123'
         testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
         test_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/tests/123')
-        build_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/builds/456/')
+        build_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/builds/456')
 
         # Only fetch when finished
         with requests_mock.Mocker() as fake_request:

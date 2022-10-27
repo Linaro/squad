@@ -167,8 +167,7 @@ class Backend(BaseBackend):
             return None
 
         # Retrieve TuxRun log
-        job_url += '/'
-        logs = self.fetch_url(job_url, 'logs?format=txt').text
+        logs = self.fetch_url(job_url + '/', 'logs?format=txt').text
 
         # Fetch more metadata if available
         if results['waiting_for'] is not None:
@@ -181,7 +180,7 @@ class Backend(BaseBackend):
             metadata.update({k: build_metadata.get(k) for k in build_metadata_keys})
 
         # Really fetch test results
-        tests_results = self.fetch_url(job_url, 'results').json()
+        tests_results = self.fetch_url(job_url + '/', 'results').json()
         if tests_results.get('error', None) is None:
             for suite, suite_tests in tests_results.items():
                 if suite == 'lava':
