@@ -1,3 +1,8 @@
+# 1.59.1
+
+This 1.59.1 release fixes a bug when fetching metadata for test jobs in
+Tuxsuite backends.
+
 # 1.59
 
 This 1.59 release includes a few multiliner patterns for the linux log parser
