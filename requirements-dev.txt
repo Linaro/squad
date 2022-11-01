@@ -4,7 +4,6 @@ flake8
 ipython
 pickleshare
 Werkzeug
-django-debug-toolbar
 django_extensions
 pytest
 pytest-django

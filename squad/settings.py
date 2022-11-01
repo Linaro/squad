@@ -64,20 +64,21 @@ except ImportError:
 
 django_toolbar = None
 django_toolbar_middleware = None
-if DEBUG:
-    try:
+try:
 
-        DEBUG_TOOLBAR_CONFIG = {
-            'JQUERY_URL': ''
-        }
+    DEBUG_TOOLBAR_CONFIG = {
+        'JQUERY_URL': '',
+        'SHOW_COLLAPSED': True,
+        'SHOW_TOOLBAR_CALLBACK': 'squad.frontend.utils.show_debug_toolbar',
+    }
 
-        import imp
-        imp.find_module('debug_toolbar')
-        django_toolbar = 'debug_toolbar'
-        django_toolbar_middleware = 'debug_toolbar.middleware.DebugToolbarMiddleware'
-        INTERNAL_IPS = ['127.0.0.1']
-    except ImportError:
-        pass
+    import imp
+    imp.find_module('debug_toolbar')
+    django_toolbar = 'debug_toolbar'
+    django_toolbar_middleware = 'debug_toolbar.middleware.DebugToolbarMiddleware'
+    INTERNAL_IPS = ['127.0.0.1']
+except ImportError:
+    pass
 
 
 __apps__ = [

@@ -59,12 +59,11 @@ handler404 = 'squad.urls.page_not_found'
 
 
 extra_urls = []
-if settings.DEBUG:
-    try:
-        import debug_toolbar
-        extra_urls.append(url(r'^__debug__/', include(debug_toolbar.urls)))
-    except ImportError:
-        pass
+try:
+    import debug_toolbar
+    extra_urls.append(url(r'^__debug__/', include(debug_toolbar.urls)))
+except ImportError:
+    pass
 
 
 if 'health_check' in settings.INSTALLED_APPS:

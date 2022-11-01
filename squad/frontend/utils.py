@@ -48,3 +48,8 @@ def alphanum_sort(objects, field, reverse=True):
     ref: https://blog.codinghorror.com/sorting-for-humans-natural-sort-order
     """
     return sorted(list(objects), reverse=reverse, key=_alphanum_key(field))
+
+
+def show_debug_toolbar(request):
+    user = request.user
+    return user.is_superuser

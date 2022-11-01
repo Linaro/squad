@@ -16,7 +16,6 @@ dockerfile="$datadir"/../Dockerfile.dev
 	        tmux \
 		flake8 \
 		python3-django-extensions \
-		python3-django-debug-toolbar \
 		python3-pytest \
 		python3-pytest-django \
 		python3-requests-mock \
