@@ -1,3 +1,10 @@
+# 1.59.2
+
+This 1.59.2 release generates build_name test metadata if there are not any.
+The release also installs the django-degub-toolbar by default and it can
+only be visible by superusers. It is very helpful to allow admins debug squad
+performance.
+
 # 1.59.1
 
 This 1.59.1 release fixes a bug when fetching metadata for test jobs in
