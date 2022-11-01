@@ -41,7 +41,9 @@ class TuxSuiteTest(TestCase):
                         "does_not_exist"
                     ],
                     "TEST_BUILD_METADATA_KEYS": [
-                        "build_name"
+                        "build_name",
+                        "kconfig",
+                        "toolchain"
                     ],
                 }
             """,
@@ -359,13 +361,16 @@ class TuxSuiteTest(TestCase):
             'duration': 151
         }
         build_results = {
-            'build_name': 'build-456'
+            'toolchain': 'gcc-10',
+            'kconfig': ['defconfig', 'CONFIG_DUMMY=1'],
         }
 
         expected_metadata = {
             'job_url': test_url,
-            'build_name': build_results['build_name'],
+            'build_name': self.tuxsuite.generate_test_name(build_results),
             'does_not_exist': None,
+            'toolchain': 'gcc-10',
+            'kconfig': ['defconfig', 'CONFIG_DUMMY=1'],
         }
 
         # Real test results are stored in test/ci/backend/tuxsuite_test_result_sample.json

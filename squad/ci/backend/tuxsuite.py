@@ -179,6 +179,9 @@ class Backend(BaseBackend):
             build_metadata_keys = settings.get('TEST_BUILD_METADATA_KEYS', [])
             metadata.update({k: build_metadata.get(k) for k in build_metadata_keys})
 
+            if 'toolchain' in build_metadata_keys and 'kconfig' in build_metadata_keys and metadata['build_name'] in [None, '']:
+                metadata['build_name'] = self.generate_test_name(build_metadata)
+
         # Really fetch test results
         tests_results = self.fetch_url(job_url + '/', 'results').json()
         if tests_results.get('error', None) is None:
