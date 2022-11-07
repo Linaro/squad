@@ -182,6 +182,10 @@ class Backend(BaseBackend):
             if 'toolchain' in build_metadata_keys and 'kconfig' in build_metadata_keys and metadata['build_name'] in [None, '']:
                 metadata['build_name'] = self.generate_test_name(build_metadata)
 
+        # Create a boot test
+        boot_test_name = 'boot/' + (metadata.get('build_name') or 'boot')
+        tests[boot_test_name] = results['results']['boot']
+
         # Really fetch test results
         tests_results = self.fetch_url(job_url + '/', 'results').json()
         if tests_results.get('error', None) is None:
