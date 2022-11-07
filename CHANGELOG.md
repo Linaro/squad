@@ -1,3 +1,7 @@
+# 1.59.3
+
+This 1.59.3 release adds a couple of indexes to the TestJob model.
+
 # 1.59.2
 
 This 1.59.2 release generates build_name test metadata if there are not any.
