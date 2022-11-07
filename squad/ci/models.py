@@ -232,7 +232,7 @@ class TestJob(models.Model):
     success.boolean = True
 
     # output
-    job_id = models.CharField(null=True, max_length=128, blank=True)
+    job_id = models.CharField(null=True, max_length=128, blank=True, db_index=True)
     job_status = models.CharField(null=True, max_length=128, blank=True)
 
     @property
@@ -305,3 +305,9 @@ class TestJob(models.Model):
 
     def __str__(self):
         return "%s/%s" % (self.backend.name, self.job_id)
+
+    class Meta:
+        # This index speeds up Backend.poll(), where it queries submitted and fetched together
+        indexes = [
+            models.Index(fields=['submitted', 'fetched']),
+        ]
