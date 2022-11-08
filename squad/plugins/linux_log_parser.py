@@ -109,7 +109,8 @@ class Plugin(BasePlugin):
     def __create_shasum(self, snippet):
         sha = hashlib.sha256()
         without_numbers = re.sub(r'(0x[a-f0-9]+|[<\[][0-9a-f]+?[>\]]|\d+)', '', snippet)
-        sha.update(without_numbers.encode())
+        without_time = re.sub(r'^\[[^\]]+\]', '', without_numbers)
+        sha.update(without_time.encode())
         return sha.hexdigest()
 
     def postprocess_testrun(self, testrun):

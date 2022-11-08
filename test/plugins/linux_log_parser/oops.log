@@ -924,6 +924,7 @@ See 'systemctl status systemd-resolved.service' for details.
 [   14.446502] ------------[ cut here ]------------
 [   14.451213] kernel BUG at /srv/oe/build/tmp-rpb-glibc/work-shared/hikey/kernel-source/kernel/sched/walt.c:109!
 [   14.461360] Internal error: Oops - BUG: 0 [#1] PREEMPT SMP
+[  114.461360] Internal error: Oops - BUG: 1 [#1] PREEMPT SMP
 [   14.466921] Modules linked in:
 [   14.470030] CPU: 0 PID: 2270 Comm: NetworkManager Not tainted 4.4.89-01529-gb29bace #1
 [   14.478057] Hardware name: HiKey Development Board (DT)

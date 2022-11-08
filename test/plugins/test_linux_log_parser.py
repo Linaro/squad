@@ -247,7 +247,8 @@ class TestLinuxLogParser(TestCase):
         self.assertNotIn('Kernel panic', test.log)
 
         # Now check if a test with sha digest in the name
-        test = testrun.tests.get(suite__slug='log-parser-boot', metadata__name='check-kernel-oops-ed958a6ced291792084f3de4166e5d52676eb6b21f67a1f1585bf7028df50581')
+        test = testrun.tests.get(suite__slug='log-parser-boot', metadata__name='check-kernel-oops-a1acf2f0467782c9c2f6aeadb1d1d3cec136642b13d7231824a66ef63ee62220')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertIn('Internal error: Oops - BUG: 0 [#1] PREEMPT SMP', test.log)
+        self.assertIn('Internal error: Oops - BUG: 1 [#1] PREEMPT SMP', test.log)
