@@ -13,6 +13,37 @@
 </div>
 {% endif %}
 
+{% if not display_all_projects %}
+<div>
+    <span class="archived">
+        {{ _('Displaying only a subset of all projects') }}
+        <a href="{{ update_get_parameters({'all_projects': '1'}) }}">{{ _('Click here to see all projects') }}</a>.
+    </span>
+    <br />
+</div>
+{% endif %}
+<div>
+    <form action="{{ request.path }}" method="GET">
+        <label class="form-check-label" for="order">{{ _('Order by') }}:</label>
+        <input
+          name="order"
+          value="last_updated"
+          type="radio"
+          onchange="window.location = '{{ update_get_parameters({'order': 'last_updated'}) }}'"
+          {{ 'checked' if request.GET.get('order') != 'by_name' else ''}}
+        />
+        <span>{{ _('last updated') }}</span>&nbsp;
+        <input
+          name="order"
+          value="by_name"
+          type="radio"
+          onchange="window.location = '{{ update_get_parameters({'order': 'by_name'}) }}'"
+          {{ 'checked' if request.GET.get('order') == 'by_name' else ''}}
+        />
+        <span>{{ _('name') }}</span>
+    </form>
+</div>
+
 <div class='highlight-row'>
 {% for project in projects %}
 <div class="row row-bordered project {% if project.is_archived %}archived{% endif %}">

@@ -78,26 +78,40 @@ def home(request):
 def group_home(request, group_slug):
     group = get_object_or_404(Group, slug=group_slug)
 
-    # Optimize number of queries to get ProjectStatus for each project
     projects_queryset = group.projects.accessible_to(request.user)
-    projects_queryset = projects_queryset.prefetch_related(Prefetch('builds', queryset=Build.objects.order_by('-datetime').only('id', 'project_id')))
+    projects_queryset = projects_queryset.annotate(latest_build_id=Max('builds__id'))
 
     if request.user.is_authenticated:
         projects_queryset = projects_queryset.prefetch_related(Prefetch('subscriptions', queryset=Subscription.objects.filter(user=request.user), to_attr='user_subscriptions'))
 
+    order_by = request.GET.get('order', 'last_updated')
+    if order_by == 'last_updated':
+        projects_queryset = projects_queryset.order_by('-datetime')
+
+    num_projects = 30
+    display_all_projects = False
+    if request.GET.get('all_projects'):
+        display_all_projects = True
+        projects = projects_queryset.all()
+    else:
+        projects = projects_queryset.all()[:num_projects]
+
     has_archived_projects = False
     latest_build_ids = {}
-    projects = projects_queryset.all()
+    projects_count = 0
     for project in projects:
-        project.latest_build = None
-        try:
-            build_id = project.builds.all()[0].id
-            latest_build_ids[build_id] = project
-        except IndexError:
-            pass
+        if project.latest_build_id:
+            latest_build_ids[project.latest_build_id] = project
+        else:
+            project.latest_build = None
 
         if not has_archived_projects and project.is_archived:
             has_archived_projects = True
+
+        projects_count += 1
+
+    if projects_count <= num_projects:
+        display_all_projects = True
 
     for build in Build.objects.filter(id__in=latest_build_ids.keys()).prefetch_related('status').only('id'):
         latest_build_ids[build.id].latest_build = build
@@ -106,8 +120,9 @@ def group_home(request, group_slug):
         raise Http404()
 
     context = {
+        'display_all_projects': display_all_projects,
         'group': group,
-        'projects': alphanum_sort(projects, 'name'),
+        'projects': alphanum_sort(projects, 'name') if order_by == 'by_name' else projects,
         'has_archived_projects': has_archived_projects,
     }
     response = render(request, 'squad/group.jinja2', context)
