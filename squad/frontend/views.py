@@ -324,7 +324,6 @@ def build(request, group_slug, project_slug, version):
 
     queryset = Status.objects.filter(
         test_run__build=build,
-        suite__isnull=False,
     )
 
     if failures_only == 'true':
@@ -337,7 +336,8 @@ def build(request, group_slug, project_slug, version):
 
     test_results = TestResultTable()
     for status in __statuses__:
-        test_results.add_status(status)
+        if status.suite:
+            test_results.add_status(status)
 
     test_results.environments = sorted(test_results.environments, key=lambda e: e.slug)
 
