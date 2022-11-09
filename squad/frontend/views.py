@@ -58,7 +58,7 @@ def home(request):
         ordering = 'last_updated'
 
     if ordering == 'last_updated':
-        all_groups = list(Group.objects.accessible_to(request.user).annotate(group_datetime=Max('projects__builds__datetime')))
+        all_groups = list(Group.objects.accessible_to(request.user).annotate(group_datetime=Max('projects__datetime')))
         for g in all_groups:
             g.timestamp = g.group_datetime.timestamp() if g.group_datetime else 0
         all_groups.sort(key=lambda g: g.timestamp, reverse=True)
