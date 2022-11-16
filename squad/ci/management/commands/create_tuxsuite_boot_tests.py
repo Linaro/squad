@@ -1,10 +1,8 @@
 import logging
-import time
+import requests
 
-from squad.core.models import Group
+from squad.core.models import Group, SuiteMetadata
 from squad.ci.models import TestJob
-from squad.ci.tasks import fetch
-from squad.ci.utils import task_id
 from django.core.management.base import BaseCommand
 
 
@@ -33,7 +31,7 @@ class Command(BaseCommand):
         test_url = testjob.url
         if test_url not in cache:
             cache[test_url] = requests.get(test_url).json()
-        
+
         build_ksuid = cache[test_url].get("waiting_for")
         if build_ksuid in [None, ""]:
             logger.warning(f"No 'waiting_for' in {test_url}: {cache[test_url]}")
@@ -56,7 +54,7 @@ class Command(BaseCommand):
         test_url = testjob.url
         if test_url not in cache:
             cache[test_url] = requests.get(test_url).json()
-        
+
         return cache[test_url]["results"]["boot"]
 
     def handle(self, *args, **options):
@@ -71,7 +69,7 @@ class Command(BaseCommand):
         group_slug, project_slug = options.get("project").split("/")
         group = Group.objects.get(slug=group_slug)
         project = group.projects.get(slug=project_slug)
-        
+
         testjobs = TestJob.objects.filter(job_id__startswith="TEST", backend__implementation_type="tuxsuite", target=project).prefetch_related("backend")
         logger.info(f"Working on {testjobs.count()} testjobs")
 
@@ -90,7 +88,7 @@ class Command(BaseCommand):
             build_name = testrun.metadata.get("build_name")
             if build_name is None:
                 build_name = self.get_build_name(testjob)
-            
+
             if build_name is None:
                 logger.info(f"Seems like Tuxsuite no longer keeps {testjob.url}, aborting now")
                 break
