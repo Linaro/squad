@@ -111,6 +111,7 @@ class Backend(BaseBackend):
         metadata = {k: results.get(k) for k in metadata_keys}
         metadata['job_url'] = job_url
         metadata['config'] = urljoin(results.get('download_url') + '/', 'config')
+        metadata['build_name'] = test_name
 
         # Create tests and metrics
         tests = {}
