@@ -1,3 +1,26 @@
+# 1.60
+
+This 1.60 release speeds up queries that load the main page of squad
+and main page of a squad project. It also adds artificial boot tests
+to TuxSuite tests as long as adding a build_name metadata when fetching
+build results. The release also includes a command that allow adding
+build metadata retroactively to TuxSuite tests.
+
+Complete list of changes going in:
+
+* ci:
+  * backend: tuxsuite: add build_name as build metadata
+  * backend: tuxsuite: create a boot test for every TuxTest run
+  * commands: add create_tuxsuite_boot_test command
+  * commands: clean create-tuxsuite-boot-tests command
+* core:
+  * commands: fix command users crash with Django 2
+  * models: add datetime to project
+  * models: avoid having naive datetime format
+* frontend: views: filter null suites in python
+* frontend: views: speed up loading project page
+* plugins: linux_log_parser: remove time before computing sha
+
 # 1.59.3
 
 This 1.59.3 release adds a couple of indexes to the TestJob model.
