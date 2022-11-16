@@ -2,7 +2,6 @@ import json
 import yaml
 import logging
 from collections import OrderedDict, Counter
-from datetime import datetime
 from hashlib import sha1
 from itertools import groupby
 import re
@@ -280,7 +279,7 @@ class Project(models.Model, DisplayName):
     custom_email_template = models.ForeignKey(EmailTemplate, null=True, blank=True, on_delete=models.CASCADE)
     description = models.TextField(null=True, blank=True, verbose_name=N_('Description'))
     important_metadata_keys = models.TextField(null=True, blank=True)
-    datetime = models.DateTimeField(default=datetime.now, blank=True)
+    datetime = models.DateTimeField(default=timezone.now, blank=True)
     enabled_plugins_list = PluginListField(
         null=True,
         blank=True,
