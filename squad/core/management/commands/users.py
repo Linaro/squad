@@ -39,7 +39,14 @@ class Command(BaseCommand):
             """
 
             def __init__(self, **kwargs):
-                super().__init__(cmd, **kwargs)
+                kwargs.update(
+                    {
+                        "called_from_command_line": getattr(
+                            cmd, "_called_from_command_line", None
+                        )
+                    }
+                )
+                super().__init__(**kwargs)
 
         sub = parser.add_subparsers(
             dest="sub_command", help="Sub commands", parser_class=SubParser
