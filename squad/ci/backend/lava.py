@@ -468,7 +468,7 @@ class Backend(BaseBackend):
                     tmp_dict = {}
                 if isinstance(event, yaml.MappingEndEvent):
                     start_dict = False
-                    if tmp_dict and tmp_dict.get('lvl') == 'target' and 'msg' in tmp_dict.keys():
+                    if tmp_dict and tmp_dict.get('lvl') in ['target', 'feedback'] and 'msg' in tmp_dict.keys():
                         if isinstance(tmp_dict['msg'], bytes):
                             try:
                                 # seems like latin-1 is the encoding used by serial

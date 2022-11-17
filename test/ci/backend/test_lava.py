@@ -1196,6 +1196,7 @@ class LavaTest(TestCase):
         log_data = BytesIO(LOG_DATA)
         log = lava.__parse_log__(log_data)
         self.assertIn("target message", log)
+        self.assertIn("feedback message", log)
         self.assertNotIn("info message", log)
 
     @patch('requests.get')
