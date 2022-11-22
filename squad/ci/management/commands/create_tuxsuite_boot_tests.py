@@ -27,7 +27,7 @@ class Command(BaseCommand):
             help="How many days going backwards tests should be checked on TuxSuite. Maximum is 90 days",
         )
 
-    def get_build_name(testjob):
+    def get_build_name(self, testjob):
         test_url = testjob.url
         if test_url not in cache:
             cache[test_url] = requests.get(test_url).json()
@@ -37,7 +37,7 @@ class Command(BaseCommand):
             logger.warning(f"No 'waiting_for' in {test_url}: {cache[test_url]}")
             return None
 
-        _, _, test_ksuid = testjob.backend.parse_job_id(testjob.job_id)
+        _, _, test_ksuid = testjob.backend.get_implementation().parse_job_id(testjob.job_id)
         build_url = test_url.replace(test_ksuid, build_ksuid).replace("tests", "builds")
         if build_url not in cache:
             cache[build_url] = requests.get(build_url).json()
@@ -48,9 +48,9 @@ class Command(BaseCommand):
             logger.warning(f"No 'toolchain' or 'kconfig' in {build_url}: {cache[build_url]}")
             return None
 
-        return testjob.backend.generate_test_name(build_metadata)
+        return testjob.backend.get_implementation().generate_test_name(build_metadata)
 
-    def get_boot_result(testjob):
+    def get_boot_result(self, testjob):
         test_url = testjob.url
         if test_url not in cache:
             cache[test_url] = requests.get(test_url).json()
@@ -106,7 +106,7 @@ class Command(BaseCommand):
                 build=testrun.build,
                 environment=testrun.environment,
                 metadata=metadata,
-                result=boot_result,
+                result=(boot_result == "pass"),
                 suite=suite,
             )
 
