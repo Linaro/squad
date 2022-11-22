@@ -85,7 +85,11 @@ def group_home(request, group_slug):
         projects_queryset = projects_queryset.prefetch_related(Prefetch('subscriptions', queryset=Subscription.objects.filter(user=request.user), to_attr='user_subscriptions'))
 
     order_by = request.GET.get('order', 'last_updated')
-    if order_by == 'last_updated':
+    print(group.get_setting('SORT_PROJECTS_BY_NAME') == True)
+    if group.get_setting('SORT_PROJECTS_BY_NAME'):
+        order_by = 'by_name'
+
+    elif order_by == 'last_updated':
         projects_queryset = projects_queryset.order_by('-datetime')
 
     num_projects = 30
@@ -122,6 +126,7 @@ def group_home(request, group_slug):
     context = {
         'display_all_projects': display_all_projects,
         'group': group,
+        'order_by': order_by,
         'projects': alphanum_sort(projects, 'name') if order_by == 'by_name' else projects,
         'has_archived_projects': has_archived_projects,
     }

@@ -30,7 +30,7 @@
           value="last_updated"
           type="radio"
           onchange="window.location = '{{ update_get_parameters({'order': 'last_updated'}) }}'"
-          {{ 'checked' if request.GET.get('order') != 'by_name' else ''}}
+          {{ 'checked' if order_by != 'by_name' else ''}}
         />
         <span>{{ _('last updated') }}</span>&nbsp;
         <input
@@ -38,7 +38,7 @@
           value="by_name"
           type="radio"
           onchange="window.location = '{{ update_get_parameters({'order': 'by_name'}) }}'"
-          {{ 'checked' if request.GET.get('order') == 'by_name' else ''}}
+          {{ 'checked' if order_by == 'by_name' else ''}}
         />
         <span>{{ _('name') }}</span>
     </form>
