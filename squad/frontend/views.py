@@ -85,19 +85,19 @@ def group_home(request, group_slug):
         projects_queryset = projects_queryset.prefetch_related(Prefetch('subscriptions', queryset=Subscription.objects.filter(user=request.user), to_attr='user_subscriptions'))
 
     order_by = request.GET.get('order', 'last_updated')
-    print(group.get_setting('SORT_PROJECTS_BY_NAME') == True)
     if group.get_setting('SORT_PROJECTS_BY_NAME'):
         order_by = 'by_name'
 
     elif order_by == 'last_updated':
         projects_queryset = projects_queryset.order_by('-datetime')
 
-    num_projects = 30
-    display_all_projects = False
-    if request.GET.get('all_projects'):
+    display_all_projects = request.GET.get('all_projects') is not None
+    num_projects = group.get_setting('DEFAULT_PROJECT_COUNT')
+    if display_all_projects or num_projects is None:
         display_all_projects = True
         projects = projects_queryset.all()
     else:
+        display_all_projects = projects_queryset.count() <= num_projects
         projects = projects_queryset.all()[:num_projects]
 
     has_archived_projects = False
@@ -113,9 +113,6 @@ def group_home(request, group_slug):
             has_archived_projects = True
 
         projects_count += 1
-
-    if projects_count <= num_projects:
-        display_all_projects = True
 
     for build in Build.objects.filter(id__in=latest_build_ids.keys()).prefetch_related('status').only('id'):
         latest_build_ids[build.id].latest_build = build
