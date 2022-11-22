@@ -293,6 +293,23 @@ class BuildTest(TestCase):
         with patch('squad.core.models.Build.metadata', m):
             self.assertEqual({'my key': 'my value'}, build.important_metadata)
 
+    def test_metadata(self):
+        build = Build.objects.create(project=self.project, version='build-metadata')
+        env1 = self.project.environments.create(slug='env1')
+        build.test_runs.create(environment=env1, metadata_file='{"key1": "val1"}')
+        build.test_runs.create(environment=env1, metadata_file='{"key2": "val2"}')
+        self.assertEqual({'key1': 'val1', 'key2': 'val2'}, build.metadata)
+
+    def test_metadata_by_testrun(self):
+        build = Build.objects.create(project=self.project, version='build-metadata')
+        env1 = self.project.environments.create(slug='env1')
+        testrun1 = build.test_runs.create(environment=env1, metadata_file='{"key1": "val1"}')
+        testrun2 = build.test_runs.create(environment=env1, metadata_file='{"key2": "val2"}')
+        self.assertEqual({
+            testrun1.id: {'key1': 'val1'},
+            testrun2.id: {'key2': 'val2'}
+        }, build.metadata_by_testrun)
+
     def test_create_project_status(self):
         build = Build.objects.create(project=self.project, version='1.0')
         self.assertIsNotNone(build.status)

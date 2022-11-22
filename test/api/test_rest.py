@@ -32,12 +32,12 @@ class RestApiTest(APITestCase):
         self.build6 = self.project.builds.create(version='v6', datetime=t6)
         self.environment = self.project.environments.create(slug='myenv', expected_test_runs=1)
         self.environment_a = self.project.environments.create(slug='env-a')
-        self.testrun = self.build.test_runs.create(environment=self.environment, build=self.build)
+        self.testrun = self.build.test_runs.create(environment=self.environment, metadata_file='{"key1": "val1"}')
         self.testrun2 = self.build2.test_runs.create(environment=self.environment, build=self.build2)
         self.testrun3 = self.build3.test_runs.create(environment=self.environment, build=self.build3)
         self.testrun4 = self.build4.test_runs.create(environment=self.environment, build=self.build4, completed=True)
         self.testrun6 = self.build6.test_runs.create(environment=self.environment, build=self.build6, completed=True)
-        self.testrun_a = self.build.test_runs.create(environment=self.environment_a, build=self.build)
+        self.testrun_a = self.build.test_runs.create(environment=self.environment_a, metadata_file='{"key2": "val2"}')
         self.testrun2_a = self.build2.test_runs.create(environment=self.environment_a, build=self.build2)
         self.testrun3_a = self.build3.test_runs.create(environment=self.environment_a, build=self.build3)
         self.backend = ci_models.Backend.objects.create(name='foobar')
@@ -772,6 +772,16 @@ class RestApiTest(APITestCase):
     def test_build_metrics(self):
         data = self.hit('/api/builds/%d/metrics/' % self.build.id)
         self.assertEqual(1, len(data['results']))
+
+    def test_build_metadata(self):
+        data = self.hit('/api/builds/%d/metadata/' % self.build.id)
+        self.assertEqual('val1', data['key1'])
+        self.assertEqual('val2', data['key2'])
+
+    def test_build_metadata_by_testrun(self):
+        data = self.hit('/api/builds/%d/metadata_by_testrun/' % self.build.id)
+        self.assertEqual({"key1": "val1"}, data[str(self.testrun.id)])
+        self.assertEqual({"key2": "val2"}, data[str(self.testrun_a.id)])
 
     def test_build_filter(self):
         created_at = str(self.build3.created_at.isoformat()).replace('+00:00', 'Z')

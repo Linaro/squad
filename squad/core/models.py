@@ -539,6 +539,22 @@ class Build(models.Model):
             self.__metadata__ = metadata
         return self.__metadata__
 
+    __metadata_by_testrun__ = None
+
+    @property
+    def metadata_by_testrun(self):
+        """
+        The build metadata is the union of the metadata in its test runs.
+        Common keys with different values are transformed into a list with each
+        of the different values.
+        """
+        if self.__metadata_by_testrun__ is None:
+            metadata = {}
+            for test_run in self.test_runs.only('metadata_file', 'build_id'):
+                metadata[test_run.id] = test_run.metadata
+            self.__metadata_by_testrun__ = metadata
+        return self.__metadata_by_testrun__
+
     __attachments__ = None
 
     @property

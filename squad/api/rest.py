@@ -864,6 +864,10 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
 
         Build metadata list
 
+     * `api/builds/<id>/metadata_by_testrun` GET
+
+        Build metadata list now separated by testrun
+
      * `api/builds/<id>/status` GET
 
         Build status and cached test/metric totals
@@ -952,6 +956,11 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
     def metadata(self, request, pk=None):
         build = self.get_object()
         return Response(build.metadata)
+
+    @action(detail=True, methods=['get'], suffix='metadata_by_testrun')
+    def metadata_by_testrun(self, request, pk=None):
+        build = self.get_object()
+        return Response(build.metadata_by_testrun)
 
     def __enrich_status_details__(self, request, queryset):
         enriched_details = {}
