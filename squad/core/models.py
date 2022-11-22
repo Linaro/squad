@@ -138,6 +138,8 @@ class Group(models.Model, DisplayName):
     description = models.TextField(null=True, blank=True, verbose_name=N_('Description'))
     members = models.ManyToManyField(User, through='GroupMember', verbose_name=N_('Members'))
 
+    settings = models.TextField(null=True, blank=True, validators=[yaml_validator])
+
     def add_user(self, user, access=None):
         member = GroupMember(group=self, user=user)
         if access:
@@ -179,6 +181,13 @@ class Group(models.Model, DisplayName):
             errors['slug'] = [N_('Enter a valid value.')]
         if errors:
             raise ValidationError(errors)
+
+    __settings__ = None
+
+    def get_setting(self, key, default=None):
+        if self.__settings__ is None:
+            self.__settings__ = yaml.safe_load(self.settings or '') or {}
+        return self.__settings__.get(key, default)
 
     class Meta:
         ordering = ['slug']

@@ -15,7 +15,7 @@ class GroupTest(TestCase):
 
         self.admin = User.objects.create(username='admin', is_superuser=True)
 
-        self.group = Group.objects.create(slug='mygroup')
+        self.group = Group.objects.create(slug='mygroup', settings="some_setting: true")
         self.group.add_admin(self.member)
 
     def test_accessible_manager_non_member(self):
@@ -58,6 +58,9 @@ class GroupTest(TestCase):
     def test_writable_by(self):
         self.assertTrue(self.group.writable_by(self.member))
         self.assertFalse(self.group.writable_by(self.non_member))
+
+    def test_settings(self):
+        self.assertTrue(self.group.get_setting('some_setting'))
 
 
 class TestGroupSlug(TestCase):

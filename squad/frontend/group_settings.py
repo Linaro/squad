@@ -1,7 +1,7 @@
 from django import forms
 from django.urls import re_path as url
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, reverse
+from django.shortcuts import render, redirect, reverse
 from django.utils.translation import gettext_lazy as N_
 
 from django.utils.decorators import method_decorator
@@ -100,6 +100,12 @@ class GroupMemberForm(GroupRelationshipForm):
         fields = ['group', 'user', 'access']
 
 
+class GroupFormAdvanced(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ['settings']
+
+
 @method_decorator(auth_write, name='dispatch')
 class GroupMembersView(GroupViewMixin, FormView):
 
@@ -183,9 +189,27 @@ class NewProjectView(GroupViewMixin, CreateView):
         return redirect(reverse('project-settings', args=[self.group.slug, project.slug]))
 
 
+@auth_write
+def advanced_settings(request, group):
+    if request.method == "POST":
+        form = GroupFormAdvanced(request.POST, instance=request.group)
+        if form.is_valid():
+            form.save()
+            return redirect(request.path)
+    else:
+        form = GroupFormAdvanced(instance=request.group)
+
+    context = {
+        'group': request.group,
+        'form': form,
+    }
+    return render(request, 'squad/group_settings/advanced.jinja2', context)
+
+
 urls = [
     url('^$', BaseSettingsView.as_view(), name='group-settings'),
     url('^members/$', GroupMembersView.as_view(), name='group-members'),
+    url('^advanced/$', advanced_settings, name='group-advanced-settings'),
     url('^delete/$', DeleteGroupView.as_view(), name='group-delete'),
     url('^new-project/$', NewProjectView.as_view(), name='group-new-project'),
 ]
