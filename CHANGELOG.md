@@ -1,3 +1,23 @@
+# 1.61
+
+This 1.61 release changes the LAVA backend to start parsing 
+feedback logs, as those sometimes contain important log information.
+
+The release also adds group settings and uses that to determine if
+projects should be listed by latest update or by name.
+
+Complete list of changes going in:
+
+* ci: backend: lava:
+  * also parse feedback as log
+  * refactor too many if's
+* core: models:
+  * add settings to group models
+  * fetch build metadata separated by testruns
+* frontend: views
+  * get number of projects from group settings
+  * sort projects based on group settings
+
 # 1.60
 
 This 1.60 release speeds up queries that load the main page of squad
