@@ -92,6 +92,7 @@ class RestApiTest(APITestCase):
             submitted=True,
             fetched=True,
             can_resubmit=True,
+            parent_job=self.testjob5,
         )
 
         testrun_sets = [
@@ -817,6 +818,11 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/testjobs/%d/' % self.testjob.id)
         self.assertEqual('myenv', data['environment'])
 
+    def test_testjob_resubmitted_jobs(self):
+        data = self.hit('/api/testjobs/%d/resubmitted_jobs/' % self.testjob5.id)
+        self.assertIn(str(self.testjob5.id), data['results'][0]['parent_job'])
+        self.assertEqual(self.testjob6.id, data['results'][0]['id'])
+
     def test_tests(self):
         data = self.hit('/api/tests/')
         self.assertEqual(list, type(data['results']))
@@ -1028,7 +1034,7 @@ class RestApiTest(APITestCase):
         user = models.User.objects.get(username='u')
         logentry_queryset = LogEntry.objects.filter(
             user_id=user.pk,
-            object_id=self.testjob5.resubmitted_jobs.first().pk
+            object_id=self.testjob5.resubmitted_jobs.last().pk
         )
         self.assertEqual(
             1,

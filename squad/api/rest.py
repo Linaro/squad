@@ -1564,6 +1564,10 @@ class TestJobViewSet(ModelViewSet):
 
         Same as 'resubmit' but can be done also on successful jobs
 
+     * `api/testjobs/<id>/resubmitted_jobs` GET
+
+        Get a list of all child jobs of this one
+
      * `api/testjobs/<id>/cancel` POST
 
         Allows to cancel a job
@@ -1658,6 +1662,13 @@ class TestJobViewSet(ModelViewSet):
         fetch.delay(testjob.id)
         log_change(request, testjob, "Testjob queued for fetching")
         return Response({'job_id': testjob.job_id, 'status': 'Queued for fetching'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'], suffix='resubmitted_jobs')
+    def resubmitted_jobs(self, request, pk=None):
+        jobs = self.get_object().resubmitted_jobs.all()
+        page = self.paginate_queryset(jobs)
+        serializer = TestJobSerializer(page, many=True, context={'request': request})
+        return self.get_paginated_response(serializer.data)
 
 
 class EmailTemplateSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
