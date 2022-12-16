@@ -1,3 +1,8 @@
+# 1.62
+
+This 1.62 release adds an endpoint to testjobs view: resubmitted_jobs.
+Which lists all jobs that got resubmitted.
+
 # 1.61
 
 This 1.61 release changes the LAVA backend to start parsing 
