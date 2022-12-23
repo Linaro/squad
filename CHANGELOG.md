@@ -1,3 +1,9 @@
+# 1.63
+
+This 1.63 release adds an endpoint to builds view: compare.
+It allows one to compare builds against other builds in the same
+namespace or different namespaces (groups)
+
 # 1.62
 
 This 1.62 release adds an endpoint to testjobs view: resubmitted_jobs.
