@@ -16,8 +16,10 @@ class RestApiTest(APITestCase):
 
     def setUp(self):
         self.group = models.Group.objects.create(slug='mygroup')
+        self.group2 = models.Group.objects.create(slug='mygroup2')
         self.project = self.group.projects.create(slug='myproject')
         self.project2 = self.group.projects.create(slug='myproject2')
+        self.project3 = self.group2.projects.create(slug='myproject2')
         t = timezone.make_aware(datetime.datetime(2018, 10, 1, 1, 0, 0))
         self.build = self.project.builds.create(version='1', datetime=t)
         t2 = timezone.make_aware(datetime.datetime(2018, 10, 2, 1, 0, 0))
@@ -30,16 +32,21 @@ class RestApiTest(APITestCase):
         self.build5 = self.project.builds.create(version='5', datetime=t5)
         t6 = timezone.make_aware(datetime.datetime(2018, 10, 6, 1, 0, 0))
         self.build6 = self.project.builds.create(version='v6', datetime=t6)
+        self.build7 = self.project3.builds.create(version='1', datetime=t2)
         self.environment = self.project.environments.create(slug='myenv', expected_test_runs=1)
+        self.environment2 = self.project3.environments.create(slug='myenv', expected_test_runs=1)
         self.environment_a = self.project.environments.create(slug='env-a')
+        self.environment_a2 = self.project3.environments.create(slug='env-a')
         self.testrun = self.build.test_runs.create(environment=self.environment, metadata_file='{"key1": "val1"}')
-        self.testrun2 = self.build2.test_runs.create(environment=self.environment, build=self.build2)
-        self.testrun3 = self.build3.test_runs.create(environment=self.environment, build=self.build3)
-        self.testrun4 = self.build4.test_runs.create(environment=self.environment, build=self.build4, completed=True)
-        self.testrun6 = self.build6.test_runs.create(environment=self.environment, build=self.build6, completed=True)
+        self.testrun2 = self.build2.test_runs.create(environment=self.environment)
+        self.testrun3 = self.build3.test_runs.create(environment=self.environment)
+        self.testrun4 = self.build4.test_runs.create(environment=self.environment, completed=True)
+        self.testrun6 = self.build6.test_runs.create(environment=self.environment, completed=True)
         self.testrun_a = self.build.test_runs.create(environment=self.environment_a, metadata_file='{"key2": "val2"}')
         self.testrun2_a = self.build2.test_runs.create(environment=self.environment_a, build=self.build2)
         self.testrun3_a = self.build3.test_runs.create(environment=self.environment_a, build=self.build3)
+        self.testrun7 = self.build7.test_runs.create(environment=self.environment2)
+        self.testrun7_a = self.build7.test_runs.create(environment=self.environment_a2)
         self.backend = ci_models.Backend.objects.create(name='foobar')
         self.fake_backend = ci_models.Backend.objects.create(name='foobarfake', implementation_type='fake')
         self.patchsource = models.PatchSource.objects.create(name='baz_source', username='u', url='http://example.com', token='secret')
@@ -96,37 +103,36 @@ class RestApiTest(APITestCase):
         )
 
         testrun_sets = [
-            [self.testrun, self.testrun2, self.testrun3],  # environment: myenv
-            [self.testrun_a, self.testrun2_a, self.testrun3_a],  # environment: env-a
+            [self.testrun, self.testrun2, self.testrun3, self.testrun7],  # environment: myenv
+            [self.testrun_a, self.testrun2_a, self.testrun3_a, self.testrun7_a],  # environment: env-a
         ]
         tests = {
-            'foo/test1': ['pass', 'fail', 'pass'],  # fix
-            'foo/test2': ['pass', 'pass', 'fail'],  # regression
-            'foo/test3': ['pass', 'pass', 'pass'],
-            'foo/test4': ['pass', 'pass', 'pass'],
-            'foo/test5': ['pass', 'pass', 'pass'],
-            'foo/test6': ['pass', 'pass', 'pass'],
-            'foo/test7': ['pass', 'pass', 'pass'],
-            'foo/test8': ['pass', 'pass', 'pass'],
-            'foo/test9': ['pass', 'pass', 'pass'],
-            'bar/test1': ['pass', 'pass', 'pass'],
-            'bar/test2': ['fail', 'fail', 'fail'],
-            'bar/test3': ['fail', 'fail', 'fail'],
-            'bar/test4': ['fail', 'fail', 'fail'],
-            'bar/test5': ['fail', 'fail', 'fail'],
-            'bar/test6': ['fail', 'fail', 'fail'],
-            'bar/test7': ['fail', 'fail', 'fail'],
-            'bar/test8': ['fail', 'fail', 'fail'],
-            'bar/test9': ['fail', 'fail', 'fail'],
+            'foo/test1': ['pass', 'fail', 'pass', 'pass'],  # fix
+            'foo/test2': ['pass', 'pass', 'fail', 'fail'],  # regression
+            'foo/test3': ['pass', 'pass', 'pass', 'pass'],
+            'foo/test4': ['pass', 'pass', 'pass', 'pass'],
+            'foo/test5': ['pass', 'pass', 'pass', 'pass'],
+            'foo/test6': ['pass', 'pass', 'pass', 'pass'],
+            'foo/test7': ['pass', 'pass', 'pass', 'pass'],
+            'foo/test8': ['pass', 'pass', 'pass', 'pass'],
+            'foo/test9': ['pass', 'pass', 'pass', 'pass'],
+            'bar/test1': ['pass', 'pass', 'pass', 'pass'],
+            'bar/test2': ['fail', 'fail', 'fail', 'pass'],
+            'bar/test3': ['fail', 'fail', 'fail', 'fail'],
+            'bar/test4': ['fail', 'fail', 'fail', 'fail'],
+            'bar/test5': ['fail', 'fail', 'fail', 'fail'],
+            'bar/test6': ['fail', 'fail', 'fail', 'fail'],
+            'bar/test7': ['fail', 'fail', 'fail', 'fail'],
+            'bar/test8': ['fail', 'fail', 'fail', 'fail'],
+            'bar/test9': ['fail', 'fail', 'fail', 'fail'],
         }
         for test_name in tests.keys():
             for testruns in testrun_sets:
-                for i in [0, 1, 2]:
-                    testrun = testruns[i]
+                for i, testrun in enumerate(testruns):
                     result = tests[test_name][i]
                     s, t = test_name.split('/')
                     r = {'pass': True, 'fail': False}[result]
-                    suite, _ = self.project.suites.get_or_create(slug=s)
+                    suite, _ = testrun.build.project.suites.get_or_create(slug=s)
                     metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=s, name=t, kind='test')
                     testrun.tests.create(suite=suite, result=r, metadata=metadata, build=testrun.build, environment=testrun.environment)
 
@@ -199,7 +205,7 @@ class RestApiTest(APITestCase):
 
     def test_projects(self):
         data = self.hit('/api/projects/')
-        self.assertEqual(2, len(data['results']))
+        self.assertEqual(3, len(data['results']))
 
     def test_project_basic_settings(self):
         data = self.hit('/api/projects/%d/basic_settings/' % self.project.id)
@@ -393,7 +399,7 @@ class RestApiTest(APITestCase):
 
     def test_builds(self):
         data = self.hit('/api/builds/')
-        self.assertEqual(6, len(data['results']))
+        self.assertEqual(7, len(data['results']))
 
     def test_builds_id_filter(self):
         last = self.project.builds.last()
@@ -814,6 +820,55 @@ class RestApiTest(APITestCase):
         self.assertEqual(data.json()['count'], 1)
         self.assertEqual(self.build.test_jobs.filter(job_status='Canceled').count(), 1)
 
+    def test_build_compare_400_on_unfinished_build(self):
+        response = self.get('/api/builds/%d/compare/?target=%d' % (self.build.id, self.build2.id))
+        self.assertEqual(400, response.status_code)
+        self.assertEqual('["Cannot report regressions/fixes on non-finished builds"]', response.content.decode('utf-8'))
+
+    def test_build_compare_against_same_project(self):
+        url = '/api/builds/%d/compare/?target=%d&force=true' % (self.build.id, self.build2.id)
+        data = self.hit(url)
+        expected = {
+            "regressions":
+            {
+                "myenv":
+                {
+                    "foo": ["test1"]
+                },
+                "env-a":
+                {
+                    "foo": ["test1"]
+                }
+            },
+            "fixes": {}
+        }
+        self.assertEqual(expected, data)
+
+    def test_build_compare_against_different_project(self):
+        url = '/api/builds/%d/compare/?target=%d&force=true' % (self.build.id, self.build7.id)
+        data = self.hit(url)
+        expected = {
+            'regressions':
+            {
+                'myenv': {
+                    'foo': ['test2']
+                },
+                'env-a':
+                {
+                    'foo': ['test2']
+                }
+            },
+            'fixes': {
+                'myenv': {
+                    'bar': ['test2']
+                },
+                'env-a': {
+                    'bar': ['test2']
+                }
+            }
+        }
+        self.assertEqual(expected, data)
+
     def test_testjob(self):
         data = self.hit('/api/testjobs/%d/' % self.testjob.id)
         self.assertEqual('myenv', data['environment'])
@@ -830,7 +885,7 @@ class RestApiTest(APITestCase):
     def test_tests_filter_by_name(self):
         data = self.hit('/api/tests/?name=test1')
         self.assertEqual(list, type(data['results']))
-        self.assertEqual(12, len(data['results']))
+        self.assertEqual(16, len(data['results']))
 
     def test_tests_filter_by_name_not_found(self):
         data = self.hit('/api/tests/?name=test-that-does-not-exist')
@@ -840,7 +895,7 @@ class RestApiTest(APITestCase):
     def test_tests_filter_by_metadata_name(self):
         data = self.hit('/api/tests/?metadata__name=test1')
         self.assertEqual(list, type(data['results']))
-        self.assertEqual(12, len(data['results']))
+        self.assertEqual(16, len(data['results']))
 
     def test_tests_filter_by_metadata_name_not_found(self):
         data = self.hit('/api/tests/?metadata__name=test-that-does-not-exist')
@@ -860,7 +915,7 @@ class RestApiTest(APITestCase):
     def test_tests_filter_by_build(self):
         data = self.hit('/api/tests/?build__version=1')
         self.assertEqual(list, type(data['results']))
-        self.assertEqual(36, len(data['results']))
+        self.assertEqual(50, len(data['results']))
 
     def test_tests_filter_by_build_not_found(self):
         data = self.hit('/api/tests/?build__version=this-build-should-not-exist-really')
@@ -1099,7 +1154,7 @@ class RestApiTest(APITestCase):
 
     def test_environments(self):
         data = self.hit('/api/environments/')
-        self.assertEqual(['env-a', 'myenv'], sorted([item['slug'] for item in data['results']]))
+        self.assertEqual(['env-a', 'myenv'], list(sorted(set([item['slug'] for item in data['results']]))))
 
     def test_email_template(self):
         data = self.hit('/api/emailtemplates/')
@@ -1171,7 +1226,7 @@ class RestApiTest(APITestCase):
 
     def test_suites(self):
         data = self.hit('/api/suites/')
-        self.assertEqual(3, data['count'])
+        self.assertEqual(5, data['count'])
 
     def test_suite_tests(self):
         foo_suite = self.project.suites.get(slug='foo')

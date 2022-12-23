@@ -921,6 +921,19 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
      * `api/builds/<id>/callbacks` GET, POST
 
         List available callbacks for this build or create one via POST
+
+    * `api/builds/<id>/compare` GET
+
+        Compare this build against a target one and report regressions/fixes. <br />
+        The required args are: <br />
+        - target: target build id <br />
+        - target_project: target build project id <br />
+        Optional args are: <br />
+        - by: it can be "metrics" or "tests" (default). Please note that <br />
+          comparing it by metrics will return a list of metrics that regressed <br />
+          or improved (fixes) and that will be decided upon adding metric thresholds <br />
+          in &lt;group&gt;/&lt;project&gt;/settings/thresholds. <br /> <br />
+        - force: Use "force=true" in order to force comparing builds that aren't finished yet. <br />
     """
     queryset = Build.objects.order_by('-datetime').all()
     project_lookup_key = 'project__in'
@@ -1169,6 +1182,37 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
                 return Response({'message': 'OK'}, status=status.HTTP_202_ACCEPTED)
             except (ValidationError, IntegrityError) as e:
                 return Response({'message': ', '.join(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['get'], suffix='compare')
+    def compare(self, request, pk=None):
+        by = request.GET.get('by', 'tests')
+        target_id = request.GET.get('target', None)
+        force_unfinished = request.GET.get('force', None)
+
+        if target_id is None:
+            raise serializers.ValidationError("Invalid args provided. 'target' build id must NOT be empty")
+
+        if by not in ['tests', 'metrics']:
+            raise serializers.ValidationError("Invalid args provided. 'by' should be either 'tests' or 'metrics'")
+
+        baseline = self.get_object()
+        try:
+            int(target_id)
+            target = Build.objects.get(pk=target_id)
+            if force_unfinished is None and (not baseline.status.finished or not target.status.finished):
+                raise serializers.ValidationError("Cannot report regressions/fixes on non-finished builds")
+        except Build.DoesNotExist:
+            raise NotFound()
+        except ValueError:
+            raise serializers.ValidationError("target build id must be integer")
+
+        if by == 'tests':
+            comparison = TestComparison(baseline, target, regressions_and_fixes_only=True)
+        else:
+            comparison = MetricComparison(baseline, target, regressions_and_fixes_only=True)
+
+        serializer = BuildsComparisonSerializer(comparison)
+        return Response(serializer.data)
 
 
 class EnvironmentSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
