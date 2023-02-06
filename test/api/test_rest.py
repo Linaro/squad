@@ -897,30 +897,75 @@ class RestApiTest(APITestCase):
         self.assertEqual(list, type(data['results']))
         self.assertEqual(16, len(data['results']))
 
+    def test_tests_filter_by_metadata_id(self):
+        metadata = models.SuiteMetadata.objects.get(suite='foo', name='test1', kind='test')
+        data = self.hit('/api/tests/?metadata_id=%s' % metadata.id)
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(8, len(data['results']))
+
     def test_tests_filter_by_metadata_name_not_found(self):
         data = self.hit('/api/tests/?metadata__name=test-that-does-not-exist')
         self.assertEqual(list, type(data['results']))
         self.assertEqual(0, len(data['results']))
+
+    def test_tests_filter_by_metadata_id_not_found(self):
+        response = self.get('/api/tests/?metadata_id=100000')
+        self.assertEqual(400, response.status_code)
 
     def test_tests_filter_by_environment(self):
         data = self.hit('/api/tests/?environment__slug=myenv')
         self.assertEqual(list, type(data['results']))
         self.assertEqual(50, len(data['results']))
 
+    def test_tests_filter_by_environment_id(self):
+        data = self.hit('/api/tests/?environment_id=%s' % self.environment.id)
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(50, len(data['results']))
+        for test in data['results']:
+            self.assertIn('/%s/' % self.environment.id, test['environment'])
+
     def test_tests_filter_by_environment_not_found(self):
         data = self.hit('/api/tests/?environment__slug=mycrazyenvslug')
         self.assertEqual(list, type(data['results']))
         self.assertEqual(0, len(data['results']))
+
+    def test_tests_filter_by_environment_id_not_found(self):
+        response = self.get('/api/tests/?environment_id=100000')
+        self.assertEqual(400, response.status_code)
 
     def test_tests_filter_by_build(self):
         data = self.hit('/api/tests/?build__version=1')
         self.assertEqual(list, type(data['results']))
         self.assertEqual(50, len(data['results']))
 
+    def test_tests_filter_by_build_id(self):
+        data = self.hit('/api/tests/?build_id=%s' % self.build.id)
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(36, len(data['results']))
+        for test in data['results']:
+            self.assertIn('/%s/' % self.build.id, test['build'])
+
     def test_tests_filter_by_build_not_found(self):
         data = self.hit('/api/tests/?build__version=this-build-should-not-exist-really')
         self.assertEqual(list, type(data['results']))
         self.assertEqual(0, len(data['results']))
+
+    def test_tests_filter_by_build_id_not_found(self):
+        response = self.get('/api/tests/?build_id=100000')
+        self.assertEqual(400, response.status_code)
+
+    def test_tests_filter_by_suite(self):
+        data = self.hit('/api/tests/?suite__slug=foo')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(50, len(data['results']))
+
+    def test_tests_filter_by_suite_id(self):
+        suite = self.project.suites.get(slug='foo')
+        data = self.hit('/api/tests/?suite_id=%s' % suite.id)
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(50, len(data['results']))
+        for test in data['results']:
+            self.assertIn('/%s/' % suite.id, test['suite'])
 
     def test_tests_with_page_size(self):
         data = self.hit('/api/tests/?limit=2')
