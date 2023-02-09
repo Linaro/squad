@@ -56,7 +56,7 @@ RUN apt-get update -q=2 && \
         django-bootstrap3 \
         django-cors-headers \
         drf-extensions \
-        django-storages[google]==1.9.1 \
+        django-storages[google] \
         django-allauth==0.46.0 \
         django-simple-history==3.1.1 \
         django-health-check==3.16.4 && \
