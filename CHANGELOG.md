@@ -1,3 +1,11 @@
+# 1.64
+
+This 1.64 release updates django-storages to support new
+updates to Google's storage backend. The release also includes
+django-prometheus, that allows querying metrics from squad.
+
+In the future, metrics can be custom made.
+
 # 1.63
 
 This 1.63 release adds an endpoint to builds view: compare.
