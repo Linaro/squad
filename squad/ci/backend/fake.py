@@ -65,3 +65,6 @@ class Backend(object):
 
     def check_job_definition(self, definition):
         return True
+
+    def supports_callbacks(self):
+        return False

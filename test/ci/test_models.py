@@ -779,3 +779,15 @@ class TestJobTest(TestCase):
         )
         display = yaml.safe_load(testjob.show_definition)
         self.assertEqual(definition, display)
+
+    def test_job_input(self):
+        testjob = models.TestJob.objects.create(
+            target=self.project,
+            target_build=self.build,
+            environment='myenv',
+            backend=self.backend,
+        )
+
+        self.assertIsNone(testjob.input)
+        testjob.input = "testing"
+        self.assertEqual("testing", testjob.input)

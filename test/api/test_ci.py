@@ -41,6 +41,7 @@ class CiApiTest(TestCase):
         Token.objects.create(user=self.project_admin_user, key='adminkey')
 
         self.backend = models.Backend.objects.create(name='lava', implementation_type='fake')
+        self.tuxsuite = models.Backend.objects.create(name='tuxsuite', implementation_type='tuxsuite')
         self.client = APIClient('thekey')
         self.submitter_client = APIClient('thesubmitterkey')
         self.restclient = RestAPIClient('thekey')
@@ -301,6 +302,58 @@ class CiApiTest(TestCase):
         }
         r = self.client.post('/api/watchjob/mygroup/myproject/1/myenv', args)
         self.assertEqual(400, r.status_code)
+
+    def test_fetch_testjob_not_supported_by_backend(self):
+        # Backend does not exist
+        r = self.client.post('/api/fetchjob/mygroup/myproject/1/myenv/does-not-exist')
+        self.assertEqual(400, r.status_code)
+
+        # Backend does not support callbacks
+        r = self.client.post('/api/fetchjob/mygroup/myproject/1/myenv/lava')
+        self.assertEqual(400, r.status_code)
+
+    def test_fetch_testjob_group_project_does_not_exist(self):
+        r = self.client.post('/api/fetchjob/doesnotexist/myproject/1/myenv/lava')
+        self.assertEqual(400, r.status_code)
+
+        r = self.client.post('/api/fetchjob/mygroup/doesnotexist/1/myenv/lava')
+        self.assertEqual(400, r.status_code)
+
+    @patch("squad.ci.tasks.fetch.delay")
+    @patch("squad.ci.backend.tuxsuite.Backend.process_callback")
+    @patch("squad.ci.backend.tuxsuite.Backend.validate_callback")
+    def test_fetch_testjob_invalid(self, mock_validate_callback, mock_process_callback, mock_fetch):
+        mock_validate_callback.side_effect = Exception("bad")
+        r = self.client.post('/api/fetchjob/mygroup/myproject/1/myenv/tuxsuite')
+        self.assertEqual(400, r.status_code)
+        mock_validate_callback.assert_called()
+        mock_validate_callback.reset_mock()
+
+        mock_validate_callback.side_effect = None
+        r = self.client.post('/api/fetchjob/mygroup/myproject/1/myenv/tuxsuite')
+        self.assertEqual(400, r.status_code)
+        mock_validate_callback.assert_called()
+        mock_validate_callback.reset_mock()
+
+        mock_process_callback.side_effect = Exception("bad")
+        r = self.client.post('/api/fetchjob/mygroup/myproject/1/myenv/tuxsuite', {"a": 1}, content_type="application/json")
+        self.assertEqual(400, r.status_code)
+        mock_validate_callback.assert_called()
+        mock_process_callback.assert_called()
+
+        mock_fetch.assert_not_called()
+
+    @patch("squad.ci.tasks.fetch.delay")
+    @patch("squad.ci.backend.tuxsuite.Backend.process_callback")
+    @patch("squad.ci.backend.tuxsuite.Backend.validate_callback")
+    def test_fetch_testjob(self, mock_validate_callback, mock_process_callback, mock_fetch):
+        testjob = models.TestJob(id=123)
+        mock_process_callback.return_value = testjob
+        r = self.client.post('/api/fetchjob/mygroup/myproject/1/myenv/tuxsuite', {"a": 1}, content_type="application/json")
+        self.assertEqual(201, r.status_code)
+        mock_validate_callback.assert_called()
+        mock_process_callback.assert_called()
+        mock_fetch.assert_called_with(testjob.id)
 
     @patch('squad.ci.models.Backend.get_implementation')
     def test_resubmit_submitter(self, get_implementation):

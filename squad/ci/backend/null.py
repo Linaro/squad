@@ -104,6 +104,25 @@ class Backend(object):
         """
         raise NotImplementedError
 
+    def supports_callbacks(self):
+        """
+        Returns True if this backend supports callbacks, False otherwise
+        """
+        return False
+
+    def validate_callback(self, request, project):
+        """
+        Raises an exception in case the request does not pass the validation
+        """
+        raise NotImplementedError
+
+    def process_callback(self, json_payload, build, environment, backend):
+        """
+        Returns a test_job if processing callback's payload fine, or raise exceptions
+        if something isn't right
+        """
+        raise NotImplementedError
+
     def format_message(self, msg):
         if self.data and hasattr(self.data, "name"):
             return self.data.name + ': ' + msg

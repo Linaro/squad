@@ -164,6 +164,15 @@ class Backend(models.Model):
     def check_job_definition(self, definition):
         return self.get_implementation().check_job_definition(definition)
 
+    def supports_callbacks(self):
+        return self.get_implementation().supports_callbacks()
+
+    def validate_callback(self, request, project):
+        self.get_implementation().validate_callback(request, project)
+
+    def process_callback(self, payload, build, environment):
+        return self.get_implementation().process_callback(payload, build, environment, self)
+
     def __str__(self):
         return '%s (%s)' % (self.name, self.implementation_type)
 
@@ -241,6 +250,21 @@ class TestJob(models.Model):
             return self.backend.get_implementation().job_url(self)
         return None
 
+    @property
+    def input(self):
+        try:
+            return self.results_input.text
+        except ResultsInput.DoesNotExist:
+            return None
+
+    @input.setter
+    def input(self, value):
+        if value:
+            self.results_input = ResultsInput(text=value)
+            self.results_input.save()
+        else:
+            self.results_input.delete()
+
     def resubmit(self):
         ret_value = False
         if self.can_resubmit:
@@ -311,3 +335,8 @@ class TestJob(models.Model):
         indexes = [
             models.Index(fields=['submitted', 'fetched']),
         ]
+
+
+class ResultsInput(models.Model):
+    test_job = models.OneToOneField(TestJob, related_name='results_input', on_delete=models.CASCADE, null=True)
+    text = models.TextField(null=True, blank=True)

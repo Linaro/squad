@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^submit/(%s)/(%s)/(%s)/(%s)' % (group_slug_pattern, slug_pattern, slug_pattern, slug_pattern), views.add_test_run),
     url(r'^submitjob/(%s)/(%s)/(%s)/(%s)' % (group_slug_pattern, slug_pattern, slug_pattern, slug_pattern), ci.submit_job),
     url(r'^watchjob/(%s)/(%s)/(%s)/(%s)' % (group_slug_pattern, slug_pattern, slug_pattern, slug_pattern), ci.watch_job),
+    url(r'^fetchjob/(%s)/(%s)/(%s)/(%s)/(%s)' % (group_slug_pattern, slug_pattern, slug_pattern, slug_pattern, slug_pattern), ci.fetch_job),
     url(r'^data/(%s)/(%s)' % (group_slug_pattern, slug_pattern), data.get),
     url(r'^resubmit/([0-9]+)', ci.resubmit_job),
     url(r'^forceresubmit/([0-9]+)', ci.force_resubmit_job),

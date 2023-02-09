@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import logging
 import re
@@ -8,8 +9,15 @@ import json
 from functools import reduce
 from urllib.parse import urljoin
 
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import (
+    hashes,
+    serialization,
+)
+
 from squad.ci.backend.null import Backend as BaseBackend
 from squad.ci.exceptions import FetchIssue, TemporaryFetchIssue
+from squad.ci.models import TestJob
 
 
 logger = logging.getLogger('squad.ci.backend.tuxsuite')
@@ -83,15 +91,42 @@ class Backend(BaseBackend):
         # The regex below is supposed to find only one match
         return matches[0]
 
+    def generate_job_id(self, result_type, result):
+        """
+            The job id for TuxSuite results is generated using 3 pieces of info:
+            1. If it's either "BUILD" or "TEST" result;
+            2. The TuxSuite project. Ex: "linaro/anders"
+            3. The ksuid of the object. Ex: "1yPYGaOEPNwr2pfqBgONY43zORp"
+
+            A couple examples for job_id are:
+            - BUILD:linaro@anders#1yPYGaOEPNwr2pCqBgONY43zORq
+            - TEST:arm@bob#1yPYGaOEPNwr2pCqBgONY43zORp
+
+            Then it's up to SQUAD's TuxSuite backend to parse the job_id
+            and fetch results properly.
+        """
+        _type = "TEST" if result_type == "test" else "BUILD"
+        project = result["project"].replace("/", "@")
+        uid = result["uid"]
+        return f"{_type}:{project}#{uid}"
+
     def fetch_url(self, *urlbits):
         url = reduce(urljoin, urlbits)
 
         try:
             response = requests.get(url)
         except Exception as e:
-            raise TemporaryFetchIssue(f"Can't retrieve from {url}: %s" % e)
+            raise TemporaryFetchIssue(f"Can't retrieve from {url}: {e}")
 
         return response
+
+    def fetch_from_results_input(self, test_job):
+        try:
+            return json.loads(test_job.input)
+        except Exception as e:
+            logger.error(f"Can't parse results from job's input: {e}")
+
+        return None
 
     def parse_build_results(self, test_job, job_url, results, settings):
         required_keys = ['build_status', 'warnings_count', 'download_url', 'retry']
@@ -179,6 +214,9 @@ class Backend(BaseBackend):
             _, _, test_id = self.parse_job_id(test_job.job_id)
             build_id = results['waiting_for']
             build_url = job_url.replace(test_id, build_id).replace('tests', 'builds')
+
+            # TODO: check if we can save a few seconds by querying a testjob that
+            # already contains build results
             build_metadata = self.fetch_url(build_url).json()
 
             build_metadata_keys = settings.get('TEST_BUILD_METADATA_KEYS', [])
@@ -211,7 +249,12 @@ class Backend(BaseBackend):
 
     def fetch(self, test_job):
         url = self.job_url(test_job)
-        results = self.fetch_url(url).json()
+        if test_job.input:
+            results = self.fetch_from_results_input(test_job)
+            test_job.input = None
+        else:
+            results = self.fetch_url(url).json()
+
         if results.get('state') != 'finished':
             return None
 
@@ -253,3 +296,49 @@ class Backend(BaseBackend):
         url = urljoin(self.data.url, endpoint)
         response = requests.post(url)
         return response.status_code == 200
+
+    def supports_callbacks(self):
+        return True
+
+    def validate_callback(self, request, project):
+        signature = request.headers.get("x-tux-payload-signature", None)
+        if signature is None:
+            raise Exception("tuxsuite request is missing signature headers")
+
+        public_key = project.get_setting("TUXSUITE_PUBLIC_KEY")
+        if public_key is None:
+            raise Exception("missing tuxsuite public key for this project")
+
+        payload = request.body
+        signature = base64.urlsafe_b64decode(signature)
+        key = serialization.load_ssh_public_key(public_key.encode("ascii"))
+        key.verify(
+            signature,
+            payload,
+            ec.ECDSA(hashes.SHA256()),
+        )
+
+    def process_callback(self, json_payload, build, environment, backend):
+        if "kind" not in json_payload or "status" not in json_payload:
+            raise Exception("`kind` and `status` are required in the payload")
+
+        kind = json_payload["kind"]
+        status = json_payload["status"]
+        job_id = self.generate_job_id(kind, status)
+        try:
+            # Tuxsuite's job id DO NOT repeat, like ever
+            testjob = TestJob.objects.get(job_id=job_id, target_build=build, environment=environment.slug)
+        except TestJob.DoesNotExist:
+            testjob = TestJob.objects.create(
+                backend=backend,
+                target=build.project,
+                target_build=build,
+                environment=environment.slug,
+                submitted=True,
+                job_id=job_id
+            )
+
+        # Saves the input so it can be processed by the queue
+        testjob.input = json.dumps(status)
+
+        return testjob

@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import requests
 import requests_mock
@@ -5,14 +6,27 @@ import json
 
 from urllib.parse import urljoin
 from django.test import TestCase
+from unittest.mock import MagicMock, Mock, patch
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes, serialization
 
 from squad.ci.backend.tuxsuite import Backend as TuxSuiteBackend
 from squad.ci.exceptions import FetchIssue, TemporaryFetchIssue
-from squad.ci.models import Backend
+from squad.ci.models import Backend, TestJob
 from squad.core.models import Group, Project
 
 
 TUXSUITE_URL = 'http://testing.tuxsuite.com'
+
+# ssh-keygen -t ecdsa -b 256 -m PEM
+PRIVATE_SSH_KEY = """-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIDSs6JYNlBeOFfifuEt08LhaSpYWj1GgylYo3zZHPamJoAoGCCqGSM49
+AwEHoUQDQgAE77r6UW93IGYjGfPU9OWPqucHpXZrRU5PcH+pZrOElj0h+nkA6hMW
+VPGqPoiohMdneJVO/rXWuwQLxUNgKAeHJQ==
+-----END EC PRIVATE KEY-----"""
+
+PUBLIC_SSH_KEY = "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBO+6+lFvdyBmIxnz1PTlj6rnB6V2a0VOT3B/qWazhJY9Ifp5AOoTFlTxqj6IqITHZ3iVTv611rsEC8VDYCgHhyU="
 
 
 class TuxSuiteTest(TestCase):
@@ -55,6 +69,7 @@ class TuxSuiteTest(TestCase):
             name="tuxprojext",
             group=self.group,
         )
+        self.environment = self.project.environments.create(slug="myenv")
         self.build = self.project.builds.create(version='tuxbuild')
         self.tuxsuite = TuxSuiteBackend(self.backend)
 
@@ -134,7 +149,8 @@ class TuxSuiteTest(TestCase):
             with self.assertRaises(TemporaryFetchIssue):
                 self.tuxsuite.fetch_url(url)
 
-    def test_fetch_build_results(self):
+    @patch("squad.ci.backend.tuxsuite.Backend.fetch_from_results_input")
+    def test_fetch_build_results(self, mock_fetch_from_results_input):
         job_id = 'BUILD:tuxgroup@tuxproject#123'
         testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
         build_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/builds/123')
@@ -215,8 +231,10 @@ class TuxSuiteTest(TestCase):
             self.assertEqual(build_logs, logs)
 
         self.assertEqual(build_results['build_name'], testjob.name)
+        mock_fetch_from_results_input.assert_not_called()
 
-    def test_retry_fetching_build_results(self):
+    @patch("squad.ci.backend.tuxsuite.Backend.fetch_from_results_input")
+    def test_retry_fetching_build_results(self, mock_fetch_from_results_input):
         job_id = 'BUILD:tuxgroup@tuxproject#124'
         testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
         build_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/builds/124')
@@ -251,6 +269,7 @@ class TuxSuiteTest(TestCase):
                 self.tuxsuite.fetch(testjob)
 
         self.assertEqual(build_results['build_name'], testjob.name)
+        mock_fetch_from_results_input.assert_not_called()
 
     def test_fetch_build_with_given_up_infra_error(self):
         "this will test that the backend will still fetch the build despite its errored state"
@@ -402,6 +421,97 @@ class TuxSuiteTest(TestCase):
 
         with requests_mock.Mocker() as fake_request:
             fake_request.get(test_url, json=test_results)
+            fake_request.get(build_url, json=build_results)
+            fake_request.get(urljoin(test_url + '/', 'logs'), text=test_logs)
+            fake_request.get(urljoin(test_url + '/', 'results'), json=test_results_json)
+
+            status, completed, metadata, tests, metrics, logs = self.tuxsuite.fetch(testjob)
+            self.assertEqual('Complete', status)
+            self.assertTrue(completed)
+            self.assertEqual(sorted(expected_metadata.items()), sorted(metadata.items()))
+            self.assertEqual(sorted(expected_tests.items()), sorted(tests.items()))
+            self.assertEqual(sorted(expected_metrics.items()), sorted(metrics.items()))
+            self.assertEqual(test_logs, logs)
+
+        self.assertEqual('ltp-smoke', testjob.name)
+
+    def test_fetch_results_from_testjob_input(self):
+        job_id = 'TEST:tuxgroup@tuxproject#123'
+        testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
+        test_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/tests/123')
+        build_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/builds/456')
+
+        test_logs = 'dummy test log'
+        test_results = {
+            'project': 'tuxgroup/tuxproject',
+            'device': 'qemu-armv7',
+            'uid': '123',
+            'kernel': 'https://storage.tuxboot.com/armv7/zImage',
+            'ap_romfw': None,
+            'mcp_fw': None,
+            'mcp_romfw': None,
+            'modules': None,
+            'parameters': {},
+            'rootfs': None,
+            'scp_fw': None,
+            'scp_romfw': None,
+            'fip': None,
+            'tests': ['boot', 'ltp-smoke'],
+            'user': 'tuxbuild@linaro.org',
+            'user_agent': 'tuxsuite/0.43.6',
+            'state': 'finished',
+            'result': 'pass',
+            'results': {'boot': 'pass', 'ltp-smoke': 'pass'},
+            'plan': None,
+            'waiting_for': '456',
+            'boot_args': None,
+            'provisioning_time': '2022-03-25T15:49:11.441860',
+            'running_time': '2022-03-25T15:50:11.770607',
+            'finished_time': '2022-03-25T15:52:42.672483',
+            'retries': 0,
+            'retries_messages': [],
+            'duration': 151
+        }
+        build_results = {
+            'toolchain': 'gcc-10',
+            'kconfig': ['defconfig', 'CONFIG_DUMMY=1'],
+        }
+
+        build_name = self.tuxsuite.generate_test_name(build_results)
+        expected_metadata = {
+            'job_url': test_url,
+            'build_name': build_name,
+            'does_not_exist': None,
+            'toolchain': 'gcc-10',
+            'kconfig': ['defconfig', 'CONFIG_DUMMY=1'],
+        }
+
+        # Real test results are stored in test/ci/backend/tuxsuite_test_result_sample.json
+        with open('test/ci/backend/tuxsuite_test_result_sample.json') as test_result_file:
+            test_results_json = json.load(test_result_file)
+
+        expected_tests = {
+            f'boot/{build_name}': 'pass',
+            'ltp-smoke/access01': 'pass',
+            'ltp-smoke/chdir01': 'skip',
+            'ltp-smoke/fork01': 'pass',
+            'ltp-smoke/time01': 'pass',
+            'ltp-smoke/wait02': 'pass',
+            'ltp-smoke/write01': 'pass',
+            'ltp-smoke/symlink01': 'pass',
+            'ltp-smoke/stat04': 'pass',
+            'ltp-smoke/utime01A': 'pass',
+            'ltp-smoke/rename01A': 'pass',
+            'ltp-smoke/splice02': 'pass',
+            'ltp-smoke/shell_test01': 'pass',
+            'ltp-smoke/ping01': 'skip',
+            'ltp-smoke/ping602': 'skip'
+        }
+
+        expected_metrics = {}
+
+        testjob.input = json.dumps(test_results)
+        with requests_mock.Mocker() as fake_request:
             fake_request.get(build_url, json=build_results)
             fake_request.get(urljoin(test_url + '/', 'logs'), text=test_logs)
             fake_request.get(urljoin(test_url + '/', 'results'), json=test_results_json)
@@ -694,3 +804,75 @@ class TuxSuiteTest(TestCase):
             url = f'{TUXSUITE_URL}/groups/tuxgroup/projects/tuxproject/tests/126/cancel'
             fake_request.post(url, status_code=400)
             self.assertFalse(self.tuxsuite.cancel(testjob))
+
+    def test_callback_is_supported(self):
+        self.assertTrue(self.tuxsuite.supports_callbacks())
+
+    def test_validate_callback(self):
+        request = Mock()
+        request.headers = {}
+        request.json = MagicMock(return_value={})
+        request.body = b"content"
+
+        # Missing signature header
+        with self.assertRaises(Exception) as ctx:
+            self.tuxsuite.validate_callback(request, self.project)
+            self.assertEqual("tuxsuite request is missing signature headers", str(ctx.exception))
+
+        # Missing public key
+        request.headers = {
+            "x-tux-payload-signature": "does-not-work_6bUINPk62PaJb73C3bfKVvntgpr2Ii2TzQAiEA2D5-jKuh4xa4TkVhIA0UzvKERKKflpFjBH3hlsWivzI=",
+        }
+        with self.assertRaises(Exception) as ctx:
+            self.tuxsuite.validate_callback(request, self.project)
+            self.assertEqual("missing tuxsuite public key for this project", str(ctx.exception))
+
+        # Invalid signature
+        self.project.__settings__ = None
+        self.project.project_settings = f"TUXSUITE_PUBLIC_KEY: \"{PUBLIC_SSH_KEY}\""
+        with self.assertRaises(InvalidSignature) as ctx:
+            self.tuxsuite.validate_callback(request, self.project)
+            self.assertEqual("missing tuxsuite public key for this project", str(ctx.exception))
+
+        # Generate signature with testing private key
+        content = b"signed content"
+        key = serialization.load_pem_private_key(PRIVATE_SSH_KEY.encode("ascii"), None)
+        signature = key.sign(content, ec.ECDSA(hashes.SHA256()))
+        valid_signature = base64.urlsafe_b64encode(signature)
+        request.headers = {"x-tux-payload-signature": valid_signature}
+        request.body = content
+        self.tuxsuite.validate_callback(request, self.project)
+
+    def test_process_callback(self):
+        # Test missing kind/status key
+        with self.assertRaises(Exception) as ctx:
+            self.tuxsuite.process_callback({}, None, None, None)
+            self.assertEqual("`kind` and `status` are required in the payload", str(ctx.exception))
+
+        # Test creating new testjob
+        payload = {
+            "kind": "test",
+            "status": {
+                "project": "tuxgroup/tuxproject",
+                "uid": "123"
+            }
+        }
+        self.assertFalse(TestJob.objects.filter(job_id="TEST:tuxgroup@tuxproject#123").exists())
+        testjob = self.tuxsuite.process_callback(payload, self.build, self.environment, self.backend)
+        self.assertEqual(json.dumps(payload["status"]), testjob.input)
+        self.assertTrue(TestJob.objects.filter(job_id="TEST:tuxgroup@tuxproject#123").exists())
+
+        # Test existing testjob
+        payload["status"]["uid"] = "1234"
+        testjob = TestJob.objects.create(
+            backend=self.backend,
+            target=self.project,
+            target_build=self.build,
+            environment=self.environment.slug,
+            submitted=True,
+            job_id="TEST:tuxgroup@tuxproject#1234",
+        )
+        self.assertEqual(None, testjob.input)
+        returned_testjob = self.tuxsuite.process_callback(payload, self.build, self.environment, self.backend)
+        self.assertEqual(testjob.id, returned_testjob.id)
+        self.assertEqual(json.dumps(payload["status"]), returned_testjob.input)

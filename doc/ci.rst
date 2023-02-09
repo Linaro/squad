@@ -225,8 +225,8 @@ a few limitations with this setup:
    distinguishing between identically named tests from different parts of
    multinode job.
 
-Callbacks
----------
+Callbacks Triggers
+------------------
 
 In SQUAD, callbacks can be attached to Builds. They are triggered once the given build finishes fetching all test jobs from the backend.
 
@@ -280,5 +280,50 @@ It's important to point out that:
 * Attaching the same callback twice to the same build results in noop
 * The callback headers will be merged with the build's project settings if available. If header names collide, project settings will get overwritten
 * Callbacks are available in read-only mode at ``GET /api/builds/<id>/callbacks/``
+
+
+Receiving Callbacks
+-------------------
+
+SQUAD also supports receiving callbacks. Currently the use case for receiving callbacks is for
+backends that need to push results back to SQUAD while not having a live connection like LAVA
+does with ZMQ or websockets. Tuxsuite is a good example as it runs on a serverless architecture
+it doesn't provide live connections, thus needing the callback feature.
+
+The callback URL should be in format:
+
+* `POST /api/fetchjob/<group_slug>/<project_slug>/<build_version>/<environment-slug>/<backend-name>`
+
+Authetication and payloads are dependant on the backend implementation. There is currently only one
+supported backend: Tuxsuite. In the section below we will describe how this integration should work.
+
+Use case: Tuxsuite
+~~~~~~~~~~~~~~~~~~
+
+SQUAD allows callbacks to be triggered by Tuxsuite. Developers trigger builds and tests to Tuxsuite as
+they would normally do. The difference now is that they can pass a URL to be POST'ed after such build or
+test is finished. Below is an example of how to do that:
+
+.. code-block:: bash
+
+   $ tuxsuite build \
+       --git-repo https://github.com/torvalds/linux.git \
+       --git-ref master \
+       --target-arch arm \
+       --toolchain gcc-12 \
+       --kconfig tinyconfig \
+       --callback https://squad.com/api/fetchjob/tuxgroup/tuxproject/mybuild/myenv/tuxsuite
+
+This tells Tuxsuite to POST to `https://squad.com/api/fetchjob/tuxgroup/tuxproject/mybuild/myenv/tuxsuite`.
+Payload and authentication are Tuxsuite-specific and documentation can be found at https://docs.tuxsuite.com/callbacks/.
+
+In order to validate that the request is coming from Tuxsuite, SQUAD checks the `x-tux-payload-signature` header and
+match it with public key configured in each project setting page.
+
+SQUAD will attempt to read key from `TUXSUITE_PUBLIC_KEY` variable defined in the project settings of `tuxgroup/tuxproject`.
+If the request is valid, SQUAD will take in the payload provided by Tuxsuite, save it and enqueue a test job for fetching.
+
+The main difference now is that Tuxsuite will be the one telling SQUAD when to fetch results. This prevents SQUAD from polling
+Tuxsuite every now and then.
 
 .. vim: ts=4 sw=4 et=1

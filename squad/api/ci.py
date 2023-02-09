@@ -1,3 +1,5 @@
+import json
+
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -8,6 +10,7 @@ from squad.ci.exceptions import SubmissionIssue
 from squad.ci.tasks import submit, fetch
 from squad.ci.models import Backend, TestJob
 from squad.core.utils import log_addition
+from squad.core.models import Project
 
 
 @require_http_methods(["POST"])
@@ -149,3 +152,42 @@ def resubmit_job(request, test_job_id, method='resubmit'):
 @csrf_exempt
 def force_resubmit_job(request, test_job_id):
     return resubmit_job(request, test_job_id, method='force_resubmit')
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def fetch_job(request, group_slug, project_slug, version, environment_slug, backend_name):
+    try:
+        backend = Backend.objects.get(name=backend_name)
+    except Backend.DoesNotExist:
+        return HttpResponseBadRequest("requested backend does not exist")
+
+    if not backend.supports_callbacks():
+        return HttpResponseBadRequest("requested backend does not support callbacks")
+
+    try:
+        project = Project.objects.get(slug=project_slug, group__slug=group_slug)
+    except Project.DoesNotExist:
+        return HttpResponseBadRequest("group/project does not exist")
+
+    try:
+        backend.validate_callback(request, project)
+    except Exception as e:
+        return HttpResponseBadRequest(f"request is not valid for this backend: {e}")
+
+    environment, _ = project.environments.get_or_create(slug=environment_slug)
+    build, _ = project.builds.get_or_create(version=version)
+
+    try:
+        payload = json.loads(request.body)
+    except Exception as e:
+        return HttpResponseBadRequest(f"payload failed to parse as json: {e}")
+
+    try:
+        test_job = backend.process_callback(payload, build, environment)
+    except Exception as e:
+        return HttpResponseBadRequest(f"malformed callback payload: {e}")
+
+    fetch.delay(test_job.id)
+
+    return HttpResponse(test_job.id, status=201)
