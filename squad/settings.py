@@ -146,7 +146,6 @@ __middlewares__ = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     django_toolbar_middleware,  # OPTIONAL
     'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
