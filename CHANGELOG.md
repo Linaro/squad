@@ -1,3 +1,9 @@
+# 1.64.1
+
+This 1.64.1 release reverts django-prometheus as it shows a bug
+when acessing API and some other urls. The release also installs
+django-storages with dependecies, especially to work with GCP.
+
 # 1.64
 
 This 1.64 release updates django-storages to support new
