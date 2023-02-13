@@ -89,7 +89,6 @@ __apps__ = [
     'django.contrib.messages',
     'django.contrib.humanize',
     'django.contrib.sites',
-    'django_prometheus',
     'corsheaders',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
@@ -135,7 +134,6 @@ SITE_ID = 1
 INSTALLED_APPS = [app for app in __apps__ if app]
 
 __middlewares__ = [
-    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -147,7 +145,6 @@ __middlewares__ = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     django_toolbar_middleware,  # OPTIONAL
-    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 MIDDLEWARE = [middleware for middleware in __middlewares__ if middleware]

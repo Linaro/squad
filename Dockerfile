@@ -47,7 +47,6 @@ RUN apt-get update -q=2 && \
         python3-django-crispy-forms \
         python3-django-debug-toolbar \
         python3-django-filters \
-        python3-django-prometheus \
         python3-djangorestframework \
         python3-djangorestframework-filters && \
     pip3 install --no-dependencies \

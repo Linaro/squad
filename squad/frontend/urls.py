@@ -63,4 +63,5 @@ urlpatterns = [
     url(r'^(%s)/(%s)/build/([^/]+)/testrun/([^/]+)/suite/([^/]+)/test/([^/]+)/attachments/([^/]+)$' % group_and_project, views.attachment, name='attachment'),
     url(r'^testjob/(\d+)$', views.test_job, name='test_job'),
     url(r'^(%s)/(%s)/toggle-outlier-metric/([^/]+)$' % group_and_project, views.toggle_outlier_metric, name='toggle_outlier_metric'),
+
 ]
