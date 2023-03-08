@@ -1,7 +1,7 @@
 celery<5.0,>=4.4
 cryptography
 coreapi
-django_crispy_forms
+django_crispy_forms==1.14.0
 Django>=3
 django-allauth
 django-bootstrap3
