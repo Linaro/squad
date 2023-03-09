@@ -623,3 +623,19 @@ class TuxSuiteTest(TestCase):
             fake_request.get(test_url, json=test_results)
 
             self.assertEqual(None, self.tuxsuite.fetch(testjob))
+
+    def test_cancel(self):
+        job_id = 'TEST:tuxgroup@tuxproject#125'
+        testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
+        with requests_mock.Mocker() as fake_request:
+            url = f'{TUXSUITE_URL}/groups/tuxgroup/projects/tuxproject/tests/125/cancel'
+            fake_request.post(url, status_code=200)
+            self.assertTrue(self.tuxsuite.cancel(testjob))
+
+        # Mock a failed cancellation
+        job_id = 'TEST:tuxgroup@tuxproject#126'
+        testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
+        with requests_mock.Mocker() as fake_request:
+            url = f'{TUXSUITE_URL}/groups/tuxgroup/projects/tuxproject/tests/126/cancel'
+            fake_request.post(url, status_code=400)
+            self.assertFalse(self.tuxsuite.cancel(testjob))
