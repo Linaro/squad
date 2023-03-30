@@ -1,3 +1,9 @@
+# 1.65
+
+This 1.65 release adds support to cancelling tuxsuite jobs via SQUAD
+and also fix a bug when connecting to a RabbitMQ instance over amqps://
+protocol.
+
 # 1.64.1
 
 This 1.64.1 release reverts django-prometheus as it shows a bug
