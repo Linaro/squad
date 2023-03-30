@@ -50,6 +50,7 @@ RUN apt-get update -q=2 && \
         python3-djangorestframework \
         python3-djangorestframework-filters && \
     pip3 install --no-dependencies \
+        "amqp>=5.0.5" \
         squad-linaro-plugins \
         sentry-sdk==0.14.3 \
         "django-simple-history>3.0" \
