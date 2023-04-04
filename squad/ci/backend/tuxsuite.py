@@ -163,6 +163,10 @@ class Backend(BaseBackend):
         if results['result'] == 'fail':
             test_job.failure = str(results['results'])
 
+        elif results['result'] == 'error':
+            test_job.failure = 'tuxsuite infrastructure error'
+            return 'Incomplete', completed, metadata, tests, metrics, logs
+
         # If boot result is unkown, a retry is needed, otherwise, it either passed or failed
         if 'unknown' == results['results']['boot']:
             return None
