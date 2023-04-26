@@ -6,6 +6,7 @@ RUN apt-get update -q=2 && \
     apt-get -qq install --no-install-recommends iproute2 auto-apt-proxy >/dev/null && \
     apt-get -qq install --no-install-recommends >/dev/null \
         python3 \
+        python3-aiohttp \
         python3-asgiref \
         python3-celery \
         python3-coreapi  \
