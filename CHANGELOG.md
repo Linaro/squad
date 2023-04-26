@@ -1,3 +1,9 @@
+# 1.66
+
+This 1.66 release adds support for listening to LAVA websockets over
+ZMQ. The release also fixes infinite Tuxsuite polling when jobs run into
+infrastructure errors.
+
 # 1.65
 
 This 1.65 release adds support to cancelling tuxsuite jobs via SQUAD
