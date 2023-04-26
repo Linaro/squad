@@ -1,3 +1,5 @@
+import asyncio
+import aiohttp
 import json
 import re
 import requests
@@ -8,13 +10,14 @@ import yaml
 import xmlrpc
 import zmq
 
+from asgiref.sync import sync_to_async
 from dateutil.parser import isoparse
 from contextlib import contextmanager
 from io import BytesIO, TextIOWrapper, StringIO
 from zmq.utils.strtypes import u
 
 from xmlrpc import client as xmlrpclib
-from urllib.parse import urlsplit, urljoin
+from urllib.parse import urlsplit, urljoin, urlparse
 
 
 from squad.ci.models import TestJob
@@ -160,6 +163,41 @@ class Backend(BaseBackend):
                 raise FetchIssue(self.url_remove_token(str(fault)))
 
     def listen(self):
+        if not self.listen_websocket():
+            self.listen_zmq()
+
+    def listen_websocket(self):
+        async def handler():
+            url = urlparse(self.data.url)
+            ws_url = f"{url.scheme}://{self.data.username}:{self.data.token}@{url.netloc}/ws/"
+            try:
+                while True:
+                    try:
+                        async with aiohttp.ClientSession() as session:
+                            self.log_debug(f"connecting to {url.scheme}://{url.netloc}/ws/")
+                            async with session.ws_connect(ws_url, heartbeat=30) as ws:
+                                async for msg in ws:
+                                    if msg.type == aiohttp.WSMsgType.TEXT:
+                                        try:
+                                            (topic, uuid, dt, username, data) = (m for m in msg.json()[:])
+                                            data = json.loads(data)
+                                            if "error" in data:
+                                                raise aiohttp.ClientError(data["error"])
+                                        except ValueError:
+                                            continue
+                                        await sync_to_async(self.receive_event)(topic, data)
+                                await asyncio.sleep(1)
+                    except aiohttp.ClientError as e:
+                        self.log_warn(f"Failed to start client: {e}")
+                        return False
+            except Exception as e:
+                # Fall back to ZMQ
+                self.log_warn(f"Failed to maintain websocket connection: {e}")
+                return False
+
+        asyncio.run(handler())
+
+    def listen_zmq(self):
         listener_url = self.get_listener_url()
         if not listener_url:
             self.log_warn("Can't connect, no listener URL")
