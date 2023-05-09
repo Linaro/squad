@@ -18,10 +18,27 @@ class GithubPluginTest(TestCase):
             token='123456789',
         )
         self.build = self.project.builds.create(version='1', patch_source=self.patch_source, patch_id='foo/bar/deadbeef')
+        self.patch_source_wrong = PatchSource.objects.create(
+            name='github_wrong',
+            url='https://api.github.com/',
+            username='example',
+            token='123456789',
+        )
+        self.build_wrong = self.project.builds.create(version='2', patch_source=self.patch_source_wrong, patch_id='foo/bar/deadbeef')
+
         self.github = Plugin()
 
     @patch('squad.plugins.github.requests')
     def test_github_post(self, requests):
+        Plugin.__github_post__(self.build_wrong, '/test/{owner}/{repository}/{commit}', {"a": "b"})
+        requests.post.assert_called_with(
+            'https://api.github.com/test/foo/bar/deadbeef',
+            headers={'Authorization': 'token 123456789'},
+            json={"a": "b"},
+        )
+
+    @patch('squad.plugins.github.requests')
+    def test_github_post_wrong_url(self, requests):
         Plugin.__github_post__(self.build, '/test/{owner}/{repository}/{commit}', {"a": "b"})
         requests.post.assert_called_with(
             'https://api.github.com/test/foo/bar/deadbeef',

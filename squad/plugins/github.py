@@ -4,6 +4,7 @@ from django.conf import settings
 from squad.core.models import ProjectStatus
 from squad.core.plugins import Plugin as BasePlugin
 from squad.frontend.templatetags.squad import project_url
+from urllib.parse import urljoin
 
 
 def build_url(build):
@@ -11,7 +12,6 @@ def build_url(build):
 
 
 class Plugin(BasePlugin):
-
     @staticmethod
     def __github_post__(build, endpoint, payload):
         api_url = build.patch_source.url
@@ -22,10 +22,11 @@ class Plugin(BasePlugin):
             "Authorization": "token %s" % api_token,
         }
 
-        url = api_url + endpoint.format(
-            owner=owner,
-            repository=repository,
-            commit=commit
+        url = urljoin(
+            api_url, endpoint.format(
+                owner=owner,
+                repository=repository,
+                commit=commit)
         )
         return requests.post(url, headers=headers, json=payload)
 
