@@ -1,3 +1,11 @@
+# 1.67
+
+This 1.77 release adds support for receiving callback events from Tuxsuite
+backends. This will allow build and test objects to be pushed directly to
+SQUAD which in turn will stop polling from Tuxsuite, saving unecessary
+requests. The release also fixes a bug when composing URLs used in github
+plugin.
+
 # 1.66
 
 This 1.66 release adds support for listening to LAVA websockets over
