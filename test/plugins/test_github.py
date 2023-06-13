@@ -69,3 +69,8 @@ class GithubPluginTest(TestCase):
         self.build.status.save()
         state, _ = self.github.__get_finished_state__(self.build)
         self.assertEqual("failure", state)
+
+    def test_github_get_url(self):
+        expected_url = "https://api.github.com/repos/foo/bar/commits/deadbeef"
+        actual_url = self.github.get_url(self.build)
+        self.assertEqual(expected_url, actual_url)

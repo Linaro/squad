@@ -65,9 +65,10 @@ class Plugin(BasePlugin):
         api_url = build.patch_source.url
         owner, repository, commit = re.split(r'[:/]', build.patch_id)
 
-        return "{api_url}/{owner}/{repository}/commit/{commit}".format(
-            api_url=api_url,
+        endpoint = "/repos/{owner}/{repository}/commits/{commit}".format(
             owner=owner,
             repository=repository,
             commit=commit
         )
+
+        return urljoin(api_url, endpoint)
