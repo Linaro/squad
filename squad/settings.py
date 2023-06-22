@@ -110,6 +110,7 @@ __apps__ = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.gitlab',
+    'allauth.socialaccount.providers.google',
 ]
 
 # SocialLogin setup
