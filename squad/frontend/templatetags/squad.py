@@ -272,8 +272,7 @@ def to_json(d):
 def socialaccount_providers(context):
     request = context['request']
     return_dict = {}
-    configured_backends = SocialApp.objects.all()
     for backend in SocialApp.objects.all():
-        provider = providers.by_id(backend.provider)
+        provider = providers.registry.by_id(backend.provider)
         return_dict.update({provider: provider.get_login_url(request)})
     return return_dict

@@ -3,9 +3,14 @@ from jinja2 import Template
 
 
 from django.test import TestCase
+from django.test.client import RequestFactory
+from django.contrib.sites.models import Site
+from allauth.socialaccount.models import SocialApp
+from allauth.socialaccount.providers.google.provider import GoogleProvider
+from allauth.socialaccount.providers.github.provider import GitHubProvider
+from allauth.socialaccount.providers.gitlab.provider import GitLabProvider
 
-
-from squad.frontend.templatetags.squad import get_page_url, strip_get_parameters, update_get_parameters, to_json
+from squad.frontend.templatetags.squad import get_page_url, strip_get_parameters, update_get_parameters, to_json, socialaccount_providers
 
 
 class FakeRequest():
@@ -74,3 +79,57 @@ class TemplateTagsTest(TestCase):
         self.assertEqual('[1, 2, 3]', to_json([1, 2, 3]))
         self.assertEqual('{"key": 42}', to_json({'key': 42}))
         self.assertEqual('', to_json(FakeGet()))  # non-parsable types return empty string
+
+    def test_socialaccount_providers_google(self):
+        s = SocialApp.objects.create(
+            name="foo",
+            client_id="ID_123456789",
+            secret="secret_987654321",
+            provider=GoogleProvider.id
+        )
+        s.save()
+        site = Site.objects.first()
+        s.sites.add(site)
+        s.save()
+
+        factory = RequestFactory()
+        context = {"request": factory.get("/login")}
+        social_providers = socialaccount_providers(context)
+        self.assertEqual(1, len(social_providers.keys()))
+        self.assertEqual(GoogleProvider, list(social_providers)[0].__class__)
+
+    def test_socialaccount_providers_github(self):
+        s = SocialApp.objects.create(
+            name="foo",
+            client_id="ID_123456789",
+            secret="secret_987654321",
+            provider=GitHubProvider.id
+        )
+        s.save()
+        site = Site.objects.first()
+        s.sites.add(site)
+        s.save()
+
+        factory = RequestFactory()
+        context = {"request": factory.get("/login")}
+        social_providers = socialaccount_providers(context)
+        self.assertEqual(1, len(social_providers.keys()))
+        self.assertEqual(GitHubProvider, list(social_providers)[0].__class__)
+
+    def test_socialaccount_providers_gitlab(self):
+        s = SocialApp.objects.create(
+            name="foo",
+            client_id="ID_123456789",
+            secret="secret_987654321",
+            provider=GitLabProvider.id
+        )
+        s.save()
+        site = Site.objects.first()
+        s.sites.add(site)
+        s.save()
+
+        factory = RequestFactory()
+        context = {"request": factory.get("/login")}
+        social_providers = socialaccount_providers(context)
+        self.assertEqual(1, len(social_providers.keys()))
+        self.assertEqual(GitLabProvider, list(social_providers)[0].__class__)
