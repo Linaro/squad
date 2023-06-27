@@ -141,8 +141,11 @@ class TestRunFilter(filters.FilterSet):
         fields = {'id': ['exact', 'in'],
                   'job_id': ['exact', 'in', 'startswith'],
                   'job_status': ['exact', 'in', 'startswith'],
+                  'environment_id': ['exact', 'in'],
                   'data_processed': ['exact'],
                   'status_recorded': ['exact'],
+                  'created_at': ['exact', 'lt', 'lte', 'gt', 'gte'],
+                  'datetime': ['exact', 'lt', 'lte', 'gt', 'gte'],
                   'completed': ['exact']}
 
 
@@ -1270,6 +1273,9 @@ class HyperlinkedTestsIdentityField(serializers.HyperlinkedIdentityField):
 
 
 class StatusFilter(filters.FilterSet):
+    test_run = filters.RelatedFilter(TestRunFilter, field_name="test_run", queryset=TestRun.objects.all())
+    suite = filters.RelatedFilter(SuiteFilter, field_name="suite", queryset=Suite.objects.all())
+
     class Meta:
         model = Status
         fields = {'suite': ['exact', 'isnull'],
@@ -1278,20 +1284,28 @@ class StatusFilter(filters.FilterSet):
                   'tests_fail': ['gt', 'lt'],
                   'tests_xfail': ['gt', 'lt'],
                   'tests_skip': ['gt', 'lt'],
-                  'has_metrics': ['exact'], }
+                  'has_metrics': ['exact'],
+                  'suite_id': ['exact', 'in', 'isnull'],
+                  'test_run_id': ['exact', 'in']}
 
 
-class StatusSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
+class StatusSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
+
+    id = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Status
-        exclude = ('test_run',)
+        exclude = ['suite_version']
 
 
-class StatusViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
-    queryset = Status.objects
+class StatusViewSet(NestedViewSetMixin, ModelViewSet):
+
+    queryset = Status.objects.all()
     serializer_class = StatusSerializer
     filterset_class = StatusFilter
     filter_class = filterset_class  # TODO: remove when django-filters 1.x is not supported anymore
+    pagination_class = CursorPaginationWithPageSize
+    ordering = ('id',)
 
 
 class TestRunSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
@@ -1858,3 +1872,4 @@ router.register(r'suitemetadata', SuiteMetadataViewset)
 router.register(r'annotations', AnnotationViewSet)
 router.register(r'metricthresholds', MetricThresholdViewSet)
 router.register(r'reports', DelayedReportViewSet)
+router.register(r'statuses', StatusViewSet)

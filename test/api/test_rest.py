@@ -1096,13 +1096,13 @@ class RestApiTest(APITestCase):
         RecordTestRunStatus()(self.testrun)
         data = self.hit('/api/testruns/%d/status/' % self.testrun.id)
         data2 = self.hit('/api/testruns/%d/status/?suite__isnull=true' % self.testrun.id)
-        self.assertEqual(3, data['count'])
+        self.assertEqual(3, len(data['results']))
         self.assertEqual(10, data['results'][0]['tests_pass'])
         self.assertEqual(8, data['results'][0]['tests_fail'])
         self.assertEqual(0, data['results'][0]['tests_xfail'])
         self.assertEqual(0, data['results'][0]['tests_skip'])
         self.assertEqual(0, data['results'][0]['metrics_summary'])
-        self.assertEqual(1, data2['count'])
+        self.assertEqual(1, len(data2['results']))
         self.assertEqual(None, data2['results'][0]['suite'])
 
     def test_testjob_definition(self):
@@ -1338,3 +1338,21 @@ class RestApiTest(APITestCase):
         )
         self.assertEqual(400, response.status_code)
         self.assertEqual(1, self.project.thresholds.filter(name=metric_name).count())
+
+    def test_statuses(self):
+        ParseTestRunData()(self.testrun)
+        RecordTestRunStatus()(self.testrun)
+        data = self.hit('/api/statuses/')
+        self.assertEqual(3, len(data['results']))
+
+        data = self.hit(f'/api/statuses/?test_run__environment_id={self.environment2.id}')
+        self.assertEqual(0, len(data['results']))
+
+        data = self.hit(f'/api/statuses/?test_run__environment_id={self.environment.id}')
+        self.assertEqual(3, len(data['results']))
+
+        data = self.hit('/api/statuses/?test_run__datetime__lt=2000-01-01')
+        self.assertEqual(0, len(data['results']))
+
+        data = self.hit('/api/statuses/?test_run__datetime__gt=2000-01-01')
+        self.assertEqual(3, len(data['results']))
