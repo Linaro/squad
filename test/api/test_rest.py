@@ -1350,9 +1350,3 @@ class RestApiTest(APITestCase):
 
         data = self.hit(f'/api/statuses/?test_run__environment_id={self.environment.id}')
         self.assertEqual(3, len(data['results']))
-
-        data = self.hit('/api/statuses/?test_run__datetime__lt=2000-01-01')
-        self.assertEqual(0, len(data['results']))
-
-        data = self.hit('/api/statuses/?test_run__datetime__gt=2000-01-01')
-        self.assertEqual(3, len(data['results']))

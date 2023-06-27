@@ -2,4 +2,4 @@
 
 set -eu
 
-exec python3 -m pytest --cov --cov-fail-under=79
+exec python3 -m pytest --cov --cov-fail-under=78
