@@ -1,6 +1,18 @@
+# 1.68
+
+This 1.68 release adds Google as one of the social account
+providers to log in into SQUAD alonside Github and Gitlab.
+Also thanks to Milosz the buttons for social logins will
+only be displayed if such providers are configured in the SQUAD
+instance.
+
+The release also adds a new REST endpoint: statuses, which exposes
+TestRuns status directly. Hopefuly this will enable
+engineers to generate status reports on projects in an easier way.
+
 # 1.67
 
-This 1.77 release adds support for receiving callback events from Tuxsuite
+This 1.67 release adds support for receiving callback events from Tuxsuite
 backends. This will allow build and test objects to be pushed directly to
 SQUAD which in turn will stop polling from Tuxsuite, saving unecessary
 requests. The release also fixes a bug when composing URLs used in github
