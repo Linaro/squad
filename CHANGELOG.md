@@ -1,3 +1,8 @@
+# 1.69
+
+This 1.69 release adds support to filtering projects by their latest
+modified date time.
+
 # 1.68
 
 This 1.68 release adds Google as one of the social account
