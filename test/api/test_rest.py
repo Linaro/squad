@@ -397,6 +397,18 @@ class RestApiTest(APITestCase):
         )
         self.assertEqual(400, response.status_code)
 
+    def test_project_filter_by_datetime(self):
+        data = self.hit("/api/projects/")
+        self.assertEqual(3, data["count"])
+
+        day_ago = datetime.timedelta(days=1)
+        self.project.datetime -= day_ago
+        self.project.save()
+
+        yesterday = datetime.datetime.now() - day_ago
+        data = self.hit(f"/api/projects/?datetime__gt={yesterday}")
+        self.assertEqual(2, data["count"])
+
     def test_builds(self):
         data = self.hit('/api/builds/')
         self.assertEqual(7, len(data['results']))

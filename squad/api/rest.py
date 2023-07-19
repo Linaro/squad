@@ -78,6 +78,7 @@ class ProjectFilter(filters.FilterSet):
         model = Project
         fields = {'name': ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   'slug': ['exact', 'in', 'startswith', 'contains', 'icontains'],
+                  'datetime': ['exact', 'gt', 'gte', 'lt', 'lte'],
                   'id': ['exact', 'in']}
 
     def filter_full_name(self, queryset, field_name, value):
