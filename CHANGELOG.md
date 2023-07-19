@@ -1,3 +1,8 @@
+# 1.69.1
+
+This 1.69.1 release fixes the previous one by adding wget to
+SQUAD's docker image.
+
 # 1.69
 
 This 1.69 release adds support to filtering projects by their latest
