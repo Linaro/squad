@@ -40,6 +40,7 @@ RUN apt-get update -q=2 && \
         moreutils \
         postgresql-client \
         unzip \
+        wget \
         openssh-client && \
     apt-get -qq -t bullseye-backports install --no-install-recommends >/dev/null \
         python3-django \
