@@ -1,3 +1,8 @@
+# 1.70
+
+This 1.70 release fixes the callback handler for receiving Tuxsuite
+results.
+
 # 1.69.1
 
 This 1.69.1 release fixes the previous one by adding wget to
