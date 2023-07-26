@@ -812,7 +812,7 @@ class TuxSuiteTest(TestCase):
         request = Mock()
         request.headers = {}
         request.json = MagicMock(return_value={})
-        request.body = b"content"
+        request.body = b'"{\\"content\\": 1}"'
 
         # Missing signature header
         with self.assertRaises(Exception) as ctx:
@@ -835,12 +835,13 @@ class TuxSuiteTest(TestCase):
             self.assertEqual("missing tuxsuite public key for this project", str(ctx.exception))
 
         # Generate signature with testing private key
-        content = b"signed content"
+        content = b'{"signed": "content"}'
+        content_bytes = b'"{\\"signed\\": \\"content\\"}"'
         key = serialization.load_pem_private_key(PRIVATE_SSH_KEY.encode("ascii"), None)
         signature = key.sign(content, ec.ECDSA(hashes.SHA256()))
         valid_signature = base64.urlsafe_b64encode(signature)
         request.headers = {"x-tux-payload-signature": valid_signature}
-        request.body = content
+        request.body = content_bytes
         self.tuxsuite.validate_callback(request, self.project)
 
     def test_process_callback(self):
@@ -857,8 +858,9 @@ class TuxSuiteTest(TestCase):
                 "uid": "123"
             }
         }
+
         self.assertFalse(TestJob.objects.filter(job_id="TEST:tuxgroup@tuxproject#123").exists())
-        testjob = self.tuxsuite.process_callback(payload, self.build, self.environment, self.backend)
+        testjob = self.tuxsuite.process_callback(json.dumps(payload), self.build, self.environment, self.backend)
         self.assertEqual(json.dumps(payload["status"]), testjob.input)
         self.assertTrue(TestJob.objects.filter(job_id="TEST:tuxgroup@tuxproject#123").exists())
 
@@ -873,6 +875,6 @@ class TuxSuiteTest(TestCase):
             job_id="TEST:tuxgroup@tuxproject#1234",
         )
         self.assertEqual(None, testjob.input)
-        returned_testjob = self.tuxsuite.process_callback(payload, self.build, self.environment, self.backend)
+        returned_testjob = self.tuxsuite.process_callback(json.dumps(payload), self.build, self.environment, self.backend)
         self.assertEqual(testjob.id, returned_testjob.id)
         self.assertEqual(json.dumps(payload["status"]), returned_testjob.input)
