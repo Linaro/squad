@@ -856,8 +856,8 @@ class TuxSuiteTest(TestCase):
             "status": {
                 "project": "tuxgroup/tuxproject",
                 "uid": "123",
+                "device": self.environment.slug,
             },
-            "device": self.environment.slug,
         }
 
         self.assertFalse(TestJob.objects.filter(job_id="TEST:tuxgroup@tuxproject#123").exists())
