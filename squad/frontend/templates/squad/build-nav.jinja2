@@ -26,6 +26,30 @@
 </div>
 {% endif %}
 
+{% if not build.status.finished %}
+{% with reasons=build.finished.1 %}
+{% if reasons %}
+<div class="well">
+  <div class="row">
+    <div class="col-md-11">
+      <p>
+      {{ _('This build is not considered finished yet for the following reasons:') }}
+      </p>
+      <ul>
+          {% for reason in reasons %}
+          <li>{{reason}}</li>
+          {% endfor %}
+      </ul>
+      <p>
+      {{ _('Being unfinished, this build will not trigger email notifications.') }}
+      </p>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endwith %}
+{% endif %}
+
 {% if project.can_submit_testjobs(user) %}
 <div class="highlight-row">
   <div class="alert alert-info annotation-alert">
