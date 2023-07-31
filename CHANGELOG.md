@@ -1,3 +1,9 @@
+# 1.71
+
+This 1.71 release changes the way environment from callbacks are handled
+depending on the ci backend. The release also moves details on why builds
+are unfinished to the build page, due to that query be quite expensive.
+
 # 1.70
 
 This 1.70 release fixes the callback handler for receiving Tuxsuite
