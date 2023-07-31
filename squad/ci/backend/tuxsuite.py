@@ -330,16 +330,17 @@ class Backend(BaseBackend):
 
         kind = json_payload["kind"]
         status = json_payload["status"]
+        env = json_payload.get("target_arch") or json_payload.get("device") or environment
         job_id = self.generate_job_id(kind, status)
         try:
             # Tuxsuite's job id DO NOT repeat, like ever
-            testjob = TestJob.objects.get(job_id=job_id, target_build=build, environment=environment.slug)
+            testjob = TestJob.objects.get(job_id=job_id, target_build=build, environment=env)
         except TestJob.DoesNotExist:
             testjob = TestJob.objects.create(
                 backend=backend,
                 target=build.project,
                 target_build=build,
-                environment=environment.slug,
+                environment=env,
                 submitted=True,
                 job_id=job_id
             )

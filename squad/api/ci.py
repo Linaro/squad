@@ -175,7 +175,6 @@ def fetch_job(request, group_slug, project_slug, version, environment_slug, back
     except Exception as e:
         return HttpResponseBadRequest(f"request is not valid for this backend: {e}")
 
-    environment, _ = project.environments.get_or_create(slug=environment_slug)
     build, _ = project.builds.get_or_create(version=version)
 
     try:
@@ -184,7 +183,7 @@ def fetch_job(request, group_slug, project_slug, version, environment_slug, back
         return HttpResponseBadRequest(f"payload failed to parse as json: {e}")
 
     try:
-        test_job = backend.process_callback(payload, build, environment)
+        test_job = backend.process_callback(payload, build, environment_slug)
     except Exception as e:
         return HttpResponseBadRequest(f"malformed callback payload: {e}")
 

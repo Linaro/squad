@@ -855,14 +855,16 @@ class TuxSuiteTest(TestCase):
             "kind": "test",
             "status": {
                 "project": "tuxgroup/tuxproject",
-                "uid": "123"
-            }
+                "uid": "123",
+            },
+            "device": self.environment.slug,
         }
 
         self.assertFalse(TestJob.objects.filter(job_id="TEST:tuxgroup@tuxproject#123").exists())
-        testjob = self.tuxsuite.process_callback(json.dumps(payload), self.build, self.environment, self.backend)
+        testjob = self.tuxsuite.process_callback(json.dumps(payload), self.build, self.environment.slug, self.backend)
         self.assertEqual(json.dumps(payload["status"]), testjob.input)
         self.assertTrue(TestJob.objects.filter(job_id="TEST:tuxgroup@tuxproject#123").exists())
+        self.assertEqual(self.environment.slug, testjob.environment)
 
         # Test existing testjob
         payload["status"]["uid"] = "1234"
@@ -875,6 +877,6 @@ class TuxSuiteTest(TestCase):
             job_id="TEST:tuxgroup@tuxproject#1234",
         )
         self.assertEqual(None, testjob.input)
-        returned_testjob = self.tuxsuite.process_callback(json.dumps(payload), self.build, self.environment, self.backend)
+        returned_testjob = self.tuxsuite.process_callback(json.dumps(payload), self.build, self.environment.slug, self.backend)
         self.assertEqual(testjob.id, returned_testjob.id)
         self.assertEqual(json.dumps(payload["status"]), returned_testjob.input)
