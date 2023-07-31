@@ -1,3 +1,8 @@
+# 1.71.1
+
+This 1.71.1 release fixes environment fetching in Tuxsuite backend when using
+callbacks.
+
 # 1.71
 
 This 1.71 release changes the way environment from callbacks are handled
