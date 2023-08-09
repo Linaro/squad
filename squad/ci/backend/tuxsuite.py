@@ -231,7 +231,7 @@ class Backend(BaseBackend):
         if results['waiting_for'] is not None:
             _, _, test_id = self.parse_job_id(test_job.job_id)
             build_id = results['waiting_for']
-            build_url = job_url.replace(test_id, build_id).replace('tests', 'builds')
+            build_url = job_url.replace(test_id, build_id).replace('/tests/', '/builds/')
 
             # TODO: check if we can save a few seconds by querying a testjob that
             # already contains build results
