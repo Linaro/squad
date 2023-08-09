@@ -1,3 +1,8 @@
+# 1.72
+
+This 1.72 release fixes a bug when fetching a Tuxsuite build related to a test.
+Also, it quickens fetching results from Tuxsuite by reusing HTTPs connections.
+
 # 1.71.1
 
 This 1.71.1 release fixes environment fetching in Tuxsuite backend when using
