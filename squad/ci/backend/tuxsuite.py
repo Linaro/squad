@@ -6,6 +6,7 @@ import requests
 import yaml
 import json
 
+from requests.adapters import HTTPAdapter, Retry
 from functools import reduce
 from urllib.parse import urljoin
 
@@ -26,7 +27,24 @@ logger = logging.getLogger('squad.ci.backend.tuxsuite')
 description = "TuxSuite"
 
 
+requests_session = None
+
+
 class Backend(BaseBackend):
+
+    @staticmethod
+    def get_session():
+        global requests_session
+        if requests_session is None:
+            retry_strategy = Retry(
+                total=5,
+                backoff_factor=1,
+                status_forcelist=[429, 500, 502, 503, 504])
+            adapter = HTTPAdapter(max_retries=retry_strategy)
+            requests_session = requests.Session()
+            requests_session.mount('http://', adapter)
+            requests_session.mount('https://', adapter)
+        return requests_session
 
     """
     TuxSuite backend is intended for processing data coming from TuxTest
@@ -114,7 +132,7 @@ class Backend(BaseBackend):
         url = reduce(urljoin, urlbits)
 
         try:
-            response = requests.get(url)
+            response = Backend.get_session().request("GET", url)
         except Exception as e:
             raise TemporaryFetchIssue(f"Can't retrieve from {url}: {e}")
 
