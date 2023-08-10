@@ -1334,7 +1334,10 @@ class ProjectStatus(models.Model, TestSummaryBase):
                 datetime__lt=build.datetime,
                 project=build.project,
             ).order_by('datetime').last()
-        if previous_build is not None:
+
+        # Compute regressions and fixes only after build is finished
+        finished, _ = build.finished
+        if previous_build is not None and finished:
             comparison = TestComparison(previous_build, build, regressions_and_fixes_only=True)
             if comparison.regressions:
                 regressions = yaml.dump(comparison.regressions)
@@ -1347,7 +1350,6 @@ class ProjectStatus(models.Model, TestSummaryBase):
             if metric_comparison.fixes:
                 metric_fixes = yaml.dump(metric_comparison.fixes)
 
-        finished, _ = build.finished
         data = {
             'tests_pass': test_summary.tests_pass,
             'tests_fail': test_summary.tests_fail,
