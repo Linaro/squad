@@ -229,19 +229,23 @@ class Backend(BaseBackend):
 
         # Fetch more metadata if available
         if results['waiting_for'] is not None:
-            _, _, test_id = self.parse_job_id(test_job.job_id)
             build_id = results['waiting_for']
-            build_url = job_url.replace(test_id, build_id).replace('/tests/', '/builds/')
 
-            # TODO: check if we can save a few seconds by querying a testjob that
-            # already contains build results
-            build_metadata = self.fetch_url(build_url).json()
+            # Tuxsuite recently has added support for tests depending on other tests
+            if build_id.startswith('BUILD#') or '#' not in build_id:
+                _, _, test_id = self.parse_job_id(test_job.job_id)
+                build_id = build_id.replace('BUILD#', '')
+                build_url = job_url.replace(test_id, build_id).replace('/tests/', '/builds/')
 
-            build_metadata_keys = settings.get('TEST_BUILD_METADATA_KEYS', [])
-            metadata.update({k: build_metadata.get(k) for k in build_metadata_keys})
+                # TODO: check if we can save a few seconds by querying a testjob that
+                # already contains build results
+                build_metadata = self.fetch_url(build_url).json()
 
-            if 'toolchain' in build_metadata_keys and 'kconfig' in build_metadata_keys and metadata['build_name'] in [None, '']:
-                metadata['build_name'] = self.generate_test_name(build_metadata)
+                build_metadata_keys = settings.get('TEST_BUILD_METADATA_KEYS', [])
+                metadata.update({k: build_metadata.get(k) for k in build_metadata_keys})
+
+                if 'toolchain' in build_metadata_keys and 'kconfig' in build_metadata_keys and metadata['build_name'] in [None, '']:
+                    metadata['build_name'] = self.generate_test_name(build_metadata)
 
         # Create a boot test
         boot_test_name = 'boot/' + (metadata.get('build_name') or 'boot')
