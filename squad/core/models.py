@@ -803,12 +803,15 @@ class TestRun(models.Model):
 
     def save_tests_file(self, tests_file):
         storage_save(self, self.tests_file_storage, 'tests_file', tests_file)
+        self.__tests_file__ = tests_file
 
     def save_metrics_file(self, metrics_file):
         storage_save(self, self.metrics_file_storage, 'metrics_file', metrics_file)
+        self.__metrics_file__ = metrics_file
 
     def save_log_file(self, log_file):
         storage_save(self, self.log_file_storage, 'log_file', log_file)
+        self.__log_file__ = log_file
 
     __tests_file__ = None
 
