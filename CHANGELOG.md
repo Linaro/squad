@@ -1,3 +1,8 @@
+# 1.72.2
+
+This 1.72.2 release does a few performance improvements in order to
+speed up fetching jobs, specially under heavy load.
+
 # 1.72.1
 
 This 1.72.1 release fix a change in Tuxsuite api.
