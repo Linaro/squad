@@ -1320,9 +1320,9 @@ class ProjectStatus(models.Model, TestSummaryBase):
         test_summary = build.test_summary
         metrics_summary = MetricsSummary(build)
         now = timezone.now()
-        test_runs_total = build.test_runs.count()
         test_runs_completed = build.test_runs.filter(completed=True).count()
         test_runs_incomplete = build.test_runs.filter(completed=False).count()
+        test_runs_total = test_runs_completed + test_runs_incomplete
         regressions = None
         fixes = None
         metric_regressions = None
