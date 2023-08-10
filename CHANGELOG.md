@@ -1,3 +1,7 @@
+# 1.72.1
+
+This 1.72.1 release fix a change in Tuxsuite api.
+
 # 1.72
 
 This 1.72 release fixes a bug when fetching a Tuxsuite build related to a test.
