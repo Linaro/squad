@@ -122,12 +122,12 @@ class Backend(BaseBackend):
                 start_time = data.get('start_time', None)
                 end_time = data.get('end_time', None)
                 # convert to datetime
-                if type(start_time) == str:
+                if type(start_time) is str:
                     try:
                         start_time = isoparse(start_time)
                     except ValueError:
                         start_time = None
-                if type(end_time) == str:
+                if type(end_time) is str:
                     try:
                         end_time = isoparse(end_time)
                     except ValueError:

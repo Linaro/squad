@@ -170,7 +170,7 @@ def log_deletion(request, object, message):
 
 def storage_save(obj, storage_field, filename, content):
     content_bytes = content or ''
-    if type(content_bytes) == str:
+    if type(content_bytes) is str:
         content_bytes = content_bytes.encode()
     filename = '%s/%s/%s' % (obj.__class__.__name__.lower(), obj.pk, filename)
     storage_field.save(filename, ContentFile(content_bytes))

@@ -72,7 +72,7 @@ class ValidateTestRun(object):
         except json.decoder.JSONDecodeError as e:
             raise exceptions.InvalidMetadataJSON("metadata is not valid JSON: " + str(e) + "\n" + metadata_json)
 
-        if type(metadata) != dict:
+        if type(metadata) is not dict:
             raise exceptions.InvalidMetadata("metadata is not a object ({})")
 
         if "job_id" in metadata.keys():
@@ -87,7 +87,7 @@ class ValidateTestRun(object):
         except json.decoder.JSONDecodeError as e:
             raise exceptions.InvalidMetricsDataJSON("metrics is not valid JSON: " + str(e) + "\n" + metrics_file)
 
-        if type(metrics) != dict:
+        if type(metrics) is not dict:
             raise exceptions.InvalidMetricsData.type(metrics)
 
         for metric, value_dict in metrics.items():
@@ -113,7 +113,7 @@ class ValidateTestRun(object):
         except json.decoder.JSONDecodeError as e:
             raise exceptions.InvalidTestsDataJSON("tests is not valid JSON: " + str(e) + "\n" + tests_file)
 
-        if type(tests) != dict:
+        if type(tests) is not dict:
             raise exceptions.InvalidTestsData.type(tests)
 
 
