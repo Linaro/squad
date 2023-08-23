@@ -24,7 +24,7 @@ Failures
 {% if summary.failures %}
 {% for env, tests in summary.failures.items() %}{{env}}:
 {% for test in tests %}
-  * {{test.full_name}}{% for issue in known_issues %}{% if issue.test_name == test.full_name %}{% for issue_environment in issue.environment.all() %}{% if env == issue_environment.slug %}
+  * {{test.full_name}}{% for issue in known_issues %}{% if issue.test_name == test.full_name %}{% for issue_environment in issue.environments.all() %}{% if env == issue_environment.slug %}
     * Known issue: {{issue.title}}{% if issue.url %} {{issue.url}}{% endif %}{% if issue.intermittent %} (intermittent){% endif %}{% endif %}{% endfor %}{% endif %}{% endfor %}{% endfor %}
 {% endfor %}
 {% else %}
