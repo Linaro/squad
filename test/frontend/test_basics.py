@@ -258,15 +258,27 @@ class FrontendTest(TestCase):
         self.assertEqual('application/json', response['Content-Type'])
         self.assertEqual(b'{}', response.content)
 
+    def test_tests_bad_testrun(self):
+        response = self.client.get('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/tests' % ('not-an-id', self.suite.slug, self.test.name))
+        self.assertEqual(404, response.status_code)
+
     def test_metrics(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metrics' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])
         self.assertEqual(b'{"mysuite/mymetric": 1}', response.content)
 
+    def test_metrics_bad_testrun(self):
+        response = self.client.get('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metrics' % ('not-an-id', self.suite.slug, self.test.name))
+        self.assertEqual(404, response.status_code)
+
     def test_metadata(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metadata' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('application/json', response['Content-Type'])
         self.assertEqual(b'{"job_id": "1"}', response.content)
+
+    def test_metadata_bad_testrun(self):
+        response = self.client.get('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metadata' % ('not-an-id', self.suite.slug, self.test.name))
+        self.assertEqual(404, response.status_code)
 
 
 class FrontendTestAnonymousUser(TestCase):

@@ -51,6 +51,14 @@ def get_build(project, version):
     return build
 
 
+def get_build_testrun_or_404(build, test_run_id):
+    try:
+        int(test_run_id)
+    except ValueError:
+        raise Http404()
+    return get_object_or_404(build.test_runs, pk=test_run_id)
+
+
 def home(request):
 
     ordering = request.GET.get('order')
@@ -429,11 +437,10 @@ def build_settings(request, group_slug, project_slug, version):
     return render(request, 'squad/build_settings.jinja2', context)
 
 
-def __test_run_suite_context__(request, group_slug, project_slug, build_version, testrun, suite_slug):
+def __test_run_suite_context__(request, group_slug, project_slug, build_version, test_run_id, suite_slug):
     project = request.project
     build = get_build(project, build_version)
-
-    test_run = get_object_or_404(build.test_runs, pk=testrun)
+    test_run = get_build_testrun_or_404(build, test_run_id)
     suite = get_object_or_404(project.suites, slug=suite_slug.replace('$', '/'))
     status = get_object_or_404(test_run.status, suite=suite)
     context = {
@@ -546,58 +553,47 @@ def __download__(filename, data, content_type=None):
     return response
 
 
-@auth
-def test_details_log(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
-    project = request.project
-    build = get_build(project, build_version)
-    test_run = get_object_or_404(build.test_runs, pk=testrun)
+def get_test_file(request, build_version, test_run_id, filename):
+    p = request.project
+    b = get_build(p, build_version)
+    t = get_build_testrun_or_404(b, test_run_id)
 
-    if not test_run.log_file or len(test_run.log_file) == 0:
-        raise Http404("No log file available for this test run")
+    if filename in ["tests", "metrics", "metadata"]:
+        target_filename = f'{p.group.slug}_{p.slug}_{b.version}_{t.job_id}_{filename}.json'
+        return __download__(target_filename, getattr(t, f'{filename}_file'))
 
-    return HttpResponse(test_run.log_file, content_type="text/plain")
+    if filename == "logs":
+        if not t.log_file or len(t.log_file) == 0:
+            raise Http404("No log file available for this test run")
+        return HttpResponse(t.log_file, content_type="text/plain")
 
-
-@auth
-def test_details_tests(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
-    group = request.group
-    project = request.project
-    build = get_build(project, build_version)
-    test_run = get_object_or_404(build.test_runs, pk=testrun)
-
-    filename = '%s_%s_%s_%s_tests.json' % (group.slug, project.slug, build.version, test_run.job_id)
-    return __download__(filename, test_run.tests_file)
-
-
-@auth
-def test_details_metrics(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
-    group = request.group
-    project = request.project
-    build = get_build(project, build_version)
-    test_run = get_object_or_404(build.test_runs, pk=testrun)
-
-    filename = '%s_%s_%s_%s_metrics.json' % (group.slug, project.slug, build.version, test_run.job_id)
-    return __download__(filename, test_run.metrics_file)
-
-
-@auth
-def test_details_metadata(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
-    group = request.group
-    project = request.project
-    build = get_build(project, build_version)
-    test_run = get_object_or_404(build.test_runs, pk=testrun)
-
-    filename = '%s_%s_%s_%s_metadata.json' % (group.slug, project.slug, build.version, test_run.job_id)
-    return __download__(filename, test_run.metadata_file)
-
-
-@auth
-def attachment(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name, filename):
-    project = request.project
-    build = get_build(project, build_version)
-    test_run = get_object_or_404(build.test_runs, pk=testrun)
-    attachment = get_object_or_404(test_run.attachments, filename=filename)
+    attachment = get_object_or_404(t.attachments, filename=filename)
     return __download__(attachment.filename, bytes(attachment.data), attachment.mimetype)
+
+
+@auth
+def test_details_log(request, group_slug, project_slug, build_version, test_run_id, suite_slug, test_name):
+    return get_test_file(request, build_version, test_run_id, "logs")
+
+
+@auth
+def test_details_tests(request, group_slug, project_slug, build_version, test_run_id, suite_slug, test_name):
+    return get_test_file(request, build_version, test_run_id, "tests")
+
+
+@auth
+def test_details_metrics(request, group_slug, project_slug, build_version, test_run_id, suite_slug, test_name):
+    return get_test_file(request, build_version, test_run_id, "metrics")
+
+
+@auth
+def test_details_metadata(request, group_slug, project_slug, build_version, test_run_id, suite_slug, test_name):
+    return get_test_file(request, build_version, test_run_id, "metadata")
+
+
+@auth
+def attachment(request, group_slug, project_slug, build_version, test_run_id, suite_slug, test_name, filename):
+    return get_test_file(request, build_version, test_run_id, filename)
 
 
 @auth
