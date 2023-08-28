@@ -1,3 +1,13 @@
+# 1.73
+
+This release fixes a variety of bugs:
+
+* flake8: fix misc new flake8 complaints
+* frontend/templatetags: support newer versions of allauth package
+* frontend/views.py: handle requests provinding invalid testrun id
+* templates/notification/diff.txt.jinja2: fix typo when referencing environments from known issues
+
+
 # 1.72.2
 
 This 1.72.2 release does a few performance improvements in order to
