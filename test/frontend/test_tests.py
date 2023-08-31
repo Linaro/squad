@@ -33,6 +33,15 @@ class AllTestResultsTest(TestCase):
 
         ReceiveTestRun(project)(
             version='1',
+            environment_slug='myenv2',
+            log_file='log file contents ...',
+            tests_file=json.dumps(tests_file),
+            metrics_file='{}',
+            metadata_file='{ "job_id" : "2" }',
+        )
+
+        ReceiveTestRun(project)(
+            version='1',
             environment_slug='myenv',
             log_file='log file contents ...',
             tests_file=json.dumps(tests_file),
@@ -44,6 +53,12 @@ class AllTestResultsTest(TestCase):
     def test_basics(self):
         response = self.client.get('/mygroup/myproject/build/1/tests/')
         self.assertEqual(200, response.status_code)
+
+        content = str(response.content)
+        self.assertTrue('test1' in content)
+        self.assertTrue('test2' in content)
+        self.assertTrue('myenv' in content)
+        self.assertTrue('myenv2' in content)
 
     def test_pagination_page_1(self):
         # page 1: only tests from suite1 -  fail
@@ -84,6 +99,25 @@ class AllTestResultsTest(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertTrue('test1' in content)
         self.assertTrue('test2' not in content)
+
+    def test_filter_by_environment(self):
+        response = self.client.get('/mygroup/myproject/build/1/tests/?environment=myenv')
+        content = str(response.content)
+
+        self.assertEqual(200, response.status_code)
+        self.assertTrue('test1' in content)
+        self.assertTrue('test2' in content)
+        self.assertTrue('myenv' in content)
+        self.assertTrue('myenv2' not in content)
+
+    def test_filter_by_suite(self):
+        response = self.client.get('/mygroup/myproject/build/1/tests/?suite=suite2')
+        content = str(response.content)
+
+        self.assertEqual(200, response.status_code)
+        self.assertTrue('suite2' in content)
+        self.assertTrue('suite1' not in content)
+        self.assertTrue('suite3' not in content)
 
 
 class TestRunTestsTest(TestCase):

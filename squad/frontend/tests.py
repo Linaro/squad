@@ -6,7 +6,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import Http404
 
 from squad.http import auth
-from squad.core.models import Test, Suite
+from squad.core.models import Test, Suite, Environment
 from squad.core.history import TestHistory
 from squad.core.queries import test_confidence
 from squad.frontend.views import get_build
@@ -47,16 +47,32 @@ class TestResultTable(list):
 
     def __init__(self):
         self.environments = None
+        self.filters = {
+            'environment': None,
+            'suite': None,
+        }
         self.paginator = self
         self.paginator.num_pages = 0
         self.number = 0
         self.all_tests = []
 
-    def __get_all_tests__(self, build, search):
+    def __get_all_tests__(self, build, search, env=None, suite=None):
 
         queryset = Test.objects.filter(build=build)
         if search:
             queryset = queryset.filter(metadata__name__icontains=search)
+
+        if env:
+            environment = Environment.objects.filter(project=build.project, slug=env)
+            if environment.exists():
+                self.filters['environment'] = environment.first()
+                queryset = queryset.filter(environment=self.filters['environment'])
+
+        if suite:
+            suite_ = Suite.objects.filter(project=build.project, slug=suite)
+            if suite_.exists():
+                self.filters['suite'] = suite_.first()
+                queryset = queryset.filter(suite=self.filters['suite'])
 
         self.all_tests = queryset.only('result', 'has_known_issues', 'metadata_id').order_by()
 
@@ -95,14 +111,25 @@ class TestResultTable(list):
         return metadata_ids
 
     @classmethod
-    def get(cls, build, page, search, per_page=50):
+    def get(cls, build, page, search, per_page=50, env=None, suite=None):
         table = cls()
-        table.__get_all_tests__(build, search)
+        table.__get_all_tests__(build, search, env=env, suite=suite)
         table.number = page
         table.__count_pages__(per_page)
-        table.environments = set([t.environment for t in build.test_runs.prefetch_related('environment').all()])
 
-        tests = build.tests.filter(
+        if table.filters['environment']:
+            table.environments = {table.filters['environment']}
+        else:
+            table.environments = set([t.environment for t in build.test_runs.prefetch_related('environment').all()])
+
+        queryset = build.tests
+        if table.filters['environment']:
+            queryset = queryset.filter(environment=table.filters['environment'])
+
+        if table.filters['suite']:
+            queryset = queryset.filter(suite=table.filters['suite'])
+
+        tests = queryset.filter(
             metadata_id__in=table.__get_page_filter__(page, per_page),
         ).prefetch_related(
             'suite__metadata',
@@ -161,13 +188,15 @@ def tests(request, group_slug, project_slug, build_version):
     except ValueError:
         page = 1
 
+    env = request.GET.get('environment')
+    suite = request.GET.get('suite')
     search = request.GET.get('search', '')
 
     context = {
         "project": project,
         "build": build,
         "search": search,
-        "results": TestResultTable.get(build, page, search),
+        "results": TestResultTable.get(build, page, search, env=env, suite=suite),
     }
 
     return render(request, 'squad/tests.jinja2', context)
