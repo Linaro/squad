@@ -1,11 +1,12 @@
 import json
 
-from django.db.models import Prefetch
+from collections import defaultdict
+
 from django.shortcuts import render, get_object_or_404
 from django.http import Http404
 
 from squad.http import auth
-from squad.core.models import Test, Suite, TestRun
+from squad.core.models import Test, Suite
 from squad.core.history import TestHistory
 from squad.core.queries import test_confidence
 from squad.frontend.views import get_build
@@ -57,12 +58,12 @@ class TestResultTable(list):
         if search:
             queryset = queryset.filter(metadata__name__icontains=search)
 
-        self.all_tests = queryset.only('result', 'has_known_issues', 'suite_id', 'metadata_id').order_by()
+        self.all_tests = queryset.only('result', 'has_known_issues', 'metadata_id').order_by()
 
     # count how many unique tests are represented in the given build, and sets
     # pagination data
     def __count_pages__(self, per_page):
-        distinct_tests = set([(test.suite_id, test.metadata_id) for test in self.all_tests])
+        distinct_tests = set([test.metadata_id for test in self.all_tests])
         count = len(distinct_tests)
         self.num_pages = count // per_page
         if count % per_page > 0:
@@ -79,27 +80,19 @@ class TestResultTable(list):
         """
         offset = (page - 1) * per_page
 
-        stats = {}
+        stats = defaultdict(lambda: {'pass': 0, 'fail': 0, 'xfail': 0, 'skip': 0})
         for test in self.all_tests:
-            key = (test.suite_id, test.metadata_id)
-            if key not in stats:
-                stats[key] = {'pass': 0, 'fail': 0, 'xfail': 0, 'skip': 0, 'ids': []}
-            stats[key][test.status] += 1
-            stats[key]['ids'].append(test.id)
+            stats[test.metadata_id][test.status] += 1
 
         def keyfunc(item):
-            name = item[0]
+            metadata_id = item[0]
             statuses = item[1]
-            return tuple((-statuses[k] for k in ['fail', 'xfail', 'skip', 'pass'])) + (name,)
+            return tuple((-statuses[k] for k in ['fail', 'xfail', 'skip', 'pass'])) + (metadata_id,)
 
         ordered = sorted(stats.items(), key=keyfunc)
         tests_in_page = ordered[offset:offset + per_page]
-
-        tests_ids = []
-        for test in tests_in_page:
-            tests_ids += test[1]['ids']
-
-        return tests_ids
+        metadata_ids = [t[0] for t in tests_in_page]
+        return metadata_ids
 
     @classmethod
     def get(cls, build, page, search, per_page=50):
@@ -107,22 +100,17 @@ class TestResultTable(list):
         table.__get_all_tests__(build, search)
         table.number = page
         table.__count_pages__(per_page)
-
         table.environments = set([t.environment for t in build.test_runs.prefetch_related('environment').all()])
 
-        tests = Test.objects.filter(
-            id__in=table.__get_page_filter__(page, per_page)
+        tests = build.tests.filter(
+            metadata_id__in=table.__get_page_filter__(page, per_page),
         ).prefetch_related(
-            Prefetch('test_run', queryset=TestRun.objects.only('environment')),
             'suite__metadata',
             'metadata',
         )
 
-        memo = {}
+        memo = defaultdict(lambda: defaultdict(list))
         for test in tests:
-            memo.setdefault(test.full_name, {})
-            if test.environment_id not in memo[test.full_name]:
-                memo[test.full_name][test.environment_id] = []
             memo[test.full_name][test.environment_id].append(test)
 
         # handle duplicates
@@ -149,7 +137,7 @@ class TestResultTable(list):
                 memo[full_name][env_id].append(info)
 
             if 'test_metadata' not in memo[full_name].keys():
-                memo[full_name]['test_metadata'] = (test.test_run, test.suite, test.name)
+                memo[full_name]['test_metadata'] = (test.test_run_id, test.suite, test.name)
 
         for test_full_name, results in memo.items():
             test_result = TestResult(test_full_name)
