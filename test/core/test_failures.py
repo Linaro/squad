@@ -9,12 +9,12 @@ def get_build_failures(build):
     ).exclude(
         has_known_issues=True,
     ).only(
-        'suite__slug', 'metadata__name', 'metadata__id',
+        'metadata__suite', 'metadata__name', 'metadata_id', 'environment_id',
     ).order_by(
-        'suite__slug', 'metadata__name',
+        'metadata__suite', 'metadata__name', 'environment__slug'
     ).distinct().values_list(
-        'suite__slug', 'metadata__name', 'metadata__id', named=True,
-    )
+        'metadata__suite', 'metadata__name', 'metadata_id', 'environment_id', named=True,
+    ).distinct()
 
 
 class FailuresWithConfidenceTest(TestCase):
@@ -49,7 +49,7 @@ class FailuresWithConfidenceTest(TestCase):
         f3 = failures_with_confidence(self.project, b3, get_build_failures(b3))
         self.assertEqual(len(f3), 1)
 
-        test = f3.first()
+        test = f3[0]
         self.assertIsNotNone(test)
         self.assertIsNotNone(test.confidence)
         self.assertEqual(test.confidence.passes, 2)
@@ -69,7 +69,7 @@ class FailuresWithConfidenceTest(TestCase):
         f1 = failures_with_confidence(self.project, b1, get_build_failures(b1))
         self.assertEqual(len(f1), 1)
 
-        test = f1.first()
+        test = f1[0]
         self.assertIsNotNone(test)
         self.assertIsNotNone(test.confidence)
         self.assertEqual(test.confidence.passes, 0)

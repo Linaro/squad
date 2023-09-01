@@ -3,7 +3,6 @@ import yaml
 
 from django.db.models import Q, F, Value as V, CharField, Prefetch
 from django.db.models.functions import Concat
-from django.db.models.query import prefetch_related_objects
 from django.db.utils import IntegrityError
 from django.core import exceptions as core_exceptions
 from django.core.exceptions import ValidationError
@@ -1024,17 +1023,14 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
             result=False,
         ).exclude(
             has_known_issues=True,
-        ).only(
-            'metadata__suite', 'metadata__name', 'metadata__id',
         ).order_by(
-            'metadata__suite', 'metadata__name',
+            'metadata__suite', 'metadata__name', 'environment__slug',
         ).values_list(
-            'metadata__suite', 'metadata__name', 'metadata__id', named=True,
-        )
+            'metadata__suite', 'metadata__name', 'metadata_id', 'environment_id', named=True,
+        ).distinct()
 
         page = self.paginate_queryset(failures)
         fwc = failures_with_confidence(build.project, build, page)
-        prefetch_related_objects(fwc, "known_issues")
         serializer = FailuresWithConfidenceSerializer(fwc, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
@@ -1393,6 +1389,21 @@ class ConfidenceSerializer(serializers.BaseSerializer):
 
 class FailuresWithConfidenceSerializer(TestSerializer):
     confidence = ConfidenceSerializer()
+    id = None
+    status = None
+
+    class Meta:
+        model = Test
+        exclude = (
+            'test_run',
+            'known_issues',
+            'has_known_issues',
+            'result',
+            'url',
+            'log',
+            'suite',
+            'metadata',
+        )
 
 
 class TestViewSet(NestedViewSetMixin, ModelViewSet):

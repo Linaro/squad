@@ -755,8 +755,6 @@ class RestApiTest(APITestCase):
 
         failure = data['results'].pop(0)
         self.assertEqual(failure['name'], 'bar/test2')
-        self.assertEqual(failure['result'], False)
-        self.assertEqual(failure['status'], 'fail')
         self.assertEqual(failure['confidence'], {'count': 2, 'passes': 0, 'score': 0.0})
 
     def test_build_failures_with_confidence_with_first_build(self):
@@ -778,14 +776,10 @@ class RestApiTest(APITestCase):
 
         failure = data['results'][0]
         self.assertEqual(failure['name'], 'bar/test2')
-        self.assertEqual(failure['result'], False)
-        self.assertEqual(failure['status'], 'fail')
         self.assertEqual(failure['confidence'], {'count': 2, 'passes': 0, 'score': 0.0})
 
         failure = data['results'][1]
         self.assertEqual(failure['name'], 'bar/test2')
-        self.assertEqual(failure['result'], False)
-        self.assertEqual(failure['status'], 'fail')
         self.assertEqual(failure['confidence'], {'count': 2, 'passes': 0, 'score': 0.0})
 
     def test_build_metrics(self):
