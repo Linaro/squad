@@ -1024,9 +1024,7 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
         ).exclude(
             has_known_issues=True,
         ).order_by(
-            'metadata__suite', 'metadata__name', 'environment__slug',
-        ).values_list(
-            'metadata__suite', 'metadata__name', 'metadata_id', 'environment_id', named=True,
+            'id', 'metadata__suite', 'metadata__name', 'environment__slug',
         ).distinct()
 
         page = self.paginate_queryset(failures)
@@ -1389,20 +1387,16 @@ class ConfidenceSerializer(serializers.BaseSerializer):
 
 class FailuresWithConfidenceSerializer(TestSerializer):
     confidence = ConfidenceSerializer()
-    id = None
     status = None
 
     class Meta:
         model = Test
         exclude = (
-            'test_run',
             'known_issues',
             'has_known_issues',
             'result',
             'url',
-            'log',
             'suite',
-            'metadata',
         )
 
 

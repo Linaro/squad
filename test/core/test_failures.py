@@ -8,12 +8,8 @@ def get_build_failures(build):
         result=False,
     ).exclude(
         has_known_issues=True,
-    ).only(
-        'metadata__suite', 'metadata__name', 'metadata_id', 'environment_id',
     ).order_by(
-        'metadata__suite', 'metadata__name', 'environment__slug'
-    ).distinct().values_list(
-        'metadata__suite', 'metadata__name', 'metadata_id', 'environment_id', named=True,
+        'id', 'metadata__suite', 'metadata__name', 'environment__slug'
     ).distinct()
 
 
