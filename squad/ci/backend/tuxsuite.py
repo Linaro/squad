@@ -146,6 +146,50 @@ class Backend(BaseBackend):
 
         return None
 
+    def set_build_name(self, job_url, results, metadata, settings):
+        """
+        Tuxsuite allows plans with builds and tests within.
+        Some of these plans also support "special tests", which are
+        kind a sanity test to run before spinning a heavy load of tests.
+
+        Here's the default plan hierarchy:
+          - build -> tests
+
+        Now with sanity tests in between:
+          - build -> sanity tests -> tests
+
+        SQUAD needs to get to the build level in
+        order to retrieve the build object and finally retrieve
+        its build name attribute
+        """
+
+        build_id = results['waiting_for']
+        if build_id is None:
+            return
+
+        test_id = results['uid']
+
+        # It is a sanity test, an extra request is needed to get build id
+        if build_id.startswith('TEST#'):
+            follow_test_id = build_id.replace('TEST#', '')
+            follow_test_url = job_url.replace(test_id, follow_test_id)
+
+            # TODO: cache build_id using sanity id and avoid an extra request
+            test_json = self.fetch_url(follow_test_url).json()
+            build_id = test_json.get('waiting_for')
+
+        build_id = build_id.replace('BUILD#', '')
+        build_url = job_url.replace(test_id, build_id).replace('/tests/', '/builds/')
+
+        # TODO: cache build json
+        build_metadata = self.fetch_url(build_url).json()
+
+        build_metadata_keys = settings.get('TEST_BUILD_METADATA_KEYS', [])
+        metadata.update({k: build_metadata.get(k) for k in build_metadata_keys})
+
+        if 'toolchain' in build_metadata_keys and 'kconfig' in build_metadata_keys and metadata['build_name'] in [None, '']:
+            metadata['build_name'] = self.generate_test_name(build_metadata)
+
     def parse_build_results(self, test_job, job_url, results, settings):
         required_keys = ['build_status', 'warnings_count', 'download_url', 'retry']
         self.__check_required_keys__(required_keys, results)
@@ -227,25 +271,8 @@ class Backend(BaseBackend):
         # Retrieve TuxRun log
         logs = self.fetch_url(job_url + '/', 'logs?format=txt').text
 
-        # Fetch more metadata if available
-        if results['waiting_for'] is not None:
-            build_id = results['waiting_for']
-
-            # Tuxsuite recently has added support for tests depending on other tests
-            if build_id.startswith('BUILD#') or '#' not in build_id:
-                _, _, test_id = self.parse_job_id(test_job.job_id)
-                build_id = build_id.replace('BUILD#', '')
-                build_url = job_url.replace(test_id, build_id).replace('/tests/', '/builds/')
-
-                # TODO: check if we can save a few seconds by querying a testjob that
-                # already contains build results
-                build_metadata = self.fetch_url(build_url).json()
-
-                build_metadata_keys = settings.get('TEST_BUILD_METADATA_KEYS', [])
-                metadata.update({k: build_metadata.get(k) for k in build_metadata_keys})
-
-                if 'toolchain' in build_metadata_keys and 'kconfig' in build_metadata_keys and metadata['build_name'] in [None, '']:
-                    metadata['build_name'] = self.generate_test_name(build_metadata)
+        # Follow up the chain and retrieve build name
+        self.set_build_name(job_url, results, metadata, settings)
 
         # Create a boot test
         boot_test_name = 'boot/' + (metadata.get('build_name') or 'boot')

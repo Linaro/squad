@@ -748,6 +748,93 @@ class TuxSuiteTest(TestCase):
         self.assertEqual('ltp-smoke', testjob.name)
         self.assertEqual('build failed', testjob.failure)
 
+    def test_follow_test_dependency(self):
+        job_id = 'TEST:tuxgroup@tuxproject#124'
+        testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
+        test_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/tests/124')
+        sanity_test_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/tests/123')
+        build_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/builds/456')
+
+        test_logs = 'dummy test log'
+        test_results = {
+            'project': 'tuxgroup/tuxproject',
+            'device': 'qemu-armv7',
+            'uid': '124',
+            'kernel': 'https://storage.tuxboot.com/armv7/zImage',
+            'tests': ['boot', 'ltp-smoke'],
+            'state': 'finished',
+            'result': 'pass',
+            'results': {'boot': 'pass', 'ltp-smoke': 'pass'},
+            'plan': None,
+            'waiting_for': 'TEST#123',
+            'boot_args': None,
+            'provisioning_time': '2022-03-25T15:49:11.441860',
+            'running_time': '2022-03-25T15:50:11.770607',
+            'finished_time': '2022-03-25T15:52:42.672483',
+            'retries': 0,
+            'retries_messages': [],
+            'duration': 151
+        }
+        sanity_test_results = {
+            'project': 'tuxgroup/tuxproject',
+            'uid': '123',
+            'waiting_for': 'BUILD#456',
+        }
+        build_results = {
+            'toolchain': 'gcc-10',
+            'kconfig': ['defconfig', 'CONFIG_DUMMY=1'],
+        }
+
+        build_name = self.tuxsuite.generate_test_name(build_results)
+        expected_metadata = {
+            'job_url': test_url,
+            'build_name': build_name,
+            'does_not_exist': None,
+            'toolchain': 'gcc-10',
+            'kconfig': ['defconfig', 'CONFIG_DUMMY=1'],
+        }
+
+        # Real test results are stored in test/ci/backend/tuxsuite_test_result_sample.json
+        with open('test/ci/backend/tuxsuite_test_result_sample.json') as test_result_file:
+            test_results_json = json.load(test_result_file)
+
+        expected_tests = {
+            f'boot/{build_name}': 'pass',
+            'ltp-smoke/access01': 'pass',
+            'ltp-smoke/chdir01': 'skip',
+            'ltp-smoke/fork01': 'pass',
+            'ltp-smoke/time01': 'pass',
+            'ltp-smoke/wait02': 'pass',
+            'ltp-smoke/write01': 'pass',
+            'ltp-smoke/symlink01': 'pass',
+            'ltp-smoke/stat04': 'pass',
+            'ltp-smoke/utime01A': 'pass',
+            'ltp-smoke/rename01A': 'pass',
+            'ltp-smoke/splice02': 'pass',
+            'ltp-smoke/shell_test01': 'pass',
+            'ltp-smoke/ping01': 'skip',
+            'ltp-smoke/ping602': 'skip'
+        }
+
+        expected_metrics = {}
+
+        with requests_mock.Mocker() as fake_request:
+            fake_request.get(test_url, json=test_results)
+            fake_request.get(sanity_test_url, json=sanity_test_results)
+            fake_request.get(build_url, json=build_results)
+            fake_request.get(urljoin(test_url + '/', 'logs'), text=test_logs)
+            fake_request.get(urljoin(test_url + '/', 'results'), json=test_results_json)
+
+            status, completed, metadata, tests, metrics, logs = self.tuxsuite.fetch(testjob)
+            self.assertEqual('Complete', status)
+            self.assertTrue(completed)
+            self.assertEqual(sorted(expected_metadata.items()), sorted(metadata.items()))
+            self.assertEqual(sorted(expected_tests.items()), sorted(tests.items()))
+            self.assertEqual(sorted(expected_metrics.items()), sorted(metrics.items()))
+            self.assertEqual(test_logs, logs)
+
+        self.assertEqual('ltp-smoke', testjob.name)
+
     def test_fetch_test_results_unknown(self):
         job_id = 'TEST:tuxgroup@tuxproject#125'
         testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
