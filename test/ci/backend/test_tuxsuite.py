@@ -15,6 +15,7 @@ from squad.ci.backend.tuxsuite import Backend as TuxSuiteBackend
 from squad.ci.exceptions import FetchIssue, TemporaryFetchIssue
 from squad.ci.models import Backend, TestJob
 from squad.core.models import Group, Project
+from squad.core.tasks import ReceiveTestRun
 
 
 TUXSUITE_URL = 'http://testing.tuxsuite.com'
@@ -193,6 +194,7 @@ class TuxSuiteTest(TestCase):
 
         expected_metadata = {
             'job_url': build_url,
+            'job_id': job_id,
             'build_status': 'pass',
             'git_repo': 'https://github.com/Linaro/linux-canaries.git',
             'git_ref': 'v5.9',
@@ -302,6 +304,7 @@ class TuxSuiteTest(TestCase):
 
         expected_metadata = {
             'job_url': build_url,
+            'job_id': job_id,
             'build_status': 'error',
             'git_repo': 'https://github.com/Linaro/linux-canaries.git',
             'git_ref': 'v5.9',
@@ -389,6 +392,7 @@ class TuxSuiteTest(TestCase):
         build_name = self.tuxsuite.generate_test_name(build_results)
         expected_metadata = {
             'job_url': test_url,
+            'job_id': job_id,
             'build_name': build_name,
             'does_not_exist': None,
             'toolchain': 'gcc-10',
@@ -480,6 +484,7 @@ class TuxSuiteTest(TestCase):
         build_name = self.tuxsuite.generate_test_name(build_results)
         expected_metadata = {
             'job_url': test_url,
+            'job_id': job_id,
             'build_name': build_name,
             'does_not_exist': None,
             'toolchain': 'gcc-10',
@@ -578,6 +583,7 @@ class TuxSuiteTest(TestCase):
 
         expected_metadata = {
             'job_url': test_url,
+            'job_id': job_id,
             'build_name': build_name,
             'does_not_exist': None,
             'toolchain': 'gcc-10',
@@ -663,6 +669,7 @@ class TuxSuiteTest(TestCase):
 
         expected_metadata = {
             'job_url': test_url,
+            'job_id': job_id,
             'does_not_exist': None,
         }
 
@@ -725,6 +732,7 @@ class TuxSuiteTest(TestCase):
 
         expected_metadata = {
             'job_url': test_url,
+            'job_id': job_id,
             'does_not_exist': None,
         }
 
@@ -758,22 +766,13 @@ class TuxSuiteTest(TestCase):
         test_logs = 'dummy test log'
         test_results = {
             'project': 'tuxgroup/tuxproject',
-            'device': 'qemu-armv7',
             'uid': '124',
-            'kernel': 'https://storage.tuxboot.com/armv7/zImage',
             'tests': ['boot', 'ltp-smoke'],
             'state': 'finished',
             'result': 'pass',
             'results': {'boot': 'pass', 'ltp-smoke': 'pass'},
             'plan': None,
             'waiting_for': 'TEST#123',
-            'boot_args': None,
-            'provisioning_time': '2022-03-25T15:49:11.441860',
-            'running_time': '2022-03-25T15:50:11.770607',
-            'finished_time': '2022-03-25T15:52:42.672483',
-            'retries': 0,
-            'retries_messages': [],
-            'duration': 151
         }
         sanity_test_results = {
             'project': 'tuxgroup/tuxproject',
@@ -788,6 +787,7 @@ class TuxSuiteTest(TestCase):
         build_name = self.tuxsuite.generate_test_name(build_results)
         expected_metadata = {
             'job_url': test_url,
+            'job_id': job_id,
             'build_name': build_name,
             'does_not_exist': None,
             'toolchain': 'gcc-10',
@@ -832,6 +832,81 @@ class TuxSuiteTest(TestCase):
             self.assertEqual(sorted(expected_tests.items()), sorted(tests.items()))
             self.assertEqual(sorted(expected_metrics.items()), sorted(metrics.items()))
             self.assertEqual(test_logs, logs)
+
+            self.assertEqual(5, fake_request.call_count)
+
+        self.assertEqual('ltp-smoke', testjob.name)
+
+    def test_follow_test_dependency_using_cached_testrun(self):
+        job_id = 'TEST:tuxgroup@tuxproject#124'
+        sanity_job_id = 'TEST:tuxgroup@tuxproject#112233'
+        testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
+        sanity_testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=sanity_job_id)
+        test_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/tests/124')
+        sanity_test_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/tests/112233')
+        build_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/builds/456')
+
+        test_logs = 'dummy test log'
+        test_results = {
+            'project': 'tuxgroup/tuxproject',
+            'uid': '124',
+            'tests': ['boot', 'ltp-smoke'],
+            'state': 'finished',
+            'result': 'pass',
+            'results': {'boot': 'pass', 'ltp-smoke': 'pass'},
+            'plan': None,
+            'waiting_for': 'TEST#112233',
+        }
+        sanity_test_results = {
+            'project': 'tuxgroup/tuxproject',
+            'uid': '112233',
+            'waiting_for': 'BUILD#456',
+            'project': 'tuxgroup/tuxproject',
+            'tests': ['boot', 'ltp-smoke'],
+            'state': 'finished',
+            'result': 'pass',
+            'results': {'boot': 'pass', 'ltp-smoke': 'pass'},
+            'plan': None,
+        }
+        build_results = {
+            'toolchain': 'gcc-10',
+            'kconfig': ['defconfig', 'CONFIG_DUMMY=1'],
+        }
+
+        build_name = self.tuxsuite.generate_test_name(build_results)
+
+        # Real test results are stored in test/ci/backend/tuxsuite_test_result_sample.json
+        with open('test/ci/backend/tuxsuite_test_result_sample.json') as test_result_file:
+            test_results_json = json.load(test_result_file)
+
+        with requests_mock.Mocker() as fake_request:
+            fake_request.get(test_url, json=test_results)
+            fake_request.get(sanity_test_url, json=sanity_test_results)
+            fake_request.get(build_url, json=build_results)
+            fake_request.get(urljoin(test_url + '/', 'logs'), text=test_logs)
+            fake_request.get(urljoin(sanity_test_url + '/', 'logs'), text=test_logs)
+            fake_request.get(urljoin(test_url + '/', 'results'), json=test_results_json)
+            fake_request.get(urljoin(sanity_test_url + '/', 'results'), json=test_results_json)
+
+            # Fetch sanity job first
+            status, completed, metadata, tests, metrics, logs = self.tuxsuite.fetch(sanity_testjob)
+            receive = ReceiveTestRun(sanity_testjob.target, update_project_status=False)
+            testrun, _ = receive(
+                version=sanity_testjob.target_build.version,
+                environment_slug=sanity_testjob.environment,
+                metadata_file=json.dumps(metadata),
+                tests_file=json.dumps(tests),
+                metrics_file=json.dumps(metrics),
+                log_file=logs,
+                completed=completed,
+            )
+            self.assertEqual(4, fake_request.call_count)
+
+            # Now fetch test, and make sure no extra requests were made
+            fake_request.reset_mock()
+            _, _, metadata, _, _, _ = self.tuxsuite.fetch(testjob)
+            self.assertEqual(build_name, metadata['build_name'])
+            self.assertEqual(3, fake_request.call_count)
 
         self.assertEqual('ltp-smoke', testjob.name)
 

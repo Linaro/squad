@@ -19,6 +19,7 @@ from cryptography.hazmat.primitives import (
 from squad.ci.backend.null import Backend as BaseBackend
 from squad.ci.exceptions import FetchIssue, TemporaryFetchIssue
 from squad.ci.models import TestJob
+from squad.core.models import TestRun
 
 
 logger = logging.getLogger('squad.ci.backend.tuxsuite')
@@ -146,7 +147,7 @@ class Backend(BaseBackend):
 
         return None
 
-    def set_build_name(self, job_url, results, metadata, settings):
+    def set_build_name(self, test_job, job_url, results, metadata, settings):
         """
         Tuxsuite allows plans with builds and tests within.
         Some of these plans also support "special tests", which are
@@ -167,21 +168,43 @@ class Backend(BaseBackend):
         if build_id is None:
             return
 
+        items = build_id.split('#')
+        if len(items) == 2:
+            _type = items[0]
+            _id = items[1]
+        else:
+            _type = "BUILD"
+            _id = items[0]
+
         test_id = results['uid']
 
-        # It is a sanity test, an extra request is needed to get build id
-        if build_id.startswith('TEST#'):
-            follow_test_id = build_id.replace('TEST#', '')
-            follow_test_url = job_url.replace(test_id, follow_test_id)
+        try:
+            # Check if the target build or sanity test is fetched
+            job_id = self.generate_job_id(_type.lower(), results)
+            job_id = job_id.replace(test_id, _id)
 
-            # TODO: cache build_id using sanity id and avoid an extra request
+            candidate = TestRun.objects.get(
+                build=test_job.target_build,
+                job_id=job_id
+            )
+
+            build_name = candidate.metadata.get('build_name')
+            if build_name:
+                metadata['build_name'] = build_name
+                return
+
+        except TestRun.DoesNotExist:
+            pass
+
+        # It is a sanity test, an extra request is needed to get build id
+        if _type == 'TEST':
+            follow_test_url = job_url.replace(test_id, _id)
             test_json = self.fetch_url(follow_test_url).json()
             build_id = test_json.get('waiting_for')
 
         build_id = build_id.replace('BUILD#', '')
         build_url = job_url.replace(test_id, build_id).replace('/tests/', '/builds/')
 
-        # TODO: cache build json
         build_metadata = self.fetch_url(build_url).json()
 
         build_metadata_keys = settings.get('TEST_BUILD_METADATA_KEYS', [])
@@ -207,6 +230,7 @@ class Backend(BaseBackend):
         metadata_keys = settings.get('BUILD_METADATA_KEYS', [])
         metadata = {k: results.get(k) for k in metadata_keys}
         metadata['job_url'] = job_url
+        metadata['job_id'] = test_job.job_id
         metadata['config'] = urljoin(results.get('download_url') + '/', 'config')
         metadata['build_name'] = test_name
 
@@ -244,6 +268,7 @@ class Backend(BaseBackend):
         metadata_keys = settings.get('TEST_METADATA_KEYS', [])
         metadata = {k: results.get(k) for k in metadata_keys}
         metadata['job_url'] = job_url
+        metadata['job_id'] = test_job.job_id
 
         # Set job name
         try:
@@ -272,7 +297,7 @@ class Backend(BaseBackend):
         logs = self.fetch_url(job_url + '/', 'logs?format=txt').text
 
         # Follow up the chain and retrieve build name
-        self.set_build_name(job_url, results, metadata, settings)
+        self.set_build_name(test_job, job_url, results, metadata, settings)
 
         # Create a boot test
         boot_test_name = 'boot/' + (metadata.get('build_name') or 'boot')
