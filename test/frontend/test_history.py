@@ -21,3 +21,11 @@ class TestHistoryTest(TestCase):
     def test_tests_history_with_empty_suite_metadata(self):
         response = self.client.get('/mygroup/myproject/build/mybuild/testrun/%s/suite/mysuite/test/mytest/history/' % self.testrun.id)
         self.assertEqual(200, response.status_code)
+
+    def test_tests_history_suite_not_found(self):
+        response = self.client.get('/mygroup/myproject/build/mybuild/testrun/%s/suite/mynonexistingsuite/test/mytest/history/' % self.testrun.id)
+        self.assertEqual(404, response.status_code)
+
+    def test_tests_history_test_not_found(self):
+        response = self.client.get('/mygroup/myproject/mysuite/mynonexistanttest/')
+        self.assertEqual(404, response.status_code)
