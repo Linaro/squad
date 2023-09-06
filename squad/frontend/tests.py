@@ -208,12 +208,12 @@ def legacy_test_history(request, group_slug, project_slug, full_test_name):
 
 
 @auth
-def test_history(request, group_slug, project_slug, build_version=None, testrun=None, suite_slug=None, test_name=None):
+def test_history(request, group_slug, project_slug, build_version=None, testrun_id=None, suite_slug=None, test_name=None):
     project = request.project
     context = {"project": project}
-    if build_version and testrun and suite_slug:
+    if build_version and testrun_id and suite_slug:
         build = get_build(project, build_version)
-        test_run = get_object_or_404(build.test_runs, pk=testrun)
+        test_run = get_object_or_404(build.test_runs, pk=testrun_id)
         suite_slug = suite_slug.replace('$', '/')
         suite = get_object_or_404(project.suites, slug=suite_slug)
         status = get_object_or_404(test_run.status, suite=suite)

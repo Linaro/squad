@@ -82,14 +82,12 @@ def testrun_suite_test_details_history_url(group, project, build, status, test):
 
 
 def testrun_suite_or_test_url(group, project, build, status, kind, test=None):
-    testrun = status.test_run.id
-    suite = status.suite
     args = (
         group.slug,
         project.slug,
         build.version,
-        testrun,
-        suite.slug.replace('/', '$'),
+        status.test_run_id,
+        status.suite.slug.replace('/', '$'),
     )
     if test:
         if isinstance(test, Test):

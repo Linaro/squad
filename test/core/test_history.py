@@ -62,10 +62,10 @@ class TestHistoryTest(TestCase):
         env1 = self.project1.environments.get(slug='env1')
         env2 = self.project1.environments.get(slug='env2')
 
-        self.assertEqual('fail', history.results[build1][env1].status)
-        self.assertEqual('pass', history.results[build1][env2].status)
-        self.assertEqual('pass', history.results[build2][env1].status)
-        self.assertEqual('fail', history.results[build2][env2].status)
+        self.assertEqual('fail', history.results[build1][env1.id].status)
+        self.assertEqual('pass', history.results[build1][env2.id].status)
+        self.assertEqual('pass', history.results[build2][env1.id].status)
+        self.assertEqual('fail', history.results[build2][env2.id].status)
 
     def test_results_no_suite(self):
         history = TestHistory(self.project1, 'root')
@@ -75,16 +75,16 @@ class TestHistoryTest(TestCase):
         env1 = self.project1.environments.get(slug='env1')
         env2 = self.project1.environments.get(slug='env2')
 
-        self.assertEqual('fail', history.results[build1][env1].status)
-        self.assertEqual('pass', history.results[build1][env2].status)
-        self.assertEqual('pass', history.results[build2][env1].status)
-        self.assertEqual('fail', history.results[build2][env2].status)
+        self.assertEqual('fail', history.results[build1][env1.id].status)
+        self.assertEqual('pass', history.results[build1][env2.id].status)
+        self.assertEqual('pass', history.results[build2][env1.id].status)
+        self.assertEqual('fail', history.results[build2][env2.id].status)
 
     def test_displays_all_builds(self):
         build0 = self.project1.builds.get(version='0')
         history = TestHistory(self.project1, 'root')
 
-        self.assertIn(build0, history.results)
+        self.assertIn(build0, history.results.keys())
 
     def test_pagination(self):
         build1 = self.project1.builds.get(version='1')

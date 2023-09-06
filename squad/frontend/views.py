@@ -455,13 +455,13 @@ def __test_run_suite_context__(request, group_slug, project_slug, build_version,
 
 
 @auth
-def test_run_suite_tests(request, group_slug, project_slug, build_version, testrun, suite_slug):
+def test_run_suite_tests(request, group_slug, project_slug, build_version, testrun_id, suite_slug):
     context = __test_run_suite_context__(
         request,
         group_slug,
         project_slug,
         build_version,
-        testrun,
+        testrun_id,
         suite_slug
     )
 
@@ -479,13 +479,13 @@ def test_run_suite_tests(request, group_slug, project_slug, build_version, testr
 
 
 @auth
-def test_run_suite_test_details(request, group_slug, project_slug, build_version, testrun, suite_slug, test_name):
+def test_run_suite_test_details(request, group_slug, project_slug, build_version, testrun_id, suite_slug, test_name):
     context = __test_run_suite_context__(
         request,
         group_slug,
         project_slug,
         build_version,
-        testrun,
+        testrun_id,
         suite_slug
     )
     test_name = test_name.replace("$", "/")
@@ -523,13 +523,13 @@ def test_run_suite_test_details(request, group_slug, project_slug, build_version
 
 
 @auth
-def test_run_suite_metrics(request, group_slug, project_slug, build_version, testrun, suite_slug):
+def test_run_suite_metrics(request, group_slug, project_slug, build_version, testrun_id, suite_slug):
     context = __test_run_suite_context__(
         request,
         group_slug,
         project_slug,
         build_version,
-        testrun,
+        testrun_id,
         suite_slug
     )
     all_metrics = context['status'].metrics.prefetch_related(
