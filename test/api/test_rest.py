@@ -782,6 +782,34 @@ class RestApiTest(APITestCase):
         self.assertEqual(failure['name'], 'foo/test2')
         self.assertEqual(failure['confidence'], {'count': 2, 'passes': 2, 'score': 100.0})
 
+    def test_build_failures_with_confidence_releases_only(self):
+        data = self.hit('/api/builds/%d/failures_with_confidence/?releases_only=1' % self.build2.id)
+
+        self.assertEqual(data['count'], 18)
+        self.assertIsNone(data['next'])
+        self.assertIsNone(data['previous'])
+        self.assertEqual(len(data['results']), 18)
+
+        failure = data['results'].pop(0)
+        self.assertEqual(failure['name'], 'foo/test1')
+
+        # No release build yet
+        self.assertEqual(failure['confidence'], {'count': 0, 'passes': 0, 'score': 0.0})
+
+        self.build.is_release = True
+        self.build.save()
+
+        data = self.hit('/api/builds/%d/failures_with_confidence/?releases_only=1' % self.build2.id)
+
+        self.assertEqual(data['count'], 18)
+        self.assertIsNone(data['next'])
+        self.assertIsNone(data['previous'])
+        self.assertEqual(len(data['results']), 18)
+
+        failure = data['results'].pop(0)
+        self.assertEqual(failure['name'], 'foo/test1')
+        self.assertEqual(failure['confidence'], {'count': 1, 'passes': 1, 'score': 100.0})
+
     def test_build_metrics(self):
         data = self.hit('/api/builds/%d/metrics/' % self.build.id)
         self.assertEqual(1, len(data['results']))

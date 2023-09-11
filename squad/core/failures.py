@@ -1,15 +1,18 @@
 from django.db.models import prefetch_related_objects
 
-from squad.core.models import Test, Build
+from squad.core.models import Test
 
 
-def failures_with_confidence(project, build, failures):
+def failures_with_confidence(project, build, failures, releases_only=False):
     limit = project.build_confidence_count
     threshold = project.build_confidence_threshold
 
     prefetch_related_objects(failures, "metadata")
 
-    builds = Build.objects.filter(id__lt=build.id, project=project).order_by('-id').all()[:limit]
+    queryset = project.builds.filter(id__lt=build.id)
+    if releases_only:
+        queryset = queryset.filter(is_release=True)
+    builds = queryset.order_by('-id').all()[:limit]
     builds_ids = [b.id for b in builds]
 
     # Find previous `limit` tests that contain this test x environment

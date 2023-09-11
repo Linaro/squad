@@ -906,6 +906,8 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
        List of failing tests with confidence scores. For each failure SQUAD will look back
        N builds, where N is defined in project settings. List is paginated.
 
+         * releases_only - when active, look back only on builds with is_release=True
+
      * `api/builds/<id>/metrics` GET
 
         Returns list of Metric objects belonging to this build. List is paginated
@@ -1029,7 +1031,8 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
         ).distinct()
 
         page = self.paginate_queryset(failures)
-        fwc = failures_with_confidence(build.project, build, page)
+        releases_only = request.GET.get("releases_only")
+        fwc = failures_with_confidence(build.project, build, page, releases_only=releases_only)
         serializer = FailuresWithConfidenceSerializer(fwc, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
