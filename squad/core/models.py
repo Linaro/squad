@@ -1025,7 +1025,7 @@ class Test(models.Model):
 
         @property
         def passes(self):
-            return sum(1 for t in self.tests if t.status == "pass")
+            return sum(1 for t in self.tests if t.result)
 
         @property
         def score(self):

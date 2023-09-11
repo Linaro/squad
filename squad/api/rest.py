@@ -903,7 +903,8 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
 
      * `api/builds/<id>/failures_with_confidence` GET
 
-       List of failing tests with confidence scores. List is paginated
+       List of failing tests with confidence scores. For each failure SQUAD will look back
+       N builds, where N is defined in project settings. List is paginated.
 
      * `api/builds/<id>/metrics` GET
 
