@@ -103,11 +103,6 @@
             {{ _('Tests') }}
         </a>
     </li>
-    <li role="presentation" {% if url_name == 'failures' %}class="active"{% endif %}>
-        <a href="{{build_section_url(build, 'failures')}}">
-            {{ _('Test failures') }}
-        </a>
-    </li>
     <li role="presentation" {% if url_name == 'build_metrics' %}class="active"{% endif %}>
         <a href="{{build_section_url(build, 'build_metrics')}}">
             {{ _('Metrics') }}
