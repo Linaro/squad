@@ -116,11 +116,11 @@ def compare_builds(request):
             baseline = get_object_or_404(project.builds, version=baseline_build)
             target = get_object_or_404(project.builds, version=target_build)
 
-            comparison_class = __get_comparison_class(comparison_type)
-            comparison = comparison_class.compare_builds(baseline, target)
-
-            if comparison_type == 'test' and len(transitions):
-                comparison.apply_transitions([t for t, checked in transitions.items() if checked])
+            if comparison_type == 'test':
+                comparison = TestComparison(baseline, target, regressions_and_fixes_only=True)
+            else:
+                comparison_class = __get_comparison_class(comparison_type)
+                comparison = comparison_class.compare_builds(baseline, target)
 
             comparison.results = __paginate(comparison.results, request)
 

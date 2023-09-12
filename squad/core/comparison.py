@@ -393,7 +393,7 @@ class TestComparison(BaseComparison):
 
         tests = models.Test.objects.filter(test_run_id__in=test_runs_ids.keys()).annotate(
             suite_slug=F('suite__slug'),
-        ).prefetch_related('metadata').defer('log')
+        ).prefetch_related('metadata').defer('log').order_by()
 
         for test in tests:
             build, env = test_runs_ids.get(test.test_run_id)
@@ -539,6 +539,9 @@ class TestComparison(BaseComparison):
             # No baseline is present, then no comparison is needed
             return
 
+        baseline = self.builds[0]
+        target = self.builds[1]
+
         query = self.base_sql.copy()
         query['select'].append('target.result')
         query['select'].append('target.has_known_issues')
@@ -549,42 +552,54 @@ class TestComparison(BaseComparison):
         tests = [t for t in models.Test.objects.raw(sql)]
         prefetch_related_objects(tests, 'metadata', 'suite')
 
-        env_ids = []
+        env_ids = [t.environment_id for t in tests]
+        envs = {e.id: e for e in models.Environment.objects.filter(id__in=env_ids).all()}
+        envs_slugs = sorted({e.slug for e in envs.values()})
+
+        for build in self.builds:
+            self.environments[build] = envs_slugs
+
         fixed_tests = defaultdict(set)
         regressions = defaultdict(set)
         fixes = defaultdict(set)
 
         for test in tests:
             env_id = test.environment_id
-            full_name = test.full_name
 
-            env_ids.append(env_id)
+            full_name = test.full_name
+            if full_name not in self.results:
+                self.results[full_name] = OrderedDict()
+
+            baseline_key = (baseline, envs[env_id].slug)
+            target_key = (target, envs[env_id].slug)
 
             if test.status == 'fail':
                 regressions[env_id].add(full_name)
+                self.results[full_name][target_key] = 'fail'
+                self.results[full_name][baseline_key] = 'pass'
             elif test.status == 'pass':
                 fixes[env_id].add(full_name)
                 fixed_tests[env_id].add(test.metadata_id)
+                self.results[full_name][target_key] = 'pass'
+                self.results[full_name][baseline_key] = 'fail'
 
-        environments = {e.id: e for e in models.Environment.objects.filter(id__in=env_ids).all()}
+        self.results = OrderedDict(sorted(self.results.items()))
 
         for env_id in regressions.keys():
-            self.__regressions__[environments[env_id].slug] = list(regressions[env_id])
+            self.__regressions__[envs[env_id].slug] = list(regressions[env_id])
 
         # It's not a fix if baseline test is intermittent for a given environment:
         # - test.has_known_issues == True and
         # - test.known_issues[env].intermittent == True
-        fixed_tests_environment_slugs = [environments[env_id] for env_id in fixed_tests.keys()]
+        fixed_tests_environment_slugs = [envs[env_id] for env_id in fixed_tests.keys()]
         intermittent_fixed_tests = self.__intermittent_fixed_tests__(fixed_tests, fixed_tests_environment_slugs)
         for env_id in fixes.keys():
-            env_slug = environments[env_id].slug
+            env_slug = envs[env_id].slug
             test_list = [test for test in fixes[env_id] if (test, env_slug) not in intermittent_fixed_tests]
             if len(test_list):
                 self.__fixes__[env_slug] = test_list
 
-        baseline = self.builds[0]
-        target = self.builds[1]
-        for env in environments.values():
+        for env in envs.values():
             if env.slug in self.__regressions__:
                 for test in self.__regressions__[env.slug]:
                     self.__diff__[test][target][env.slug] = False

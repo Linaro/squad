@@ -199,7 +199,7 @@ def test_confidence(test, list_of_duplicates=None):
         return {value: count for value, count in data.items() if count == max_count}
 
     if test:
-        duplicates = models.Test.objects.filter(metadata=test.metadata, environment=test.environment, build=test.build).order_by()
+        duplicates = models.Test.objects.filter(metadata_id=test.metadata_id, environment_id=test.environment_id, build_id=test.build_id).order_by()
     else:
         duplicates = list_of_duplicates
 
