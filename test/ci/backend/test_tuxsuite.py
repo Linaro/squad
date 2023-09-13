@@ -903,10 +903,9 @@ class TuxSuiteTest(TestCase):
             self.assertEqual(4, fake_request.call_count)
 
             # Now fetch test, and make sure no extra requests were made
-            fake_request.reset_mock()
             _, _, metadata, _, _, _ = self.tuxsuite.fetch(testjob)
             self.assertEqual(build_name, metadata['build_name'])
-            self.assertEqual(3, fake_request.call_count)
+            self.assertEqual(7, fake_request.call_count)
 
         self.assertEqual('ltp-smoke', testjob.name)
 
