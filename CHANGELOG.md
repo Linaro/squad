@@ -1,3 +1,32 @@
+# 1.74
+
+This 1.74 release patches a couple of pages improving overall performance.
+
+It improves loading times of build tests page, test history and build comparison by tests.
+
+The release also removes "Test failures" page, given that there's already and API endpoint
+for it and it is cumbersome to maintain an UI for it as well. Finaly, this release removes
+the transitions table from build comparison page, which allowed users to query changes by
+specific transitions. This is too expensive to compute in larger SQUAD instances.
+
+Complete list of changes going in:
+
+* api/rest.py:
+  * fix failures with confidence pagination
+  * re-add test id and test run on failures_with_confidence endpoint
+  * support looking release builds only
+* backend/tuxsuite.py:
+  * avoid making extra requests when retrieving build_name
+  * support tuxsuite sanity tests
+* core/failures.py: use past N builds instead past N tests
+* core/history.py: improve history performance
+* frontend/comparison.py: refactor comparison to show off regressions and fixes only
+* frontend/tests.py:
+  * allow filtering tests by environment and suite
+  * catch non-existant tests
+  * reduce query size
+* remove frontend/failures.py: there's an API endpoint for it
+
 # 1.73
 
 This release fixes a variety of bugs:
