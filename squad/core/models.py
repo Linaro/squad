@@ -584,10 +584,11 @@ class Build(models.Model):
     def important_metadata(self):
         wanted = (self.project.important_metadata_keys or '').splitlines()
         m = self.metadata
+        metadata = self.metadata
         if len(wanted):
-            return {k: m[k] for k in wanted if k in m}
-        else:
-            return self.metadata
+            metadata = {k: m[k] for k in wanted if k in m}
+
+        return dict(sorted(metadata.items()))
 
     @property
     def has_extra_metadata(self):

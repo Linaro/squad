@@ -379,7 +379,7 @@ def build(request, group_slug, project_slug, version):
         'build': build,
         'test_results': test_results,
         'results_layout': results_layout,
-        'metadata': sorted(build.important_metadata.items()),
+        'metadata': build.important_metadata.items(),
         'has_extra_metadata': build.has_extra_metadata,
         'failures_only': failures_only,
         'testjobs_progress': testjobs_progress,
