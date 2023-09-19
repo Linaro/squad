@@ -1400,7 +1400,6 @@ class FailuresWithConfidenceSerializer(TestSerializer):
             'has_known_issues',
             'result',
             'url',
-            'suite',
         )
 
 
