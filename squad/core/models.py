@@ -588,7 +588,7 @@ class Build(models.Model):
         if len(wanted):
             metadata = {k: m[k] for k in wanted if k in m}
 
-        return dict(sorted(metadata.items()))
+        return metadata
 
     @property
     def has_extra_metadata(self):

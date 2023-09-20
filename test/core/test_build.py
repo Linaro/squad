@@ -300,7 +300,7 @@ class BuildTest(TestCase):
         m = {'key3': 'val3', 'key1': 'val1', 'key2': 'val2'}
         with patch('squad.core.models.Build.metadata', m):
             self.assertEqual({'key1': 'val1', 'key2': 'val2', 'key3': 'val3'}, build.important_metadata)
-            self.assertEqual(['key1', 'key2', 'key3'], list(build.important_metadata.keys()))
+            self.assertEqual(['key2', 'key1', 'key3'], list(build.important_metadata.keys()))
 
     def test_metadata(self):
         build = Build.objects.create(project=self.project, version='build-metadata')
