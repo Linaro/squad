@@ -2,12 +2,15 @@ import re
 from django.test import TestCase
 from django.test import Client
 from django.contrib.auth.models import User
+from django.utils import timezone
 
+from dateutil.relativedelta import relativedelta
 
 from squad.ci.models import Backend
 from squad.core import models
 from squad.core.tasks import ReceiveTestRun
 from squad.core.tasks import cleanup_build
+from squad.frontend.views import get_project_list
 from test.performance import count_queries
 
 
@@ -279,6 +282,66 @@ class FrontendTest(TestCase):
     def test_metadata_bad_testrun(self):
         response = self.client.get('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/metadata' % ('not-an-id', self.suite.slug, self.test.name))
         self.assertEqual(404, response.status_code)
+
+
+class FrontendTestProjectList(TestCase):
+
+    def setUp(self):
+
+        self.group = models.Group.objects.create(slug='mygroup')
+        self.two_day_old_project = self.group.projects.create(slug='two_day_old_project', datetime=timezone.now() - relativedelta(days=2))
+        self.ten_day_old_project = self.group.projects.create(slug='ten_day_old_project', datetime=timezone.now() - relativedelta(days=10))
+        self.thirty_day_old_project = self.group.projects.create(slug='thirty_day_old_project', datetime=timezone.now() - relativedelta(days=30))
+        self.user = User.objects.create(username='theuser')
+        self.group.add_admin(self.user)
+
+        self.client = Client()
+        self.client.force_login(self.user)
+
+    def test_get_project_list_show_projects_active_n_days_ago_some_projects(self):
+        # test that only the projects that are new enough are returned when
+        # SHOW_PROJECTS_ACTIVE_N_DAYS_AGO is provided
+        self.group.settings = "SHOW_PROJECTS_ACTIVE_N_DAYS_AGO: 3\nDEFAULT_PROJECT_COUNT: 2"
+        order_by = 'last_updated'
+        display_all_projects = False
+
+        projects = get_project_list(self.group, self.user, order_by, display_all_projects)
+
+        self.assertEqual(len(projects), 1)
+
+    def test_get_project_list_show_projects_active_n_days_ago_no_projects(self):
+        # test if there are no projects new enough when
+        # SHOW_PROJECTS_ACTIVE_N_DAYS_AGO is provided that
+        # DEFAULT_PROJECT_COUNT is used instead
+        self.group.settings = "SHOW_PROJECTS_ACTIVE_N_DAYS_AGO: 1\nDEFAULT_PROJECT_COUNT: 2"
+        order_by = 'last_updated'
+        display_all_projects = False
+
+        projects = get_project_list(self.group, self.user, order_by, display_all_projects)
+
+        self.assertEqual(len(projects), 2)
+
+    def test_get_project_list_show_projects_active_n_days_ago_only_no_projects(self):
+        # test case where SHOW_PROJECTS_ACTIVE_N_DAYS_AGO but no projects are
+        # new enough and DEFAULT_PROJECT_COUNT is not provided that all
+        # projects will be shown
+        self.group.settings = "SHOW_PROJECTS_ACTIVE_N_DAYS_AGO: 1"
+        order_by = 'last_updated'
+        display_all_projects = False
+
+        projects = get_project_list(self.group, self.user, order_by, display_all_projects)
+
+        self.assertEqual(len(projects), 3)
+
+    def test_get_project_list_no_parameters(self):
+        # test case where SHOW_PROJECTS_ACTIVE_N_DAYS_AGO and
+        # DEFAULT_PROJECT_COUNT are not provided - all projects should be shown
+        order_by = 'last_updated'
+        display_all_projects = False
+
+        projects = get_project_list(self.group, self.user, order_by, display_all_projects)
+
+        self.assertEqual(len(projects), 3)
 
 
 class FrontendTestAnonymousUser(TestCase):

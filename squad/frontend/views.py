@@ -6,6 +6,9 @@ from django.core.paginator import Paginator, EmptyPage
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect, reverse
+from django.utils import timezone
+
+from dateutil.relativedelta import relativedelta
 
 from squad.ci.models import TestJob
 from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold, KnownIssue, Test
@@ -83,30 +86,46 @@ def home(request):
     return render(request, 'squad/index.jinja2', context)
 
 
-def group_home(request, group_slug):
-    group = get_object_or_404(Group, slug=group_slug)
-
-    projects_queryset = group.projects.accessible_to(request.user)
+def get_project_list(group, user, order_by, display_all_projects):
+    projects_queryset = group.projects.accessible_to(user)
     projects_queryset = projects_queryset.annotate(latest_build_id=Max('builds__id'))
 
-    if request.user.is_authenticated:
-        projects_queryset = projects_queryset.prefetch_related(Prefetch('subscriptions', queryset=Subscription.objects.filter(user=request.user), to_attr='user_subscriptions'))
+    if user.is_authenticated:
+        projects_queryset = projects_queryset.prefetch_related(Prefetch('subscriptions', queryset=Subscription.objects.filter(user=user), to_attr='user_subscriptions'))
 
-    order_by = request.GET.get('order', 'last_updated')
     if group.get_setting('SORT_PROJECTS_BY_NAME'):
         order_by = 'by_name'
 
     elif order_by == 'last_updated':
         projects_queryset = projects_queryset.order_by('-datetime')
 
-    display_all_projects = request.GET.get('all_projects') is not None
     num_projects = group.get_setting('DEFAULT_PROJECT_COUNT')
+
+    show_projects_active_n_days_ago = group.get_setting('SHOW_PROJECTS_ACTIVE_N_DAYS_AGO')
+    if show_projects_active_n_days_ago:
+        earilest_timestamp = timezone.now() - relativedelta(days=show_projects_active_n_days_ago)
+        latest_project_count = projects_queryset.filter(datetime__gte=earilest_timestamp).count()
+        if latest_project_count > 0:
+            projects_queryset = projects_queryset.filter(datetime__gte=earilest_timestamp)
+            # Ignore DEFAULT_PROJECT_COUNT if we are using age of project
+            num_projects = None
+
     if display_all_projects or num_projects is None:
         display_all_projects = True
         projects = projects_queryset.all()
     else:
         display_all_projects = projects_queryset.count() <= num_projects
         projects = projects_queryset.all()[:num_projects]
+
+    return projects
+
+
+def group_home(request, group_slug):
+    group = get_object_or_404(Group, slug=group_slug)
+
+    order_by = request.GET.get('order', 'last_updated')
+    display_all_projects = request.GET.get('all_projects') is not None
+    projects = get_project_list(group, request.user, order_by, display_all_projects)
 
     has_archived_projects = False
     latest_build_ids = {}
