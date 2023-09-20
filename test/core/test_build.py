@@ -293,6 +293,15 @@ class BuildTest(TestCase):
         with patch('squad.core.models.Build.metadata', m):
             self.assertEqual({'my key': 'my value'}, build.important_metadata)
 
+    def test_important_metadata_order(self):
+        project = Project(important_metadata_keys='key2\nkey1\nkey3\n')
+        build = Build(project=project)
+
+        m = {'key3': 'val3', 'key1': 'val1', 'key2': 'val2'}
+        with patch('squad.core.models.Build.metadata', m):
+            self.assertEqual({'key1': 'val1', 'key2': 'val2', 'key3': 'val3'}, build.important_metadata)
+            self.assertEqual(['key2', 'key1', 'key3'], list(build.important_metadata.keys()))
+
     def test_metadata(self):
         build = Build.objects.create(project=self.project, version='build-metadata')
         env1 = self.project.environments.create(slug='env1')

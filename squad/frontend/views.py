@@ -157,7 +157,7 @@ def project_home(request, group_slug, project_slug):
     builds = [b for b in __get_builds_with_status__(project, 11)]
     last_build = len(builds) and builds[0] or None
 
-    metadata = last_build and sorted(last_build.important_metadata.items()) or ()
+    metadata = last_build and last_build.important_metadata.items() or ()
     context = {
         'project': project,
         'builds': builds,
@@ -379,7 +379,7 @@ def build(request, group_slug, project_slug, version):
         'build': build,
         'test_results': test_results,
         'results_layout': results_layout,
-        'metadata': sorted(build.important_metadata.items()),
+        'metadata': build.important_metadata.items(),
         'has_extra_metadata': build.has_extra_metadata,
         'failures_only': failures_only,
         'testjobs_progress': testjobs_progress,
