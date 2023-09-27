@@ -81,6 +81,14 @@ except ImportError:
     pass
 
 
+django_allauth_middleware = None
+try:
+    import allauth.account.middleware  # noqa: F401
+    django_allauth_middleware = 'allauth.account.middleware.AccountMiddleware'
+except ImportError:
+    pass
+
+
 __apps__ = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -146,6 +154,7 @@ __middlewares__ = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     django_toolbar_middleware,  # OPTIONAL
+    django_allauth_middleware,
 ]
 
 MIDDLEWARE = [middleware for middleware in __middlewares__ if middleware]
