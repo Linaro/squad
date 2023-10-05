@@ -98,3 +98,17 @@ jobs:
           ./scripts/test-docker
       - name: Run tests within docker
         run: ./dev-docker ./manage.py test -v 3 
+
+  docker-arm64-test:
+    name: Run tests in docker arm64 and build release image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Build docker image
+        uses: pguyot/arm-runner-action@v2
+        run: |
+          git fetch --unshallow
+          ./scripts/test-docker
+      - name: Run tests within docker arm64
+        run: ./dev-docker ./manage.py test -v 3
