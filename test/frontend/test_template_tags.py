@@ -10,7 +10,8 @@ from allauth.socialaccount.providers.google.provider import GoogleProvider
 from allauth.socialaccount.providers.github.provider import GitHubProvider
 from allauth.socialaccount.providers.gitlab.provider import GitLabProvider
 
-from squad.frontend.templatetags.squad import get_page_url, strip_get_parameters, update_get_parameters, to_json, socialaccount_providers
+from squad.core import models
+from squad.frontend.templatetags.squad import get_page_url, project_status, strip_get_parameters, update_get_parameters, to_json, socialaccount_providers
 
 
 class FakeRequest():
@@ -133,3 +134,28 @@ class TemplateTagsTest(TestCase):
         social_providers = socialaccount_providers(context)
         self.assertEqual(1, len(social_providers.keys()))
         self.assertEqual(GitLabProvider, list(social_providers)[0].__class__)
+
+    def test_catch_error_when_status_missing(self):
+        # Test that if the status for a build gets deleted, that this is
+        # handled appropriately, rather than causing a crash.
+
+        # create the group, project and build
+        self.group = models.Group.objects.create(slug="mygroup")
+        self.project = self.group.projects.create(slug="myproject")
+        self.build = self.project.builds.create(version="mybuild")
+        self.project.latest_build = self.build
+
+        # Set build status to None
+        self.build.status = None
+
+        # Try to call project_status when status is None
+        missing_project_status_error = False
+        try:
+            status = project_status(self.project)
+        except models.Build.status.RelatedObjectDoesNotExist:
+            missing_project_status_error = True
+
+        # Check call to project_status doesn't crash
+        self.assertFalse(missing_project_status_error)
+        # Check status returns None as expected
+        self.assertEqual(status, None)
