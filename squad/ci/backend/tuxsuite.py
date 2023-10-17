@@ -100,9 +100,14 @@ class Backend(BaseBackend):
 
         ('BUILD', 'linaro@anders', '1yPYGaOEPNwr2pCqBgONY43zORq')
 
+        The leading string determines the type of the tuxsuite object:
+        - BUILD
+        - OEBUILD
+        - TEST
+
         """
 
-        regex = r'^(BUILD|TEST):([0-9a-z_\-]+@[0-9a-z_\-]+)#([a-zA-Z0-9]+)$'
+        regex = r'^(OEBUILD|BUILD|TEST):([0-9a-z_\-]+@[0-9a-z_\-]+)#([a-zA-Z0-9]+)$'
         matches = re.findall(regex, job_id)
         if len(matches) == 0:
             raise FetchIssue(f'Job id "{job_id}" does not match "{regex}"')
@@ -113,18 +118,19 @@ class Backend(BaseBackend):
     def generate_job_id(self, result_type, result):
         """
             The job id for TuxSuite results is generated using 3 pieces of info:
-            1. If it's either "BUILD" or "TEST" result;
+            1. If it's either "BUILD", "OEBUILD" or "TEST" result;
             2. The TuxSuite project. Ex: "linaro/anders"
             3. The ksuid of the object. Ex: "1yPYGaOEPNwr2pfqBgONY43zORp"
 
             A couple examples for job_id are:
             - BUILD:linaro@anders#1yPYGaOEPNwr2pCqBgONY43zORq
+            - OEBUILD:linaro@lkft#2Wetiz7Qs0TbtfPgPT7hUObWqDK
             - TEST:arm@bob#1yPYGaOEPNwr2pCqBgONY43zORp
 
             Then it's up to SQUAD's TuxSuite backend to parse the job_id
             and fetch results properly.
         """
-        _type = "TEST" if result_type == "test" else "BUILD"
+        _type = result_type.upper()
         project = result["project"].replace("/", "@")
         uid = result["uid"]
         return f"{_type}:{project}#{uid}"
@@ -254,6 +260,30 @@ class Backend(BaseBackend):
                 metrics[f'build/{test_name}-duration'] = results['tuxmake_metadata']['results']['duration']['build']
             except KeyError:
                 raise FetchIssue('Missing duration from build results')
+
+        return status, completed, metadata, tests, metrics, logs
+
+    def parse_oebuild_results(self, test_job, job_url, results, settings):
+        required_keys = ['download_url', 'result']
+        self.__check_required_keys__(required_keys, results)
+
+        # Make metadata
+        metadata_keys = settings.get('OEBUILD_METADATA_KEYS', [])
+        metadata = {k: results.get(k) for k in metadata_keys}
+        metadata['job_url'] = job_url
+        metadata['job_id'] = test_job.job_id
+
+        sources = results.get('sources')
+        if sources:
+            metadata['sources'] = sources
+
+        # Create tests and metrics
+        tests = {}
+        metrics = {}
+        completed = True
+        status = 'Complete'
+        tests['build/build'] = 'pass' if results['result'] == 'pass' else 'fail'
+        logs = self.fetch_url(results['download_url'], 'build.log').text
 
         return status, completed, metadata, tests, metrics, logs
 

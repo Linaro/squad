@@ -52,6 +52,10 @@ class TuxSuiteTest(TestCase):
                         "toolchain",
                         "does_not_exist"
                     ],
+                    "OEBUILD_METADATA_KEYS": [
+                        "download_url",
+                        "sources",
+                    ],
                     "TEST_METADATA_KEYS": [
                         "does_not_exist"
                     ],
@@ -1041,3 +1045,87 @@ class TuxSuiteTest(TestCase):
         returned_testjob = self.tuxsuite.process_callback(json.dumps(payload), self.build, self.environment.slug, self.backend)
         self.assertEqual(testjob.id, returned_testjob.id)
         self.assertEqual(json.dumps(payload["status"]), returned_testjob.input)
+
+    @patch("squad.ci.backend.tuxsuite.Backend.fetch_from_results_input")
+    def test_fetch_oe_build_results(self, mock_fetch_from_results_input):
+        job_id = 'OEBUILD:tuxgroup@tuxproject#123'
+        testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
+        build_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/oebuilds/123')
+        build_download_url = 'http://builds.tuxbuild.com/123'
+
+        # Only fetch when finished
+        with requests_mock.Mocker() as fake_request:
+            fake_request.get(build_url, json={'state': 'running'})
+            results = self.tuxsuite.fetch(testjob)
+            self.assertEqual(None, results)
+
+        build_logs = 'dummy build log'
+        build_results = {
+            "artifacts": [],
+            "bblayers_conf": [],
+            "container": "ubuntu-20.04",
+            "download_url": build_download_url,
+            "environment": {},
+            "errors_count": 0,
+            "extraconfigs": [],
+            "is_canceling": False,
+            "is_public": True,
+            "local_conf": [],
+            "name": "",
+            "no_cache": False,
+            "plan": "2UyDaiGYNeHEYPD7hGjuuqmgZIn",
+            "project": "linaro/lkft",
+            "provisioning_time": "2023-09-05T08:36:32.853409",
+            "result": "pass",
+            "sources": {
+                "android": {
+                    "bazel": True,
+                    "branch": "common-android-mainline",
+                    "build_config": "//common:kernel_aarch64_dist",
+                    "manifest": "default.xml",
+                    "url": "https://android.googlesource.com/kernel/manifest"
+                }
+            },
+            "state": "finished",
+            "token_name": "lkft-android-bot",
+            "uid": "2UyDaslU6koW0a85VVEh3Pc2LNW",
+            "user": "lkft@linaro.org",
+            "user_agent": "tuxsuite/1.25.1",
+            "waited_by": [],
+            "warnings_count": 0
+        }
+
+        expected_metadata = {
+            'download_url': build_download_url,
+            'sources': {
+                'android': {
+                    'bazel': True,
+                    'branch': 'common-android-mainline',
+                    'build_config': '//common:kernel_aarch64_dist',
+                    'manifest': 'default.xml',
+                    'url': 'https://android.googlesource.com/kernel/manifest'
+                }
+            },
+            'job_url': build_url,
+            'job_id': job_id,
+        }
+
+        expected_tests = {
+            'build/build': 'pass',
+        }
+
+        expected_metrics = {}
+
+        with requests_mock.Mocker() as fake_request:
+            fake_request.get(build_url, json=build_results)
+            fake_request.get(urljoin(build_download_url, 'build.log'), text=build_logs)
+
+            status, completed, metadata, tests, metrics, logs = self.tuxsuite.fetch(testjob)
+            self.assertEqual('Complete', status)
+            self.assertTrue(completed)
+            self.assertEqual(sorted(expected_metadata.items()), sorted(metadata.items()))
+            self.assertEqual(sorted(expected_tests.items()), sorted(tests.items()))
+            self.assertEqual(sorted(expected_metrics.items()), sorted(metrics.items()))
+            self.assertEqual(build_logs, logs)
+
+        mock_fetch_from_results_input.assert_not_called()
