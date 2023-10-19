@@ -1,3 +1,26 @@
+# 1.75
+
+This 1.75 release fixes an important bug that has been around unnoticed for quite some time.
+
+The bug is basically a race condition when a build is marked as finished too early, before
+all testjobs results are actually done processing. The fix should address that issue.
+
+The release also allows listing projects in group's home page by active in last N days. Within
+project settings one can determine N.
+
+There has been added support for accepting OE builds from Tuxsuite and support for squad-client
+will come soon.
+
+Complete list of changes going in:
+
+* api/rest.py: re-add suite to failures with confidence endpoint
+* ci/backend/tuxsuite.py: support oe builds
+* ci/models.py: bring pending function to TestJob
+* settings.py: support newer versions of django-allauth
+* squad/core/models.py: Change important metadata to support custom order
+* squad/frontend/views.py,squad/core/models.py: move sorting of metadata
+* squad/frontend/views.py: Add support for filtering project list by age
+
 # 1.74
 
 This 1.74 release patches a couple of pages improving overall performance.
