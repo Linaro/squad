@@ -171,7 +171,7 @@ class Backend(BaseBackend):
         """
 
         build_id = results['waiting_for']
-        if build_id is None:
+        if build_id is None or build_id.startswith('OEBUILD'):
             return
 
         items = build_id.split('#')
