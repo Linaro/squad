@@ -150,7 +150,10 @@ def download_build_attachments_url(group_slug, project_slug, build_version, test
 @register_global_function
 def project_status(project):
     if project.latest_build is not None:
-        return project.latest_build.status
+        try:
+            return project.latest_build.status
+        except Build.status.RelatedObjectDoesNotExist:
+            return None
     return None
 
 

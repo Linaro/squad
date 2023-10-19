@@ -115,6 +115,11 @@ class FrontendTest(TestCase):
     def test_project(self):
         self.hit('/mygroup/myproject/')
 
+    def test_project_list_no_status(self):
+        self.build = self.project.builds.create(version="mybuild")
+        self.build.status.delete()
+        self.hit('/mygroup/?all_projects=1')
+
     def test_project_badge(self):
         self.hit('/mygroup/myproject/badge')
 
