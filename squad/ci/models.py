@@ -4,6 +4,7 @@ import traceback
 import yaml
 from io import StringIO
 from django.db import models, transaction, DatabaseError
+from django.db.models import Q
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
@@ -66,6 +67,19 @@ class Backend(models.Model):
                 yield test_job
 
     def fetch(self, job_id):
+        # Job statuses can be one of:
+        #     * None
+        #     * Submitted
+        #     * Scheduling
+        #     * Scheduled
+        #     * Running
+        #     * Complete
+        #     * Incomplete
+        #     * Canceled
+        #     * Fetching
+        # Only jobs in 'Complete', 'Canceled' and 'Incomplete' are eligible for fetching
+
+        job_status = None
         with transaction.atomic():
             try:
                 test_job = TestJob.objects.select_for_update(nowait=True).get(pk=job_id)
@@ -91,6 +105,8 @@ class Backend(models.Model):
                 test_job.save()
                 return
 
+            job_status = test_job.job_status
+            test_job.job_status = 'Fetching'
             test_job.fetched = True
             test_job.fetched_at = timezone.now()
             test_job.save()
@@ -130,10 +146,16 @@ class Backend(models.Model):
         except DuplicatedTestJob as exception:
             logger.error('Failed to fetch test_job(%d): "%s"' % (test_job.id, str(exception)))
 
+        if test_job.testrun:
+            self.__postprocess_testjob__(test_job)
+
+        # Removed the 'Fetching' job_status only after eventual plugins
+        # are finished, this garantees extra tests and metadata to
+        # be in SQUAD before the build is considered finished
+        test_job.job_status = job_status
         test_job.save()
 
         if test_job.testrun:
-            self.__postprocess_testjob__(test_job)
             UpdateProjectStatus()(test_job.testrun)
 
     def __postprocess_testjob__(self, test_job):
@@ -177,9 +199,16 @@ class Backend(models.Model):
         return '%s (%s)' % (self.name, self.implementation_type)
 
 
+class TestJobManager(models.Manager):
+
+    def pending(self):
+        return self.filter(Q(fetched=False) | Q(job_status='Fetching'))
+
+
 class TestJob(models.Model):
 
     __test__ = False
+    objects = TestJobManager()
 
     # input - internal
     backend = models.ForeignKey(Backend, related_name='test_jobs', on_delete=models.CASCADE)

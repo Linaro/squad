@@ -620,7 +620,7 @@ class Build(models.Model):
         # dependency on squad.ci, what in theory violates our architecture.
         testjobs = self.test_jobs
         if testjobs.count() > 0:
-            if testjobs.filter(fetched=False).count() > 0:
+            if testjobs.pending().count() > 0:
                 # a build that has pending CI jobs is NOT finished
                 reasons.append("There are unfinished CI jobs")
             else:
