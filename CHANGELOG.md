@@ -1,3 +1,12 @@
+# 1.75.1
+
+This 1.75.1 release fixes 2 small bugs from past release.
+
+First one is to avoid getting build_name from oe builds and the second bug fix is related
+to loading projects with builds without status objects associated.
+
+The latter would only happen on SQUAD instances older than 2018.
+
 # 1.75
 
 This 1.75 release fixes an important bug that has been around unnoticed for quite some time.
