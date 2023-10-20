@@ -10,6 +10,7 @@ from django.core.validators import validate_email
 from django.contrib.auth.models import User
 from squad.core.models import (
     Annotation,
+    Attachment,
     Group,
     Project,
     ProjectStatus,
@@ -1307,6 +1308,13 @@ class StatusViewSet(NestedViewSetMixin, ModelViewSet):
     ordering = ('id',)
 
 
+class AttachmentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Attachment
+        fields = ('filename', 'mimetype', 'length')
+
+
 class TestRunSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
@@ -1316,6 +1324,7 @@ class TestRunSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedMod
     log_file = serializers.HyperlinkedIdentityField(view_name='testrun-log-file')
     tests = HyperlinkedTestsIdentityField(view_name='testrun-tests')
     metrics = HyperlinkedMetricsIdentityField(view_name='testrun-metrics')
+    attachments = AttachmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = TestRun
@@ -1569,6 +1578,16 @@ class TestRunViewSet(ModelViewSet):
         page = paginator.paginate_queryset(metrics, request)
         serializer = MetricSerializer(page, many=True, context={'request': request}, remove_fields=['test_run', 'id', 'suite'])
         return paginator.get_paginated_response(serializer.data)
+
+    @action(detail=True, methods=['get'], suffix='attachments')
+    def attachments(self, request, pk=None):
+        filename = request.GET.get('filename')
+        testrun = self.get_object()
+        try:
+            attachment = testrun.attachments.get(filename=filename)
+        except Attachment.DoesNotExist:
+            raise NotFound()
+        return HttpResponse(bytes(attachment.data), content_type='text/plain')
 
 
 class BackendSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):

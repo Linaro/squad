@@ -1125,6 +1125,31 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/testruns/%d/metrics/' % self.testrun.id)
         self.assertEqual(list, type(data['results']))
 
+    def test_testruns_attachments(self):
+        data = self.hit('/api/testruns/%d/' % self.testrun.id)
+        self.assertEqual([], data['attachments'])
+
+        filename = 'benchmarks.json'
+        filepath = 'test/api/%s' % filename
+        contents = None
+        with open(filepath, 'rb') as fp:
+            contents = fp.read()
+            attachment = self.testrun.attachments.create(filename=filename, length=147)
+            attachment.save_file(filename, contents)
+
+        data = self.hit('/api/testruns/%d/' % self.testrun.id)
+        expected = {
+            'filename': filename,
+            'length': 147,
+            'mimetype': 'application/octet-stream'
+        }
+        self.assertEqual([expected], data['attachments'])
+
+        response = self.client.get('/api/testruns/%d/attachments/?filename=%s' % (self.testrun.id, filename))
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(contents, response.content)
+        attachment.storage.delete(False)
+
     def test_testruns_status(self):
         ParseTestRunData()(self.testrun)
         RecordTestRunStatus()(self.testrun)
