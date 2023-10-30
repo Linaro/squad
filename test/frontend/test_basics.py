@@ -249,6 +249,16 @@ class FrontendTest(TestCase):
         self.assertEqual('text/plain', response['Content-Type'])
         self.assertEqual(b'text file', response.content)
 
+    def test_attachment_download_url(self):
+        data = bytes('text file', 'utf-8')
+        filename = 'foo.txt'
+        attachment = self.test_run.attachments.create(filename=filename, length=len(data), mimetype="text/plain")
+        attachment.save_file(filename, data)
+        # NOTE: /api/testruns/%s/attachments?filename=foo.txt redirects to /api/testruns/%s/attachments/?filename=foo.txt
+        response = self.hit('/api/testruns/%s/attachments/?filename=foo.txt' % (self.test_run.id))
+        self.assertEqual('text/plain', response['Content-Type'])
+        self.assertEqual(b'text file', response.content)
+
     def test_log(self):
         response = self.hit('/mygroup/myproject/build/1.0/testrun/%s/suite/%s/test/%s/log' % (self.test_run.id, self.suite.slug, self.test.name))
         self.assertEqual('text/plain', response['Content-Type'])
