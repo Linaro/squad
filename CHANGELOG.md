@@ -1,3 +1,7 @@
+# 1.76
+
+This 1.76 release adds REST API endpoints to download TestRun attachments.
+
 # 1.75.1
 
 This 1.75.1 release fixes 2 small bugs from past release.
