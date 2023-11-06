@@ -1,3 +1,8 @@
+# 1.76.1
+
+This 1.76.1 release adds `download_url` attribute to attachments block.
+It is better if the client already knows the url to download such attachments.
+
 # 1.76
 
 This 1.76 release adds REST API endpoints to download TestRun attachments.
