@@ -1139,6 +1139,7 @@ class RestApiTest(APITestCase):
 
         data = self.hit('/api/testruns/%d/' % self.testrun.id)
         expected = {
+            'download_url': 'http://testserver/api/testruns/%d/attachments/?filename=%s' % (self.testrun.id, filename),
             'filename': filename,
             'length': 147,
             'mimetype': 'application/octet-stream'

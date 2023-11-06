@@ -1,4 +1,5 @@
 import json
+import urllib.parse
 import yaml
 
 from django.db.models import Q, F, Value as V, CharField, Prefetch
@@ -1310,9 +1311,19 @@ class StatusViewSet(NestedViewSetMixin, ModelViewSet):
 
 class AttachmentSerializer(serializers.ModelSerializer):
 
+    download_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Attachment
-        fields = ('filename', 'mimetype', 'length')
+        fields = ('download_url', 'filename', 'mimetype', 'length')
+
+    def get_download_url(self, attachment):
+        request = self.context.get('request')
+        if request is None:
+            return None
+        base_url = rest_reverse('testrun-detail', args=[attachment.test_run.pk], request=request)
+        filename_url_encoded = urllib.parse.quote(attachment.filename, safe='')
+        return f'{base_url}attachments/?filename={filename_url_encoded}'
 
 
 class TestRunSerializer(DynamicFieldsModelSerializer, serializers.HyperlinkedModelSerializer):
