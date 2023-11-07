@@ -3,16 +3,7 @@
 tag="$1"
 v="${tag:1}"
 
-if [ "$GPG_DEFAULT_KEY_ID" = "" ]
-then
-    GPG_DEFAULT_KEY_ID=`gpgconf --list-options gpg | awk -F: '$1 == "default-key" {print $10}'`
-fi
-
 # Push to PyPi
-# sign & upload
-for f in dist/*; do
-    gpg --default-key $GPG_DEFAULT_KEY_ID --detach-sign --armor "$f"
-done
 twine upload dist/*
 
 # Push to dockerhub
