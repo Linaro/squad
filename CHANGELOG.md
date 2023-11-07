@@ -1,3 +1,7 @@
+# 1.76.2
+
+This 1.76.2 release fixes job status when fetching jobs.
+
 # 1.76.1
 
 This 1.76.1 release adds `download_url` attribute to attachments block.
