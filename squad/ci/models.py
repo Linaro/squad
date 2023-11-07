@@ -79,7 +79,6 @@ class Backend(models.Model):
         #     * Fetching
         # Only jobs in 'Complete', 'Canceled' and 'Incomplete' are eligible for fetching
 
-        job_status = None
         with transaction.atomic():
             try:
                 test_job = TestJob.objects.select_for_update(nowait=True).get(pk=job_id)
@@ -105,7 +104,6 @@ class Backend(models.Model):
                 test_job.save()
                 return
 
-            job_status = test_job.job_status
             test_job.job_status = 'Fetching'
             test_job.fetched = True
             test_job.fetched_at = timezone.now()
@@ -113,7 +111,6 @@ class Backend(models.Model):
 
         status, completed, metadata, tests, metrics, logs = results
 
-        test_job.job_status = status
         if not completed:
             tests = {}
             metrics = {}
@@ -126,7 +123,7 @@ class Backend(models.Model):
             test_job.can_resubmit = True
 
         metadata['job_id'] = test_job.job_id
-        metadata['job_status'] = test_job.job_status
+        metadata['job_status'] = status
         if test_job.url is not None:
             metadata['job_url'] = test_job.url
         try:
@@ -149,10 +146,10 @@ class Backend(models.Model):
         if test_job.testrun:
             self.__postprocess_testjob__(test_job)
 
-        # Removed the 'Fetching' job_status only after eventual plugins
+        # Remove the 'Fetching' job_status only after eventual plugins
         # are finished, this garantees extra tests and metadata to
         # be in SQUAD before the build is considered finished
-        test_job.job_status = job_status
+        test_job.job_status = status
         test_job.save()
 
         if test_job.testrun:

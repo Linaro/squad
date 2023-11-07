@@ -105,6 +105,7 @@ class BackendFetchTest(BackendTestBase):
         test_job.refresh_from_db()
         self.assertEqual(NOW, test_job.last_fetch_attempt)
         self.assertFalse(test_job.fetched)
+        self.assertIsNone(test_job.job_status)
 
         get_implementation.assert_called()
         impl.fetch.assert_called()
@@ -163,6 +164,7 @@ class BackendFetchTest(BackendTestBase):
         self.assertEqual(project_status.tests_pass, tests_pass_so_far + 1)
         test_job.refresh_from_db()
         self.assertTrue(test_job.fetched)
+        self.assertEqual("Complete", test_job.job_status)
 
     @patch('django.utils.timezone.now', return_value=NOW)
     @patch('squad.ci.models.Backend.get_implementation')
