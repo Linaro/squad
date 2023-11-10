@@ -119,7 +119,7 @@ def add_test_run(request, group_slug, project_slug, version, environment_slug):
         logger.warning(request.get_full_path() + ": " + str(e))
         return HttpResponse(str(e), status=400)
 
-    return HttpResponse('', status=201)
+    return HttpResponse(str(testrun.id), status=201)
 
 
 @csrf_exempt

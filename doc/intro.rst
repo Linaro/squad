@@ -133,6 +133,9 @@ should be automated with a driver program that asks for user input, and
 them at the end prepares all the data in a consistent way, and submits
 it to dashboard.
 
+If input data is valid and nothing goes wrong with the request, SQUAD
+will return 201 as status code and the test run id in the response body.
+
 Input file formats
 ------------------
 

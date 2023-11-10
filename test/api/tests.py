@@ -63,6 +63,7 @@ class CreateTestRunApiTest(ApiTest):
             object_id=testrun.pk,
             object_repr=force_text(testrun),
         )
+        self.assertEqual(str(response.content.decode()), str(testrun.id))
         self.assertEqual(
             1,
             logentry_queryset.count()
