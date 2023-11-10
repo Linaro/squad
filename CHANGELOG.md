@@ -1,3 +1,10 @@
+# 1.77
+
+This 1.77 release adds two little features in SQUAD api. First one is when
+using `/api/submit/`, SQUAD will now return the id of the test run just created.
+The second feature is a new flag `?delay_fetch` when passed to `/api/watchjob/`
+which tells SQUAD not to schedule the jobs to be fetched right away.
+
 # 1.76.2
 
 This 1.76.2 release fixes job status when fetching jobs.
