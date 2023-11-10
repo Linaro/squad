@@ -252,6 +252,41 @@ class CiApiTest(TestCase):
             logentry_queryset.last().action_flag
         )
 
+    @patch("squad.ci.tasks.fetch.delay")
+    def test_watch_testjob_do_not_fetch_rightaway(self, fetch):
+        testjob_id = 1234
+        args = {
+            'backend': 'lava',
+            'testjob_id': testjob_id,
+        }
+        r = self.client.post('/api/watchjob/mygroup/myproject/1/myenv?delay_fetch', args)
+        self.assertEqual(201, r.status_code)
+        testjob_queryset = models.TestJob.objects.filter(
+            target=self.project,
+            environment='myenv',
+            target_build=self.build,
+            backend=self.backend,
+            submitted=True,
+            job_id=testjob_id
+        )
+        self.assertEqual(
+            1,
+            testjob_queryset.count()
+        )
+        fetch.assert_not_called()
+        logentry_queryset = LogEntry.objects.filter(
+            user_id=self.project_privileged_user.pk,
+            object_id=testjob_queryset.last().pk
+        )
+        self.assertEqual(
+            1,
+            logentry_queryset.count()
+        )
+        self.assertEqual(
+            ADDITION,
+            logentry_queryset.last().action_flag
+        )
+
     @patch("squad.ci.tasks.fetch.apply_async")
     def test_watch_testjob_private_group(self, fetch):
         testjob_id = 1234

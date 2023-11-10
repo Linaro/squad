@@ -117,8 +117,10 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
 
     log_addition(request, test_job, "Watch Job submission")
 
-    # schedule a fetch task on this job right away
-    fetch.delay(test_job.id)
+    delay_fetch = request.GET.get("delay_fetch")
+    if delay_fetch is None:
+        # schedule a fetch task on this job right away
+        fetch.delay(test_job.id)
 
     # return ID of test job
     return HttpResponse(test_job.id, status=201)

@@ -89,8 +89,10 @@ Submitting test job watch requests
 
 Test job watch request are similar to test job requests. The only difference is
 that some other service submitted the test job for execution and SQUAD is
-requested to track the progress. After test job is finished SQUAD will retrieve
-the results and do post processing. The API is following:
+requested to track the progress. By default, SQUAD will schedule the job
+for fetching right away. If the variable `?delay_fetch` is present, SQUAD will
+wait until the test job is finished before retrieving the results and do post
+processing. The API is following:
 
 **POST** /api/watchjob/:group/:project/:build/:environment
 
