@@ -248,6 +248,11 @@ class UserNamespace(Group):
         proxy = True
 
 
+class UserPreferences(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    display_failures_only = models.BooleanField(default=True)
+
+
 class ProjectManager(models.Manager):
 
     def accessible_to(self, user):
