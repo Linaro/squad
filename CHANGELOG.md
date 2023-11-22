@@ -1,3 +1,10 @@
+# 1.78
+
+This 1.78 release adds a tiny bit of per-user confiuration of the UI. When
+viewing a build, a user can opt to see only failures or a summary of all
+tests. This setting was set to `failures only` before, but now can be customized
+per user under user menu "User Preferences".
+
 # 1.77
 
 This 1.77 release adds two little features in SQUAD api. First one is when
