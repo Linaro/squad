@@ -33,7 +33,9 @@ dockerfile="$datadir"/../Dockerfile.dev
   echo 'CMD ["bash"]'
 ) > "$dockerfile"
 
-docker build -t squad/dev -f "$dockerfile" .
+no_cache=${DOCKER_NO_CACHE-}
+
+docker build $no_cache -t squad/dev -f "$dockerfile" .
 
 extra_volumes=''
 for v in $HOME/.gitconfig $HOME/.config/git; do
