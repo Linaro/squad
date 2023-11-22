@@ -12,7 +12,7 @@ from dateutil.relativedelta import relativedelta
 
 from squad.ci.models import TestJob
 from squad.core.models import Group, Metric, ProjectStatus, Status, MetricThreshold, KnownIssue, Test
-from squad.core.models import Build, Subscription, TestRun, SuiteMetadata
+from squad.core.models import Build, Subscription, TestRun, SuiteMetadata, UserPreferences
 from squad.core.queries import get_metric_data, test_confidence
 from squad.frontend.queries import get_metrics_list
 from squad.frontend.utils import file_type, alphanum_sort
@@ -27,6 +27,18 @@ class BuildDeleted(Http404):
         msg = 'This build has been deleted on %s. ' % date
         msg += 'Builds in this project are usually deleted after %d days.' % days
         super(BuildDeleted, self).__init__(msg)
+
+
+def get_user_preferences(user):
+    if user.is_authenticated:
+        try:
+            preferences = UserPreferences.objects.get(user=user)
+        except UserPreferences.DoesNotExist:
+            preferences = UserPreferences.objects.create(user=user)
+    else:
+        return None
+
+    return preferences
 
 
 def get_build(project, version):
@@ -362,7 +374,11 @@ def build(request, group_slug, project_slug, version):
     project = request.project
     build = get_build(project, version)
 
-    failures_only = request.GET.get('failures_only', 'true')
+    user_default_failures_only = ""
+    user_preferences = get_user_preferences(request.user)
+    if user_preferences:
+        user_default_failures_only = str(user_preferences.display_failures_only).lower()
+    failures_only = request.GET.get('failures_only', user_default_failures_only)
     if failures_only not in ['true', 'false']:
         failures_only = 'true'
 

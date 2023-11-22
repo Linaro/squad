@@ -4,6 +4,8 @@ from django.test import TestCase
 from django.test import Client
 import json
 
+from squad.frontend.views import get_user_preferences
+
 tests_file = {
     ("suite1/test%d" % i): "fail" for i in range(0, 50)
 }
@@ -148,18 +150,54 @@ class TestRunTestsTest(TestCase):
 
     def test_table_layout(self):
         response = self.client.get('/mygroup/myproject/build/1/?results_layout=table')
+        self.assertIn("onclick=\"window.location = \'?results_layout=table&amp;failures_only=false#test-results'\"", response.content.decode("utf-8"))
         self.assertEqual(200, response.status_code)
 
-    def test_table_layout_failures_only(self):
+    def test_table_layout_failures_only_false(self):
         response = self.client.get('/mygroup/myproject/build/1/?results_layout=table&failures_only=false')
+        self.assertIn("onclick=\"window.location = \'?results_layout=table&amp;failures_only=true#test-results'\"", response.content.decode("utf-8"))
+        self.assertEqual(200, response.status_code)
+
+    def test_table_layout_failures_only_true(self):
+        response = self.client.get('/mygroup/myproject/build/1/?results_layout=table&failures_only=true')
+        self.assertIn("onclick=\"window.location = \'?results_layout=table&amp;failures_only=false#test-results'\"", response.content.decode("utf-8"))
         self.assertEqual(200, response.status_code)
 
     def test_envbox_layout(self):
         response = self.client.get('/mygroup/myproject/build/1/?results_layout=envbox')
+        self.assertIn("onclick=\"window.location = \'?results_layout=envbox&amp;failures_only=false#test-results'\"", response.content.decode("utf-8"))
         self.assertEqual(200, response.status_code)
 
-    def test_envbox_layout_failures_only(self):
+    def test_envbox_layout_failures_only_false(self):
         response = self.client.get('/mygroup/myproject/build/1/?results_layout=envbox&failures_only=false')
+        self.assertIn("onclick=\"window.location = \'?results_layout=envbox&amp;failures_only=true#test-results'\"", response.content.decode("utf-8"))
+        self.assertEqual(200, response.status_code)
+
+    def test_envbox_layout_failures_only_true(self):
+        response = self.client.get('/mygroup/myproject/build/1/?results_layout=envbox&failures_only=true')
+        self.assertIn("onclick=\"window.location = \'?results_layout=envbox&amp;failures_only=false#test-results'\"", response.content.decode("utf-8"))
+        self.assertEqual(200, response.status_code)
+
+    def test_failures_only_user_preference_false(self):
+        self.user = models.User.objects.create(username='theuser')
+        self.client = Client()
+        self.client.force_login(self.user)
+        self.user_preferences = get_user_preferences(user=self.user)
+        self.user_preferences.display_failures_only = False
+        self.user_preferences.save()
+        response = self.client.get('/mygroup/myproject/build/1/')
+        self.assertIn("onclick=\"window.location = \'?failures_only=true#test-results'\"", response.content.decode("utf-8"))
+        self.assertEqual(200, response.status_code)
+
+    def test_failures_only_user_preference_true(self):
+        self.user = models.User.objects.create(username='theuser')
+        self.client = Client()
+        self.client.force_login(self.user)
+        self.user_preferences = get_user_preferences(user=self.user)
+        self.user_preferences.display_failures_only = True
+        self.user_preferences.save()
+        response = self.client.get('/mygroup/myproject/build/1/')
+        self.assertIn("onclick=\"window.location = \'?failures_only=false#test-results'\"", response.content.decode("utf-8"))
         self.assertEqual(200, response.status_code)
 
     def test_suitebox_layout(self):

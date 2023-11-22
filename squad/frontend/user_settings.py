@@ -13,7 +13,8 @@ from django.http import HttpResponseRedirect
 from rest_framework.authtoken.models import Token
 
 
-from squad.core.models import Group, Project, Subscription, UserNamespace
+from squad.core.models import Group, Project, Subscription, UserNamespace, UserPreferences
+from squad.frontend.views import get_user_preferences
 
 
 logger = logging.getLogger()
@@ -28,6 +29,29 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email']
+
+
+class UserPreferencesForm(forms.ModelForm):
+    class Meta:
+        model = UserPreferences
+        fields = ['display_failures_only']
+
+
+@login_required
+def user_preferences(request):
+    preferences = get_user_preferences(request.user)
+    if request.method == "POST":
+        form = UserPreferencesForm(request.POST, instance=preferences)
+        if form.is_valid():
+            form.save()
+            return redirect(request.path)
+    else:
+        form = UserPreferencesForm(instance=preferences)
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'squad/user_settings/user_preferences.jinja2', context)
 
 
 @login_required
@@ -126,6 +150,7 @@ urls = [
     url('^profile/$', profile, name='settings-profile'),
     url('^api-token/$', api_token, name='settings-api-token'),
     url('^subscriptions/$', subscriptions, name='settings-subscriptions'),
+    url('^user-preferences/$', user_preferences, name='settings-user-preferences'),
     url(r'^remove-subscription/(?P<id>\d+)$', remove_subscription, name='settings-subscription-remove'),
     url(r'^remove-subscription/$', remove_subscription, name='settings-subscription-remove-post'),
     url('^projects/$', projects, name='settings-projects'),
