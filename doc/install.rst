@@ -27,7 +27,6 @@ Install squad with Postgres support::
 
     pip3 install squad[postgres]
 
-
 Message broker
 --------------
 
@@ -210,7 +209,7 @@ __ https://docs.djangoproject.com/en/1.11/topics/email/
 * ``SQUAD_SEND_ADMIN_ERROR_EMAIL``: Determines whether or not to send exception
   notifications to administrators. Defaults to ``True``.
 
-* ``SENTRY_DSN``: Defines Sentry's DSN token, if defined SQUAD will attempt to 
+* ``SENTRY_DSN``: Defines Sentry's DSN token, if defined SQUAD will attempt to
   import Sentry SDK and use it. Defaults to ``None``. If Sentry is configured
   it's recommended to disable sending admin notifications by setting
   ``SQUAD_SEND_ADMIN_ERROR_EMAIL = False``.
@@ -275,3 +274,70 @@ automate SQUAD setup with containers. Details about user management with
    * --not-staff Make this user no longer a staff member
    * --superuser Make this user a superuser
    * --not-superuser Make this user no longer a superuser
+
+Docker compose setup
+--------------------
+
+Alternatively, SQUAD can be run inside a Docker container using `Docker Compose
+<https://docs.docker.com/compose/>`_. A baseline setup is provided here__.
+
+__ https://github.com/linaro/squad/tree/master/docker
+
+Not only will this run all SQUAD processes, but also automatically pull and
+start all required services to run a local SQUAD instance with a web interface.
+All container images are pulled automatically from Dockerhub__.
+
+__ https://hub.docker.com/
+
+Please be aware, that some of the predefined settings, like ``SQUAD_BASE_URL``
+or ``SQUAD_EMAIL_FROM`` in ``docker-compose.yml`` and ``squad-apache.conf`` will
+need to be changed. To use this setup, copy all of the provided files locally
+and run the docker using::
+
+    docker compose up -d
+
+After that, the logs and status of the container can be checked  resp. using::
+
+    docker compose logs
+
+and::
+
+    docker stats
+
+If everything has started successfully, the frontend should be reachable under
+http://localhost:10080.
+
+Before being able to actually use the frontend of SQUAD, a user that acts as an
+administrator (with superuser rights) needs to be created. This can be done by
+entering the container with::
+
+    docker compose exec squad-frontend /bin/bash
+
+While being in the container, a new administrator account can be created with the
+following command::
+
+    squad-admin createsuperuser
+
+After this command, enter the required data and exit the container environment
+by issuing ``exit``.
+
+Now, you should be able to login on the frontend web interface, using the
+credentials you just entered while creating the administrator account.
+
+To stop the SQUAD instance, issue the following command to stop the container::
+
+    docker compose down
+
+Database dump and restore
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Note that container must be running for the following commands to work.
+
+To dump the database to the file `db-dumped`, issue the following command::
+
+    docker compose exec -t postgres pg_dump -F custom -U postgres -f /db-dumped squad
+
+To restore the database from the file `db-to-be-restored`, issue the following
+command::
+
+   docker compose exec -t postgres pg_restore -U postgres -c -d squad -j4 /db-to-be-restored

@@ -1,0 +1,10 @@
+#!/bin/bash
+set -ex
+
+echo "Running DB Initialization!"
+
+PGPASSWORD=${POSTGRES_PASSWORD} psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" -c \
+    "CREATE USER ${INIT_DB_USER} WITH PASSWORD'"${INIT_DB_PASS}"';"
+
+PGPASSWORD=${POSTGRES_PASSWORD} psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" -c \
+    "CREATE DATABASE ${INIT_DB_NAME} OWNER ${INIT_DB_USER}"
