@@ -92,13 +92,13 @@ class Backend(object):
         """
         raise NotImplementedError
 
-    def job_url(selt, test_job):
+    def job_url(self, test_job):
         """
         Returns the URL of the test job in the backend
         """
         raise NotImplementedError
 
-    def check_job_definition(selt, definition):
+    def check_job_definition(self, definition):
         """
         Returns True if job definition checks out or an error message
         """
