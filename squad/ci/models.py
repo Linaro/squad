@@ -183,6 +183,9 @@ class Backend(models.Model):
     def check_job_definition(self, definition):
         return self.get_implementation().check_job_definition(definition)
 
+    def get_job_definition(self, definition):
+        return self.get_implementation().get_job_definition(definition)
+
     def supports_callbacks(self):
         return self.get_implementation().supports_callbacks()
 
