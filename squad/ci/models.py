@@ -143,17 +143,18 @@ class Backend(models.Model):
         except DuplicatedTestJob as exception:
             logger.error('Failed to fetch test_job(%d): "%s"' % (test_job.id, str(exception)))
 
-        if test_job.testrun:
-            self.__postprocess_testjob__(test_job)
+        if test_job.testrun and test_job.target.enabled_plugins and any(test_job.target.enabled_plugins):
+            # Avoids cyclic import errors
+            from squad.ci.tasks import postprocess_testjob
+            test_job.save()
+            postprocess_testjob.delay(test_job.id, status)
+        else:
+            # Remove the 'Fetching' job_status only after all work is done
+            test_job.job_status = status
+            test_job.save()
 
-        # Remove the 'Fetching' job_status only after eventual plugins
-        # are finished, this garantees extra tests and metadata to
-        # be in SQUAD before the build is considered finished
-        test_job.job_status = status
-        test_job.save()
-
-        if test_job.testrun:
-            UpdateProjectStatus()(test_job.testrun)
+            if test_job.testrun:
+                UpdateProjectStatus()(test_job.testrun)
 
     def __postprocess_testjob__(self, test_job):
         project = test_job.target

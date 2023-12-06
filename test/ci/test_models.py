@@ -35,7 +35,7 @@ class BackendTestBase(TestCase):
 
     def setUp(self):
         self.group = core_models.Group.objects.create(slug='mygroup')
-        self.project = self.group.projects.create(slug='myproject')
+        self.project = self.group.projects.create(slug='myproject', enabled_plugins_list=['linux-log-parser'])
         self.backend = models.Backend.objects.create()
         self.build = self.project.builds.create(version='1')
 
@@ -430,7 +430,7 @@ class BackendFetchTest(BackendTestBase):
         test_job.refresh_from_db()
         self.assertIsNotNone(test_job.fetched_at)
 
-    @patch.object(models.Backend, '__postprocess_testjob__')
+    @patch('squad.ci.models.Backend.__postprocess_testjob__')
     @patch('squad.ci.backend.null.Backend.job_url', return_value="http://example.com/123")
     @patch('squad.ci.backend.null.Backend.fetch')
     @patch('squad.ci.models.ReceiveTestRun.__call__')
