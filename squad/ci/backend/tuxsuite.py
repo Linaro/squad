@@ -107,7 +107,7 @@ class Backend(BaseBackend):
 
         """
 
-        regex = r'^(OEBUILD|BUILD|TEST):([0-9a-z_\-]+@[0-9a-z_\-]+)#([a-zA-Z0-9]+)$'
+        regex = r'^(OEBUILD|BUILD|TEST):([0-9a-z_\-.]+@[0-9a-z_\-.]+)#([a-zA-Z0-9]+)$'
         matches = re.findall(regex, job_id)
         if len(matches) == 0:
             raise FetchIssue(f'Job id "{job_id}" does not match "{regex}"')

@@ -114,6 +114,9 @@ class TuxSuiteTest(TestCase):
         result = self.tuxsuite.parse_job_id('TEST:linaro@anders#1yPYGaOEPNwr2pCqBgONY43zORq')
         self.assertEqual(('TEST', 'linaro@anders', '1yPYGaOEPNwr2pCqBgONY43zORq'), result)
 
+        result = self.tuxsuite.parse_job_id('TEST:linaro.ltd@anders.roxel#1yPYGaOEPNwr2pCqBgONY43zORq')
+        self.assertEqual(('TEST', 'linaro.ltd@anders.roxel', '1yPYGaOEPNwr2pCqBgONY43zORq'), result)
+
         with self.assertRaises(FetchIssue):
             self.tuxsuite.parse_job_id('not-really-vallid')
 
