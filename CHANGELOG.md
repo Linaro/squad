@@ -1,3 +1,8 @@
+# 1.79
+
+This 1.79 release expands the Tuxsuite backend regex to accept groups and projects
+with the dot ('.') character in it.
+
 # 1.78
 
 This 1.78 release adds a tiny bit of per-user confiuration of the UI. When
