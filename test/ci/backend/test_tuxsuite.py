@@ -138,6 +138,85 @@ class TuxSuiteTest(TestCase):
         expected = urljoin(TUXSUITE_URL, endpoint)
         self.assertEqual(expected, self.tuxsuite.job_url(testjob))
 
+    def test_parse_test_no_metadata(self):
+        results = {
+            'download_url': 'http://builds.tuxbuild.com/123',
+        }
+
+        metadata = dict()
+        expected = dict()
+        with requests_mock.Mocker() as fake_request:
+            fake_request.get(results['download_url'] + '/' + 'metadata.json', status_code=404)
+            self.tuxsuite.update_metadata_from_file(results=results, metadata=metadata)
+
+        self.assertEqual(expected, metadata)
+
+    def test_parse_test_metadata(self):
+        results = {
+            'download_url': 'http://builds.tuxbuild.com/123',
+        }
+
+        metadata = {
+            "example_metadata": "blah",
+        }
+
+        metadata_file = {
+            "arch": "arm64",
+            "host_arch": "amd64",
+            "qemu_version": "1:8.1.2+ds-1",
+            "artefacts": {
+                "rootfs": {
+                    "url": "https://storage.tuxboot.com/debian/bookworm/arm64/rootfs.ext4.xz",
+                    "sha256sum": "5e0a9ec562ffea3d9705834677df1cd43ff1ba44228b46734e10a5e990c2c169",
+                },
+                "kernel": {
+                    "url": "https://storage.tuxsuite.com/public/linaro/lkft/builds/2ZPQut79EaVwA8ANRJp7xaAVkpP/Image.gz",
+                    "sha256sum": "ab5d2ef97d7a7da95032899c3ee9233dcdf75a4091ec03d7ae2d53f05d24e114",
+                },
+                "modules": {
+                    "url": "https://storage.tuxsuite.com/public/linaro/lkft/builds/2ZPQut79EaVwA8ANRJp7xaAVkpP/modules.tar.xz",
+                    "sha256sum": "1602a287bb54f43e9d4e589c9a773cbd7b9d1bee336501792092a25d76d0f3fc",
+                },
+                "overlay-00": {
+                    "url": "https://storage.tuxboot.com/overlays/debian/bookworm/arm64/ltp/20230929/ltp.tar.xz",
+                    "sha256sum": "94ff90b59487ceb765b09a53d6642ce0e39deaa92062687355a99de3652130e0",
+                },
+            },
+            "durations": {"tests": {"ltp-controllers": "4250.66", "boot": "62.69"}},
+        }
+
+        expected = {
+            "example_metadata": "blah",
+            "arch": "arm64",
+            "host_arch": "amd64",
+            "qemu_version": "1:8.1.2+ds-1",
+            "artefacts": {
+                "rootfs": {
+                    "url": "https://storage.tuxboot.com/debian/bookworm/arm64/rootfs.ext4.xz",
+                    "sha256sum": "5e0a9ec562ffea3d9705834677df1cd43ff1ba44228b46734e10a5e990c2c169",
+                },
+                "kernel": {
+                    "url": "https://storage.tuxsuite.com/public/linaro/lkft/builds/2ZPQut79EaVwA8ANRJp7xaAVkpP/Image.gz",
+                    "sha256sum": "ab5d2ef97d7a7da95032899c3ee9233dcdf75a4091ec03d7ae2d53f05d24e114",
+                },
+                "modules": {
+                    "url": "https://storage.tuxsuite.com/public/linaro/lkft/builds/2ZPQut79EaVwA8ANRJp7xaAVkpP/modules.tar.xz",
+                    "sha256sum": "1602a287bb54f43e9d4e589c9a773cbd7b9d1bee336501792092a25d76d0f3fc",
+                },
+                "overlay-00": {
+                    "url": "https://storage.tuxboot.com/overlays/debian/bookworm/arm64/ltp/20230929/ltp.tar.xz",
+                    "sha256sum": "94ff90b59487ceb765b09a53d6642ce0e39deaa92062687355a99de3652130e0",
+                },
+            },
+            "durations": {"tests": {"ltp-controllers": "4250.66", "boot": "62.69"}},
+        }
+
+        with requests_mock.Mocker() as fake_request:
+            fake_request.get(results["download_url"] + '/' + 'metadata.json', json=metadata_file)
+            self.tuxsuite.update_metadata_from_file(results=results, metadata=metadata)
+
+        self.assertEqual(expected, metadata)
+
     def test_fetch_url(self):
         expected_logs = 'dummy build log'
 
@@ -602,6 +681,10 @@ class TuxSuiteTest(TestCase):
             'ltp-smoke/ping602': 'skip'
         }
 
+        job_data = {
+            'download_url': 'http://storage.tuxapi.com/mystorage'
+        }
+
         expected_metrics = {}
 
         testjob.input = json.dumps(test_results)
@@ -609,6 +692,7 @@ class TuxSuiteTest(TestCase):
             fake_request.get(build_url, json=build_results)
             fake_request.get(urljoin(test_url + '/', 'logs'), text=test_logs)
             fake_request.get(urljoin(test_url + '/', 'results'), json=test_results_json)
+            fake_request.get(test_url, json=job_data)
 
             status, completed, metadata, tests, metrics, logs = self.tuxsuite.fetch(testjob)
             self.assertEqual('Complete', status)
