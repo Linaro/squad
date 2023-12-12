@@ -1,3 +1,12 @@
+# 1.80
+
+This 1.80 release adds Tuxsuite new metadata when fetching tests.
+
+The release also changes a bit how SQUAD does postprocessing of testjobs.
+There was a bug in SQUAD that would cause inconsistencies if SQUAD was deployed
+in a auto-scalable environment. The bug is resolved by creating a separate
+queue called "ci_fetch_postprocess" to be consumed by a persistent worker.
+
 # 1.79
 
 This 1.79 release expands the Tuxsuite backend regex to accept groups and projects
