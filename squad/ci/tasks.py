@@ -1,5 +1,4 @@
 from squad.celery import app as celery
-from squad.core.tasks import UpdateProjectStatus
 from squad.ci.models import Backend, TestJob
 from squad.ci.exceptions import SubmissionIssue
 from squad.ci.utils import task_id
@@ -90,24 +89,3 @@ def send_testjob_resubmit_admin_email(job_id, resubmitted_job_id):
     if test_job.target.html_mail:
         message.attach_alternative(html_message, "text/html")
     message.send()
-
-
-@celery.task
-def postprocess_testjob(job_id, status):
-    logger.info("postprocessing  %s" % job_id)
-    testjob = TestJob.objects.get(pk=job_id)
-    backend = testjob.backend
-    backend.__postprocess_testjob__(testjob)
-
-    # Some plugins, like tradefed, can still trigger sub-tasks creating tests,
-    # ending the current thread, thus triggering build-finished events
-    # we need a way to tell the plugins to wait for all sub-tasks to be finished
-
-    # Remove the 'Fetching' job_status only after eventual plugins
-    # are finished, this garantees extra tests and metadata to
-    # be in SQUAD before the build is considered finished
-    testjob.job_status = status
-    testjob.save()
-
-    if testjob.testrun:
-        UpdateProjectStatus()(testjob.testrun)
