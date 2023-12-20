@@ -54,6 +54,22 @@ def submit(self, job_id):
             logger.warning("submitting job %s to %s: %s" % (test_job.id, test_job.backend.name, str(issue)))
 
 
+@celery.task(priority=10)
+def postprocess_testjob(job_id, job_status):
+    logger.info("postprocessing  %s" % job_id)
+    testjob = TestJob.objects.get(pk=job_id)
+    backend = testjob.backend
+    backend.__postprocess_testjob__(testjob, job_status)
+
+
+@celery.task(priority=9)
+def update_testjob_status(job_id, job_status):
+    logger.info("updating testjob status %s" % job_id)
+    if TestJob.sub_subtasks_count(job_id):
+        testjob = TestJob.objects.get(pk=job_id)
+        testjob.update_statuses(job_status)
+
+
 @celery.task
 def send_testjob_resubmit_admin_email(job_id, resubmitted_job_id):
     test_job = TestJob.objects.get(pk=job_id)

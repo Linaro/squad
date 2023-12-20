@@ -143,25 +143,55 @@ class Backend(models.Model):
         except DuplicatedTestJob as exception:
             logger.error('Failed to fetch test_job(%d): "%s"' % (test_job.id, str(exception)))
 
-        if test_job.testrun:
-            self.__postprocess_testjob__(test_job)
+        if test_job.needs_postprocessing():
+            # Offload postprocessing plugins to a new task
+            test_job.save()
 
-        # Remove the 'Fetching' job_status only after eventual plugins
-        # are finished, this garantees extra tests and metadata to
-        # be in SQUAD before the build is considered finished
-        test_job.job_status = status
-        test_job.save()
+            # Avoids cyclic import errors
+            from squad.ci.tasks import postprocess_testjob
+            postprocess_testjob.delay(test_job.id, status)
+        else:
+            # Remove the 'Fetching' job_status only after all work is done
+            test_job.update_statuses(status)
 
-        if test_job.testrun:
-            UpdateProjectStatus()(test_job.testrun)
+    def __postprocess_testjob__(self, test_job, job_status):
+        """
+        The problem
 
-    def __postprocess_testjob__(self, test_job):
-        project = test_job.target
-        for plugin in apply_plugins(project.enabled_plugins):
+            postprocess
+                plugin 1
+                plugin 2
+                    trigger subtasks
+                plugin 3
+
+        One ore more plugins can have subtasks, meaning that their
+        main thread is ended before all results are in place, causing
+        inconsistencies.
+
+        The solution is to detect the count of plugins with subtasks there are
+        so they can update the testjob status only at the very end
+        """
+
+        plugins = [p for p in apply_plugins(test_job.target.enabled_plugins)]
+        plugins_with_subtasks = [p for p in plugins if p.has_subtasks()]
+        has_subtasks = len(plugins_with_subtasks) > 0
+
+        if has_subtasks:
+            # Plugins with subtasks should call squad.ci.tasks.update_testjob_status
+            TestJob.set_subtasks_count(test_job.id, len(plugins_with_subtasks))
+
+        for plugin in plugins:
             try:
+                if plugin.has_subtasks():
+                    plugin.extra_args["job_status"] = job_status
+
                 plugin.postprocess_testjob(test_job)
             except Exception as e:
                 logger.error("Plugin postprocessing error: " + str(e) + "\n" + traceback.format_exc())
+
+        if not has_subtasks:
+            # Remove the 'Fetching' job_status only after all work is done
+            test_job.update_statuses(job_status)
 
     def submit(self, test_job):
         test_job.reset_build_events()
@@ -243,6 +273,9 @@ class TestJob(models.Model):
     resubmitted_count = models.IntegerField(default=0)
     # reference to the job that was used as base for resubmission
     parent_job = models.ForeignKey('self', default=None, blank=True, null=True, related_name="resubmitted_jobs", on_delete=models.CASCADE)
+
+    # number of subtasks postprocessing this job
+    subtasks_count = models.IntegerField(default=0)
 
     @property
     def show_definition(self):
@@ -353,6 +386,17 @@ class TestJob(models.Model):
         self.save()
         return True
 
+    def needs_postprocessing(self):
+        return self.testrun and self.target.enabled_plugins and any(self.target.enabled_plugins)
+
+    def update_statuses(self, status):
+        # Update this testjob's status and the build/project status assocated
+        self.job_status = status
+        self.save()
+
+        if self.testrun:
+            UpdateProjectStatus()(self.testrun)
+
     def __str__(self):
         return "%s/%s" % (self.backend.name, self.job_id)
 
@@ -361,6 +405,34 @@ class TestJob(models.Model):
         indexes = [
             models.Index(fields=['submitted', 'fetched']),
         ]
+
+    @staticmethod
+    def set_subtasks_count(job_id, subtasks_count):
+        if subtasks_count <= 0:
+            return
+
+        with transaction.atomic():
+            try:
+                test_job = TestJob.objects.select_for_update(nowait=True).get(pk=job_id)
+                test_job.subtasks_count = subtasks_count
+                test_job.save()
+            except DatabaseError:
+                return
+
+    @staticmethod
+    def sub_subtasks_count(job_id):
+        with transaction.atomic():
+            try:
+                test_job = TestJob.objects.select_for_update(nowait=True).get(pk=job_id)
+                subtasks_count = test_job.subtasks_count
+                if subtasks_count == 0:
+                    return True
+
+                test_job.subtasks_count -= 1
+                test_job.save()
+                return test_job.subtasks_count == 0
+            except DatabaseError:
+                return False
 
 
 class ResultsInput(models.Model):
