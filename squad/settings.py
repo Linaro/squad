@@ -384,6 +384,8 @@ CELERY_TASK_ROUTES = {
     'squad.core.tasks.notification.*': {'queue': 'core_notification'},
     'squad.ci.tasks.poll': {'queue': 'ci_poll'},
     'squad.ci.tasks.fetch': {'queue': 'ci_fetch'},
+    'squad.ci.tasks.postprocess_testjob': {'queue': 'ci_fetch_postprocess'},
+    'squad.ci.tasks.update_testjob_status': {'queue': 'ci_fetch'},
     'squad.ci.tasks.submit': {'queue': 'ci_quick'},
     'squad.ci.tasks.send_testjob_resubmit_admin_email': {'queue': 'ci_quick'},
 }

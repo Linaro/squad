@@ -95,6 +95,11 @@ def apply_plugins(plugin_names):
 
 class Plugin(object):
     """
+    This can be used to pass extra arguments to plugins
+    """
+    extra_args = {}
+
+    """
     This class must be used as a superclass for all SQUAD plugins. All the
     methods declared here have empty implementations (i.e. they do nothing),
     and should be overriden in your plugin to provide extra functionality to
@@ -152,6 +157,14 @@ class Plugin(object):
         This method might return service specific URL with given object_id
         """
         pass
+
+    def has_subtasks(self):
+        """
+        This method tells whether or not the plugin will use subtasks to
+        complete work, meaning that the main function will return but more
+        results are still working in parallel.
+        """
+        return False
 
 
 class PluginField(models.CharField):
