@@ -1,3 +1,12 @@
+# 1.81
+
+This 1.81 release reverts part of 1.80 regarding plugin postprocessing.
+
+It still uses the queue ci_fetch_postprocess, but instead of waiting for
+plugin subtasks on the main thread, it relies on plugins to invoke a SQUAD
+task that updates testjob status. This should increase overall consistency
+in SQUAD.
+
 # 1.80
 
 This 1.80 release adds Tuxsuite new metadata when fetching tests.
