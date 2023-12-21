@@ -1,3 +1,7 @@
+# 1.81.1
+
+This 1.81.1 release uses the most recent release of plugins
+
 # 1.81
 
 This 1.81 release reverts part of 1.80 regarding plugin postprocessing.
