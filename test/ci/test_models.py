@@ -35,7 +35,7 @@ class BackendTestBase(TestCase):
 
     def setUp(self):
         self.group = core_models.Group.objects.create(slug='mygroup')
-        self.project = self.group.projects.create(slug='myproject', enabled_plugins_list=['linux-log-parser'])
+        self.project = self.group.projects.create(slug='myproject')
         self.backend = models.Backend.objects.create()
         self.build = self.project.builds.create(version='1')
 
@@ -435,6 +435,8 @@ class BackendFetchTest(BackendTestBase):
     @patch('squad.ci.backend.null.Backend.fetch')
     @patch('squad.ci.models.ReceiveTestRun.__call__')
     def test_fetch_postprocessing(self, receive, backend_fetch, backend_job_url, postprocess):
+        self.project.enabled_plugins_list = ['linux_log_parser']
+        self.project.save()
         backend_fetch.return_value = ('Completed', True, {}, {}, {}, None)
 
         env = self.project.environments.create(slug='foo')

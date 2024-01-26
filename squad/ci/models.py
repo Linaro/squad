@@ -11,7 +11,7 @@ from dateutil.relativedelta import relativedelta
 
 from squad.core.tasks import ReceiveTestRun, UpdateProjectStatus
 from squad.core.models import Project, Build, TestRun, slug_validator
-from squad.core.plugins import apply_plugins
+from squad.core.plugins import get_plugin_instance
 from squad.core.tasks.exceptions import InvalidMetadata, DuplicatedTestJob
 from squad.ci.exceptions import FetchIssue, SubmissionIssue
 from squad.core.utils import yaml_validator
@@ -164,28 +164,31 @@ class Backend(models.Model):
                     trigger subtasks
                 plugin 3
 
-        One ore more plugins can have subtasks, meaning that their
-        main thread is ended before all results are in place, causing
-        inconsistencies.
+        One ore more plugins may have subtasks, meaning that their
+        main thread comes to an end before all results are in place,
+        causing inconsistencies.
 
         The solution is to detect the count of plugins with subtasks there are
         so they can update the testjob status only at the very end
         """
 
-        plugins = [p for p in apply_plugins(test_job.target.enabled_plugins)]
-        plugins_with_subtasks = [p for p in plugins if p.has_subtasks()]
+        # Avoids cyclic import errors
+        from squad.ci.tasks import postprocess_testjob_subtasks
+
+        plugins = {p: get_plugin_instance(p) for p in test_job.target.enabled_plugins}
+        plugins_with_subtasks = [p for p in plugins.values() if p.has_subtasks()]
         has_subtasks = len(plugins_with_subtasks) > 0
 
         if has_subtasks:
             # Plugins with subtasks should call squad.ci.tasks.update_testjob_status
             TestJob.set_subtasks_count(test_job.id, len(plugins_with_subtasks))
 
-        for plugin in plugins:
+        for plugin_name, plugin in plugins.items():
             try:
                 if plugin.has_subtasks():
-                    plugin.extra_args["job_status"] = job_status
-
-                plugin.postprocess_testjob(test_job)
+                    postprocess_testjob_subtasks.delay(plugin_name, test_job.id, job_status)
+                else:
+                    plugin.postprocess_testjob(test_job)
             except Exception as e:
                 logger.error("Plugin postprocessing error: " + str(e) + "\n" + traceback.format_exc())
 
