@@ -1,3 +1,8 @@
+# 1.82
+
+This 1.82 release improves performance of release 1.81 and also
+adds title to all pages in SQUAD.
+
 # 1.81.1
 
 This 1.81.1 release uses the most recent release of plugins
