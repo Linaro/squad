@@ -1,5 +1,7 @@
 {% extends "squad/base.jinja2" %}
 
+{% block page_title %}{{ _('Compare tests') }}{% endblock %}
+
 {% block content %}
 <div ng-app='SquadCompare' ng-controller='CompareController'>
   <h1>{{ _('Compare') }} (<span ng-bind='selectedSuite'></span>/<span ng-bind='selectedTest'></span>)</h1>

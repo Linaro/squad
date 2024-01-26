@@ -1,5 +1,7 @@
 {% extends "squad/project_settings/base.jinja2" %}
 
+{% block page_title %}{{ _('Delete project') }} {{ project.group.display_name }} / {{ project.display_name }} {% endblock %}
+
 {% block settings %}
 
     <div class='panel panel-danger'>
