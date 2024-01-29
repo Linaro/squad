@@ -430,11 +430,13 @@ class BackendFetchTest(BackendTestBase):
         test_job.refresh_from_db()
         self.assertIsNotNone(test_job.fetched_at)
 
-    @patch.object(models.Backend, '__postprocess_testjob__')
+    @patch('squad.ci.models.Backend.__postprocess_testjob__')
     @patch('squad.ci.backend.null.Backend.job_url', return_value="http://example.com/123")
     @patch('squad.ci.backend.null.Backend.fetch')
     @patch('squad.ci.models.ReceiveTestRun.__call__')
     def test_fetch_postprocessing(self, receive, backend_fetch, backend_job_url, postprocess):
+        self.project.enabled_plugins_list = ['linux_log_parser']
+        self.project.save()
         backend_fetch.return_value = ('Completed', True, {}, {}, {}, None)
 
         env = self.project.environments.create(slug='foo')
