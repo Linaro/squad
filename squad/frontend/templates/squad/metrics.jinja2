@@ -1,5 +1,7 @@
 {% extends "squad/base.jinja2" %}
 
+{% block page_title %}{{ _('Metrics') }} {{ project.group.display_name }} / {{ project.display_name }} {% endblock %}
+
 {% block content %}
 {% with pagetitle=_('Metrics') %}
 {% include "squad/project-nav.jinja2" %}

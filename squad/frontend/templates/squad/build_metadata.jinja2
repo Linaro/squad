@@ -1,5 +1,7 @@
 {% extends "squad/base.jinja2" %}
 
+{% block page_title %}{{ _('Build metadata') }} {{ project.group.display_name }} / {{ project.display_name }} / {{ build.version }}{% endblock  %}
+
 {% block content %}
 <div ng-app='Build'>
 {% include "squad/build-nav.jinja2" %}
