@@ -1,5 +1,5 @@
 aiohttp
-celery<5.0,>=4.4
+celery
 cryptography
 coreapi
 django_crispy_forms==1.14.0

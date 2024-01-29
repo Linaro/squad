@@ -1,5 +1,7 @@
 {% extends "squad/base.jinja2" %}
 
+{% block page_title %}{{ _('New project') }} {{ group.display_name }}{% endblock  %}
+
 {% block content %}
 
 {% with pagetitle=_('New project') %}

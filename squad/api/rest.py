@@ -1049,7 +1049,7 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
 
     @action(detail=True, methods=['get'], suffix='test jobs')
     def testjobs(self, request, pk=None):
-        testjobs = self.get_object().test_jobs.order_by('-id')
+        testjobs = self.get_object().test_jobs.prefetch_related('backend').order_by('-id')
         page = self.paginate_queryset(testjobs)
         serializer = TestJobSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)

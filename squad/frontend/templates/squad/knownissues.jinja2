@@ -1,5 +1,7 @@
 {% extends "squad/base.jinja2" %}
 
+{% block page_title %}{{ _('Known issues') }} {{ project.group.display_name }} / {{ project.display_name }} {% endblock %}
+
 {% block content %}
 {% with pagetitle=_('Known Issues') %}
 {% include "squad/project-nav.jinja2" %}
