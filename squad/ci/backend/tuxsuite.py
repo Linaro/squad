@@ -107,7 +107,7 @@ class Backend(BaseBackend):
 
         """
 
-        regex = r'^(OEBUILD|BUILD|TEST):([0-9a-z_\-]+@[0-9a-z_\-]+)#([a-zA-Z0-9]+)$'
+        regex = r'^(OEBUILD|BUILD|TEST):([0-9a-z_\-.]+@[0-9a-z_\-.]+)#([a-zA-Z0-9]+)$'
         matches = re.findall(regex, job_id)
         if len(matches) == 0:
             raise FetchIssue(f'Job id "{job_id}" does not match "{regex}"')
@@ -287,6 +287,17 @@ class Backend(BaseBackend):
 
         return status, completed, metadata, tests, metrics, logs
 
+    def update_metadata_from_file(self, results, metadata):
+        if "download_url" in results:
+            download_url = results["download_url"]
+            try:
+                test_metadata_response = self.fetch_url(download_url + '/' + 'metadata.json')
+                # If fetching the metadata file did not error, decode it as json
+                if test_metadata_response.ok:
+                    metadata.update(test_metadata_response.json())
+            except TemporaryFetchIssue:
+                pass
+
     def parse_test_results(self, test_job, job_url, results, settings):
         status = 'Complete'
         completed = True
@@ -297,6 +308,10 @@ class Backend(BaseBackend):
         # Pick up some metadata from results
         metadata_keys = settings.get('TEST_METADATA_KEYS', [])
         metadata = {k: results.get(k) for k in metadata_keys}
+
+        # Add extra metadata from metadata file if it exists
+        self.update_metadata_from_file(results=results, metadata=metadata)
+
         metadata['job_url'] = job_url
         metadata['job_id'] = test_job.job_id
 

@@ -1,3 +1,35 @@
+# 1.82
+
+This 1.82 release improves performance of release 1.81 and also
+adds title to all pages in SQUAD.
+
+# 1.81.1
+
+This 1.81.1 release uses the most recent release of plugins
+
+# 1.81
+
+This 1.81 release reverts part of 1.80 regarding plugin postprocessing.
+
+It still uses the queue ci_fetch_postprocess, but instead of waiting for
+plugin subtasks on the main thread, it relies on plugins to invoke a SQUAD
+task that updates testjob status. This should increase overall consistency
+in SQUAD.
+
+# 1.80
+
+This 1.80 release adds Tuxsuite new metadata when fetching tests.
+
+The release also changes a bit how SQUAD does postprocessing of testjobs.
+There was a bug in SQUAD that would cause inconsistencies if SQUAD was deployed
+in a auto-scalable environment. The bug is resolved by creating a separate
+queue called "ci_fetch_postprocess" to be consumed by a persistent worker.
+
+# 1.79
+
+This 1.79 release expands the Tuxsuite backend regex to accept groups and projects
+with the dot ('.') character in it.
+
 # 1.78
 
 This 1.78 release adds a tiny bit of per-user confiuration of the UI. When

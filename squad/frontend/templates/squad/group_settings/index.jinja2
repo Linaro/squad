@@ -1,5 +1,7 @@
 {% extends "squad/group_settings/base.jinja2" %}
 
+{% block page_title %}{{ _('Group settings') }} {{ group.display_name }}{% endblock  %}
+
 {% block settings %}
 <h1>{{ _('Basics') }}</h1>
 
