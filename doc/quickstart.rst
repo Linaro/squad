@@ -14,6 +14,11 @@ with the C library, install it with::
 
     apt-get install libyaml-dev
 
+On top of that, the following development packages may be required. Please make
+sure they're installed by issuing::
+
+    apt-get install libpq-dev python3-dev build-essential
+
 To install the dependencies::
 
     pip3 install -r requirements-dev.txt
