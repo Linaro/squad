@@ -32,6 +32,11 @@ requests_session = None
 
 
 class Backend(BaseBackend):
+    def has_resubmit(self):
+        return False
+
+    def has_cancel(self):
+        return False
 
     @staticmethod
     def get_session():
@@ -407,14 +412,6 @@ class Backend(BaseBackend):
             ps = yaml.safe_load(test_job.target.project_settings) or {}
             result_settings.update(ps)
         return result_settings
-
-    def cancel(self, testjob):
-        result_type, tux_project, tux_uid = self.parse_job_id(testjob.job_id)
-        tux_group, tux_user = tux_project.split('@')
-        endpoint = f'groups/{tux_group}/projects/{tux_user}/{result_type.lower()}s/{tux_uid}/cancel'
-        url = urljoin(self.data.url, endpoint)
-        response = requests.post(url)
-        return response.status_code == 200
 
     def supports_callbacks(self):
         return True

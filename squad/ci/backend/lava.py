@@ -106,6 +106,9 @@ class Backend(BaseBackend):
             return job_id
         return [job_id]
 
+    def has_cancel(self):
+        return True
+
     def cancel(self, test_job):
         if test_job.submitted and test_job.job_id is not None:
             return self.__cancel_job__(test_job.job_id)
@@ -328,6 +331,9 @@ class Backend(BaseBackend):
             hostname = socket_url.hostname
         scheme = socket_url.scheme
         return '%s://%s:%s' % (scheme, hostname, port)
+
+    def has_resubmit(self):
+        return True
 
     def resubmit(self, test_job):
         with self.handle_job_submission():
