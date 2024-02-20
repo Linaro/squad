@@ -1,3 +1,7 @@
+# 1.83
+
+This 1.83 release improves documentation and how to run SQUAD.
+
 # 1.82
 
 This 1.82 release improves performance of release 1.81 and also
