@@ -38,7 +38,7 @@ services:
       SQUAD_BASE_URL: "https://www.your-squad-url.org"
       # SENTRY_DSN: "<sentry-dsn>"
       SECRET_KEY_FILE: "/app/secret.dat"
-      SQUAD_SITE_NAME: "CIP SQUAD Site"
+      SQUAD_SITE_NAME: "SQUAD Site"
       SQUAD_EMAIL_FROM: "squad@www.your-squad-url.org"
     volumes:
       - squad-frontend:/app/
