@@ -138,7 +138,7 @@ services:
       - squad-static-files:/squad_static/static
       - ./squad-apache.conf:/usr/local/apache2/conf/httpd.conf
     ports:
-      - 10080:10080
+      - ${SQUAD_DOCKER_PORT:-10080}:80
 
 volumes:
   squad-static-files:
