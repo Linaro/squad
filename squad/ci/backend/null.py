@@ -104,7 +104,7 @@ class Backend(object):
         """
         raise NotImplementedError
 
-    def get_job_definition(self, test_job):
+    def get_job_definition(self, job_id):
         """
         Returns the job definition for a given test job
         """
