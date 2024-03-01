@@ -96,20 +96,25 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
     if testjob_id is None:
         return HttpResponseBadRequest("testjob_id is required")
 
-    definition = backend.get_job_definition(testjob_id)
-    if not definition:
-        return HttpResponseBadRequest(f"No job definition found for job {testjob_id}: {definition}")
-
     # create TestJob object
     test_job = TestJob(
         backend=backend,
-        definition=definition,
         target=project,
         target_build=build,
         environment=environment_slug,
         submitted=True,
         job_id=testjob_id
     )
+
+    # check if backend is able to fetch job definition
+    try:
+        definition = backend.get_job_definition(testjob_id)
+        if not definition:
+            return HttpResponseBadRequest(f"No job definition found for job {testjob_id}: {definition}")
+        test_job.definition = definition
+    except NotImplementedError:
+        # backend does not work with job definitions
+        pass
 
     # sanitize job_url
     try:
