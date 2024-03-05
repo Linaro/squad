@@ -775,3 +775,14 @@ class Backend(BaseBackend):
             return True
         except yaml.YAMLError as e:
             return str(e)
+
+    def get_job_definition(self, job_id):
+        if self.use_xml_rpc:
+            return self.proxy.scheduler.jobs.definition(job_id)
+        job_resp = requests.get(
+            f'{self.api_url_base}/jobs/{job_id}/definition/',
+            headers=self.authentication,
+            timeout=self.settings.get(timeout_variable_name, DEFAULT_TIMEOUT)
+        )
+        if job_resp.status_code == 200:
+            return job_resp.json()

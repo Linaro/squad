@@ -106,6 +106,16 @@ def watch_job(request, group_slug, project_slug, version, environment_slug):
         job_id=testjob_id
     )
 
+    # check if backend is able to fetch job definition
+    try:
+        definition = backend.get_job_definition(testjob_id)
+        if not definition:
+            return HttpResponseBadRequest(f"No job definition found for job {testjob_id}: {definition}")
+        test_job.definition = definition
+    except NotImplementedError:
+        # backend does not work with job definitions
+        pass
+
     # sanitize job_url
     try:
         backend.get_implementation().job_url(test_job)

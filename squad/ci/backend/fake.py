@@ -66,5 +66,8 @@ class Backend(object):
     def check_job_definition(self, definition):
         return True
 
+    def get_job_definition(self, test_job):
+        return "sample job definition"
+
     def supports_callbacks(self):
         return False

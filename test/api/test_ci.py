@@ -238,6 +238,8 @@ class CiApiTest(TestCase):
             1,
             testjob_queryset.count()
         )
+        testjob = testjob_queryset.first()
+        self.assertTrue(len(testjob.definition) > 0)
         fetch.assert_called_with(testjob_queryset.first().id)
         logentry_queryset = LogEntry.objects.filter(
             user_id=self.project_privileged_user.pk,
