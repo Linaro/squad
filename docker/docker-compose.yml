@@ -1,0 +1,147 @@
+version: "3.9"
+
+services:
+
+  setup-volumes:
+    # We can use any image we want as long as we can chown
+    image: busybox
+    # Need a user priviliged enough to chown
+    user: "root"
+    # Specify the group in question
+    volumes:
+      # The volumes to chown
+      - squad-frontend:/app/
+      - squad-storage:/storage/
+    command:
+      - /bin/sh
+      - -c
+      - |
+        chown -R 1000:1000 /app
+        chown -R 1000:1000 /storage
+
+  #
+  # QA-Reports frontend
+  #
+  squad-frontend:
+    image: squadproject/squad
+    command:
+      - /bin/sh
+      - -c
+      - |
+        sleep 10
+        squad --bind 0.0.0.0:8000 --timeout=60 --workers=8 --log-level DEBUG
+    environment:
+      DATABASE: "ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:HOST=postgres:USER=squad:PASSWORD=squad"
+      SQUAD_STATIC_DIR: "/app/static"
+      SQUAD_EXTRA_SETTINGS: "/app/extra_settings.py"
+      SQUAD_CELERY_BROKER_URL: "amqp://rabbitmq"
+      SQUAD_BASE_URL: "https://www.your-squad-url.org"
+      # SENTRY_DSN: "<sentry-dsn>"
+      SECRET_KEY_FILE: "/app/secret.dat"
+      SQUAD_SITE_NAME: "SQUAD Site"
+      SQUAD_EMAIL_FROM: "squad@www.your-squad-url.org"
+    volumes:
+      - squad-frontend:/app/
+      - squad-storage:/storage/
+      - squad-static-files:/app/static
+      - ./extra_settings.py:/app/extra_settings.py
+    depends_on:
+      setup-volumes:
+        # Wait for the ownership to change
+        condition: service_completed_successfully
+
+  #
+  # QA-Reports worker
+  #
+  squad-worker:
+    image: squadproject/squad
+    command: squad-worker
+    environment:
+      DATABASE: "ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:HOST=postgres:USER=squad:PASSWORD=squad"
+      SQUAD_CELERY_BROKER_URL: "amqp://rabbitmq"
+      # SENTRY_DSN: "<sentry-dsn>"
+      SECRET_KEY_FILE: "/app/secret.dat"
+      SQUAD_EMAIL_HOST: "squad@www.your-squad-url.org"
+      SQUAD_EMAIL_FROM: "squad@www.your-squad-url.org"
+    volumes:
+      - squad-storage:/storage/
+
+  #
+  # QA-Reports listener
+  #
+  squad-listener:
+    image: squadproject/squad
+    command:
+      - /bin/sh
+      - -c
+      - |
+        sleep 20
+        squad-listener
+    environment:
+      DATABASE: "ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:HOST=postgres:USER=squad:PASSWORD=squad"
+      SECRET_KEY_FILE: "/app/secret.dat"
+    volumes:
+      - squad-frontend:/app/
+      - squad-storage:/storage/
+
+  #
+  # QA-Reports scheduler
+  #
+  squad-scheduler:
+    image: squadproject/squad
+    command: squad-scheduler --schedule=/app/celerybeat-schedule.db
+    environment:
+      DATABASE: "ENGINE=django.db.backends.postgresql_psycopg2:NAME=squad:HOST=postgres:USER=squad:PASSWORD=squad"
+      SQUAD_CELERY_BROKER_URL: "amqp://rabbitmq"
+      SECRET_KEY_FILE: "/app/secret.dat"
+    volumes:
+      - squad-frontend:/app/
+
+  #
+  # Postgres
+  #
+  postgres:
+    image: postgres:13.1
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "postgres" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=defaultpostgrespassword
+      - INIT_DB_USER=squad
+      - INIT_DB_PASS=squad
+      - INIT_DB_NAME=squad
+    volumes:
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
+      - postgres-db:/var/lib/postgresql/data
+      - ./db-dumped:/db-dumped
+      - ./db-to-be-restored:/db-to-be-restored
+
+  #
+  # RabbitMQ
+  #
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    volumes:
+      - ./rabbitmq.config:/etc/rabbitmq/rabbitmq.config
+
+  #
+  # Apache
+  #
+  httpd:
+    image: httpd:2.4
+    command: httpd -D FOREGROUND
+    volumes:
+      - squad-static-files:/squad_static/static
+      - ./squad-apache.conf:/usr/local/apache2/conf/httpd.conf
+    ports:
+      - ${SQUAD_DOCKER_PORT:-10080}:80
+
+volumes:
+  squad-static-files:
+  squad-frontend:
+  squad-storage:
+  postgres-db:
