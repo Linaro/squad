@@ -105,7 +105,7 @@ provides one SQUAD plugin. It is made of only two files: ``setup.py`` and
 Built-in notification plugins
 -----------------------------
 
-SQUAD comes with two bult-in plugins available for immediate use.
+SQUAD comes with two built-in plugins available for immediate use.
 
 Github
 ~~~~~~
