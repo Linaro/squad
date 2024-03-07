@@ -118,7 +118,7 @@ by a freshly opened Github Pull Request::
 
     $ curl \
         -X POST \
-        --header "Auth-Token: $SQUAD_TOKEN" \
+        --header "Authorization: token $SQUAD_TOKEN" \
         -d patch_source=your-github-patch-source \
         -d patch_baseline=build-v1 \
         -d patch_id=the_owner/the_repo/8223a534d7bf \
@@ -150,7 +150,7 @@ by a freshly created change::
 
     $ curl \
         -X POST \
-        --header "Auth-Token: $SQUAD_TOKEN" \
+        --header "Authorization: token $SQUAD_TOKEN" \
         -d patch_source=your-gerrit-patch-source \
         -d patch_baseline=build-v1 \
         -d patch_id=change-id/patchset \

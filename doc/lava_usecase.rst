@@ -67,7 +67,7 @@ api for submitting a new test job::
 
     wget https://validation.linaro.org/static/docs/v2/examples/test-jobs/qemu-pipeline-first-job.yaml
     curl localhost:8000/api/submitjob/<group-slug>/<project-slug>/<build-version>/<env> \
-         --header "Auth-Token: $SQUAD_TOKEN" \
+         --header "Authorization: token $SQUAD_TOKEN" \
          --form "backend=<backend-name>" \
          --form "definition=@qemu-pipeline-first-job.yaml"
 
