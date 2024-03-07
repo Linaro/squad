@@ -61,7 +61,7 @@ Example (with test job definition as POST parameter)::
 
     $ DEFINITION="$(cat /path/to/definition.txt)"
     $ curl \
-        --header "Auth-Token: $SQUAD_TOKEN" \
+        --header "Authorization: token $SQUAD_TOKEN" \
         --form backend=lava \
         --form definition="$DEFINITION" \
         https://squad.example.com/api/submitjob/my-group/my-project/x.y.z/my-ci-env
@@ -69,7 +69,7 @@ Example (with test job definition as POST parameter)::
 Example (with test job definition as file upload)::
 
     $ curl \
-        --header "Auth-Token: $SQUAD_TOKEN" \
+        --header "Authorization: token $SQUAD_TOKEN" \
         --form backend=lava \
         --form definition=@/path/to/definition.txt \
         https://squad.example.com/api/submitjob/my-group/my-project/x.y.z/my-ci-env
@@ -109,7 +109,7 @@ processing. The API is following:
 Example (with test job definition as POST parameter)::
 
     $ curl \
-        --header "Auth-Token: $SQUAD_TOKEN" \
+        --header "Authorization: token $SQUAD_TOKEN" \
         --form backend=lava \
         --form testjob_id=123456 \
         https://squad.example.com/api/watchjob/my-group/my-project/x.y.z/my-ci-env
