@@ -63,7 +63,7 @@ to send to SQUAD's API for fetching::
     ...
 	 
     curl localhost:8000/api/watchjob/<group-slug>/<project-slug>/<build-version>/<env> \
-         --header "Authorization: token $SQUAD_TOKEN" \
+         --header "Auth-Token: $SQUAD_TOKEN" \
          --form "backend=tuxsuite.com" \
          --form "job_id=BUILD:linaro@lkft#2843VDPeVhg4yaTkgTur0T3ykmq"
 

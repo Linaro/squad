@@ -84,7 +84,7 @@ the format of the data files.
 Example with test data as file uploads::
 
     $ curl \
-        --header "Authorization: token $SQUAD_TOKEN" \
+        --header "Auth-Token: $SQUAD_TOKEN" \
         --form tests=@/path/to/test-results.json \
         --form metrics=@/path/to/metrics.json \
         --form metadata=@/path/to/metadata.json \
@@ -96,7 +96,7 @@ Example with test data as file uploads::
 Example with test data as regular ``POST`` parameters::
 
     $ curl \
-        --header "Authorization: token $SQUAD_TOKEN" \
+        --header "Auth-Token: $SQUAD_TOKEN" \
         --form tests='{"test1": "pass", "test2": "fail"}' \
         --form metrics='{"metric1": 21, "metric2": 4}' \
         --form metadata='{"foo": "bar", "baz": "qux", "job_id": 123}' \
@@ -118,7 +118,7 @@ Example with test data using Python's requests library:
     metadata = json.dumps({"foo": "bar", "baz": "qux", "job_id": 123})
     log = 'log text ...'
 
-    headers = {"Authorization": f"token {os.getenv('SQUAD_TOKEN')}"}
+    headers = {"Auth-Token": os.getenv('SQUAD_TOKEN')}
     url = 'https://squad.example.com/api/submit/my-group/my-project/x.y.z/my-ci-env'
     data = {"metadata": metadata, "log": log, "tests": tests_file}
 
