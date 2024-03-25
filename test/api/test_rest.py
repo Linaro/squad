@@ -135,6 +135,8 @@ class RestApiTest(APITestCase):
                     suite, _ = testrun.build.project.suites.get_or_create(slug=s)
                     metadata, _ = models.SuiteMetadata.objects.get_or_create(suite=s, name=t, kind='test')
                     testrun.tests.create(suite=suite, result=r, metadata=metadata, build=testrun.build, environment=testrun.environment)
+        testrun.tests.create(suite=suite, result=None, metadata=metadata, build=testrun.build, environment=testrun.environment)
+        testrun.tests.create(suite=suite, result=False, has_known_issues=True, metadata=metadata, build=testrun.build, environment=testrun.environment)
 
         metric_suite = 'mymetricsuite'
         suite, _ = self.project.suites.get_or_create(slug=metric_suite)
@@ -1000,6 +1002,32 @@ class RestApiTest(APITestCase):
         self.assertEqual(50, len(data['results']))
         for test in data['results']:
             self.assertIn('/%s/' % suite.id, test['suite'])
+
+    def test_tests_filter_by_result_pass(self):
+        data = self.hit('/api/tests/?result=true')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(50, len(data['results']))
+        for test in data['results']:
+            self.assertTrue(test['result'])
+
+    def test_tests_filter_by_result_fail(self):
+        data = self.hit('/api/tests/?result=false')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(50, len(data['results']))
+        for test in data['results']:
+            self.assertFalse(test['result'])
+
+    def test_tests_filter_by_result_xfail(self):
+        data = self.hit('/api/tests/?result=false&has_known_issues=true')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(1, len(data['results']))
+        self.assertTrue(data['results'][0]['has_known_issues'])
+
+    def test_tests_filter_by_result_skip(self):
+        data = self.hit('/api/tests/?result__isnull=true')
+        self.assertEqual(list, type(data['results']))
+        self.assertEqual(1, len(data['results']))
+        self.assertIsNone(data['results'][0]['result'])
 
     def test_tests_with_page_size(self):
         data = self.hit('/api/tests/?limit=2')

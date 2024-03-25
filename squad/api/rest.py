@@ -227,7 +227,7 @@ class TestFilter(filters.FilterSet):
 
     class Meta:
         model = Test
-        fields = {'result': ['exact', 'in'],
+        fields = {'result': ['exact', 'in', 'isnull'],
                   'suite_id': ['exact', 'in'],
                   'environment_id': ['exact', 'in'],
                   'metadata_id': ['exact', 'in'],
