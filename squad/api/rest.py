@@ -1880,13 +1880,14 @@ router.register(r'projects', ProjectViewSet).register(
     parents_query_lookups=['project_id'],
     **drf_basename('project-builds')
 )
-router.register(r'builds', BuildViewSet).register(
+builds = router.register(r'builds', BuildViewSet)
+builds.register(
     r'tests',
     TestViewSet,
     parents_query_lookups=['build_id'],
     **drf_basename('build-tests')
 )
-router.register(r'builds', BuildViewSet).register(
+builds.register(
     r'metrics',
     MetricViewSet,
     parents_query_lookups=['build_id'],
