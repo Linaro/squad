@@ -1,3 +1,26 @@
+# 1.84
+
+This 1.83 release has a new way to run SQUAD via docker-compose, thanks to @swvanbuuren!
+
+The release also counts with a few improvements on the REST API and CI module.
+
+Complete list of changes going in:
+
+* api: rest:
+  * register only one build endpoint
+  * add skip filter
+* ci:
+  * fetch LAVA job definition for watchjobs
+  * fix variable naming of get_job_definition methods
+  * add test for getting job definitions to testing backend
+  * account for backends without job definition
+* docs:
+  * .readthedocs.yml: bump Python to 3.10
+  * update authorization token header in SQUAD docs
+  * make docker compose definition generic
+  * add docker compose example incl. documentation
+  * change localhost port behavior
+
 # 1.83
 
 This 1.83 release improves documentation and how to run SQUAD.
