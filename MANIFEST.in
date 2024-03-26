@@ -30,6 +30,7 @@ recursive-include squad/*/templates/ *
 recursive-include test/ *.py *.json *.csv *.log *.png *.yaml *.js
 recursive-include scripts/ *
 recursive-include doc/ *
+recursive-include docker/ *
 recursive-include LICENSES/ *
 recursive-include .reuse/ *
 
