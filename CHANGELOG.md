@@ -1,6 +1,11 @@
+# 1.85
+
+This 1.85 release changes the test jobs page to only display resubmit and cancel buttons
+when backend really supports it.
+
 # 1.84
 
-This 1.83 release has a new way to run SQUAD via docker-compose, thanks to @swvanbuuren!
+This 1.84 release has a new way to run SQUAD via docker-compose, thanks to @swvanbuuren!
 
 The release also counts with a few improvements on the REST API and CI module.
 
