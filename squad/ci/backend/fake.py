@@ -60,6 +60,12 @@ class Backend(object):
     def job_url(self, test_job):
         return 'https://example.com/job/%s' % test_job.job_id
 
+    def has_resubmit(self):
+        return False
+
+    def has_cancel(self):
+        return True
+
     def cancel(self, test_job):
         return True
 

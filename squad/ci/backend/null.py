@@ -91,7 +91,6 @@ class Backend:
         """
         raise NotImplementedError
 
-
     def has_cancel(self):
         """
         If the backend has a cancel method implemented, override this to

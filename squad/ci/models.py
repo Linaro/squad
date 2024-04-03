@@ -382,7 +382,7 @@ class TestJob(models.Model):
         if self.job_status == "Canceled":
             return False
 
-        if self.job_id is not None and self.backend.has_cancel(self):
+        if self.job_id is not None and self.backend.get_implementation().has_cancel():
             return self.backend.get_implementation().cancel(self)
 
         self.fetched = True
