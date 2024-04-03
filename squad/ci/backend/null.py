@@ -8,7 +8,7 @@ logger = logging.getLogger('squad.ci.backend')
 description = "None"
 
 
-class Backend(object):
+class Backend:
 
     """
     This is the interface that all backends must implement. Depending on the
@@ -38,6 +38,13 @@ class Backend(object):
               maintainance window).
         """
         raise NotImplementedError
+
+    def has_resubmit(self):
+        """
+        If the backend has a resubmit method implemented, override this to
+        return True.
+        """
+        return False
 
     def resubmit(self, test_job):
         """
@@ -83,6 +90,14 @@ class Backend(object):
         the received data is up to each specific backend implementation.
         """
         raise NotImplementedError
+
+
+    def has_cancel(self):
+        """
+        If the backend has a cancel method implemented, override this to
+        return True.
+        """
+        return False
 
     def cancel(self, test_job):
         """
