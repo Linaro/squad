@@ -909,6 +909,11 @@ class RestApiTest(APITestCase):
         data = self.hit('/api/testjobs/%d/' % self.testjob.id)
         self.assertEqual('myenv', data['environment'])
 
+    def test_testjob_filter_by_created_at(self):
+        very_old_date = str(datetime.datetime.now() - datetime.timedelta(days=365))
+        data = self.hit('/api/testjobs/?created_at=%s' % very_old_date)
+        self.assertEqual(0, len(data['results']))
+
     def test_testjob_resubmitted_jobs(self):
         data = self.hit('/api/testjobs/%d/resubmitted_jobs/' % self.testjob5.id)
         self.assertIn(str(self.testjob5.id), data['results'][0]['parent_job'])

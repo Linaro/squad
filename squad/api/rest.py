@@ -173,6 +173,7 @@ class TestJobFilter(filters.FilterSet):
                   "fetched": ['exact', 'in'],
                   "fetch_attempts": ['exact', 'in'],
                   "last_fetch_attempt": ['exact', 'in', 'lt', 'gt', 'lte', 'gte'],
+                  "created_at": ['exact', 'in', 'lt', 'gt', 'lte', 'gte'],
                   "failure": ['exact', 'in', 'startswith', 'contains', 'icontains'],
                   "can_resubmit": ['exact', 'in'],
                   "resubmitted_count": ['exact', 'in'],
