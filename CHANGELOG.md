@@ -1,3 +1,8 @@
+# 1.86.1
+
+This 1.86.1 release adds support for filtering testjobs by `created_at`
+attribute
+
 # 1.86
 
 This 1.86 release adds an extension of DRF's UserRateThrottle by allowing
