@@ -1,3 +1,7 @@
+# 1.86.2
+
+This 1.86.2 release fixes tuxsuite backend to mark jobs as canceled when requested.
+
 # 1.86.1
 
 This 1.86.1 release adds support for filtering testjobs by `created_at`
