@@ -419,6 +419,12 @@ class Backend(BaseBackend):
         endpoint = f'groups/{tux_group}/projects/{tux_user}/{result_type.lower()}s/{tux_uid}/cancel'
         url = urljoin(self.data.url, endpoint)
         response = requests.post(url)
+
+        testjob.fetched = True
+        testjob.submitted = True
+        testjob.job_status = "Canceled"
+        testjob.save()
+
         return response.status_code == 200
 
     def supports_callbacks(self):

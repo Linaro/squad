@@ -1130,6 +1130,9 @@ class TuxSuiteTest(TestCase):
             url = f'{TUXSUITE_URL}/groups/tuxgroup/projects/tuxproject/tests/125/cancel'
             fake_request.post(url, status_code=200)
             self.assertTrue(self.tuxsuite.cancel(testjob))
+            self.assertTrue(testjob.fetched)
+            self.assertTrue(testjob.submitted)
+            self.assertEqual("Canceled", testjob.job_status)
 
         # Mock a failed cancellation
         job_id = 'TEST:tuxgroup@tuxproject#126'
