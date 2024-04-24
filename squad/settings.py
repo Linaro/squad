@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 from celery.schedules import crontab
 from django.conf import global_settings
 from email.utils import parseaddr
+from importlib.util import find_spec
 from glob import glob
 import contextlib
 import json
@@ -55,30 +56,23 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
-try:
-    import imp
-    imp.find_module('django_extensions')
+django_extensions = None
+if find_spec('django_extensions'):
     django_extensions = 'django_extensions'
-except ImportError:
-    django_extensions = None
 
 django_toolbar = None
 django_toolbar_middleware = None
-try:
-
+django_toolbar_module_spec = find_spec('debug_toolbar')
+if django_toolbar_module_spec:
     DEBUG_TOOLBAR_CONFIG = {
         'JQUERY_URL': '',
         'SHOW_COLLAPSED': True,
         'SHOW_TOOLBAR_CALLBACK': 'squad.frontend.utils.show_debug_toolbar',
     }
 
-    import imp
-    imp.find_module('debug_toolbar')
     django_toolbar = 'debug_toolbar'
     django_toolbar_middleware = 'debug_toolbar.middleware.DebugToolbarMiddleware'
     INTERNAL_IPS = ['127.0.0.1']
-except ImportError:
-    pass
 
 
 django_allauth_middleware = None
@@ -444,6 +438,9 @@ if SENTRY_DSN:
 
 # Django's default is 2.5MB, which is a bit low
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
+
+# Django requires that this specification is present in settings.py
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 try:
     from squad.local_settings import *  # noqa: F401,F403
