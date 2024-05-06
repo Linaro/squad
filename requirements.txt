@@ -17,7 +17,7 @@ drf-extensions
 future
 gunicorn
 importlib-metadata>3
-Jinja2==3.0.3
+Jinja2==3.1.4
 Markdown
 msgpack>=0.5.0
 python_dateutil
