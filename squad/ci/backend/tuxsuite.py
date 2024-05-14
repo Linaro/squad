@@ -240,6 +240,10 @@ class Backend(BaseBackend):
         # Make metadata
         metadata_keys = settings.get('BUILD_METADATA_KEYS', [])
         metadata = {k: results.get(k) for k in metadata_keys}
+
+        # Add extra metadata from metadata file if it exists
+        self.update_metadata_from_file(results=results, metadata=metadata)
+
         metadata['job_url'] = job_url
         metadata['job_id'] = test_job.job_id
         metadata['config'] = urljoin(results.get('download_url') + '/', 'config')
