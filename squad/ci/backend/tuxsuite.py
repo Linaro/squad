@@ -300,10 +300,10 @@ class Backend(BaseBackend):
         if "download_url" in results:
             download_url = results["download_url"]
             try:
-                test_metadata_response = self.fetch_url(download_url + '/' + 'metadata.json')
+                metadata_response = self.fetch_url(download_url + '/' + 'metadata.json')
                 # If fetching the metadata file did not error, decode it as json
-                if test_metadata_response.ok:
-                    metadata.update(test_metadata_response.json())
+                if metadata_response.ok:
+                    metadata.update(metadata_response.json())
             except TemporaryFetchIssue:
                 pass
 
