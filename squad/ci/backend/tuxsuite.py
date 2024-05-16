@@ -240,6 +240,10 @@ class Backend(BaseBackend):
         # Make metadata
         metadata_keys = settings.get('BUILD_METADATA_KEYS', [])
         metadata = {k: results.get(k) for k in metadata_keys}
+
+        # Add extra metadata from metadata file if it exists
+        self.update_metadata_from_file(results=results, metadata=metadata)
+
         metadata['job_url'] = job_url
         metadata['job_id'] = test_job.job_id
         metadata['config'] = urljoin(results.get('download_url') + '/', 'config')
@@ -296,10 +300,10 @@ class Backend(BaseBackend):
         if "download_url" in results:
             download_url = results["download_url"]
             try:
-                test_metadata_response = self.fetch_url(download_url + '/' + 'metadata.json')
+                metadata_response = self.fetch_url(download_url + '/' + 'metadata.json')
                 # If fetching the metadata file did not error, decode it as json
-                if test_metadata_response.ok:
-                    metadata.update(test_metadata_response.json())
+                if metadata_response.ok:
+                    metadata.update(metadata_response.json())
             except TemporaryFetchIssue:
                 pass
 
