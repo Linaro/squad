@@ -131,19 +131,6 @@ class Plugin(BasePlugin):
             matches = regex.findall(log)
             snippets = self.__join_matches(matches, REGEXES)
 
-            # search onliners within multiliners
-            multiline_matches = []
-            for regex_id in range(len(MULTILINERS)):
-                multiline_matches += snippets[regex_id]
-
-            regex = self.__compile_regexes(ONELINERS)
-            matches = regex.findall('\n'.join(multiline_matches))
-            onliner_snippets = self.__join_matches(matches, ONELINERS)
-
-            regex_id_offset = len(MULTILINERS)
-            for regex_id in range(len(ONELINERS)):
-                snippets[regex_id + regex_id_offset] += onliner_snippets[regex_id]
-
             for regex_id in range(len(REGEXES)):
                 test_name = REGEXES[regex_id][REGEX_NAME]
                 self.__create_tests(testrun, suite, test_name, snippets[regex_id])

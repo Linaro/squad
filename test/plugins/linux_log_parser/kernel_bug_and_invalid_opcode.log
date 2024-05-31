@@ -2898,6 +2898,8 @@ version: 13_ #
 : _ #
 # # futex_wait_wouldblock Test the unexpected futex value in FUTEX_WAIT
 futex_wait_wouldblock: Test_the #
+-wait-wouldblock[  347.423535] invalid opcode: 0000 [#1] SMP PTI
+[  347.416924] kernel BUG at /usr/src/kernel/arch/x86/kvm/mmu/mmu.c:3722!
 # ok 1 futex[  347.411307] ------------[ cut here ]------------
 [  347.416924] kernel BUG at /usr/src/kernel/arch/x86/kvm/mmu/mmu.c:3722!
 -wait-wouldblock[  347.423535] invalid opcode: 0000 [#1] SMP PTI
