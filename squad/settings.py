@@ -62,8 +62,7 @@ if find_spec('django_extensions'):
 
 django_toolbar = None
 django_toolbar_middleware = None
-django_toolbar_module_spec = find_spec('debug_toolbar')
-if django_toolbar_module_spec:
+if find_spec('debug_toolbar'):
     DEBUG_TOOLBAR_CONFIG = {
         'JQUERY_URL': '',
         'SHOW_COLLAPSED': True,
@@ -76,11 +75,8 @@ if django_toolbar_module_spec:
 
 
 django_allauth_middleware = None
-try:
-    import allauth.account.middleware  # noqa: F401
+if find_spec('allauth'):
     django_allauth_middleware = 'allauth.account.middleware.AccountMiddleware'
-except ImportError:
-    pass
 
 
 __apps__ = [
