@@ -17,6 +17,7 @@ RUN apt-get update -q=2 && \
         python3-gunicorn \
         python3-importlib-metadata \
         python3-jinja2 \
+        python3-jwt \
         python3-markdown \
         python3-msgpack \
         python3-pip \
@@ -59,7 +60,7 @@ RUN apt-get update -q=2 && \
         django-bootstrap3 \
         django-cors-headers \
         drf-extensions \
-        django-allauth==0.46.0 \
+        django-allauth \
         django-simple-history==3.1.1 \
         django-health-check==3.16.4 && \
     pip3 install boto3==1.15 django-storages[google]==1.13.2 asgiref==3.7.2
