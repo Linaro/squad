@@ -60,6 +60,18 @@ class TestLinuxLogParser(TestCase):
         self.assertIn('5fe0: 0000000b be963e80 b6f142d9 b6f0e648 60000030 ffffffff"}', test.log)
         self.assertNotIn('Internal error: Oops', test.log)
 
+    def test_detects_kernel_exception_without_square_braces(self):
+        testrun = self.new_testrun('kernelexceptiontrace_without_squarebraces.log')
+        self.plugin.postprocess_testrun(testrun)
+
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception')
+        self.assertFalse(test.result)
+        self.assertIsNotNone(test.log)
+        self.assertNotIn('Booting Linux', test.log)
+        self.assertIn('WARNING: CPU: 0 PID: 1 at kernel/smp.c:912 smp_call_function_many_cond+0x3c4/0x3c8', test.log)
+        self.assertIn('5fe0: 0000000b be963e80 b6f142d9 b6f0e648 60000030 ffffffff"}', test.log)
+        self.assertNotIn('Internal error: Oops', test.log)
+
     def test_detects_kernel_kasan(self):
         testrun = self.new_testrun('kasan.log')
         self.plugin.postprocess_testrun(testrun)
