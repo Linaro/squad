@@ -1,0 +1,53 @@
+[    1.143924] ------------ cut here ------------"}
+[    1.146063] WARNING: CPU: 0 PID: 1 at kernel/smp.c:912 smp_call_function_many_cond+0x3c4/0x3c8"}
+[    1.146677] Modules linked in:"}
+[    1.147156] CPU: 0 PID: 1 Comm: init Not tainted 6.0.0-rc3-next-20220901 #1"}
+[    1.147363] Hardware name: Generic DT based system"}
+[    1.147556]  unwind_backtrace from show_stack+0x18/0x1c"}
+[    1.147692]  show_stack from dump_stack_lvl+0x58/0x70"}
+[    1.147776]  dump_stack_lvl from __warn+0xd0/0x144"}
+[    1.147857]  __warn from warn_slowpath_fmt+0x64/0xbc"}
+[    1.147941]  warn_slowpath_fmt from smp_call_function_many_cond+0x3c4/0x3c8"}
+[    1.148071]  smp_call_function_many_cond from smp_call_function+0x34/0x3c"}
+[    1.148177]  smp_call_function from set_memory_valid+0x7c/0x9c"}
+[    1.148278]  set_memory_valid from kfence_guarded_free+0x284/0x4b0"}
+[    1.148400]  kfence_guarded_free from __kmem_cache_free+0x228/0x2ec"}
+[    1.148511]  __kmem_cache_free from detach_buf_split+0x130/0x164"}
+[    1.148614]  detach_buf_split from virtqueue_get_buf_ctx_split+0x88/0x170"}
+[    1.148723]  virtqueue_get_buf_ctx_split from virtblk_done+0x70/0xe4"}
+[    1.148833]  virtblk_done from vring_interrupt+0x90/0xfc"}
+[    1.148943]  vring_interrupt from vm_interrupt+0x6c/0xa4"}
+[    1.149033]  vm_interrupt from __handle_irq_event_percpu+0xa0/0x1fc"}
+[    1.149138]  __handle_irq_event_percpu from handle_irq_event+0x4c/0x94"}
+[    1.149250]  handle_irq_event from handle_fasteoi_irq+0xa0/0x194"}
+[    1.149337]  handle_fasteoi_irq from generic_handle_domain_irq+0x30/0x40"}
+[    1.149448]  generic_handle_domain_irq from gic_handle_irq+0x54/0xcc"}
+[    1.149553]  gic_handle_irq from generic_handle_arch_irq+0x34/0x44"}
+[    1.149653]  generic_handle_arch_irq from call_with_stack+0x18/0x20"}
+[    1.149759]  call_with_stack from __irq_svc+0x9c/0xb8"}
+[    1.149881] Exception stack(0xf0825bd0 to 0xf0825c18)"}
+[    1.150095] 5bc0:                                     00000000 00000000 00000000 f0825cac"}
+[    1.150231] 5be0: 00000000 f0825cac c2f66800 c3891e00 c2f66800 c2f5b2d8 f0825c54 00000000"}
+[    1.150353] 5c00: 00000000 f0825c20 c0a6298c c079cdac 60000113 ffffffff"}
+[    1.150466]  __irq_svc from blk_mq_dispatch_rq_list+0x424/0x934"}
+[    1.150563]  blk_mq_dispatch_rq_list from blk_mq_do_dispatch_sched+0x2e8/0x340"}
+[    1.150674]  blk_mq_do_dispatch_sched from __blk_mq_sched_dispatch_requests+0xbc/0x164"}
+[    1.150799]  __blk_mq_sched_dispatch_requests from blk_mq_sched_dispatch_requests+0x3c/0x64"}
+[    1.150931]  blk_mq_sched_dispatch_requests from __blk_mq_run_hw_queue+0x50/0xf0"}
+[    1.151051]  __blk_mq_run_hw_queue from blk_mq_sched_insert_requests+0x7c/0x1c8"}
+[    1.151167]  blk_mq_sched_insert_requests from blk_mq_flush_plug_list+0x114/0x2e0"}
+[    1.151282]  blk_mq_flush_plug_list from __blk_flush_plug+0xdc/0x11c"}
+[    1.151382]  __blk_flush_plug from blk_finish_plug+0x24/0x34"}
+[    1.151472]  blk_finish_plug from read_pages+0x1c4/0x2cc"}
+[    1.151564]  read_pages from page_cache_ra_unbounded+0x100/0x1a4"}
+[    1.151667]  page_cache_ra_unbounded from filemap_fault+0x628/0x9dc"}
+[    1.151766]  filemap_fault from __do_fault+0x40/0x170"}
+[    1.151848]  __do_fault from handle_mm_fault+0xa84/0xee0"}
+[    1.151940]  handle_mm_fault from do_page_fault+0x190/0x4a8"}
+[    1.152035]  do_page_fault from do_PrefetchAbort+0x40/0x94"}
+[    1.152125]  do_PrefetchAbort from ret_from_exception+0x0/0x1c"}
+[    1.152223] Exception stack(0xf0825fb0 to 0xf0825ff8)"}
+[    1.152309] 5fa0:                                     b6f32600 b6f0a141 b6f0a269 b6f04fa1"}
+[    1.152442] 5fc0: b6f32010 b6f31d00 b6f32600 be963e88 00000000 b6f02000 b6f024a4 b6f32010"}
+[    1.152569] 5fe0: 0000000b be963e80 b6f142d9 b6f0e648 60000030 ffffffff"}
+[    1.152705] ---[ end trace 0000000000000000 ]---"}
