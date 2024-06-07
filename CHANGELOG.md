@@ -1,3 +1,14 @@
+# 1.87
+
+This 1.87 release does a bit of Python updates. The github actions have stopped
+working for a while and needed a set of commits to go back working. Part of these
+changes are related to new Python versions. Newer SQUAD releases should start
+supportting Python > 3.10, as older versions are going to be deprecated soon.
+
+The release also fetches build metadata for jobs coming from Tuxsuite backend and
+lastly it changes log-parser plugin to optionally fetch kernel panics without
+square braces around `cut-here` (thanks Anders!).
+
 # 1.86.3
 
 This 1.86.3 release fixes deprecation warnings regarding imp module
