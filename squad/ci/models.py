@@ -51,10 +51,18 @@ class Backend(models.Model):
     def poll(self):
         if not self.poll_enabled:
             return
+
+        # There are cases that the backend might be running into issues and there is no
+        # way for SQUAD to know it, causing jobs to this backend/environment to clog the
+        # ci_fetch queue with jobs that are never ready to fetch. In order to avoid this
+        # SQUAD will not poll jobs that didn't get processed after a week. It's hardcoded
+        # for now, but it can become a setting in the backend model.
+        week_ago = timezone.now() - relativedelta(days=7)
         test_jobs = self.test_jobs.filter(
             submitted=True,
             fetched=False,
-            fetch_attempts__lt=self.max_fetch_attempts
+            fetch_attempts__lt=self.max_fetch_attempts,
+            submitted_at__gt=week_ago,
         )
         for test_job in test_jobs:
             last = test_job.last_fetch_attempt
