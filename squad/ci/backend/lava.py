@@ -659,11 +659,13 @@ class Backend(BaseBackend):
                     suite = result['suite'].split("_", 1)[-1]
                     res_name = "%s/%s" % (suite, result['name'])
                     res_log = None
-                    if 'log_start_line' in result.keys() and \
-                            'log_end_line' in result.keys() and \
-                            result['log_start_line'] is not None and \
-                            result['log_end_line'] is not None:
-                        res_log = self.__download_test_log__(raw_logs, result['log_start_line'], result['log_end_line'])
+                    if 'log_start_line' in result.keys():
+                        log_url = f"{self.job_url(test_job)}#L{result['log_start_line']}"
+                        res_log = f"Testcase log: <a href='{log_url}'>{log_url}</a>\n"
+                        if 'log_end_line' in result.keys() and \
+                                result['log_start_line'] is not None and \
+                                result['log_end_line'] is not None:
+                            res_log += self.__download_test_log__(raw_logs, result['log_start_line'], result['log_end_line'])
                     # YAML from LAVA has all values serialized to strings
                     if result['measurement'] == 'None' or result['measurement'] is None:
                         res_value = result['result']
