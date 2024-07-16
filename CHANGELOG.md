@@ -1,3 +1,8 @@
+# 1.88
+
+This 1.88 release adds a neat feature that gives the user the exact log link
+of a LAVA test.
+
 # 1.87
 
 This 1.87 release does a bit of Python updates. The github actions have stopped
