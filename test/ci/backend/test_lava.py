@@ -518,7 +518,7 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_fetch_basics(self, get_results, get_details, test_log):
-        lava = LAVABackend(None)
+        lava = LAVABackend(self.backend)
         testjob = TestJob(
             job_id='9999',
             target=self.project,
@@ -536,7 +536,7 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_INVALID_DATES)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_fetch_invalid_dates(self, get_results, get_details, test_log):
-        lava = LAVABackend(None)
+        lava = LAVABackend(self.backend)
         testjob = TestJob(
             job_id='9999',
             target=self.project,
@@ -554,7 +554,7 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_START_DATE)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_fetch_missing_dates(self, get_results, get_details, test_log):
-        lava = LAVABackend(None)
+        lava = LAVABackend(self.backend)
         testjob = TestJob(
             job_id='9999',
             target=self.project,
@@ -597,7 +597,7 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results_metadata(self, get_results, get_details, test_log):
-        lava = LAVABackend(None)
+        lava = LAVABackend(self.backend)
         testjob = TestJob(
             job_id='1234',
             target=self.project,
@@ -610,7 +610,7 @@ class LavaTest(TestCase):
     @patch("squad.ci.backend.lava.Backend.__get_job_details__", return_value=JOB_DETAILS_NO_METADATA)
     @patch("squad.ci.backend.lava.Backend.__get_testjob_results_yaml__", return_value=TEST_RESULTS)
     def test_parse_results_empty_metadata(self, get_results, get_details, test_log):
-        lava = LAVABackend(None)
+        lava = LAVABackend(self.backend)
         testjob = TestJob(
             job_id='1234',
             target=self.project,
