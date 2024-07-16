@@ -37,7 +37,7 @@
                 {% for status in test %}
                 <td class="{{status[0]}}"><a href="{{ test_history_url }}">{{status[0]}}{% if status[1] %} ({{status[1]}} %){% endif %}</a>
                   {% if status[2] %}
-                  <a href='#' data-toggle="modal" data-target="#info_modal" data-status="{{ status[1] }}"><span data-toggle="tooltip" data-placement="right" title="{{ _('Show info') }}" class='fa fa-info-circle'></span></a>
+                  <a href='#' data-toggle="modal" data-target="#info_modal" data-status="{{ status[2] }}"><span data-toggle="tooltip" data-placement="right" title="{{ _('Show info') }}" class='fa fa-info-circle'></span></a>
                   {% endif %}
                 </td>
                 {% endfor %}
