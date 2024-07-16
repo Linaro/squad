@@ -1211,7 +1211,7 @@ class TuxSuiteTest(TestCase):
             'result': 'fail',
             'results': {},
             'plan': None,
-            'waiting_for': None,
+            'waiting_for': 'BUILD#123',
             'boot_args': None,
             'provisioning_time': '2022-03-25T15:49:11.441860',
             'running_time': '2022-03-25T15:50:11.770607',
@@ -1246,6 +1246,75 @@ class TuxSuiteTest(TestCase):
 
         self.assertEqual('ltp-smoke', testjob.name)
         self.assertEqual('build failed', testjob.failure)
+
+    def test_fetch_test_results_for_test_with_failed_sanity_test(self):
+        job_id = 'TEST:tuxgroup@tuxproject#127'
+        testjob = self.build.test_jobs.create(target=self.project, backend=self.backend, job_id=job_id)
+        test_url = urljoin(TUXSUITE_URL, '/groups/tuxgroup/projects/tuxproject/tests/127')
+
+        # Only fetch when finished
+        with requests_mock.Mocker() as fake_request:
+            fake_request.get(test_url, json={'state': 'running'})
+            results = self.tuxsuite.fetch(testjob)
+            self.assertEqual(None, results)
+
+        test_logs = ''
+        test_results = {
+            'project': 'tuxgroup/tuxproject',
+            'device': 'qemu-armv7',
+            'uid': '127',
+            'kernel': 'https://storage.tuxboot.com/armv7/zImage',
+            'ap_romfw': None,
+            'mcp_fw': None,
+            'mcp_romfw': None,
+            'modules': None,
+            'parameters': {},
+            'rootfs': None,
+            'scp_fw': None,
+            'scp_romfw': None,
+            'fip': None,
+            'tests': ['boot', 'ltp-smoke'],
+            'user': 'tuxbuild@linaro.org',
+            'user_agent': 'tuxsuite/0.43.6',
+            'state': 'finished',
+            'result': 'fail',
+            'results': {},
+            'plan': None,
+            'waiting_for': 'TEST#123',
+            'boot_args': None,
+            'provisioning_time': '2022-03-25T15:49:11.441860',
+            'running_time': '2022-03-25T15:50:11.770607',
+            'finished_time': '2022-03-25T15:52:42.672483',
+            'retries': 0,
+            'retries_messages': [],
+            'duration': 151
+        }
+
+        expected_metadata = {
+            'job_url': test_url,
+            'job_id': job_id,
+            'does_not_exist': None,
+        }
+
+        expected_tests = {}
+
+        expected_metrics = {}
+
+        with requests_mock.Mocker() as fake_request:
+            fake_request.get(test_url, json=test_results)
+            fake_request.get(urljoin(test_url + '/', 'logs'), text='{"error": "File not found"}', status_code=404)
+            fake_request.get(urljoin(test_url + '/', 'results'), json={'error': 'File not found'}, status_code=404)
+
+            status, completed, metadata, tests, metrics, logs = self.tuxsuite.fetch(testjob)
+            self.assertEqual('Complete', status)
+            self.assertTrue(completed)
+            self.assertEqual(sorted(expected_metadata.items()), sorted(metadata.items()))
+            self.assertEqual(sorted(expected_tests.items()), sorted(tests.items()))
+            self.assertEqual(sorted(expected_metrics.items()), sorted(metrics.items()))
+            self.assertEqual(test_logs, logs)
+
+        self.assertEqual('ltp-smoke', testjob.name)
+        self.assertEqual('sanity test failed', testjob.failure)
 
     def test_follow_test_dependency(self):
         job_id = 'TEST:tuxgroup@tuxproject#124'

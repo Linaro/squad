@@ -332,7 +332,14 @@ class Backend(BaseBackend):
         test_job.name = ','.join(results['tests'])
 
         if results['results'] == {}:
-            test_job.failure = 'build failed'
+            waiting_for = results.get('waiting_for')
+            if waiting_for is None:
+                test_job.failure = 'no results'
+            elif 'BUILD' in waiting_for:
+                test_job.failure = 'build failed'
+            else:
+                test_job.failure = 'sanity test failed'
+
             return status, completed, metadata, tests, metrics, logs
 
         # Fetch results even if the job fails, but has results
