@@ -3,6 +3,7 @@ from functools import reduce
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q, Prefetch
+from django.http import HttpResponseNotFound
 
 from squad.core.models import Project, Group, Build
 from squad.core.comparison import TestComparison, MetricComparison
@@ -107,7 +108,11 @@ def compare_builds(request):
     comparison = None
     project = None
     if project_slug:
-        group_slug, project_slug = project_slug.split('/')
+        group_and_project = project_slug.split('/')
+        if len(group_and_project) != 2:
+            return HttpResponseNotFound()
+
+        group_slug, project_slug = group_and_project
         project = get_object_or_404(Project, group__slug=group_slug, slug=project_slug)
 
         baseline_build = request.GET.get('baseline')
