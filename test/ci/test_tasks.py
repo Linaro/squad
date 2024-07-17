@@ -132,6 +132,11 @@ class FetchTest(TestCase):
         fetch.apply(args=[testjob.id])
         fetch_method.assert_not_called()
 
+    @patch('squad.ci.models.Backend.fetch')
+    def test_fetch_deleted_job(self, fetch_method):
+        fetch.apply(args=[99999999999])
+        fetch_method.assert_not_called()
+
 
 class FetchTestRaceCondition(TransactionTestCase):
 
