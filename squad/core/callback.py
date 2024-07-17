@@ -56,12 +56,18 @@ def dispatch_callback(callback_object):
         else:
             args['data'] = json.loads(callback_object.payload)
 
-    request = getattr(requests, callback_object.method)
-    response = request(callback_object.url, **args)
+    try:
+        request = getattr(requests, callback_object.method)
+        response = request(callback_object.url, **args)
+        response_code = response.status_code
+        response_content = response.content
+    except requests.exceptions.RequestException as e:
+        response_code = None
+        response_content = str(e)
 
     if callback_object.record_response:
-        callback_object.response_code = response.status_code
-        callback_object.response_content = response.content
+        callback_object.response_code = response_code
+        callback_object.response_content = response_content
 
     callback_object.is_sent = True
     callback_object.save()
