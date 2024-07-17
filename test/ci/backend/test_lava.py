@@ -451,6 +451,8 @@ class LavaTest(TestCase):
     def test_lava_job_name(self):
         lava = LAVABackend(None)
         self.assertIsNone(lava._Backend__lava_job_name('no name:'))
+        self.assertIsNone(lava._Backend__lava_job_name('- list'))
+        self.assertIsNone(lava._Backend__lava_job_name('string'))
         self.assertEqual('', lava._Backend__lava_job_name('job_name:'))
         self.assertEqual('job-name', lava._Backend__lava_job_name('job_name: job-name'))
         truncated_name = lava._Backend__lava_job_name('job_name: ' + ('a' * 300))
