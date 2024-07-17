@@ -1190,7 +1190,13 @@ class BuildViewSet(NestedViewSetMixin, ModelViewSet):
                     raise ValidationError('url is required.')
                 return Response({'message': 'OK'}, status=status.HTTP_202_ACCEPTED)
             except (ValidationError, IntegrityError) as e:
-                return Response({'message': ', '.join(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
+                message = ""
+                if hasattr(e, "messages"):
+                    message = ', '.join(e.messages)
+                else:
+                    message = str(e)
+
+                return Response({'message': message}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['get'], suffix='compare')
     def compare(self, request, pk=None):
