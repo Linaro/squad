@@ -3,7 +3,7 @@ from django.core.paginator import Paginator
 
 from squad.core.queries import test_confidence
 from squad.core.utils import parse_name
-from squad.core.models import SuiteMetadata, KnownIssue, Environment
+from squad.core.models import SuiteMetadata, KnownIssue, Environment, Build
 
 
 class TestResult(object):
@@ -48,6 +48,9 @@ class TestHistory(object):
         else:
             self.number = page
             builds = self.paginator.page(page)
+
+        if len(builds) == 0:
+            raise Build.DoesNotExist
 
         self.top = builds[0]
 

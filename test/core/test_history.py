@@ -113,3 +113,10 @@ class TestHistoryTest(TestCase):
         history = TestHistory(self.project1, test_name)
 
         self.assertIsNotNone(history.results)
+
+    def test_no_build(self):
+        empty_project = self.group.projects.create(slug='empty-project')
+        test_name = 'fake_test'
+
+        with self.assertRaises(models.Build.DoesNotExist):
+            TestHistory(empty_project, test_name)
