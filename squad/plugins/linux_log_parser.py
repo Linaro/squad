@@ -4,26 +4,28 @@ import re
 from collections import defaultdict
 from squad.plugins import Plugin as BasePlugin
 from squad.core.models import SuiteMetadata
+from django.template.defaultfilters import slugify
 
 
 logger = logging.getLogger()
 
 REGEX_NAME = 0
 REGEX_BODY = 1
+REGEX_EXTRACT_NAME = 2
 
 MULTILINERS = [
-    ('check-kernel-exception', r'-+\[? cut here \]?-+.*?-+\[? end trace \w* \]?-+'),
-    ('check-kernel-kasan', r'=+\n\[[\s\.\d]+\]\s+BUG: KASAN:.*?=+'),
-    ('check-kernel-kfence', r'=+\n\[[\s\.\d]+\]\s+BUG: KFENCE:.*?=+'),
+    ('check-kernel-exception', r'-+\[? cut here \]?-+.*?-+\[? end trace \w* \]?-+', r"\d][^\+\n]*"),
+    ('check-kernel-kasan', r'=+\n\[[\s\.\d]+\]\s+BUG: KASAN:.*?=+', r"BUG: KASAN:[^\+\n]*"),
+    ('check-kernel-kfence', r'=+\n\[[\s\.\d]+\]\s+BUG: KFENCE:.*?=+', r"BUG: KFENCE:[^\+\n]*"),
 ]
 
 ONELINERS = [
-    ('check-kernel-oops', r'^[^\n]+Oops(?: -|:).*?$'),
-    ('check-kernel-fault', r'^[^\n]+Unhandled fault.*?$'),
-    ('check-kernel-warning', r'^[^\n]+WARNING:.*?$'),
-    ('check-kernel-bug', r'^[^\n]+(?: kernel BUG at|BUG:).*?$'),
-    ('check-kernel-invalid-opcode', r'^[^\n]+invalid opcode:.*?$'),
-    ('check-kernel-panic', r'Kernel panic - not syncing.*?$'),
+    ('check-kernel-oops', r'^[^\n]+Oops(?: -|:).*?$', r"Oops[^\+\n]*"),
+    ('check-kernel-fault', r'^[^\n]+Unhandled fault.*?$', r"Unhandled [^\+\n]*"),
+    ('check-kernel-warning', r'^[^\n]+WARNING:.*?$', r"WARNING: [^\+\n]*"),
+    ('check-kernel-bug', r'^[^\n]+(?: kernel BUG at|BUG:).*?$', r"BUG[^\+\n]*"),
+    ('check-kernel-invalid-opcode', r'^[^\n]+invalid opcode:.*?$', r"invalid opcode: [^\+\n]*"),
+    ('check-kernel-panic', r'Kernel panic - not syncing.*?$', r"Kernel [^\+\n]*"),
 ]
 
 # Tip: broader regexes should come first
@@ -70,7 +72,7 @@ class Plugin(BasePlugin):
                     snippets[regex_id].append(match[regex_id])
         return snippets
 
-    def __create_tests(self, testrun, suite, test_name, lines):
+    def __create_tests(self, testrun, suite, test_name, lines, test_regex=None):
         """
         There will be at least one test per regex. If there were any match for a given
         regex, then a new test will be generated using test_name + shasum. This helps
@@ -92,6 +94,9 @@ class Plugin(BasePlugin):
         shas = defaultdict(set)
         for line in lines:
             sha = self.__create_shasum(line)
+            name = self.__create_name(line, test_regex)
+            if name:
+                sha = f"{name}-{sha}"
             shas[sha].add(line)
 
         for sha, lines in shas.items():
@@ -106,11 +111,30 @@ class Plugin(BasePlugin):
                 environment=testrun.environment,
             )
 
+    def __remove_numbers_and_time(self, snippet):
+        without_numbers = re.sub(r"(0x[a-f0-9]+|[<\[][0-9a-f]+?[>\]]|\d+)", "", snippet)
+        without_time = re.sub(r"^\[[^\]]+\]", "", without_numbers)
+
+        return without_time
+
+    def __create_name(self, snippet, regex=None):
+        matches = None
+        if regex:
+            matches = regex.findall(snippet)
+        if not matches:
+            return None
+        snippet = matches[0]
+        without_numbers_and_time = self.__remove_numbers_and_time(snippet)
+
+        # Limit the name length to 191 characters, since the max name length
+        # for SuiteMetadata in SQUAD is 256 characters. The SHA and "-" take 65
+        # characters: 256-65=191
+        return slugify(without_numbers_and_time)[:191]
+
     def __create_shasum(self, snippet):
         sha = hashlib.sha256()
-        without_numbers = re.sub(r'(0x[a-f0-9]+|[<\[][0-9a-f]+?[>\]]|\d+)', '', snippet)
-        without_time = re.sub(r'^\[[^\]]+\]', '', without_numbers)
-        sha.update(without_time.encode())
+        without_numbers_and_time = self.__remove_numbers_and_time(snippet)
+        sha.update(without_numbers_and_time.encode())
         return sha.hexdigest()
 
     def postprocess_testrun(self, testrun):
@@ -133,4 +157,8 @@ class Plugin(BasePlugin):
 
             for regex_id in range(len(REGEXES)):
                 test_name = REGEXES[regex_id][REGEX_NAME]
-                self.__create_tests(testrun, suite, test_name, snippets[regex_id])
+                regex_pattern = REGEXES[regex_id][REGEX_EXTRACT_NAME]
+                test_name_regex = None
+                if regex_pattern:
+                    test_name_regex = re.compile(regex_pattern, re.S | re.M)
+                self.__create_tests(testrun, suite, test_name, snippets[regex_id], test_name_regex)
