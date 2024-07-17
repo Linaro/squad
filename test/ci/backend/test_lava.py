@@ -448,6 +448,14 @@ class LavaTest(TestCase):
         check = lava.check_job_definition(definition)
         self.assertIn('found unexpected end of stream', check)
 
+    def test_lava_job_name(self):
+        lava = LAVABackend(None)
+        self.assertIsNone(lava._Backend__lava_job_name('no name:'))
+        self.assertEqual('', lava._Backend__lava_job_name('job_name:'))
+        self.assertEqual('job-name', lava._Backend__lava_job_name('job_name: job-name'))
+        truncated_name = lava._Backend__lava_job_name('job_name: ' + ('a' * 300))
+        self.assertEqual(255, len(truncated_name))
+
     @patch("requests.post", side_effect=requests.exceptions.Timeout)
     def test_submit_timeout(self, post):
         test_definition = "foo: 1\njob_name: bar"
