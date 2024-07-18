@@ -27,13 +27,13 @@ class UpdateStatusesTest(TestCase):
         build1.save()
 
         status1 = ProjectStatus.objects.first()
-        status1.fixes = "fixes1"
+        status1.fixes = "fixes:\n- fix1"
         status1.finished = True
         status1.save()
 
         self.create_build('2')
         status2 = ProjectStatus.objects.last()
-        status2.fixes = "fixes2"
+        status2.fixes = "fixes:\n- fix2"
         status2.finished = True
         status2.save()
 
@@ -42,5 +42,5 @@ class UpdateStatusesTest(TestCase):
         status1.refresh_from_db()
         status2.refresh_from_db()
 
-        self.assertEqual(status1.fixes, "fixes1")
-        self.assertNotEqual(status2.fixes, "fixes2")
+        self.assertEqual(status1.get_fixes(), {"fixes": ["fix1"]})
+        self.assertEqual(status2.get_fixes(), {})
