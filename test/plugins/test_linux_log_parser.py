@@ -29,7 +29,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('oops.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-oops')
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-oops-oops-bug-preempt-smp')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Linux version 4.4.89-01529-gb29bace', test.log)
@@ -40,19 +40,19 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('kernelpanic.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-panic')
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-panic-kernel-panic-not-syncing-attempted-to-kill-the-idle-task')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
         self.assertIn('Kernel panic - not syncing', test.log)
-        self.assertIn('Attempted to kill init! exitcode=0x00000009', test.log)
+        self.assertNotIn('Attempted to kill init! exitcode=0x00000009', test.log)
         self.assertNotIn('Internal error: Oops', test.log)
 
     def test_detects_kernel_exception(self):
         testrun = self.new_testrun('kernelexceptiontrace.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception')
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception-warning-cpu-pid-at-kernelsmpc-smp_call_function_many_cond')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
@@ -64,7 +64,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('kernelexceptiontrace_without_squarebraces.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception')
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception-warning-cpu-pid-at-kernelsmpc-smp_call_function_many_cond')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
@@ -76,7 +76,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('kasan.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-kasan')
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-kasan-bug-kasan-slab-out-of-bounds-in-kmalloc_oob_right')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
@@ -89,7 +89,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('kfence.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-kfence')
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-kfence-bug-kfence-memory-corruption-in-kfree')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
@@ -102,7 +102,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('oops.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-bug')
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-bug-bug-spinlock-lockup-suspected-on-cpu-gdbus')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
@@ -112,7 +112,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('kernel_bug_and_invalid_opcode.log', job_id='1000')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-bug')
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception-kernel-bug-at-usrsrckernelarchxkvmmmummuc')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
@@ -124,7 +124,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('kernel_bug_and_invalid_opcode.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-invalid-opcode')
+        test = testrun.tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-invalid-opcode-invalid-opcode-smp-pti')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Booting Linux', test.log)
@@ -137,11 +137,11 @@ class TestLinuxLogParser(TestCase):
         self.plugin.postprocess_testrun(testrun)
 
         tests = testrun.tests
-        test_panic = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-panic')
-        test_exception = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception')
-        test_warning = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-warning')
-        test_oops = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-oops')
-        test_fault = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-fault')
+        test_panic = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-panic-kernel-panic-not-syncing-stack-protector-kernel-stack-is-corrupted-in-ffffffffcc')
+        test_exception = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception-warning-cpu-pid-at-driversgpudrmradeonradeon_objectc-radeon_ttm_bo_destroy')
+        test_warning = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-warning-warning-cpu-pid-at-driversregulatorcorec-_regulator_putpart')
+        test_oops = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-oops-oops-preempt-smp')
+        test_fault = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-fault-unhandled-fault-external-abort-on-non-linefetch-at')
 
         self.assertFalse(test_panic.result)
         self.assertNotIn('Boot CPU', test_panic.log)
@@ -208,7 +208,7 @@ class TestLinuxLogParser(TestCase):
         tests = testrun.tests
         test_panic = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-panic')
         test_exception = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception')
-        test_warning = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-warning')
+        test_warning = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-warning-warning-suspicious-rcu-usage')
         test_oops = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-oops')
         test_fault = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-fault')
 
@@ -240,7 +240,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('oops.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='log-parser-boot', metadata__name='check-kernel-oops')
+        test = testrun.tests.get(suite__slug='log-parser-boot', metadata__name='check-kernel-oops-oops-bug-preempt-smp')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Linux version 4.4.89-01529-gb29bace', test.log)
@@ -251,7 +251,7 @@ class TestLinuxLogParser(TestCase):
         testrun = self.new_testrun('oops.log')
         self.plugin.postprocess_testrun(testrun)
 
-        test = testrun.tests.get(suite__slug='log-parser-boot', metadata__name='check-kernel-oops')
+        test = testrun.tests.get(suite__slug='log-parser-boot', metadata__name='check-kernel-oops-oops-bug-preempt-smp')
         self.assertFalse(test.result)
         self.assertIsNotNone(test.log)
         self.assertNotIn('Linux version 4.4.89-01529-gb29bace', test.log)

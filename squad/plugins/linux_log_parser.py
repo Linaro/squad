@@ -78,30 +78,49 @@ class Plugin(BasePlugin):
         regex, then a new test will be generated using test_name + shasum. This helps
         comparing kernel logs accross different builds
         """
-        metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=test_name, kind='test')
-        testrun.tests.create(
-            suite=suite,
-            result=(len(lines) == 0),
-            log='\n'.join(lines),
-            metadata=metadata,
-            build=testrun.build,
-            environment=testrun.environment,
-        )
-
-        # Some lines of the matched regex might be the same, and we don't want to create
-        # multiple tests like test1-sha1, test1-sha1, etc, so we'll create a set of sha1sums
-        # then create only new tests for unique sha's
+        # Run the REGEX_EXTRACT_NAME regex over the log lines to sort them by
+        # extracted name. If no name is extracted or the log parser did not
+        # have any output for a particular regex, just use the default name
+        # (for example "check-kernel-oops").
+        tests_to_create = defaultdict(set)
         shas = defaultdict(set)
-        for line in lines:
-            sha = self.__create_shasum(line)
-            name = self.__create_name(line, test_regex)
-            if name:
-                sha = f"{name}-{sha}"
-            shas[sha].add(line)
 
-        for sha, lines in shas.items():
-            name = f'{test_name}-{sha}'
+        # If there are no lines, use the default name and create a passing
+        # test. For example "check-kernel-oops"
+        if not lines:
+            tests_to_create[test_name] = []
+
+        # If there are lines, then create the tests for these.
+        for line in lines:
+            extracted_name = self.__create_name(line, test_regex)
+            if extracted_name:
+                extended_test_name = f"{test_name}-{extracted_name}"
+            else:
+                extended_test_name = test_name
+            tests_to_create[extended_test_name].add(line)
+
+        for name, lines in tests_to_create.items():
             metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=name, kind='test')
+            testrun.tests.create(
+                suite=suite,
+                result=(len(lines) == 0),
+                log='\n'.join(lines),
+                metadata=metadata,
+                build=testrun.build,
+                environment=testrun.environment,
+            )
+
+            # Some lines of the matched regex might be the same, and we don't want to create
+            # multiple tests like test1-sha1, test1-sha1, etc, so we'll create a set of sha1sums
+            # then create only new tests for unique sha's
+
+            for line in lines:
+                sha = self.__create_shasum(line)
+                name_with_sha = f"{name}-{sha}"
+                shas[name_with_sha].add(line)
+
+        for name_with_sha, lines in shas.items():
+            metadata, _ = SuiteMetadata.objects.get_or_create(suite=suite.slug, name=name_with_sha, kind='test')
             testrun.tests.create(
                 suite=suite,
                 result=False,
