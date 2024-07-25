@@ -1,4 +1,5 @@
 import json
+import requests
 
 
 from django.test import TestCase
@@ -97,6 +98,19 @@ class CallbackTest(TestCase):
         requests_post.reset_mock()
         callback.dispatch()
         self.assertFalse(requests_post.called)
+
+    @patch('requests.post')
+    def test_build_callback_catch_exceptions_on_dispatch(self, requests_post):
+        requests_post.side_effect = requests.exceptions.ConnectionError("bad connection")
+
+        url = 'http://callback-target.com'
+
+        callback = self.build.callbacks.create(url=url, event=self.event, record_response=True)
+        callback.dispatch()
+
+        self.assertTrue(requests_post.called)
+        self.assertTrue(callback.is_sent)
+        self.assertEqual("bad connection", callback.response_content)
 
     @patch('requests.post')
     def test_build_callback_gets_deleted_on_build_deletion(self, requests_post):

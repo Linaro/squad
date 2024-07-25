@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.test import TestCase
 from dateutil.relativedelta import relativedelta
@@ -436,3 +437,19 @@ class ProjectStatusTest(TestCase):
 
         self.assertEqual(build2.status.baseline, build1)
         self.assertEqual(build3.status.baseline, build1)
+
+    def test_save_malformed_yaml(self):
+        build = self.project.builds.create(version="bad-yaml")
+        build.status.fixes = """!!python/object/apply:collections.OrderedDict
+            - - - env
+            - [suite/test"""
+        with self.assertRaises(ValidationError):
+            build.status.save()
+
+    def test_get_malformed_yaml(self):
+        # For backwards compatibility, records with bad yaml already saved
+        build = self.project.builds.create(version="bad-yaml")
+        build.status.fixes = """!!python/object/apply:collections.OrderedDict
+            - - - env
+            - [suite/test"""
+        self.assertEqual(0, len(build.status.get_fixes()))

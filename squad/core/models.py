@@ -16,7 +16,7 @@ from django.db.models.query import prefetch_related_objects
 from django.contrib.auth.models import User, AnonymousUser, Group as auth_group
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
 
 from django.conf import settings
@@ -1428,9 +1428,13 @@ class ProjectStatus(models.Model, TestSummaryBase):
         return None
 
     def __get_yaml_field__(self, field_value):
-        if field_value is not None:
+        if field_value is None:
+            return {}
+
+        try:
             return yaml.load(field_value, Loader=yaml.Loader)
-        return {}
+        except yaml.YAMLError:
+            return {}
 
     def get_regressions(self):
         return self.__get_yaml_field__(self.regressions)
@@ -1465,6 +1469,14 @@ class ProjectStatus(models.Model, TestSummaryBase):
             thresholds_exceeded += [(threshold, m) for m in metrics]
 
         return thresholds_exceeded
+
+
+@receiver(pre_save, sender=ProjectStatus)
+def validate_project_status(sender, instance, *args, **kwargs):
+    yaml_validator(instance.regressions)
+    yaml_validator(instance.fixes)
+    yaml_validator(instance.metric_regressions)
+    yaml_validator(instance.metric_fixes)
 
 
 class NotificationDelivery(models.Model):

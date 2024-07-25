@@ -6,7 +6,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import Http404
 
 from squad.http import auth
-from squad.core.models import Test, Suite, SuiteMetadata, Environment
+from squad.core.models import Build, Test, Suite, SuiteMetadata, Environment
 from squad.core.history import TestHistory
 from squad.core.queries import test_confidence
 from squad.frontend.views import get_build
@@ -234,5 +234,5 @@ def test_history(request, group_slug, project_slug, build_version=None, testrun_
         history = TestHistory(project, full_test_name, top=top, page=page)
         context.update({"history": history})
         return render(request, 'squad/test_history.jinja2', context)
-    except (Suite.DoesNotExist, SuiteMetadata.DoesNotExist) as e:
+    except (Suite.DoesNotExist, SuiteMetadata.DoesNotExist, Build.DoesNotExist) as e:
         raise Http404(f"Test not found: {e}")

@@ -78,3 +78,11 @@ class ProjectComparisonTest(TestCase):
         self.assertIn('otherenv', str(response.content))
         self.assertIn('pass', str(response.content))
         self.assertIn('fail', str(response.content))
+
+
+class BuildComparisonTest(TestCase):
+
+    def test_comparison_malformed_project_slug(self):
+        url = '/_/comparebuilds/?project=something-bad'
+        response = self.client.get(url)
+        self.assertEqual(404, response.status_code)

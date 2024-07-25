@@ -27,8 +27,12 @@ def poll(backend_id=None):
 @celery.task
 def fetch(job_id):
     logger.info("fetching %s" % job_id)
-    backend = TestJob.objects.get(pk=job_id).backend
-    backend.fetch(job_id)
+    try:
+        testjob = TestJob.objects.get(pk=job_id)
+        if testjob.job_id:
+            testjob.backend.fetch(testjob.id)
+    except TestJob.DoesNotExist:
+        return
 
 
 @celery.task

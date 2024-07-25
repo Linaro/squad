@@ -396,9 +396,10 @@ class Backend(BaseBackend):
 
     def __lava_job_name(self, definition):
         yaml_definition = yaml.safe_load(definition)
-        if 'job_name' in yaml_definition.keys():
+        if type(yaml_definition) is dict and 'job_name' in yaml_definition.keys():
+            job_name = yaml_definition['job_name']
             # only return first 255 characters
-            return yaml_definition['job_name'][:255]
+            return job_name[:255] if job_name else ''
         return None
 
     def __resubmit__(self, job_id):

@@ -122,6 +122,21 @@ class FetchTest(TestCase):
         self.test_job.refresh_from_db()
         self.assertEqual(attemps + 1, self.test_job.fetch_attempts)
 
+    @patch('squad.ci.models.Backend.fetch')
+    def test_fetch_no_job_id(self, fetch_method):
+        testjob = models.TestJob.objects.create(
+            backend=self.test_job.backend,
+            target=self.test_job.target,
+            target_build=self.test_job.target_build,
+        )
+        fetch.apply(args=[testjob.id])
+        fetch_method.assert_not_called()
+
+    @patch('squad.ci.models.Backend.fetch')
+    def test_fetch_deleted_job(self, fetch_method):
+        fetch.apply(args=[99999999999])
+        fetch_method.assert_not_called()
+
 
 class FetchTestRaceCondition(TransactionTestCase):
 
@@ -134,21 +149,23 @@ class FetchTestRaceCondition(TransactionTestCase):
             backend=backend,
             target=project,
             target_build=build,
+            job_id='test',
         )
 
     def mock_backend_fetch(test_job):
-        time.sleep(1)
+        time.sleep(0.5)
         status = ''
         completed = True
         metadata = {}
-        tests = []
-        metrics = []
+        tests = {}
+        metrics = {}
         logs = ''
         return status, completed, metadata, tests, metrics, logs
 
     @tag('skip_sqlite')
+    @patch('squad.ci.backend.null.Backend.job_url', return_value='http://url')
     @patch('squad.ci.backend.null.Backend.fetch', side_effect=mock_backend_fetch)
-    def test_race_condition_on_fetch(self, fetch_method):
+    def test_race_condition_on_fetch(self, fetch_method, job_url_method):
 
         def thread(testjob_id):
             fetch(testjob_id)
