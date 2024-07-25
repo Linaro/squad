@@ -264,3 +264,46 @@ class TestLinuxLogParser(TestCase):
         self.assertIsNotNone(test.log)
         self.assertIn('Internal error: Oops - BUG: 0 [#0] PREEMPT SMP', test.log)
         self.assertNotIn('Internal error: Oops - BUG: 99 [#1] PREEMPT SMP', test.log)
+
+    def test_sha_name_multiple(self):
+        testrun = self.new_testrun('multiple_issues_dmesg.log')
+        self.plugin.postprocess_testrun(testrun)
+
+        tests = testrun.tests
+        test_panic = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-panic-kernel-panic-not-syncing-stack-protector-kernel-stack-is-corrupted-in-ffffffffcc-ab2f1708a36efc4f90943d58fb240d435fcb3d05f7fac9b00163483fe77209eb')
+        test_exception = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-exception-warning-cpu-pid-at-driversgpudrmradeonradeon_objectc-radeon_ttm_bo_destroy-77251099bfa081e5c942070a569fe31163336e61a80bda7304cd59f0f4b82080')
+        test_warning = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-warning-warning-cpu-pid-at-driversregulatorcorec-_regulator_putpart-d44949024d5373185a7381cb9dd291b13c117d6b93feb576a431e5376025004f')
+        test_oops = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-oops-oops-preempt-smp-4e1ddddb2c142178a8977e7d973c2a13db2bb978aa471c0049ee39fe3fe4d74c')
+        test_fault = tests.get(suite__slug='log-parser-test', metadata__name='check-kernel-fault-unhandled-fault-external-abort-on-non-linefetch-at-6f9e3ab8f97e35c1e9167fed1e01c6149986819c54451064322b7d4208528e07')
+
+        self.assertFalse(test_panic.result)
+        self.assertNotIn('Boot CPU', test_panic.log)
+        self.assertIn('Kernel panic - not syncing', test_panic.log)
+
+        self.assertFalse(test_exception.result)
+        self.assertNotIn('Boot CPU', test_exception.log)
+        self.assertIn('------------[ cut here ]------------', test_exception.log)
+
+        self.assertFalse(test_warning.result)
+        self.assertNotIn('Boot CPU', test_warning.log)
+        self.assertNotIn('Kernel panic - not syncing', test_warning.log)
+        self.assertNotIn('------------[ cut here ]------------', test_warning.log)
+        self.assertNotIn('Unhandled fault:', test_warning.log)
+        self.assertNotIn('Oops', test_warning.log)
+        self.assertIn('WARNING: CPU', test_warning.log)
+
+        self.assertFalse(test_oops.result)
+        self.assertNotIn('Boot CPU', test_oops.log)
+        self.assertNotIn('Kernel panic - not syncing', test_oops.log)
+        self.assertNotIn('------------[ cut here ]------------', test_oops.log)
+        self.assertNotIn('WARNING: CPU', test_oops.log)
+        self.assertNotIn('Unhandled fault:', test_oops.log)
+        self.assertIn('Oops', test_oops.log)
+
+        self.assertFalse(test_fault.result)
+        self.assertNotIn('Boot CPU', test_fault.log)
+        self.assertNotIn('Kernel panic - not syncing', test_fault.log)
+        self.assertNotIn('------------[ cut here ]------------', test_fault.log)
+        self.assertNotIn('WARNING: CPU', test_fault.log)
+        self.assertNotIn('Oops', test_fault.log)
+        self.assertIn('Unhandled fault:', test_fault.log)
