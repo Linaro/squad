@@ -1,3 +1,23 @@
+# 1.89
+
+This 1.89 release comes with quite several changes:
+
+* api/rest.py: check if callback exception has messages attribute
+* ci:
+  * backend/lava.py:
+    * add sanity check in job_name
+    * fix cases for empty job_name in definition
+  * ci/tasks.py:
+    * check if job exists before fetching
+    * do not fetch jobs without job_id
+* core/models.py: prevend malformed yaml to be saved
+* core/callback.py: handle requests exceptions
+* core/history.py: check for empty projects
+* frontend/comparison.py: sanity check project slug
+* plugins/linux_log_parser:
+  * Add support for test name regex
+  * Move test name regex to higher level
+
 # 1.88
 
 This 1.88 release adds a neat feature that gives the user the exact log link
